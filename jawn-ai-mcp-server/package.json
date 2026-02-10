@@ -1,5 +1,5 @@
 {
-  "name": "zivtech-ai-mcp-server",
+  "name": "jawn-ai-mcp-server",
   "version": "0.1.0",
   "description": "Zivtech AI MCP Server - Remote tools for Claude Desktop",
   "type": "module",

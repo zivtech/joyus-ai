@@ -171,7 +171,7 @@ Every tool execution is logged with:
 ## File Structure
 
 ```
-zivtech-ai-mcp-server/
+jawn-ai-mcp-server/
 ├── src/
 │   ├── index.ts              # Express server, MCP endpoint
 │   ├── db/

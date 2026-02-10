@@ -562,4 +562,4 @@ Move `zivtech-ticket-writing`, `zivtech-writing-style`, `drupal-coding-standards
 
 ---
 
-*This document extends the [Platform Architecture](./PLATFORM_ARCHITECTURE.md). The MCP server codebase is in `/zivtech-ai-mcp-server/`.*
+*This document extends the [Platform Architecture](./PLATFORM_ARCHITECTURE.md). The MCP server codebase is in `/jawn-ai-mcp-server/`.*

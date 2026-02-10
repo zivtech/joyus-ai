@@ -89,7 +89,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
             tools: {}
           },
           serverInfo: {
-            name: 'zivtech-ai-mcp-server',
+            name: 'jawn-ai-mcp-server',
             version: '0.1.0'
           }
         };

@@ -64,7 +64,7 @@ A remote MCP (Model Context Protocol) server that enables Claude Desktop to inte
 
 ```bash
 # Clone and install
-cd zivtech-ai-mcp-server
+cd jawn-ai-mcp-server
 npm install
 
 # Set up environment
@@ -280,11 +280,11 @@ Configure `notifyOnSuccess` and `notifyOnError` per task.
 
 ```yaml
 # app.yaml
-name: zivtech-ai-mcp
+name: jawn-ai-mcp
 services:
   - name: web
     source:
-      repo: zivtech/zivtech-ai-mcp-server
+      repo: zivtech/jawn-ai
       branch: main
     build_command: npm ci && npm run build
     run_command: npm run db:migrate && npm start

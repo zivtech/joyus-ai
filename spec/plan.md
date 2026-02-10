@@ -326,7 +326,7 @@ Central gateway for auth, routing, logging:
 ### Repository Structure
 
 ```
-zivtech-ai-skills/                    (Git repository)
+jawn-ai-skills/                       (Git repository)
 ├── README.md
 ├── .skill-registry.json              (skill metadata, versions)
 │
@@ -684,7 +684,7 @@ Phase 1 Deliverables:
 
 #### Task 1: Repository Setup (1 day)
 
-- [ ] Create `zivtech-ai-skills` repository
+- [ ] Create `jawn-ai-skills` repository
 - [ ] Set up folder structure (core/, clients/)
 - [ ] Create `.skill-registry.json`
 - [ ] Set up basic CI (linting, tests)

@@ -12,14 +12,14 @@
 ## What's Been Built
 
 ### 1. Project Planning & Spec (Complete)
-- **Project Plan v2** (`zivtech_ai_analyst_plan.md`) — Full roadmap with phased approach, cost model, data governance, success criteria
+- **Project Plan v2** (`jawn-ai-plan.md`) — Full roadmap with phased approach, cost model, data governance, success criteria
 - **Spec Kitty Framework** — Constitution, specification, plan, and toolkit diagnosis all documented in `spec/`
-- **Implementation Plan** — 6-phase, 6-8 week plan in `zivtech-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md`
-- **Platform Architecture** — Full architecture doc with diagrams in `zivtech-ai-mcp-server/docs/`
+- **Implementation Plan** — 6-phase, 6-8 week plan in `jawn-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md`
+- **Platform Architecture** — Full architecture doc with diagrams in `jawn-ai-mcp-server/docs/`
 - **Technical Research** — Manus architecture analysis, cost modeling, tooling research in `research/`
 
 ### 2. MCP Server (Phase 0 — Foundation Built)
-**Location:** `zivtech-ai-mcp-server/`
+**Location:** `jawn-ai-mcp-server/`
 **Stack:** Node.js + TypeScript + Express + Drizzle ORM + PostgreSQL
 
 **Working components:**
@@ -41,7 +41,7 @@ Managed in their own repositories (not in jawn-ai):
 - **`zivtech/drupal-brand-skill`** — Drupal brand integration bridge
 
 ### 4. Platform Overview UI
-- Interactive React/JSX artifact showing the platform vision (`zivtech-ai-platform-overview.jsx`)
+- Interactive React/JSX artifact showing the platform vision (`jawn-ai-platform-overview.jsx`)
 - Skills marketplace architecture design (`zivtech-skills-marketplace-architecture.html`)
 
 ---
@@ -95,4 +95,4 @@ The project is in **Phase 0 → Phase 1 transition** — the foundation MCP serv
 To run the MCP server locally:
 - Node.js 20+
 - PostgreSQL
-- OAuth credentials for Jira, Slack, GitHub, Google (see `zivtech-ai-mcp-server/.env.example`)
+- OAuth credentials for Jira, Slack, GitHub, Google (see `jawn-ai-mcp-server/.env.example`)

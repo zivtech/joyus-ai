@@ -4,7 +4,7 @@
 **Date:** January 29, 2026
 **Status:** Ready to Initialize
 **Notion:** [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)
-**Research:** [Technical Research Report](research/zivtech_ai_analyst_research.md)
+**Research:** [Technical Research Report](research/jawn-ai-research.md)
 
 ---
 
@@ -67,7 +67,7 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 | Skills | 500-5000 tokens each; use sparingly |
 | Monitoring | Langfuse, Helicone for observability |
 
-See [Technical Research Report](research/zivtech_ai_analyst_research.md) for full details.
+See [Technical Research Report](research/jawn-ai-research.md) for full details.
 
 ---
 
@@ -130,8 +130,8 @@ See [Technical Research Report](research/zivtech_ai_analyst_research.md) for ful
 
 #### Phase 0: Project Setup
 ```bash
-spec-kitty init zivtech-ai-platform --ai claude
-cd zivtech-ai-platform
+spec-kitty init jawn-ai-platform --ai claude
+cd jawn-ai-platform
 ```
 
 #### Phase 1: Constitution (`/spec-kitty.constitution`)
@@ -293,8 +293,8 @@ Additional costs for:
 ### Now: Initialize with Spec Kitty
 
 ```bash
-spec-kitty init zivtech-ai-platform --ai claude
-cd zivtech-ai-platform
+spec-kitty init jawn-ai-platform --ai claude
+cd jawn-ai-platform
 ```
 
 ### Week 1-2: Foundation
@@ -358,7 +358,7 @@ cd zivtech-ai-platform
 
 1. **Now:** Initialize Spec Kitty project
    ```bash
-   spec-kitty init zivtech-ai-platform --ai claude
+   spec-kitty init jawn-ai-platform --ai claude
    ```
 
 2. **This week:**
@@ -374,7 +374,7 @@ cd zivtech-ai-platform
 
 ## References
 
-- [Technical Research Report](research/zivtech_ai_analyst_research.md) — Full research findings
+- [Technical Research Report](research/jawn-ai-research.md) — Full research findings
 - [Spec Kitty GitHub](https://github.com/Priivacy-ai/spec-kitty) — Development framework
 - [Claude Agent SDK Docs](https://docs.anthropic.com/en/docs/agents) — Orchestration patterns
 - [Notion: Technical Learning Questions](https://www.notion.so/9daf8c36a31342428e29c8958e1ba782)
@@ -382,5 +382,5 @@ cd zivtech-ai-platform
 
 ---
 
-*Document maintained in: `/mnt/jawn-ai/zivtech_ai_analyst_plan.md`*
+*Document maintained in: `/mnt/jawn-ai/jawn-ai-plan.md`*
 *Notion canonical: [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)*

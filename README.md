@@ -13,8 +13,8 @@ A multi-tenant AI agent platform for Zivtech consulting. Internal use and client
 
 ```
 jawn-ai/
-├── zivtech_ai_analyst_plan.md    # Project plan (v2)
-├── zivtech-ai-mcp-server/       # MCP server — connects Claude Desktop to Jira, Slack, GitHub, Google
+├── jawn-ai-plan.md              # Project plan (v2)
+├── jawn-ai-mcp-server/          # MCP server — connects Claude Desktop to Jira, Slack, GitHub, Google
 ├── spec/                         # Spec Kitty specs
 │   ├── constitution.md           # Project principles
 │   ├── specification.md          # What to build
@@ -24,8 +24,8 @@ jawn-ai/
 │   ├── internal-ai-portal-spec.md     # Internal portal spec
 │   └── implementation-summary.md      # Implementation overview
 ├── research/                     # Technical research
-│   └── zivtech_ai_analyst_research.md
-├── zivtech-ai-platform-overview.jsx          # Platform overview (React component)
+│   └── jawn-ai-research.md
+├── jawn-ai-platform-overview.jsx              # Platform overview (React component)
 ├── zivtech-skills-marketplace-architecture.html  # Skills marketplace design
 └── project-status-feb10.md       # Current status
 ```
@@ -53,7 +53,7 @@ This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for sp
 
 ### MCP Server
 
-The MCP server lives in `zivtech-ai-mcp-server/`. See its [README](zivtech-ai-mcp-server/README.md) for setup and configuration.
+The MCP server lives in `jawn-ai-mcp-server/`. See its [README](jawn-ai-mcp-server/README.md) for setup and configuration.
 
 ## Related Repos
 
