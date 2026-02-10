@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant U as 👤 User (Browser)
+    participant W as 🌐 Web App
+    participant G as 🚀 Gateway
+    participant C as 🤖 Claude API
+    participant T as 🔧 Tool (Jira)
+    participant DB as 💾 Database
+
+    U->>W: Open ai.zivtech.com
+    W->>G: Check session
+    G->>DB: Validate session
+    DB-->>G: User authenticated
+    G-->>W: Session valid
+    W-->>U: Show chat interface
+
+    U->>W: "What are my Jira tickets?"
+    W->>G: POST /api/v1/chat
+    G->>DB: Create message
+
+    G->>C: messages.create (streaming)
+
+    Note over G,C: Claude decides to use tool
+
+    C-->>G: tool_use: jira_get_my_issues
+    G-->>W: SSE: tool_call event
+    W-->>U: Show "Using Jira..."
+
+    G->>T: Execute jira_get_my_issues
+    T->>DB: Get user's Jira token
+    DB-->>T: Encrypted token
+    T->>T: Decrypt token
+    T-->>G: [5 tickets]
+
+    G-->>W: SSE: tool_result event
+    W-->>U: Show ticket preview
+
+    G->>C: Continue with tool result
+
+    loop Streaming Response
+        C-->>G: text delta
+        G-->>W: SSE: token event
+        W-->>U: Append to message
+    end
+
+    C-->>G: message_stop
+    G->>DB: Save assistant message
+    G->>DB: Log tool execution
+    G-->>W: SSE: complete event
+    W-->>U: Show final message + feedback buttons

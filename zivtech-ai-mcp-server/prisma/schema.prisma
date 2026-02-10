@@ -1,0 +1,179 @@
+// Jawnus MCP Server Database Schema
+// Stores user auth tokens for connected services
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users who have onboarded via the Auth Portal
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  mcpToken    String   @unique  // Token used for MCP authentication
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  connections    Connection[]
+  auditLogs      AuditLog[]
+  scheduledTasks ScheduledTask[]
+  taskRuns       TaskRun[]
+}
+
+// OAuth tokens for connected services
+model Connection {
+  id           String    @id @default(cuid())
+  userId       String
+  service      Service
+  accessToken  String    @db.Text  // Encrypted
+  refreshToken String?   @db.Text  // Encrypted
+  expiresAt    DateTime?
+  scope        String?
+  metadata     Json?     // Service-specific data (Jira cloud ID, Slack workspace, etc.)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, service])
+  @@index([userId])
+}
+
+enum Service {
+  JIRA
+  SLACK
+  GITHUB
+  GOOGLE
+}
+
+// Audit log for tool executions (security + debugging)
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  tool      String
+  input     Json
+  success   Boolean
+  error     String?
+  duration  Int      // milliseconds
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([tool, createdAt])
+}
+
+// Pending OAuth flows (state parameter tracking)
+model OAuthState {
+  id        String   @id @default(cuid())
+  state     String   @unique
+  userId    String
+  service   Service
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([state])
+}
+
+// ============================================================
+// SCHEDULED TASKS
+// ============================================================
+
+// Scheduled task definition
+model ScheduledTask {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String     // Human-readable name
+  description String?    // What this task does
+
+  // Schedule (cron expression or interval)
+  schedule    String     // Cron expression: "0 9 * * 1-5" (9am weekdays)
+  timezone    String     @default("America/New_York")
+
+  // Task definition
+  taskType    TaskType
+  config      Json       // Task-specific configuration
+
+  // Notification settings
+  notifySlack   String?  // Slack channel to post results
+  notifyEmail   String?  // Email to send results
+  notifyOnError Boolean  @default(true)
+  notifyOnSuccess Boolean @default(false)
+
+  // State
+  enabled     Boolean    @default(true)
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs TaskRun[]
+
+  @@index([userId])
+  @@index([enabled, nextRunAt])
+}
+
+enum TaskType {
+  // Jira tasks
+  JIRA_STANDUP_SUMMARY      // Daily summary of team's Jira activity
+  JIRA_OVERDUE_ALERT        // Alert on overdue tickets
+  JIRA_SPRINT_REPORT        // Sprint progress report
+
+  // Slack tasks
+  SLACK_CHANNEL_DIGEST      // Summarize channel activity
+  SLACK_MENTIONS_SUMMARY    // Summary of mentions
+
+  // GitHub tasks
+  GITHUB_PR_REMINDER        // Remind about open PRs needing review
+  GITHUB_STALE_PR_ALERT     // Alert on PRs open too long
+  GITHUB_RELEASE_NOTES      // Generate release notes
+
+  // Google tasks
+  GMAIL_DIGEST              // Email digest/summary
+
+  // Cross-service tasks
+  WEEKLY_STATUS_REPORT      // Combined report from all services
+  CUSTOM_TOOL_SEQUENCE      // Run a sequence of tools
+}
+
+// Individual task execution record
+model TaskRun {
+  id            String    @id @default(cuid())
+  taskId        String
+  userId        String
+
+  status        TaskRunStatus
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  duration      Int?      // milliseconds
+
+  // Results
+  output        Json?     // Task output/results
+  error         String?   // Error message if failed
+
+  // Notification tracking
+  notified      Boolean   @default(false)
+  notifiedAt    DateTime?
+
+  task ScheduledTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, startedAt])
+  @@index([userId, startedAt])
+  @@index([status])
+}
+
+enum TaskRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}

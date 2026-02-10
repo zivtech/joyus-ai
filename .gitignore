@@ -1,0 +1,9 @@
+# OS
+.DS_Store
+
+# Cloned repos (managed separately)
+zivtech-claude-skills/
+zivtech-skills-copy/
+zivtech-claude-skills-repo
+claude-presentation-toolkit/
+drupal-brand-skill/

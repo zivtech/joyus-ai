@@ -1,0 +1,42 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#2d3436', 'primaryTextColor': '#fff'}}}%%
+flowchart LR
+    subgraph Observe["🔍 OBSERVE"]
+        E1["🔴 Tool Errors"]
+        E2["🟡 User Confusion"]
+        E3["🟠 Friction Points"]
+        E4["💬 Explicit Feedback"]
+        E5["🔄 Retry Patterns"]
+    end
+
+    subgraph Classify["📊 CLASSIFY"]
+        C1["Tool Error<br/>(API, permissions)"]
+        C2["User Error<br/>(wrong tool, bad input)"]
+        C3["UX Issue<br/>(confusing flow)"]
+        C4["Missing Feature<br/>(capability gap)"]
+    end
+
+    subgraph Improve["🚀 IMPROVE"]
+        I1["📝 Update Prompts"]
+        I2["📚 Add Documentation"]
+        I3["🔧 New Tools"]
+        I4["🐛 Bug Fixes"]
+        I5["🎯 A/B Tests"]
+    end
+
+    E1 --> Classify
+    E2 --> Classify
+    E3 --> Classify
+    E4 --> Classify
+    E5 --> Classify
+
+    C1 --> I4
+    C2 --> I1
+    C2 --> I2
+    C3 --> I1
+    C4 --> I3
+
+    Improve --> |"Measure Impact"| Observe
+
+    style Observe fill:#e74c3c,color:#fff
+    style Classify fill:#f39c12,color:#fff
+    style Improve fill:#27ae60,color:#fff

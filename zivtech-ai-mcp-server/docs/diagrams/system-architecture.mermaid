@@ -1,0 +1,71 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#fff', 'primaryBorderColor': '#4a4a6a', 'lineColor': '#4a4a6a', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+flowchart TB
+    subgraph Users["👥 User Access Layer"]
+        CD[("🖥️ Claude Desktop<br/>(MCP Client)")]
+        WEB[("🌐 Web Browser<br/>(React App)")]
+        MOB[("📱 Mobile<br/>(Future)")]
+    end
+
+    subgraph Gateway["🚀 Zivtech AI Gateway"]
+        LB["⚖️ API Gateway / Load Balancer"]
+
+        subgraph Endpoints["API Endpoints"]
+            MCP["/mcp<br/>MCP Protocol"]
+            API["/api/v1<br/>REST API"]
+            WS["/ws<br/>WebSocket"]
+        end
+
+        subgraph Orchestration["Orchestration Layer"]
+            ROUTER["🔀 Tool Router"]
+            CLAUDE["🤖 Claude API<br/>Integration"]
+            IMPROVE["📈 Improvement<br/>Engine"]
+        end
+
+        subgraph MCPs["MCP Tool Layer"]
+            JIRA["📋 Jira"]
+            SLACK["💬 Slack"]
+            GITHUB["🐙 GitHub"]
+            GOOGLE["📧 Google"]
+            PLAYWRIGHT["🎭 Playwright"]
+            CUSTOM["🔧 Custom MCPs"]
+        end
+    end
+
+    subgraph Data["💾 Data Layer"]
+        PG[("🐘 PostgreSQL<br/>Users, Connections,<br/>Conversations")]
+        ANALYTICS[("📊 Analytics<br/>Usage, Metrics")]
+        FEEDBACK[("💡 Improvement<br/>Errors, Feedback")]
+    end
+
+    subgraph External["🌍 External Services"]
+        ATLASSIAN["Atlassian API"]
+        SLACK_API["Slack API"]
+        GH_API["GitHub API"]
+        GOOGLE_API["Google APIs"]
+        WEBSITES["Target Websites"]
+    end
+
+    CD --> LB
+    WEB --> LB
+    MOB --> LB
+
+    LB --> MCP
+    LB --> API
+    LB --> WS
+
+    MCP --> ROUTER
+    API --> CLAUDE
+    WS --> CLAUDE
+
+    ROUTER --> MCPs
+    CLAUDE --> ROUTER
+    CLAUDE --> IMPROVE
+
+    MCPs --> Data
+    IMPROVE --> FEEDBACK
+
+    JIRA --> ATLASSIAN
+    SLACK --> SLACK_API
+    GITHUB --> GH_API
+    GOOGLE --> GOOGLE_API
+    PLAYWRIGHT --> WEBSITES

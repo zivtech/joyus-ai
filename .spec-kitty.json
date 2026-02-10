@@ -1,0 +1,24 @@
+{
+  "name": "zivtech-ai-agent-platform",
+  "phase": "plan",
+  "version": "1.0.0",
+  "created": "2026-01-29",
+  "phases": {
+    "constitution": {
+      "status": "complete",
+      "file": "spec/constitution.md"
+    },
+    "specification": {
+      "status": "complete",
+      "file": "spec/specification.md"
+    },
+    "plan": {
+      "status": "complete",
+      "file": "spec/plan.md"
+    },
+    "research": {
+      "status": "in-progress",
+      "file": "research/zivtech_ai_analyst_research.md"
+    }
+  }
+}
