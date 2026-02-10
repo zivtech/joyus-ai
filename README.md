@@ -1,4 +1,4 @@
-# Jawnus — Zivtech AI Agent Platform
+# Jawn AI — Zivtech AI Agent Platform
 
 A multi-tenant AI agent platform for Zivtech consulting. Internal use and client deployments with skills-based guardrails, monitoring, and governance.
 
@@ -12,7 +12,7 @@ A multi-tenant AI agent platform for Zivtech consulting. Internal use and client
 ## Repository Structure
 
 ```
-jawnus/
+jawn-ai/
 ├── zivtech_ai_analyst_plan.md    # Project plan (v2)
 ├── zivtech-ai-mcp-server/       # MCP server — connects Claude Desktop to Jira, Slack, GitHub, Google
 ├── spec/                         # Spec Kitty specs

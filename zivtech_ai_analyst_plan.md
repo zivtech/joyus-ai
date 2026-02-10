@@ -382,5 +382,5 @@ cd zivtech-ai-platform
 
 ---
 
-*Document maintained in: `/mnt/jawnus/zivtech_ai_analyst_plan.md`*
+*Document maintained in: `/mnt/jawn-ai/zivtech_ai_analyst_plan.md`*
 *Notion canonical: [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)*

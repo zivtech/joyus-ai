@@ -2,20 +2,24 @@
 
 ## Repository State
 
-The `jawnus` repository is intact and accessible. All files from the previous sessions are present. Here's where things stand:
+**Repo:** [zivtech/jawn-ai](https://github.com/zivtech/jawn-ai) on GitHub
+**Branch:** `main`
+**Last commit:** `78e4277` — Add project README
+**Status:** All work committed and pushed. Clean working tree.
 
 ---
 
 ## What's Been Built
 
 ### 1. Project Planning & Spec (Complete)
-- **Project Plan v2** — Full roadmap with phased approach, cost model, data governance, success criteria
-- **Spec Kitty Framework** — Constitution, specification, plan, and toolkit diagnosis all documented in `/spec/`
-- **Implementation Plan** — 6-phase, 6-8 week plan documented in `/zivtech-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md`
-- **Platform Architecture** — Full architecture doc with diagrams in `/zivtech-ai-mcp-server/docs/`
+- **Project Plan v2** (`zivtech_ai_analyst_plan.md`) — Full roadmap with phased approach, cost model, data governance, success criteria
+- **Spec Kitty Framework** — Constitution, specification, plan, and toolkit diagnosis all documented in `spec/`
+- **Implementation Plan** — 6-phase, 6-8 week plan in `zivtech-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md`
+- **Platform Architecture** — Full architecture doc with diagrams in `zivtech-ai-mcp-server/docs/`
+- **Technical Research** — Manus architecture analysis, cost modeling, tooling research in `research/`
 
 ### 2. MCP Server (Phase 0 — Foundation Built)
-**Location:** `/zivtech-ai-mcp-server/`
+**Location:** `zivtech-ai-mcp-server/`
 **Stack:** Node.js + TypeScript + Express + Drizzle ORM + PostgreSQL
 
 **Working components:**
@@ -31,28 +35,31 @@ The `jawnus` repository is intact and accessible. All files from the previous se
 - Docker configuration (Dockerfile + docker-compose)
 - Audit logging
 
-### 3. Presentation Toolkit (Refactored)
-**Location:** `/claude-presentation-toolkit/` and `/drupal-brand-skill/`
-- Modular Python toolkit (~3,655 lines) extracted from monolithic script
-- Content extraction, template analysis, classification, migration planning, assembly, validation
-- Drupal brand integration bridge
-- CLI interface
+### 3. Presentation Toolkit (Separate Repos)
+Managed in their own repositories (not in jawn-ai):
+- **`zivtech/claude-presentation-toolkit`** — Modular Python toolkit (~3,655 lines) for content extraction, template analysis, classification, migration planning, assembly, validation
+- **`zivtech/drupal-brand-skill`** — Drupal brand integration bridge
 
 ### 4. Platform Overview UI
 - Interactive React/JSX artifact showing the platform vision (`zivtech-ai-platform-overview.jsx`)
+- Skills marketplace architecture design (`zivtech-skills-marketplace-architecture.html`)
 
 ---
 
-## What the Previous Session Was Working On
+## What the Previous Sessions Worked On
 
-Based on file timestamps, the last work (Feb 1) focused on:
+**Feb 10:**
+- Git housekeeping — committed all work, set up `.gitignore`, pushed to GitHub
+- Added project README
+- Updated this status doc
 
-1. **Scheduler enhancements** — `notifications.ts` and `routes.ts` were updated
-2. **Auth routes** — Updated `routes.ts` in auth module
-3. **Implementation plan & architecture docs** — Created detailed phase-by-phase plan
-4. **Architecture diagrams** — Mermaid diagrams for data model, system architecture, user flow, improvement loop
+**Feb 1 (last coding session):**
+- Scheduler enhancements — `notifications.ts` and `routes.ts` updated
+- Auth routes — Updated `routes.ts` in auth module
+- Implementation plan & architecture docs — Created detailed phase-by-phase plan
+- Architecture diagrams — Mermaid diagrams for data model, system architecture, user flow, improvement loop
 
-The session was in **Phase 0 → Phase 1 transition** — the foundation MCP server was built and the next step was to begin Phase 1 (Core Platform Enhancements).
+The project is in **Phase 0 → Phase 1 transition** — the foundation MCP server is built and ready for core platform enhancements.
 
 ---
 
@@ -65,27 +72,27 @@ The session was in **Phase 0 → Phase 1 transition** — the foundation MCP ser
 3. **API Routes for Web App** — REST endpoints for conversations and messages
 4. **WebSocket/SSE Infrastructure** — Real-time streaming for Claude responses
 
-### Phase 2: Web Application
+### Phase 1 (Parallel): Presentation Toolkit
+1. **Design System Ingestion** — Parse client brand assets (colors, fonts, logos)
+2. **Template Processing** — Extract master slides and layouts from PPT templates
+3. **Content Extraction** — Parse source docs (PPT/PDF/Word) into structured content
+4. **Slide Generation + PPTX Output** — Content to branded slides
+5. **Skill Packaging** — Package as Claude Code/Cowork skill
+
+### Phase 2: Web Application + Platform Framework
 - Next.js web app with chat interface
-- Authentication integration
-- Streaming response handling
-- Mobile-responsive design
+- Multi-tenant infrastructure
+- Skills/Styles system for client-specific mediation
+- MCP Gateway for auth, routing, logging
+- Monitoring for usage and content fidelity
 
-### Phases 3-6: Browser automation, improvement system, admin dashboard, production launch
-
----
-
-## Git Status
-
-- **Branch:** `main`
-- **Upstream:** Origin gone (may need to set up remote)
-- **Uncommitted work:** Significant — most files are untracked (only `zivtech_ai_analyst_plan.md` was committed)
-- **Files needing commit:** CLAUDE.md, spec/, zivtech-ai-mcp-server/, claude-presentation-toolkit/, drupal-brand-skill/, research/, and more
+### Phases 3+: Additional tools, browser automation, improvement system, admin dashboard, production launch
 
 ---
 
-## Immediate Actions Needed
+## Environment Requirements
 
-1. **Decide where to pick up** — Continue from Phase 1 of the implementation plan?
-2. **Git housekeeping** — Commit the existing work and potentially set up a remote
-3. **Environment setup** — The MCP server needs Node.js 20+, PostgreSQL, and OAuth credentials to run locally
+To run the MCP server locally:
+- Node.js 20+
+- PostgreSQL
+- OAuth credentials for Jira, Slack, GitHub, Google (see `zivtech-ai-mcp-server/.env.example`)
