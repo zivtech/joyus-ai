@@ -2,7 +2,7 @@
 
 **Version:** 2.0
 **Date:** January 29, 2026
-**Status:** Ready to Initialize
+**Status:** Phase 1 Active (Asset Sharing Pipeline)
 **Notion:** [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)
 **Research:** [Technical Research Report](research/jawn-ai-research.md)
 
@@ -17,7 +17,7 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 - **Monitoring & governance:** Usage tracking, content fidelity checks, guardrails
 - **Flexible deployment:** Full access internally, sandboxed for clients
 
-**Starting Point:** The presentation toolkit — a concrete, immediately useful tool that validates the approach and informs the broader platform.
+**Starting Point:** The asset sharing pipeline — a foundational layer so everything we build has somewhere to go — followed by deploying the existing MCP server, then building the platform framework.
 
 **Development Framework:** Spec Kitty for spec-driven development with structured phases.
 
@@ -36,11 +36,12 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 
 ### Tools Within the Platform
 
-1. **Presentation Generator** (Phase 1 — ACTIVE)
-2. Document Generator (reports, proposals)
-3. Analysis Tools (financial, gap analysis, roadmaps)
-4. Research Tools (web, doc analysis)
-5. Support Tools (client comms, FAQs)
+1. **Asset Sharing Pipeline** (Phase 1 — ACTIVE)
+2. Presentation Generator (Phase 4)
+3. Document Generator (reports, proposals — Phase 4)
+4. Analysis Tools (financial, gap analysis, roadmaps — Phase 4)
+5. Research Tools (web, doc analysis — Phase 4)
+6. Support Tools (client comms, FAQs — Phase 4)
 
 ---
 
@@ -287,7 +288,7 @@ Break into work packages (see below)
 
 ## Cost Model
 
-### Phase 1: Presentation Toolkit
+### Phase 4: Presentation Toolkit
 
 | Component | Est. Cost | Notes |
 |-----------|-----------|-------|
@@ -429,11 +430,11 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 
 ## Open Questions
 
-### Phase 1 (Asset Sharing)
-| Question | Notes |
-|----------|-------|
-| GitHub Pages repo structure for PoCs | Dedicated repo or branch of jawn-ai? |
-| StatiCrypt CI pipeline design | Per-project passwords, directory structure |
+### Phase 1 (Asset Sharing) — Resolved
+| Question | Resolution |
+|----------|------------|
+| GitHub Pages repo structure for PoCs | **Resolved** — Dedicated repo `zivtech/zivtech-demos` with `projects/<name>/` convention |
+| StatiCrypt CI pipeline design | **Resolved** — GitHub Actions workflow in `.github/workflows/deploy.yml`, per-project passwords in Secrets |
 
 ### Phase 2 (MCP Deploy)
 | Question | Notes |
@@ -461,6 +462,8 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 | Question | Notes |
 |----------|-------|
 | Entire CLI pilot evaluation | Review after 2 weeks of use |
+| Git hosting: GitHub vs self-hosted | GitLab/Gitea for better disk/artifact management, LFS limits at scale, S3 offload |
+| Drupal client portal scope | Role-based access, CMS content, migration path from StatiCrypt |
 
 ---
 
@@ -490,5 +493,6 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 
 ---
 
-*Document maintained in: `/mnt/jawn-ai/jawn-ai-plan.md`*
+*Document maintained in: `jawn-ai/jawn-ai-plan.md`*
+*Updated: February 12, 2026 — Aligned with Feb 11-12 decisions, resolved Phase 1 questions*
 *Notion canonical: [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)*
