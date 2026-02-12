@@ -15,18 +15,22 @@ A multi-tenant AI agent platform for Zivtech consulting. Internal use and client
 jawn-ai/
 ├── jawn-ai-plan.md              # Project plan (v2)
 ├── jawn-ai-mcp-server/          # MCP server — connects Claude to Jira, Slack, GitHub, Google
-├── spec/                         # Spec Kitty specs
+├── kitty-specs/                  # Spec Kitty feature specs
+│   └── 001-mcp-server-aws-deployment/
+│       ├── spec.md              # Phase 2 specification
+│       ├── meta.json            # Feature metadata
+│       └── checklists/          # Quality validation
+├── spec/                         # Project-level specs
 │   ├── constitution.md           # Project principles (v1.1)
-│   ├── specification.md          # What to build
-│   ├── plan.md                   # How to build it
+│   ├── specification.md          # Phase 4 spec (Presentation Toolkit)
+│   ├── plan.md                   # Implementation plan
+│   ├── internal-ai-portal-spec.md     # Phase 3 spec (Internal Portal)
 │   ├── toolkit-diagnosis.md      # Current toolkit gap analysis
-│   ├── toolkit-refactoring-design.md  # Refactoring approach
-│   ├── internal-ai-portal-spec.md     # Internal portal spec
-│   └── implementation-summary.md      # Implementation overview
+│   └── toolkit-refactoring-design.md  # Refactoring approach
 ├── research/                     # Technical research
 │   └── jawn-ai-research.md
 ├── hosting-comparison.md         # Infrastructure hosting analysis
-└── project-status-feb10.md       # Status snapshot
+└── project-status-feb10.md       # Status snapshot (historical)
 ```
 
 ## Phased Roadmap
@@ -35,7 +39,7 @@ jawn-ai/
 |-------|-------|--------|
 | **0** | Foundation — MCP server with Jira, Slack, GitHub, Google tools | **Complete** |
 | **1** | Asset Sharing Pipeline — GitHub Pages + StatiCrypt for PoC distribution | **In Progress** |
-| **2** | MCP Server Deployment — AWS EC2 + Docker Compose, CI/CD | Planned |
+| **2** | MCP Server Deployment — Full MCP suite + skill runtime on AWS EC2 | **Specified** |
 | **3** | Platform Framework — Next.js web app, multi-tenant, Skills/Styles, MCP Gateway | Planned |
 | **4** | Additional Tools — Presentation Toolkit, Document Generator, Playwright, Spec Kitty as Service | Planned |
 
@@ -55,7 +59,7 @@ The platform leverages three categories of Claude capabilities:
 
 **Skills** — Prompt-based behavior modules loaded into Claude's context (Drupal standards, brand voice, ticket writing, Spec Kitty planning, etc.)
 
-**MCP Servers** — Tool providers via Model Context Protocol (Jira, Slack, GitHub, Google, Notion, Playwright, Memory, PowerPoint, Filesystem)
+**MCP Servers** — Tool providers via Model Context Protocol (Jira, Slack, GitHub, Google, Playwright+Backstop.js, Memory, PowerPoint, Excel, Word, Filesystem)
 
 **CLI Tools** — System executables Claude invokes through the shell (python-pptx, StatiCrypt, gh CLI, Docker, Vite, SquirrelScan, Entire CLI)
 
@@ -70,7 +74,7 @@ The platform leverages three categories of Claude capabilities:
 | PoC Sharing | GitHub Pages + StatiCrypt |
 | Infrastructure | AWS EC2 + Docker Compose |
 | Development Framework | Spec Kitty |
-| Integrations | Jira, Slack, GitHub, Google, Notion, Playwright |
+| Integrations | Jira, Slack, GitHub, Google, Playwright+Backstop.js, Memory, Office (PPT/Excel/Word) |
 
 ## Sharing & Distribution
 
@@ -82,7 +86,7 @@ Full-featured portal with role-based access, client dashboards, and CMS-managed 
 
 ## Development
 
-This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. See `spec/` for the full specification.
+This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specs live in `kitty-specs/`, project-level specs in `spec/`.
 
 ### MCP Server
 
