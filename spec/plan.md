@@ -67,6 +67,8 @@ See `hosting-comparison.md` for full infrastructure analysis.
 
 **Context:** A Zivtech staff member on Windows cannot access Claude Cowork (Mac/Linux only). We need a web-based alternative that provides similar agentic capabilities.
 
+**Detailed spec:** See [`internal-ai-portal-spec.md`](internal-ai-portal-spec.md)
+
 **Implementation:**
 - [ ] Next.js + FastAPI web app
 - [ ] Google OAuth SSO (restricted to @zivtech.com)
@@ -613,7 +615,7 @@ Build the **Presentation Toolkit** as a tool within the platform, structured to 
 ### Architecture Fit
 
 ```
-Phase 1 Deliverables:
+Phase 4 Deliverables:
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                              │
 │  Skills Layer:                                                               │
@@ -764,11 +766,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 9 | PoC password protection | StatiCrypt / HTTP basic / custom auth | **StatiCrypt (near-term)** | AES-256 client-side; directory structure carries forward to Drupal portal | Feb 11 |
 | 10 | Session tracking | Entire CLI / custom / none | **Entire CLI (pilot)** | Git-native, MIT, no external DB; telemetry off, manual-commit; 2-week eval | Feb 11 |
 | 11 | Phase ordering | Toolkit first / Sharing first / Infra first | **Sharing → Deploy → Platform → Tools** | Everything we build needs somewhere to go; MCP server already built | Feb 11 |
-| MCP server hosting | Platform.sh / AWS / GCP / VPS / Railway | **AWS EC2 + Docker Compose** | Mature MCP ecosystem (45+ awslabs servers); Claude can manage infra; ~$15-35/mo |
-| Static PoC hosting | GitHub Pages / Cloudflare Pages / Netlify / S3 | **GitHub Pages + StatiCrypt** | Free, git-native, directory-based; AES-256 password protection |
-| Drupal PoC hosting | Platform.sh / AWS / Self-host | **Existing tools (separate)** | Pantheon Multidev / Tugboat / Probo.ci — already solved, no new infra |
-| PoC password protection | StatiCrypt / HTTP basic / custom auth | **StatiCrypt (near-term)** | AES-256 client-side; directory structure carries forward to Drupal portal |
-| Session tracking | Entire CLI / custom / none | **Entire CLI (pilot)** | Git-native, MIT, no external DB; telemetry off, manual-commit; 2-week eval |
+| 12 | Git hosting | GitHub (SaaS) / GitLab (self-hosted) / Gitea (self-hosted) | **Under evaluation** | Need better disk/artifact management at scale; LFS bandwidth limits on GitHub; self-hosted gives S3 offload and custom runners | Feb 12 |
 
 ---
 
@@ -776,11 +774,13 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 
 | Question | Owner | Due | Status |
 |----------|-------|-----|--------|
-| GitHub Pages repo structure for PoCs | Alex + Claude | Phase 1 | Open |
-| StatiCrypt CI pipeline design | Claude | Phase 1 | Open |
+| GitHub Pages repo structure for PoCs | Alex + Claude | Phase 1 | **Resolved** — `zivtech/zivtech-demos` with `projects/<name>/` convention |
+| StatiCrypt CI pipeline design | Claude | Phase 1 | **Resolved** — GitHub Actions workflow in `zivtech-demos/.github/workflows/deploy.yml` |
 | AWS EC2 instance sizing for MCP server | Alex + Claude | Phase 2 | Open |
 | Coolify vs raw Docker Compose for management | Alex + Claude | After Phase 2 + 1 month | Open |
 | Entire CLI pilot evaluation (2-week review) | Alex | Phase 1 + 2 weeks | Open |
+| Git hosting: GitHub vs self-hosted (GitLab/Gitea) | Alex | Phase 2-3 | Open — disk management, artifact storage, LFS limits at scale |
+| Drupal client portal scope and timeline | Alex | Phase 3+ | Open — role-based access, CMS content, migration from StatiCrypt |
 | Diagnose current toolkit issues | Alex + Claude | Before Phase 4 | Open |
 | Content structure schema design | Claude | Phase 4 | Open |
 | Layout decision heuristics | Claude | Phase 4 | Open |
@@ -793,5 +793,5 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 ---
 
 *Plan created: January 29, 2026*
-*Updated: February 11, 2026 — Phase reordering, infrastructure decisions, session tracking*
+*Updated: February 12, 2026 — Git hosting decision, resolved Phase 1 questions, fixed duplicate entries, Phase 4 label correction*
 *For: Zivtech AI Agent Platform*
