@@ -30,14 +30,14 @@ Deploy the jawn-ai MCP server and a full suite of MCP servers to AWS EC2 with Do
 | 2.1 Multi-Tenant from Day One | **PASS** | Consolidated containers now; architecture notes future split per client. No single-tenant shortcuts. |
 | 2.2 Skills as Guardrails | **PASS** | Skill runtime deployed with all dependencies; skills loaded per context. |
 | 2.3 Sandbox by Default | **PASS** | Zivtech-only access at launch. MCP bearer tokens revocable. SSH restricted. |
-| 2.4 Monitor Everything | **PASS** | Health checks, log aggregation, Slack alerts, resource monitoring included in spec. |
+| 2.4 Monitor Everything | **PARTIAL** | Phase 2 covers operational monitoring (health checks, log aggregation, Slack alerts). Full 4-layer monitoring (usage, content fidelity, guardrails, insights) is Phase 3 scope. |
 | 2.5 Feedback Loops | **DEFERRED** | Full feedback system is Phase 3. Phase 2 has logging for manual review. |
 | 2.6 Claude Code Alternative | **PASS** | Web chat UI provides access for users without Claude Desktop. |
 | 3.2 Data Governance | **PASS** | OAuth tokens encrypted AES-256. No client data at this phase. HTTPS everywhere. |
 | 4.1 Sharing First | **PASS** | Phase 1 (sharing) complete/in-progress. Phase 2 follows correctly. |
 | 5.1 Technology Choices | **PASS** | AWS EC2 + Docker Compose matches constitution decision. |
 | 5.2 Cost Awareness | **PASS** | $15-35/mo target. PostgreSQL in container (not managed). GHCR free tier. |
-| 5.3 Reliability | **PASS** | Docker restart policies, health checks, graceful degradation per spec. |
+| 5.3 Reliability | **PARTIAL** | Docker restart policies and health checks cover container-level resilience. Tool-call checkpointing and circuit breakers are Phase 3 scope. |
 
 No violations. All gates pass.
 
@@ -62,7 +62,7 @@ kitty-specs/001-mcp-server-aws-deployment/
 
 ```
 deploy/
-├── docker-compose.yml          # All 3 services + nginx reverse proxy
+├── docker-compose.yml          # All 3 services (Platform, Playwright, PostgreSQL)
 ├── docker-compose.prod.yml     # Production overrides
 ├── Dockerfile.platform         # Platform container (MCP server + skill runtime)
 ├── Dockerfile.playwright       # Playwright + Backstop.js container
@@ -142,7 +142,7 @@ web-chat/
 - Config: Encrypted token vault (AES-256)
 
 **Nginx Reverse Proxy**:
-- Runs on host or as 4th container
+- Runs on host (not in Docker Compose)
 - Routes `ai.zivtech.com` to appropriate service
 - Handles TLS termination (Let's Encrypt / certbot)
 - WebSocket support for streaming
@@ -195,4 +195,4 @@ SSH to EC2
 
 ## Complexity Tracking
 
-No constitution violations to justify. All gates pass cleanly.
+Two principles marked PARTIAL (2.4 Monitor Everything, 5.3 Reliability) — acceptable for Phase 2 infrastructure scope. Full implementation deferred to Phase 3.

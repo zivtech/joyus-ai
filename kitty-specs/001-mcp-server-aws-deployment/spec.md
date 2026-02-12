@@ -84,7 +84,6 @@ The deployment must include a runtime environment that supports all Zivtech Clau
 - Docker Compose configuration for all services
 - PostgreSQL database container with persistent volume
 - Environment variables and secrets managed securely (not in repo)
-- AWS MCP servers available for Claude to help manage infrastructure
 
 ### FR6: Monitoring and Health
 
@@ -116,7 +115,7 @@ The deployment must include a runtime environment that supports all Zivtech Clau
 ### Cost
 - Target: $15-35/month for EC2 instance (t3.small or t3.medium)
 - PostgreSQL runs in container (not managed service) to minimize cost
-- Storage: 20-50GB EBS volume
+- Storage: 30GB gp3 EBS volume (expandable)
 
 ---
 
@@ -168,7 +167,7 @@ A team member invokes the PowerPoint MCP server to generate a branded client pre
 ## 7. Assumptions
 
 - AWS account already exists or can be created for Zivtech
-- DNS can be configured for a subdomain (e.g., `mcp.zivtech.com` or `ai.zivtech.com`)
+- DNS can be configured for `ai.zivtech.com`
 - The existing jawn-ai MCP server codebase is deployment-ready (Phase 0 complete)
 - Team members have Claude Desktop installed and configured
 - GitHub Actions runners have access to deploy to EC2
