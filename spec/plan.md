@@ -1,146 +1,104 @@
 # Zivtech AI Agent Platform — Implementation Plan
 
 **Project:** Zivtech AI Agent Platform
-**Date:** January 29, 2026
-**Status:** Phase 0 In Progress
+**Date:** January 29, 2026 (Updated February 11, 2026)
+**Status:** Phase 1 Starting — Asset Sharing Pipeline
 
 ---
 
-## 0. Immediate Priority: Internal Staff Web App
+## 0. Phased Roadmap (Updated Feb 11, 2026)
 
-### Context
-A Zivtech staff member on Windows cannot access Claude Cowork (Mac/Linux only). We need a web-based alternative that provides similar agentic capabilities.
+### Phase Ordering
 
-### Objective
-Build a self-hosted web application that gives internal staff access to Claude-powered workflows with integrations to their existing tools.
+| Phase | Name | Status | Description |
+|-------|------|--------|-------------|
+| **1** | Asset Sharing Pipeline | **Starting** | GitHub Pages + StatiCrypt for sharing PoCs behind passwords |
+| **2** | MCP Server Deployment | Planned | Deploy existing MCP server to AWS EC2 |
+| **3** | Platform Framework | Planned | Internal AI portal — web app, multi-tenant, skills system |
+| **4** | Additional Tools | Future | Presentation toolkit, document generator, analysis tools |
 
-### User Flow
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ZIVTECH INTERNAL AI PORTAL                    │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                  GOOGLE SSO LOGIN                         │   │
-│  │                                                           │   │
-│  │   [Sign in with Google]  (restricted to @zivtech.com)    │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                              │                                   │
-│                              ▼                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │              CONNECTED ACCOUNTS SETUP                     │   │
-│  │                                                           │   │
-│  │   ☑ Google (Gmail, Docs, Drive)   ☐ Atlassian (Jira)    │   │
-│  │   ☐ Slack                          ☐ GitHub              │   │
-│  │                                                           │   │
-│  │   [Connect All]  [Skip for Now]                          │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                              │                                   │
-│                              ▼                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   CHAT INTERFACE                          │   │
-│  │                                                           │   │
-│  │   ┌────────────────────────────────────────────────────┐ │   │
-│  │   │ "Can you check my Jira tickets and summarize what  │ │   │
-│  │   │  I should focus on today?"                         │ │   │
-│  │   └────────────────────────────────────────────────────┘ │   │
-│  │                                                           │   │
-│  │   ┌────────────────────────────────────────────────────┐ │   │
-│  │   │ [Claude response with Jira context]                │ │   │
-│  │   │                                                     │ │   │
-│  │   │ Based on your Jira board, here are your priorities:│ │   │
-│  │   │ 1. PROJ-123: Fix login bug (Due today)             │ │   │
-│  │   │ 2. PROJ-456: Review PR from Alex (Blocking)        │ │   │
-│  │   │ ...                                                 │ │   │
-│  │   └────────────────────────────────────────────────────┘ │   │
-│  │                                                           │   │
-│  │   [Type a message...]                           [Send]   │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Key Decisions (Feb 11, 2026)
 
-### Technical Architecture
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     ZIVTECH AI PORTAL                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │                    WEB FRONTEND                             │ │
-│  │                                                              │ │
-│  │   React/Next.js   │   Chat UI   │   OAuth Flows            │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              │                                   │
-│                              ▼                                   │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │                    API BACKEND                              │ │
-│  │                                                              │ │
-│  │   FastAPI/Node    │   Session Mgmt   │   Auth Middleware   │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              │                                   │
-│           ┌──────────────────┼──────────────────┐               │
-│           ▼                  ▼                  ▼               │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
-│  │   Google    │    │   Claude    │    │    MCP      │         │
-│  │    OAuth    │    │     API     │    │   Servers   │         │
-│  │             │    │             │    │             │         │
-│  │ • Gmail     │    │ Messages    │    │ • Jira      │         │
-│  │ • Drive     │    │ w/ Tools    │    │ • Slack     │         │
-│  │ • Docs      │    │             │    │ • GitHub    │         │
-│  └─────────────┘    └─────────────┘    └─────────────┘         │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │                    TOKEN STORAGE                            │ │
-│  │                                                              │ │
-│  │   PostgreSQL (encrypted)   │   Per-user OAuth tokens       │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| MCP server hosting | AWS EC2 + Docker Compose (~$15-35/mo) | Mature MCP ecosystem (45+ awslabs servers); Claude can manage infra |
+| Static PoC hosting | GitHub Pages + StatiCrypt (free) | Git-native, AES-256 password protection, directory-based |
+| Drupal PoC hosting | Existing tools — separate system | Pantheon Multidev / Tugboat / Probo.ci; already solved |
+| Password protection | StatiCrypt (near-term) | AES-256 client-side; directory structure carries forward to Drupal portal |
+| Session tracking | Entire CLI (pilot) | Git-native, MIT, no external DB; telemetry off, manual-commit; 2-week eval |
 
-### Required Integrations
+See `hosting-comparison.md` for full infrastructure analysis.
 
-| Service | Auth Type | Capabilities Needed |
-|---------|-----------|---------------------|
-| **Google** | OAuth 2.0 | SSO, Gmail read/send, Drive files, Docs read/edit |
-| **Atlassian** | OAuth 2.0 | Jira issues (read/create/update), search |
-| **Slack** | OAuth 2.0 | Read messages, post messages, search history |
-| **GitHub** | OAuth 2.0 | Repos, PRs, issues, code search |
+### Phase 1: Asset Sharing Pipeline (ACTIVE)
 
-### Implementation Phases
+**Goal:** A working pipeline to share Claude-generated artifacts — HTML pages, PDFs, React apps — behind password protection.
 
-#### Phase 0a: Core Infrastructure (Week 1)
-- [ ] Set up project with Next.js + FastAPI
-- [ ] Implement Google OAuth for SSO
-- [ ] Basic chat UI with Claude API integration
-- [ ] Deploy to Zivtech server
+**Why first:** Everything else we build needs somewhere to go. This is the foundational sharing layer.
 
-#### Phase 0b: MCP Integrations (Week 2-3)
-- [ ] Add Jira MCP server connection
-- [ ] Add Slack MCP server connection
-- [ ] Add Gmail MCP server connection
-- [ ] Add GitHub MCP server connection
+**Implementation:**
+- [ ] GitHub repo (dedicated or branch of jawn-ai) with GitHub Pages enabled
+- [ ] GitHub Actions workflow: push assets → StatiCrypt encrypts → GitHub Pages serves
+- [ ] Per-project passwords in GitHub Secrets
+- [ ] Directory-based organization (`zivtech.github.io/project-name/`)
+- [ ] First asset deployed and password-protected
+- [ ] Custom domain (`demos.zivtech.com`) when ready
+
+**Estimated effort:** 1-2 days
+
+### Phase 2: MCP Server Deployment
+
+**Goal:** Deploy the existing MCP server to AWS EC2.
+
+**What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `jawn-ai-mcp-server/`).
+
+**Implementation:**
+- [ ] Provision AWS EC2 (t3.small/medium)
+- [ ] Docker Compose: Node.js app + PostgreSQL
+- [ ] GitHub Actions CI/CD pipeline
+- [ ] DNS + TLS configuration
+- [ ] Smoke test all tool executors
+- [ ] AWS MCP servers for infrastructure management via Claude
+
+**Estimated effort:** 3 days
+
+### Phase 3: Platform Framework
+
+**Goal:** Internal AI portal — web app with chat interface, multi-tenant infrastructure.
+
+**Context:** A Zivtech staff member on Windows cannot access Claude Cowork (Mac/Linux only). We need a web-based alternative that provides similar agentic capabilities.
+
+**Implementation:**
+- [ ] Next.js + FastAPI web app
+- [ ] Google OAuth SSO (restricted to @zivtech.com)
+- [ ] Chat UI with Claude API integration
+- [ ] MCP server connections (Jira, Slack, Gmail, GitHub)
 - [ ] Per-user token storage with encryption
+- [ ] Skills/Styles system for client-specific mediation
+- [ ] MCP Gateway for auth, routing, logging
+- [ ] Monitoring for usage and content fidelity
+- [ ] Sandboxed client environments
 
-#### Phase 0c: Polish & Security (Week 4)
-- [ ] Domain restriction (@zivtech.com only)
-- [ ] Session management
-- [ ] Error handling and retry logic
-- [ ] Usage logging for cost tracking
+### Phase 4: Additional Tools (Future)
 
-### Security Considerations
-1. **Google SSO only**: Restrict to @zivtech.com domain
-2. **Token encryption**: All OAuth tokens encrypted at rest
-3. **HTTPS only**: Server behind SSL
-4. **Audit logging**: Track who accessed what
-5. **No code execution**: Unlike Cowork, no sandboxed compute (Phase 1+)
+**Goal:** Expand the tools layer on top of the platform.
 
-### Success Criteria
-- Staff member can sign in with Google
-- Can ask questions that pull context from Jira, Slack, Gmail, GitHub
-- Claude provides helpful responses using the connected tools
-- No manual API key management required by user
+- Presentation Toolkit (rebrand decks, generate slides)
+- Document Generator (reports, proposals — DOCX, PDF)
+- Analysis Tools (financial modeling, research, data analysis)
+- Spec Kitty as Service (spec-driven development for clients who can't run locally)
+
+### Session Tracking
+
+**Tool:** [Entire CLI](https://github.com/entireio/cli) — MIT licensed, git-native, no external database.
+
+**Current Config (`.entire/settings.json`):**
+- `strategy: manual-commit` — review transcripts before pushing
+- `telemetry: false` — no Posthog data collection
+
+**Rollout Plan:**
+1. Pilot on jawn-ai itself with telemetry off and auto-push disabled
+2. Review captured data for 2 weeks
+3. Decide on broader team rollout based on findings
 
 ---
 
@@ -200,7 +158,7 @@ Build a self-hosted web application that gives internal staff access to Claude-p
 │  │   │Presentation │  │  Document   │  │  Analysis   │  │  Spec Kitty │  │ │
 │  │   │  Toolkit    │  │  Generator  │  │   Tools     │  │  (Dev Tool) │  │ │
 │  │   │             │  │             │  │             │  │             │  │ │
-│  │   │ ← PHASE 1   │  │   Phase 3   │  │   Phase 3   │  │   Phase 3   │  │ │
+│  │   │ ← PHASE 4   │  │   Phase 4   │  │   Phase 4   │  │   Phase 4   │  │ │
 │  │   └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 │                                    │                                         │
@@ -218,18 +176,18 @@ Build a self-hosted web application that gives internal staff access to Claude-p
 
 ### Deployment Model
 
-**Phase 1-2: Skill-based isolation**
+**Phase 3: Skill-based isolation**
 - Same infrastructure for all users
 - Client differentiation via skill loading
 - Simpler, faster to implement
 
-**Phase 3+: Container-based isolation (as needed)**
+**Phase 4+: Container-based isolation (as needed)**
 - Separate containers per client
 - Stronger security boundaries
 - Higher operational overhead
 
 ```
-Phase 1-2: Shared Infrastructure
+Phase 3: Shared Infrastructure
 ┌─────────────────────────────────────────┐
 │           Platform Instance             │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
@@ -238,7 +196,7 @@ Phase 1-2: Shared Infrastructure
 │  └─────────┘ └─────────┘ └─────────┘   │
 └─────────────────────────────────────────┘
 
-Phase 3+: Container Isolation (if needed)
+Phase 4+: Container Isolation (if needed)
 ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
 │  Zivtech    │ │  Client A   │ │  Client B   │
 │  Container  │ │  Container  │ │  Container  │
@@ -273,7 +231,7 @@ Clients and internal tools connect to the platform via MCP:
 - `generate_document` — Create document from template + content
 - `analyze_financials` — Run financial analysis
 - `research_topic` — Research and summarize a topic
-- `spec_kitty` — Spec-driven development workflow (for clients who can't run locally)
+- `spec_kitty` — Spec-driven development workflow (for clients who can't run locally, Phase 4)
 
 ### Platform USES MCP Servers (Inbound Connections)
 
@@ -568,12 +526,12 @@ Use [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode) as the 
 
 ### Recommendation
 
-**Evaluate Option D (OMC) for Phase 1**, with Option C (Hybrid) as the Phase 2+ path.
+**Evaluate Option D (OMC) for Phase 3**, with Option C (Hybrid) as the Phase 4+ path.
 
 ```
-Phase 1 Decision Tree:
+Phase 3 Decision Tree:
 ┌─────────────────────────────────────────────────────────┐
-│  Try OMC for internal presentation toolkit              │
+│  Try OMC for internal platform orchestration            │
 │                                                         │
 │  ├─ If OMC works well:                                  │
 │  │   └─ Use OMC for internal, custom service for clients│
@@ -646,11 +604,11 @@ Rationale: OMC's Pipeline mode and cost optimization align with our needs. Worth
 
 ---
 
-## 6. Phase 1 Implementation Plan
+## 6. Presentation Toolkit Implementation Plan (Phase 4)
 
 ### Goal
 
-Build the **Presentation Toolkit** as the first tool in the platform, structured to fit the overall architecture.
+Build the **Presentation Toolkit** as a tool within the platform, structured to fit the overall architecture. This is now Phase 4 — after the platform framework is in place.
 
 ### Architecture Fit
 
@@ -756,7 +714,7 @@ Phase 1 Deliverables:
 - [ ] Iterate on layout logic
 - [ ] Document known limitations
 
-### Phase 1 Timeline
+### Toolkit Timeline (when Phase 4 begins)
 
 | Week | Tasks | Deliverable |
 |------|-------|-------------|
@@ -769,17 +727,19 @@ Phase 1 Deliverables:
 
 ---
 
-## 7. Phase 2-3 Preview
+## 7. Phase 3-4 Preview
 
-After Phase 1, build the platform framework:
+After Phases 1-2 (Asset Sharing + MCP Deployment):
 
-**Phase 2: Platform Framework**
+**Phase 3: Platform Framework**
+- **Web App** — Next.js + FastAPI, Google SSO, chat UI
 - **Orchestration layer** — Decide on skill vs service, implement
 - **MCP Gateway** — Expose platform as MCP server
 - **Client onboarding** — Workflow for creating client skills
 - **Monitoring** — Full monitoring infrastructure
 
-**Phase 3: Additional Tools**
+**Phase 4: Additional Tools**
+- **Presentation Toolkit** — Rebrand decks, generate branded slides from content
 - **Document Generator** — Reports, proposals, memos (DOCX, PDF)
 - **Analysis Tools** — Financial modeling, gap analysis, roadmaps
 - **Spec Kitty as Service** — Spec-driven development for clients who can't run Claude Code locally
@@ -791,30 +751,47 @@ After Phase 1, build the platform framework:
 
 ## 8. Decision Log
 
-| Decision | Options | Choice | Rationale |
-|----------|---------|--------|-----------|
-| Skills storage | Git / DB / Files | **Git repo** | Version control, easy rollback, familiar workflow |
-| Initial isolation | Skill / Container / Full | **Skill-based** | Start simple, evolve as needed |
-| MCP role | Server / Client / Both | **Both** | Platform exposes interface AND consumes services |
-| Orchestration (Phase 1) | Skill / OMC / Service / Hybrid | **Evaluate OMC** | Pipeline mode + cost savings worth testing; fall back to plain skill if needed |
-| Orchestration (Phase 2+) | OMC / Service / Hybrid | **TBD** | Depends on Phase 1 learnings + client requirements |
+| # | Decision | Options | Choice | Rationale | Date |
+|---|----------|---------|--------|-----------|------|
+| 1 | Skills storage | Git / DB / Files | **Git repo** | Version control, easy rollback, familiar workflow | Jan 29 |
+| 2 | Initial isolation | Skill / Container / Full | **Skill-based** | Start simple, evolve as needed | Jan 29 |
+| 3 | MCP role | Server / Client / Both | **Both** | Platform exposes interface AND consumes services | Jan 29 |
+| 4 | Orchestration (Phase 3) | Skill / OMC / Service / Hybrid | **Evaluate OMC** | Pipeline mode + cost savings worth testing; fall back to plain skill | Jan 29 |
+| 5 | Orchestration (Phase 4+) | OMC / Service / Hybrid | **TBD** | Depends on Phase 3 learnings + client requirements | Jan 29 |
+| 6 | MCP server hosting | Platform.sh / AWS / GCP / VPS / Railway | **AWS EC2 + Docker Compose** | Mature MCP ecosystem (45+ awslabs servers); Claude can manage infra; ~$15-35/mo | Feb 11 |
+| 7 | Static PoC hosting | GitHub Pages / Cloudflare Pages / Netlify / S3 | **GitHub Pages + StatiCrypt** | Free, git-native, directory-based; AES-256 password protection | Feb 11 |
+| 8 | Drupal PoC hosting | Platform.sh / AWS / Self-host | **Existing tools (separate)** | Pantheon Multidev / Tugboat / Probo.ci — already solved, no new infra | Feb 11 |
+| 9 | PoC password protection | StatiCrypt / HTTP basic / custom auth | **StatiCrypt (near-term)** | AES-256 client-side; directory structure carries forward to Drupal portal | Feb 11 |
+| 10 | Session tracking | Entire CLI / custom / none | **Entire CLI (pilot)** | Git-native, MIT, no external DB; telemetry off, manual-commit; 2-week eval | Feb 11 |
+| 11 | Phase ordering | Toolkit first / Sharing first / Infra first | **Sharing → Deploy → Platform → Tools** | Everything we build needs somewhere to go; MCP server already built | Feb 11 |
+| MCP server hosting | Platform.sh / AWS / GCP / VPS / Railway | **AWS EC2 + Docker Compose** | Mature MCP ecosystem (45+ awslabs servers); Claude can manage infra; ~$15-35/mo |
+| Static PoC hosting | GitHub Pages / Cloudflare Pages / Netlify / S3 | **GitHub Pages + StatiCrypt** | Free, git-native, directory-based; AES-256 password protection |
+| Drupal PoC hosting | Platform.sh / AWS / Self-host | **Existing tools (separate)** | Pantheon Multidev / Tugboat / Probo.ci — already solved, no new infra |
+| PoC password protection | StatiCrypt / HTTP basic / custom auth | **StatiCrypt (near-term)** | AES-256 client-side; directory structure carries forward to Drupal portal |
+| Session tracking | Entire CLI / custom / none | **Entire CLI (pilot)** | Git-native, MIT, no external DB; telemetry off, manual-commit; 2-week eval |
 
 ---
 
 ## 9. Open Questions
 
-| Question | Owner | Due |
-|----------|-------|-----|
-| Diagnose current toolkit issues | Alex + Claude | Before Task 2 |
-| Content structure schema design | Claude | Task 2 |
-| Layout decision heuristics | Claude | Task 4 |
-| First client pilot | Alex | Phase 2 |
-| **OMC evaluation** | Alex | Phase 1 Week 1 |
-| ├─ Does OMC support custom skills? | | |
-| ├─ State isolation for multi-project? | | |
-| └─ Stability/maintenance trajectory? | | |
+| Question | Owner | Due | Status |
+|----------|-------|-----|--------|
+| GitHub Pages repo structure for PoCs | Alex + Claude | Phase 1 | Open |
+| StatiCrypt CI pipeline design | Claude | Phase 1 | Open |
+| AWS EC2 instance sizing for MCP server | Alex + Claude | Phase 2 | Open |
+| Coolify vs raw Docker Compose for management | Alex + Claude | After Phase 2 + 1 month | Open |
+| Entire CLI pilot evaluation (2-week review) | Alex | Phase 1 + 2 weeks | Open |
+| Diagnose current toolkit issues | Alex + Claude | Before Phase 4 | Open |
+| Content structure schema design | Claude | Phase 4 | Open |
+| Layout decision heuristics | Claude | Phase 4 | Open |
+| First client pilot | Alex | Phase 3 | Open |
+| **OMC evaluation** | Alex | Phase 3 | Open |
+| ├─ Does OMC support custom skills? | | | |
+| ├─ State isolation for multi-project? | | | |
+| └─ Stability/maintenance trajectory? | | | |
 
 ---
 
 *Plan created: January 29, 2026*
+*Updated: February 11, 2026 — Phase reordering, infrastructure decisions, session tracking*
 *For: Zivtech AI Agent Platform*

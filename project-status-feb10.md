@@ -63,30 +63,47 @@ The project is in **Phase 0 → Phase 1 transition** — the foundation MCP serv
 
 ---
 
+## New Requirements (Added Feb 11)
+
+### PoC Asset Sharing
+**Decision:** StatiCrypt for near-term password-protected sharing of PoC websites/web apps. AES-256 encryption, zero server deps, CI encrypts on push. Directory-based structure carries forward to eventual Drupal portal.
+
+### Session Tracking
+**Decision:** Entire CLI for git-native AI chat session tracking. Pilot on jawn-ai with telemetry disabled and manual-commit strategy. Review captured data for 2 weeks before broader rollout. ✅ Telemetry set to `false` in `.entire/settings.json`.
+
+### Hosting
+**Decision:** MCP server on AWS EC2 (Docker Compose, ~$15-35/mo). Static PoCs on GitHub Pages + StatiCrypt (free). Drupal PoCs on existing tools (Multidev/Tugboat/Probo.ci). AWS chosen over GCP for its significantly more mature MCP ecosystem — 45+ official servers enable Claude to help manage infrastructure.
+
+See `hosting-comparison.md` for full analysis and `jawn-ai-plan.md` → "Infrastructure Requirements" for details.
+
+---
+
 ## What Needs to Happen Next
 
-### Phase 1: Core Platform Enhancements (per Implementation Plan)
+### IMMEDIATE: Asset Sharing Pipeline (Phase 1 — NEW PRIORITY)
 
-1. **Database Schema Extensions** — Add conversations, messages, tool_executions, and confusion_events tables
-2. **Claude API Integration Service** — `src/services/claude.ts` for streaming chat with tool use
-3. **API Routes for Web App** — REST endpoints for conversations and messages
-4. **WebSocket/SSE Infrastructure** — Real-time streaming for Claude responses
+1. **GitHub Pages Setup** — Create repo/branch, enable Pages
+2. **StatiCrypt CI Pipeline** — GitHub Actions: encrypt on push, per-project passwords in Secrets
+3. **Directory Conventions** — Establish project structure, document password management
+4. **First Asset Deployed** — Sample HTML page + PDF, verify password protection works
 
-### Phase 1 (Parallel): Presentation Toolkit
-1. **Design System Ingestion** — Parse client brand assets (colors, fonts, logos)
-2. **Template Processing** — Extract master slides and layouts from PPT templates
-3. **Content Extraction** — Parse source docs (PPT/PDF/Word) into structured content
-4. **Slide Generation + PPTX Output** — Content to branded slides
-5. **Skill Packaging** — Package as Claude Code/Cowork skill
+**Why first:** Everything we build with Claude needs somewhere to share it. This is the foundational layer.
 
-### Phase 2: Web Application + Platform Framework
-- Next.js web app with chat interface
+### THEN: Phase 2 — MCP Server Deployment
+- Deploy existing MCP server to AWS EC2 (Docker Compose)
+- GitHub Actions CI/CD pipeline
+- All tool executors verified in production
+
+### Phase 3: Platform Framework
+- Next.js web app with chat interface + Google SSO
 - Multi-tenant infrastructure
 - Skills/Styles system for client-specific mediation
 - MCP Gateway for auth, routing, logging
 - Monitoring for usage and content fidelity
 
-### Phases 3+: Additional tools, browser automation, improvement system, admin dashboard, production launch
+### Phase 4: Additional Tools (Future)
+- Presentation Toolkit (rebrand decks, generate slides)
+- Document Generator, Analysis Tools, Spec Kitty as Service
 
 ---
 

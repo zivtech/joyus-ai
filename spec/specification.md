@@ -1,8 +1,8 @@
-# Phase 1 Specification: Presentation Toolkit MVP
+# Specification: Presentation Toolkit MVP
 
 **Project:** Zivtech AI Agent Platform
-**Phase:** 1 — Presentation Toolkit
-**Date:** January 29, 2026
+**Phase:** 4 — Additional Tools (Presentation Toolkit)
+**Date:** January 29, 2026 (Phase renumbered Feb 11, 2026)
 **Status:** Specification Complete
 
 ---
@@ -25,9 +25,9 @@ Take an existing PowerPoint presentation and rebrand it with new visual identity
                         └─────────────────┘
 ```
 
-### Out of Scope (Phase 1)
+### Out of Scope (Toolkit MVP)
 
-- Content generation from Word/PDF (Phase 1.5)
+- Content generation from Word/PDF (future iteration)
 - Creating decks from scratch
 - Real-time collaboration
 - Web-based interface
@@ -288,4 +288,4 @@ Branded Content + Template
 
 *Specification captured: January 29, 2026*
 *Interview conducted with: Alex UA*
-*For: Zivtech AI Agent Platform — Phase 1*
+*For: Zivtech AI Agent Platform — Phase 4 (Presentation Toolkit)*

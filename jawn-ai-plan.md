@@ -73,44 +73,63 @@ See [Technical Research Report](research/jawn-ai-research.md) for full details.
 
 ## Phased Roadmap
 
-### Phase 1: Presentation Toolkit (ACTIVE)
+### Phase 1: Asset Sharing Pipeline (ACTIVE — Feb 11, 2026)
 
-**Goal:** Working presentation generator as a Claude Code/Cowork skill
+**Goal:** A working pipeline to share Claude-generated artifacts — HTML pages, PDFs, React apps, and other files — behind password protection.
 
-**Existing Work:**
-- `zivtech/drupal-brand-skill` — Drupal-specific brand design skill
-- `zivtech/claude-presentation-toolkit` — Being generalized (WIP)
+**Why first:** Everything else we build needs somewhere to go. This is the foundational sharing layer.
 
-**Capabilities:**
+**Implementation:**
+- GitHub repo (dedicated or branch of jawn-ai) with GitHub Pages enabled
+- GitHub Actions workflow: push assets → StatiCrypt encrypts → GitHub Pages serves
+- Per-project passwords in GitHub Secrets
+- Directory-based organization (`zivtech.github.io/project-name/`)
+- Custom domain (`demos.zivtech.com`) when ready
+
+**Estimated effort:** 1-2 days
+
+### Phase 4: Presentation Toolkit + Additional Tools (Future)
+
+**Goal:** Expand the tools layer on top of the platform.
+
+**Presentation Toolkit:**
 - Accept client design systems (colors, fonts, logos)
 - Accept PowerPoint templates with master slides
 - Ingest source content (PPT, PDF, Word docs)
 - Generate branded, sensible slides
 - Output editable PPTX
 
-**Deployment:**
-- Zivtech devs: Skill in Claude Code / Cowork
-- Zivtech non-devs: MCP proxy (nice-to-have)
-- Clients: Platform tool (Phase 2)
+**Existing Work:**
+- `zivtech/drupal-brand-skill` — Drupal-specific brand design skill
+- `zivtech/claude-presentation-toolkit` — Being generalized (WIP)
 
-### Phase 2: Platform Framework
+**Also in Phase 4:**
+- Document Generator (reports, proposals — DOCX, PDF)
+- Analysis Tools (financial modeling, research, data analysis)
+- Spec Kitty as Service (for clients who can't run locally)
+
+### Phase 2: MCP Server Deployment
+
+**Goal:** Deploy the existing MCP server to AWS EC2
+
+**What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `jawn-ai-mcp-server/`)
+
+**Implementation:**
+- Provision AWS EC2 (t3.small/medium)
+- Docker Compose: Node.js app + PostgreSQL
+- GitHub Actions CI/CD pipeline
+- AWS MCP servers for infrastructure management via Claude
+
+### Phase 3: Platform Framework
 
 **Goal:** Multi-tenant infrastructure for client deployments
 
+- Internal AI portal (web app with chat interface, Google SSO)
 - Orchestrator (Claude Agent SDK)
 - Skills/Styles system for client-specific mediation
 - MCP Gateway for auth, routing, logging
 - Monitoring for usage and content fidelity
 - Sandboxed client environments
-
-### Phase 3: Additional Tools
-
-**Goal:** Expand the tools layer
-
-- Document Generator
-- Analysis Tools
-- Research Tools
-- Support Tools
 
 ---
 
@@ -134,7 +153,7 @@ spec-kitty init jawn-ai-platform --ai claude
 cd jawn-ai-platform
 ```
 
-#### Phase 1: Constitution (`/spec-kitty.constitution`)
+#### Spec Kitty Phase 1: Constitution (`/spec-kitty.constitution`) ✅
 
 Establish project principles:
 - Multi-tenant from day one
@@ -143,15 +162,9 @@ Establish project principles:
 - Monitor everything (usage, fidelity, friction)
 - Feedback loops improve skills automatically
 
-#### Phase 2: Specification (`/spec-kitty.specify`)
+#### Spec Kitty Phase 2: Specification (`/spec-kitty.specify`) ✅
 
 Define WHAT to build:
-
-**For Presentation Toolkit:**
-- User stories for internal teams generating decks
-- Input types: design systems, templates, source docs (PPT/PDF/Word)
-- Output types: branded PPTX matching client templates
-- Quality criteria: "looks good," matches brand, sensible content structure
 
 **For Platform:**
 - User stories for client deployments
@@ -159,33 +172,39 @@ Define WHAT to build:
 - Monitoring and guardrail requirements
 - Access control and sandboxing needs
 
-#### Phase 3: Planning (`/spec-kitty.plan`)
+**For Presentation Toolkit (Phase 4):**
+- User stories for internal teams generating decks
+- Input types: design systems, templates, source docs (PPT/PDF/Word)
+- Output types: branded PPTX matching client templates
+
+#### Spec Kitty Phase 3: Planning (`/spec-kitty.plan`) ✅
 
 Define HOW to build:
 - Tech stack decisions (see below)
 - Architecture for multi-tenant deployment
 - Skills system design
 - MCP Gateway architecture
+- Infrastructure decisions (AWS, GitHub Pages, StatiCrypt)
 
-#### Phase 4: Research (`/spec-kitty.research`)
+#### Spec Kitty Phase 4: Research (`/spec-kitty.research`) — In Progress
 
 Investigate before coding:
+- Hosting comparison (AWS vs Platform.sh vs alternatives) ✅
+- Session tracking evaluation (Entire CLI) ✅
 - Current toolkit gaps (need repo access)
-- Template extraction approaches
-- HTML/CSS to PPTX conversion
 - Monitoring stack options
 
-#### Phase 5: Tasks (`/spec-kitty.tasks`)
+#### Spec Kitty Phase 5: Tasks (`/spec-kitty.tasks`)
 
 Break into work packages (see below)
 
-#### Phase 6: Implementation (`/spec-kitty.implement`)
+#### Spec Kitty Phase 6: Implementation (`/spec-kitty.implement`)
 
 - Work in isolated worktree
 - Kanban dashboard tracks progress
 - Multi-agent: Claude Code for core, specialized tools as needed
 
-#### Phase 7: Review/Accept/Merge
+#### Spec Kitty Phase 7: Review/Accept/Merge
 
 - Quality gates verify work packages complete
 - Merge to main when feature ready
@@ -196,32 +215,46 @@ Break into work packages (see below)
 
 | Component | Technology | Phase |
 |-----------|------------|-------|
-| Orchestrator | Claude Agent SDK (Python) | 2 |
-| Skills Registry | File-based + version control | 2 |
-| MCP Gateway | Custom MCP server | 2 |
-| Monitoring | Langfuse + custom | 2 |
-| Presentation Generation | Python + Node.js (PptxGenJS) | 1 |
-| Document Generation | python-docx, ReportLab | 3 |
+| Asset Sharing | GitHub Pages + StatiCrypt + GitHub Actions | 1 |
+| MCP Server Hosting | AWS EC2 + Docker Compose | 2 |
+| Orchestrator | Claude Agent SDK (Python) | 3 |
+| Web App | Next.js + FastAPI | 3 |
+| Skills Registry | File-based + version control | 3 |
+| MCP Gateway | Custom MCP server | 3 |
+| Monitoring | Langfuse + custom | 3 |
+| Session Tracking | Entire CLI (pilot) | 1 |
+| Presentation Generation | Python + Node.js (PptxGenJS) | 4 |
+| Document Generation | python-docx, ReportLab | 4 |
 | Development Framework | Spec Kitty | All |
 
 ---
 
 ## Work Packages
 
-### Phase 1: Presentation Toolkit
+### Phase 1: Asset Sharing Pipeline
 
 | WP | Name | Description | Est. Effort |
 |----|------|-------------|-------------|
-| WP01 | Design System Ingestion | Parse client brand assets (colors, fonts, logos) | 2-3 days |
-| WP02 | Template Processing | Extract master slides, layouts from PPT templates | 3-4 days |
-| WP03 | Content Extraction | Parse source docs (PPT/PDF/Word) into structured content | 3-4 days |
-| WP04 | Slide Generation | Content → branded slides using templates | 4-5 days |
-| WP05 | PPTX Output | Assemble final editable PPTX | 2-3 days |
-| WP06 | Skill Packaging | Package as Claude Code/Cowork skill | 1-2 days |
+| WP00 | GitHub Pages Setup | Create repo/branch, enable Pages, configure domain | 0.5 days |
+| WP00a | StatiCrypt CI Pipeline | GitHub Actions workflow: encrypt on push, per-project passwords in Secrets | 0.5 days |
+| WP00b | Directory Conventions | Establish project structure, README, password management docs | 0.5 days |
+| WP00c | First Asset Deployed | Deploy a sample HTML page + PDF, verify password protection | 0.5 days |
 
-**Phase 1 Effort:** 15-21 days (3-4 weeks)
+**Phase 1 Effort:** 1-2 days
 
-### Phase 2: Platform Framework
+### Phase 2: MCP Server Deployment
+
+| WP | Name | Description | Est. Effort |
+|----|------|-------------|-------------|
+| WP06a | AWS EC2 Provisioning | Instance setup, security groups, Docker + Compose install | 0.5 days |
+| WP06b | Docker Compose Config | Production compose file, env vars, PostgreSQL container | 0.5 days |
+| WP06c | CI/CD Pipeline | GitHub Actions: build → push image → deploy to EC2 | 1 day |
+| WP06d | DNS + TLS | Domain config, Let's Encrypt or ACM | 0.5 days |
+| WP06e | Smoke Test + Monitoring | Verify all tool executors, basic uptime monitoring | 0.5 days |
+
+**Phase 2 Effort:** 3 days
+
+### Phase 3: Platform Framework
 
 | WP | Name | Description | Est. Effort |
 |----|------|-------------|-------------|
@@ -232,20 +265,23 @@ Break into work packages (see below)
 | WP11 | Sandbox Environments | Docker-based client environments, access control | 3-4 days |
 | WP12 | Client Onboarding | Skill creation workflow, configuration | 3-4 days |
 
-**Phase 2 Effort:** 21-27 days (4-5 weeks)
+**Phase 3 Effort:** 21-27 days (4-5 weeks)
 
-### Phase 3: Additional Tools
+### Phase 4: Presentation Toolkit + Additional Tools
 
 | WP | Name | Description | Est. Effort |
 |----|------|-------------|-------------|
-| WP13 | Document Generator | Reports, proposals (DOCX, PDF) | 3-4 days |
-| WP14 | Analysis Tools | Financial modeling, research, data analysis | 3-4 days |
-| WP15 | Zivtech Skills Library | Initial skills for common consulting tasks | 4-5 days |
-| WP16 | Dashboards | Monitoring dashboards, usage reports, alerts | 3-4 days |
+| WP13 | Design System Ingestion | Parse client brand assets (colors, fonts, logos) | 2-3 days |
+| WP14 | Template Processing | Extract master slides, layouts from PPT templates | 3-4 days |
+| WP15 | Content Extraction | Parse source docs (PPT/PDF/Word) into structured content | 3-4 days |
+| WP16 | Slide Generation + PPTX Output | Content → branded slides → editable PPTX | 4-5 days |
+| WP17 | Skill Packaging | Package presentation toolkit as Claude Code/Cowork skill | 1-2 days |
+| WP18 | Document Generator | Reports, proposals (DOCX, PDF) | 3-4 days |
+| WP19 | Analysis Tools | Financial modeling, research, data analysis | 3-4 days |
+| WP20 | Zivtech Skills Library | Initial skills for common consulting tasks | 4-5 days |
+| WP21 | Dashboards | Monitoring dashboards, usage reports, alerts | 3-4 days |
 
-**Phase 3 Effort:** 13-17 days (3 weeks)
-
-**Total Estimated Effort:** 49-65 days (10-13 weeks)
+**Phase 4 Effort:** ~28-37 days (6-7 weeks)
 
 ---
 
@@ -290,43 +326,47 @@ Additional costs for:
 
 ## Timeline
 
-### Now: Initialize with Spec Kitty
+### Now: Asset Sharing Pipeline + Spec Kitty (Feb 11)
 
-```bash
-spec-kitty init jawn-ai-platform --ai claude
-cd jawn-ai-platform
-```
+- [ ] Set up GitHub Pages + StatiCrypt pipeline (WP00-00c)
+- [ ] Run Spec Kitty in Claude Code — reconcile specs with updated decisions ✅
+- [ ] Entire CLI pilot running (telemetry off, manual-commit)
 
-### Week 1-2: Foundation
-- [ ] Complete constitution phase
-- [ ] Run specification discovery interview
-- [ ] Get access to existing toolkit repos
-- [ ] Diagnose current toolkit gaps
+### Week 1: Asset Sharing Pipeline (Phase 1)
+- [ ] GitHub Pages repo/branch configured
+- [ ] StatiCrypt GitHub Actions workflow working
+- [ ] First asset deployed and password-protected
+- [ ] Directory conventions documented
 
-### Week 3-6: Phase 1 (Presentation Toolkit)
-- [ ] WP01-06: Build presentation toolkit
-- [ ] Test with real Zivtech projects
-- [ ] Package as skill for Claude Code/Cowork
+### Week 2: MCP Server Deployment (Phase 2)
+- [ ] WP06a-06e: Deploy MCP server to AWS EC2
+- [ ] All tool executors verified in production
+- [ ] GitHub Actions CI/CD pipeline working
 
-### Week 7-11: Phase 2 (Platform Framework)
-- [ ] WP07-12: Build multi-tenant infrastructure
+### Week 3-7: Platform Framework (Phase 3)
+- [ ] WP07-12: Build web app, multi-tenant infrastructure
+- [ ] Google SSO, chat UI, MCP integrations
 - [ ] Internal pilot
 
-### Week 12+: Phase 3 (Additional Tools)
-- [ ] WP13-16: Expand tools layer
+### Week 8+: Additional Tools (Phase 4)
+- [ ] WP13-21: Presentation toolkit, document generator, analysis tools
 - [ ] Client pilot
 
 ---
 
 ## Success Criteria
 
-### Phase 1: Presentation Toolkit
-- Generated decks require <30 min manual polish
-- 10-slide deck in <10 minutes
-- Cost <$1 per deck
-- 3+ Zivtech team members using regularly
+### Phase 1: Asset Sharing Pipeline
+- Any Claude-generated artifact (HTML, PDF, React app) shareable via URL within 5 minutes of creation
+- Password protection working per-project
+- At least 3 PoCs/assets deployed and shared
 
-### Phase 2+: Platform
+### Phase 2: MCP Server Deployment
+- All 4 tool executors (Jira, Slack, GitHub, Google) working in production
+- CI/CD pipeline deploys on push
+- Uptime monitoring active
+
+### Phase 3+: Platform
 - Client can deploy in <1 day
 - Skills updated based on feedback within 1 week
 - Monitoring catches 90% of content issues
@@ -334,9 +374,82 @@ cd jawn-ai-platform
 
 ---
 
+## Infrastructure Requirements
+
+### PoC Asset Sharing (StatiCrypt)
+
+**Need:** Share PoC websites and web apps with clients/stakeholders behind password protection.
+
+**Near-Term Solution:** [StatiCrypt](https://github.com/robinmoisson/staticrypt) — AES-256 client-side encryption for static HTML files.
+
+| Aspect | Approach |
+|--------|----------|
+| Encryption | AES-256, zero server dependencies |
+| Password management | Per-project directory, stored in GitHub Secrets |
+| CI integration | Encrypt on push via GitHub Actions |
+| Directory structure | Project-based; carries forward to eventual Drupal portal |
+| Git managed | Yes — encrypted output committed, passwords in Secrets |
+
+**Future State:** Drupal-based portal for user accounts, groups, permissions. The directory-based structure established now transitions cleanly into Drupal's content organization.
+
+### Hosting
+
+**MCP Server:** Docker Compose on AWS EC2 (~$15-35/mo, t3.small/medium). Node.js + PostgreSQL in containers, GitHub Actions CI/CD. AWS chosen for its mature MCP ecosystem (45+ official servers from awslabs) — enables Claude to help manage infrastructure directly.
+
+**Static PoCs:** GitHub Pages + StatiCrypt. Free, git-native, directory-based (`zivtech.github.io/poc-name/`). Custom domain (e.g., `demos.zivtech.com`) when ready.
+
+**Drupal PoCs:** Separate system using existing tools — Pantheon Multidev, Tugboat, or Probo.ci. No new infrastructure needed.
+
+See `hosting-comparison.md` for full analysis and options evaluated.
+
+### Session Tracking (Entire CLI)
+
+**Need:** Track what happens in AI chat sessions for auditability, learning, and process improvement.
+
+**Tool:** [Entire CLI](https://github.com/entireio/cli) — MIT licensed, git-native, no external database.
+
+**Privacy/Security Assessment:**
+
+| Concern | Detail | Mitigation |
+|---------|--------|------------|
+| Telemetry | On by default (Posthog); undocumented collection scope | Disable at init: `telemetry: false` |
+| Auto-push | Session transcripts auto-push to remote (everything said in AI chats lands on GitHub) | Use `strategy: manual-commit`; review before pushing |
+| Data exposure | Full chat transcripts in git history | Keep repo private; review transcripts before commit |
+
+**Current Config (`.entire/settings.json`):**
+- `strategy: manual-commit` ✅
+- `telemetry: false` ✅ (fixed Feb 11)
+
+**Rollout Plan:**
+1. Pilot on jawn-ai itself with telemetry off and auto-push disabled
+2. Review captured data for 2 weeks
+3. Decide on broader team rollout based on findings
+
+---
+
 ## Open Questions
 
-### Phase 1
+### Phase 1 (Asset Sharing)
+| Question | Notes |
+|----------|-------|
+| GitHub Pages repo structure for PoCs | Dedicated repo or branch of jawn-ai? |
+| StatiCrypt CI pipeline design | Per-project passwords, directory structure |
+
+### Phase 2 (MCP Deploy)
+| Question | Notes |
+|----------|-------|
+| AWS EC2 instance sizing | t3.small vs t3.medium for MCP server |
+| Coolify vs raw Docker Compose | Evaluate management UI after 1 month |
+
+### Phase 3 (Platform)
+| Question | Notes |
+|----------|-------|
+| Client environment hosting | Docker? VMs? Cloud provider? → AWS EC2 decided |
+| Skill version control | Git-based? Database? |
+| Monitoring stack | Langfuse? Custom? |
+| Billing integration | Stripe? Custom? |
+
+### Phase 4 (Tools)
 | Question | Notes |
 |----------|-------|
 | What's not working in current toolkit? | Need repo access |
@@ -344,31 +457,26 @@ cd jawn-ai-platform
 | Template extraction approach | python-pptx? Direct XML? |
 | HTML/CSS vs direct PPTX | Generate HTML then convert, or build PPTX directly? |
 
-### Phase 2+
+### Cross-cutting
 | Question | Notes |
 |----------|-------|
-| Client environment hosting | Docker? VMs? Cloud provider? |
-| Skill version control | Git-based? Database? |
-| Monitoring stack | Langfuse? Custom? |
-| Billing integration | Stripe? Custom? |
+| Entire CLI pilot evaluation | Review after 2 weeks of use |
 
 ---
 
 ## Next Actions
 
-1. **Now:** Initialize Spec Kitty project
-   ```bash
-   spec-kitty init jawn-ai-platform --ai claude
-   ```
+1. **Now (Feb 11):**
+   - ✅ Spec Kitty upgraded to v0.13.7
+   - ✅ Specs reconciled with new decisions and phase ordering
+   - Set up GitHub Pages + StatiCrypt pipeline (WP00-00c)
 
 2. **This week:**
-   - Complete constitution + specification phases
-   - Get access to existing toolkit repos
-   - Diagnose what's not working
+   - Complete Phase 1 (Asset Sharing Pipeline)
+   - First asset deployed and password-protected
 
 3. **Next week:**
-   - Finalize plan and research phases
-   - Begin WP01 (Design System Ingestion)
+   - Begin Phase 2 (MCP Server Deployment to AWS EC2)
 
 ---
 

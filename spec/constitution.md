@@ -10,7 +10,7 @@
 
 **Purpose:** A multi-tenant AI agent platform that enables Zivtech to deliver AI-powered consulting services — both for internal productivity and as a managed service for clients who cannot have Claude Code-level access.
 
-**Starting Point:** The presentation toolkit — a working tool that validates the approach before building the full platform.
+**Starting Point:** The asset sharing pipeline — a foundational layer so everything we build has somewhere to go — followed by deploying the existing MCP server, then building the platform framework.
 
 ---
 
@@ -92,12 +92,13 @@ Monitoring is not optional — it's how we learn and improve.
 
 ## 4. Development Principles
 
-### 4.1 Presentation Toolkit First
+### 4.1 Sharing Layer First, Then Infrastructure, Then Tools
 
-- Phase 1 is a concrete, working tool — not infrastructure
-- The toolkit validates our approach before we build the platform
-- It provides immediate value to Zivtech teams
-- Learnings inform platform architecture
+- Phase 1 is the asset sharing pipeline — everything we build needs somewhere to go
+- Phase 2 deploys the existing MCP server (already built, needs hosting)
+- Phase 3 builds the platform framework (web app, multi-tenant, skills)
+- Tools like the Presentation Toolkit come after the platform exists
+- Each phase delivers working, usable software
 
 ### 4.2 Spec-Driven Development
 
@@ -121,9 +122,12 @@ Monitoring is not optional — it's how we learn and improve.
 
 | Component | Choice | Rationale |
 |-----------|--------|-----------|
+| MCP Server Hosting | AWS EC2 + Docker Compose | Mature MCP ecosystem (45+ awslabs servers); ~$15-35/mo |
+| Static PoC Hosting | GitHub Pages + StatiCrypt | Free, git-native, AES-256 password protection |
+| Drupal PoC Hosting | Existing tools (Multidev/Tugboat/Probo.ci) | Already solved, no new infra |
 | Orchestrator | Claude Agent SDK | First-party, maintained by Anthropic |
 | Skills | File-based + version control | Simple, auditable, git-friendly |
-| PPTX Generation | PptxGenJS (Node.js) | Most mature HTML→PPTX option |
+| Session Tracking | Entire CLI (pilot) | Git-native, MIT, no external DB; telemetry off |
 | Monitoring | Langfuse + custom | Industry standard + Zivtech-specific |
 
 ### 5.2 Cost Awareness
@@ -191,6 +195,7 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.0*
+*Constitution Version: 1.1*
 *Established: January 29, 2026*
-*Last Updated: January 29, 2026*
+*Last Updated: February 11, 2026*
+*Changes: Updated phase ordering (Asset Sharing → MCP Deploy → Platform → Tools), added infrastructure decisions, added session tracking*

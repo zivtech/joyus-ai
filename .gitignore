@@ -7,3 +7,18 @@ zivtech-skills-copy/
 zivtech-claude-skills-repo
 claude-presentation-toolkit/
 drupal-brand-skill/
+
+# AI Agent directories (added by Spec Kitty CLI)
+# These contain auth tokens and should NEVER be committed
+.claude/
+.codex/
+.opencode/
+.windsurf/
+.gemini/
+.cursor/
+.qwen/
+.kilocode/
+.augment/
+.roo/
+.amazonq/
+.github/copilot/
