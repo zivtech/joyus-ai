@@ -88,6 +88,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - Document Generator (reports, proposals — DOCX, PDF)
 - Analysis Tools (financial modeling, research, data analysis)
 - Spec Kitty as Service (spec-driven development for clients who can't run locally)
+- Visual Regression Testing Service (PR-based a11y + visual regression on demand)
 
 ### Session Tracking
 
@@ -738,7 +739,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 - **Orchestration layer** — Decide on skill vs service, implement
 - **MCP Gateway** — Expose platform as MCP server
 - **Client onboarding** — Workflow for creating client skills
-- **Monitoring** — Full monitoring infrastructure
+- **Monitoring** — Full monitoring infrastructure (note: design for potential standalone offering — monitoring layer may have value as an independent service for clients managing their own AI deployments)
 
 **Phase 4: Additional Tools**
 - **Presentation Toolkit** — Rebrand decks, generate branded slides from content
@@ -748,6 +749,14 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
   - Constitution → Specification → Plan → Research → Tasks workflow
   - Project initialization and phase management
   - Enables structured software development without local tooling
+- **Visual Regression Testing Service** — On-demand a11y and visual regression testing for client PRs
+  - Builds on existing `a11y-test` Claude Code skill (Playwright + BackstopJS)
+  - Branch-based baseline management: capture baselines for a target branch, test PR groups against it
+  - Baselines are locked to their branch — no updates until the underlying branch changes
+  - When the baseline branch changes, prompt user: update baselines or keep existing?
+  - Supports testing individual PRs or grouped PR sets against the same baseline
+  - Outputs: Playwright HTML reports, BackstopJS side-by-side visual diffs
+  - Client site testing (Drupal, web apps) — not platform self-testing
 
 ---
 
@@ -789,9 +798,17 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | ├─ Does OMC support custom skills? | | | |
 | ├─ State isolation for multi-project? | | | |
 | └─ Stability/maintenance trajectory? | | | |
+| Skill testing/validation methodology | Alex + Claude | Phase 3 | Open — how to measure whether a skill is effective; detect unanticipated side effects from restrictions; acceptance criteria for skill quality |
+| Feedback loop mechanics | Alex + Claude | Phase 3 | Open — how user corrections flow into skill updates; who approves changes; update cadence; Constitution S2.5 declares first-class but mechanism unspecified |
+| Client onboarding workflow | Alex | Phase 3 | Open — what goes into a single-entry-point package; integration with existing client tools; skill creation process; brand asset intake |
+| **Visual regression testing service** | Alex + Claude | Phase 4 | Open |
+| ├─ Baseline storage: Git LFS, S3, or local? | | | |
+| ├─ PR detection: GitHub webhooks, manual trigger, or CI integration? | | | |
+| ├─ Branch change detection: how to know when to prompt for baseline update? | | | |
+| └─ Execution environment: platform EC2, client infra, or ephemeral containers? | | | |
 
 ---
 
 *Plan created: January 29, 2026*
-*Updated: February 12, 2026 — Git hosting decision, resolved Phase 1 questions, fixed duplicate entries, Phase 4 label correction*
+*Updated: February 13, 2026 — Added visual regression testing service (Phase 4), Notion triage open questions*
 *For: Zivtech AI Agent Platform*

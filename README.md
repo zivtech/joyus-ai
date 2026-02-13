@@ -41,7 +41,7 @@ jawn-ai/
 | **1** | Asset Sharing Pipeline — GitHub Pages + StatiCrypt for PoC distribution | **In Progress** |
 | **2** | MCP Server Deployment — Full MCP suite + skill runtime on AWS EC2 | **Specified** |
 | **3** | Platform Framework — Next.js web app, multi-tenant, Skills/Styles, MCP Gateway | Planned |
-| **4** | Additional Tools — Presentation Toolkit, Document Generator, Playwright, Spec Kitty as Service | Planned |
+| **4** | Additional Tools — Presentation Toolkit, Document Generator, Visual Regression Testing, Spec Kitty as Service | Planned |
 
 ## Key Architecture Decisions (Feb 11, 2026)
 
