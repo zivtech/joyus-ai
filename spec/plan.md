@@ -76,9 +76,11 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - [ ] MCP server connections (Jira, Slack, Gmail, GitHub)
 - [ ] Per-user token storage with encryption
 - [ ] Skills/Styles system for client-specific mediation
-- [ ] MCP Gateway for auth, routing, logging
+- [ ] MCP Gateway for auth, routing, logging (include browser abstraction layer — high-level actions over raw Playwright)
 - [ ] Monitoring for usage and content fidelity
 - [ ] Sandboxed client environments
+- [ ] Container-based code execution sandbox (Docker/gVisor — prerequisite for Phase 4 Analysis Tools + Spec Kitty as Service)
+- [ ] Background task/job management in orchestration layer (job queue with status, logs, cancellation, timeout)
 
 ### Phase 4: Additional Tools (Future)
 
@@ -737,14 +739,18 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 **Phase 3: Platform Framework**
 - **Web App** — Next.js + FastAPI, Google SSO, chat UI
 - **Orchestration layer** — Decide on skill vs service, implement
-- **MCP Gateway** — Expose platform as MCP server
+- **MCP Gateway** — Expose platform as MCP server; include browser abstraction layer (high-level navigate/click/extract actions over raw Playwright, per-user browser contexts)
 - **Client onboarding** — Workflow for creating client skills
+- **Code execution sandbox** — Container-based (Docker/gVisor) multi-language execution with per-user isolation, resource limits, network restrictions. Prerequisite for Phase 4 Analysis Tools and Spec Kitty as Service
+- **Job management** — Background task queue in orchestration layer with status tracking, logs, cancellation, and timeout. Supports long-running operations (data processing, test suites, dev servers)
 - **Monitoring** — Full monitoring infrastructure (note: design for potential standalone offering — monitoring layer may have value as an independent service for clients managing their own AI deployments)
 
 **Phase 4: Additional Tools**
 - **Presentation Toolkit** — Rebrand decks, generate branded slides from content
 - **Document Generator** — Reports, proposals, memos (DOCX, PDF)
 - **Analysis Tools** — Financial modeling, gap analysis, roadmaps
+  - Includes `research_topic` tool: search (via Exa MCP) → browse → extract → summarize chain
+  - Leverages Phase 3 code execution sandbox for data processing and scripting
 - **Spec Kitty as Service** — Spec-driven development for clients who can't run Claude Code locally
   - Constitution → Specification → Plan → Research → Tasks workflow
   - Project initialization and phase management
@@ -776,6 +782,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 10 | Session tracking | Entire CLI / custom / none | **Entire CLI (pilot)** | Git-native, MIT, no external DB; telemetry off, manual-commit; 2-week eval | Feb 11 |
 | 11 | Phase ordering | Toolkit first / Sharing first / Infra first | **Sharing → Deploy → Platform → Tools** | Everything we build needs somewhere to go; MCP server already built | Feb 11 |
 | 12 | Git hosting | GitHub (SaaS) / GitLab (self-hosted) / Gitea (self-hosted) | **Under evaluation** | Need better disk/artifact management at scale; LFS bandwidth limits on GitHub; self-hosted gives S3 offload and custom runners | Feb 12 |
+| 13 | Manus-MCP pattern | Emulate manus-mcp / Extract capabilities / Skip | **Extract capabilities, better architecture** | Adopt code sandbox, job mgmt, browser abstraction, research tool — but with container isolation, per-user contexts, proper search API instead of manus-mcp's weak directory sandbox and Google scraping | Feb 13 |
 
 ---
 
@@ -801,6 +808,8 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | Skill testing/validation methodology | Alex + Claude | Phase 3 | Open — how to measure whether a skill is effective; detect unanticipated side effects from restrictions; acceptance criteria for skill quality |
 | Feedback loop mechanics | Alex + Claude | Phase 3 | Open — how user corrections flow into skill updates; who approves changes; update cadence; Constitution S2.5 declares first-class but mechanism unspecified |
 | Client onboarding workflow | Alex | Phase 3 | Open — what goes into a single-entry-point package; integration with existing client tools; skill creation process; brand asset intake |
+| **Code execution sandbox** | Alex + Claude | Phase 3 | Open — container tech (Docker vs gVisor vs Firecracker); resource limit defaults; supported languages; network policy |
+| **Job/task management** | Alex + Claude | Phase 3 | Open — queue implementation (Redis, PostgreSQL, in-memory); status API design; log streaming; cancellation semantics |
 | **Visual regression testing service** | Alex + Claude | Phase 4 | Open |
 | ├─ Baseline storage: Git LFS, S3, or local? | | | |
 | ├─ PR detection: GitHub webhooks, manual trigger, or CI integration? | | | |
@@ -810,5 +819,5 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 ---
 
 *Plan created: January 29, 2026*
-*Updated: February 13, 2026 — Added visual regression testing service (Phase 4), Notion triage open questions*
+*Updated: February 13, 2026 — Manus-MCP evaluation: added code execution sandbox, job management, browser abstraction (Phase 3), research tool detail (Phase 4); visual regression testing service; Notion triage open questions*
 *For: Zivtech AI Agent Platform*
