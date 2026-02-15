@@ -323,11 +323,50 @@ jawn-ai-skills/                       (Git repository)
     │   │   │   ├── colors.json
     │   │   │   └── template.pptx
     │   │   └── examples/
+    │   ├── profiles/                 (author/voice writing profiles)
+    │   │   ├── author-a/
+    │   │   │   ├── SKILL.md          (voice, tone, vocabulary, anti-patterns)
+    │   │   │   ├── markers.json      (content markers for attribution)
+    │   │   │   ├── stylometrics.json (function word distributions)
+    │   │   │   └── examples/
+    │   │   │       ├── good/
+    │   │   │       └── bad/
+    │   │   └── author-b/
+    │   │       └── ...
     │   └── overrides/                (client-specific tool config)
     │
     └── beta-inc/
         └── ...
 ```
+
+### Client Profile Building Pipeline
+
+The Skills Layer requires a **method for creating skills** — not just storing them. The Client Profile Building pipeline is that method. Proven on the NCLC project (94.6% accuracy on 4 authors, 97.9% on 9 authors), it transforms a client's document corpus into structured writing profiles that the orchestrator loads as skills.
+
+```
+Client Profile Building Pipeline:
+┌──────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Client       │     │  Corpus           │     │  Profile          │     │  Skill File     │
+│  Corpus       │────▶│  Analysis          │────▶│  Generation       │────▶│  Output         │
+│  (docs, web)  │     │                    │     │                   │     │                 │
+└──────────────┘     │  • Content markers  │     │  • Voice & tone   │     │  SKILL.md       │
+                      │  • Stylometric      │     │  • Vocabulary     │     │  validators/    │
+                      │    features (129)   │     │  • Citations      │     │  examples/      │
+                      │  • Topic detection  │     │  • Audience regs  │     │  markers.json   │
+                      │  • Audience analysis │     │  • Anti-patterns  │     │                 │
+                      └──────────────────┘     └──────────────────┘     └─────────────────┘
+```
+
+**Profile schema (standardized for platform consumption):**
+- **Voice & tone** — formality, advocacy stance, rhetorical patterns
+- **Vocabulary** — signature phrases, domain terminology, preferred/avoided terms
+- **Structural patterns** — document organization, paragraph flow, heading conventions
+- **Citation practices** — preferred authorities, citation density, formatting
+- **Audience registers** — how voice shifts for Congress vs. regulators vs. attorneys vs. public
+- **Anti-patterns** — what NOT to do (maps to Constitution §2.2: skills include anti-patterns)
+- **Content markers** — machine-readable tokens for attribution verification (see Monitoring §5)
+
+**NCLC proof-of-concept:** 20 of 40 authors profiled, hybrid attribution model operational, web app deployed. See `../claude-files/nclc/author-identification-research/`.
 
 ### Skill Loading Pattern
 
@@ -341,8 +380,9 @@ def load_skills_for_context(client_id: str, task_type: str) -> SkillSet:
     Skill precedence:
     1. Client-specific overrides (highest)
     2. Client brand/voice skill
-    3. Core task skill (presentation, document, etc.)
-    4. Platform defaults (lowest)
+    3. Author-specific writing profile (if applicable)
+    4. Core task skill (presentation, document, etc.)
+    5. Platform defaults (lowest)
     """
     skills = SkillSet()
 
@@ -352,6 +392,10 @@ def load_skills_for_context(client_id: str, task_type: str) -> SkillSet:
     # Load client brand skill
     if client_has_brand(client_id):
         skills.add(load_skill(f"clients/{client_id}/brand"))
+
+    # Load author-specific writing profile
+    if author_profile_requested(client_id, context):
+        skills.add(load_skill(f"clients/{client_id}/profiles/{author_id}"))
 
     # Load client overrides
     if client_has_overrides(client_id, task_type):
@@ -581,6 +625,9 @@ Rationale: OMC's Pipeline mode and cost optimization align with our needs. Worth
 │  │   Layer 2: Content Fidelity                                              ││
 │  │   • Output validation results                                            ││
 │  │   • Brand compliance scoring                                             ││
+│  │   • **Author verification** — run attribution on AI output,             ││
+│  │     compare intended vs. detected voice profile, flag mismatches        ││
+│  │     (hybrid model: content markers + Burrows' Delta stylometrics)       ││
 │  │   • Correction frequency                                                 ││
 │  │                                                                          ││
 │  │   Layer 3: Guardrail Monitoring                                          ││
@@ -740,7 +787,9 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 - **Web App** — Next.js + FastAPI, Google SSO, chat UI
 - **Orchestration layer** — Decide on skill vs service, implement
 - **MCP Gateway** — Expose platform as MCP server; include browser abstraction layer (high-level navigate/click/extract actions over raw Playwright, per-user browser contexts)
-- **Client onboarding** — Workflow for creating client skills
+- **Client Profile Building** — Automated pipeline: ingest client corpus → extract stylometric features + content markers → generate structured writing profiles → output as platform-consumable skill files. Generalizes NCLC methodology (94.6%→97.9% accuracy) into multi-domain service
+- **Author Verification / Content Fidelity** — Post-generation validator: run attribution model on AI output, compare intended vs. detected voice, flag mismatches before delivery, feed corrections back into skill updates (Constitution §2.5)
+- **Client onboarding** — Workflow for creating client skills (including profile intake)
 - **Code execution sandbox** — Container-based (Docker/gVisor) multi-language execution with per-user isolation, resource limits, network restrictions. Prerequisite for Phase 4 Analysis Tools and Spec Kitty as Service
 - **Job management** — Background task queue in orchestration layer with status tracking, logs, cancellation, and timeout. Supports long-running operations (data processing, test suites, dev servers)
 - **Monitoring** — Full monitoring infrastructure (note: design for potential standalone offering — monitoring layer may have value as an independent service for clients managing their own AI deployments)
@@ -751,6 +800,10 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 - **Analysis Tools** — Financial modeling, gap analysis, roadmaps
   - Includes `research_topic` tool: search (via Exa MCP) → browse → extract → summarize chain
   - Leverages Phase 3 code execution sandbox for data processing and scripting
+- **Author Attribution Service** — Standalone client-facing tool for document authorship analysis
+  - Web app (FastAPI + React) with real-time attribution, expert question routing, batch processing
+  - Generalizes NCLC webapp (`../claude-files/nclc/author-identification-research/webapp/`) into multi-client platform tool
+  - Exposed as MCP tools: `attribute_document`, `route_to_expert`
 - **Spec Kitty as Service** — Spec-driven development for clients who can't run Claude Code locally
   - Constitution → Specification → Plan → Research → Tasks workflow
   - Project initialization and phase management
@@ -783,6 +836,8 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 11 | Phase ordering | Toolkit first / Sharing first / Infra first | **Sharing → Deploy → Platform → Tools** | Everything we build needs somewhere to go; MCP server already built | Feb 11 |
 | 12 | Git hosting | GitHub (SaaS) / GitLab (self-hosted) / Gitea (self-hosted) | **Under evaluation** | Need better disk/artifact management at scale; LFS bandwidth limits on GitHub; self-hosted gives S3 offload and custom runners | Feb 12 |
 | 13 | Manus-MCP pattern | Emulate manus-mcp / Extract capabilities / Skip | **Extract capabilities, better architecture** | Adopt code sandbox, job mgmt, browser abstraction, research tool — but with container isolation, per-user contexts, proper search API instead of manus-mcp's weak directory sandbox and Google scraping | Feb 13 |
+| 14 | Client Profile Building | Manual skill creation / Automated pipeline / Hybrid | **Automated pipeline (proven)** | NCLC project validates methodology: corpus analysis → content markers + stylometrics → structured profiles. 94.6% accuracy (4 authors), 97.9% (9 authors). Generalizable to arbitrary client domains. Pipeline outputs platform-consumable skill files. | Feb 15 |
+| 15 | Author Verification placement | Phase 4 tool only / Phase 3 monitoring only / Both | **Both: Phase 3 monitor + Phase 4 tool** | Internal use as Content Fidelity check (Phase 3 Monitoring Layer 2) + external use as standalone Attribution Service (Phase 4). Same core engine, different interfaces. | Feb 15 |
 
 ---
 
@@ -808,6 +863,15 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | Skill testing/validation methodology | Alex + Claude | Phase 3 | Open — how to measure whether a skill is effective; detect unanticipated side effects from restrictions; acceptance criteria for skill quality |
 | Feedback loop mechanics | Alex + Claude | Phase 3 | Open — how user corrections flow into skill updates; who approves changes; update cadence; Constitution S2.5 declares first-class but mechanism unspecified |
 | Client onboarding workflow | Alex | Phase 3 | Open — what goes into a single-entry-point package; integration with existing client tools; skill creation process; brand asset intake |
+| **Client Profile Building pipeline** | Alex + Claude | Phase 3 | Open |
+| ├─ Profile schema: what fields are required vs. optional? | | | NCLC schema covers legal advocacy — need to validate for other domains (marketing, technical, corporate) |
+| ├─ Minimum corpus size for reliable profiles? | | | NCLC used 7-9 docs per author; what's the floor for new clients? |
+| ├─ Self-service onboarding vs. Zivtech-assisted profile creation? | | | Cost/quality tradeoff; manual curation produced 94.6%+ accuracy |
+| └─ Profile update cadence: how often do profiles need refreshing? | | | Authors evolve; need versioning + staleness detection |
+| **Author Verification / Content Fidelity** | Alex + Claude | Phase 3 | Open |
+| ├─ Confidence threshold: what score triggers a mismatch flag? | | | NCLC used content markers as primary discriminator; need calibration per client |
+| ├─ Feedback loop mechanics: how do flagged mismatches flow into skill updates? | | | Constitution §2.5 declares first-class but mechanism unspecified |
+| └─ Performance: can attribution run in-line or must it be async post-generation? | | | Latency budget for real-time fidelity checks |
 | **Code execution sandbox** | Alex + Claude | Phase 3 | Open — container tech (Docker vs gVisor vs Firecracker); resource limit defaults; supported languages; network policy |
 | **Job/task management** | Alex + Claude | Phase 3 | Open — queue implementation (Redis, PostgreSQL, in-memory); status API design; log streaming; cancellation semantics |
 | **Visual regression testing service** | Alex + Claude | Phase 4 | Open |
@@ -819,5 +883,5 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 ---
 
 *Plan created: January 29, 2026*
-*Updated: February 13, 2026 — Manus-MCP evaluation: added code execution sandbox, job management, browser abstraction (Phase 3), research tool detail (Phase 4); visual regression testing service; Notion triage open questions*
+*Updated: February 15, 2026 — Added Client Profile Building pipeline to Skills Architecture (§3), author verification to Content Fidelity monitoring (§5), Author Attribution Service to Phase 4 (§7), profiles to skill repo structure, decisions #14-15, open questions for profile building and verification. Prior: Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
 *For: Zivtech AI Agent Platform*

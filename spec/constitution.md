@@ -27,11 +27,14 @@
 
 - Skills are **constraint systems**, not just capability enhancers
 - Every client gets mediated AI — outputs are guided by their skills
+- Skills are **created through automated profile building** — corpus analysis produces structured writing profiles that the platform loads as skills (methodology proven on NCLC: 94.6%→97.9% attribution accuracy)
 - Skills define:
   - Acceptable output formats
   - Brand/voice guidelines
+  - Author-specific writing profiles (voice, vocabulary, citation patterns, audience registers)
   - Domain terminology
   - Explicit restrictions
+  - Content markers for post-generation verification
 - Skills include anti-patterns (what NOT to do), not just examples
 
 ### 2.3 Sandbox by Default
@@ -48,7 +51,7 @@ We track four layers:
 | Layer | What We Monitor |
 |-------|-----------------|
 | **Usage** | Requests, tokens, costs, task types, durations |
-| **Content Fidelity** | Output validation, brand consistency, hallucination detection |
+| **Content Fidelity** | Output validation, brand consistency, **author/voice verification**, hallucination detection |
 | **Guardrails** | Restriction hits, boundary friction, permission escalations |
 | **Insights** | Trends, anomalies, skill effectiveness, engagement patterns |
 
@@ -195,7 +198,8 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.1*
+*Constitution Version: 1.2*
 *Established: January 29, 2026*
-*Last Updated: February 11, 2026*
-*Changes: Updated phase ordering (Asset Sharing → MCP Deploy → Platform → Tools), added infrastructure decisions, added session tracking*
+*Last Updated: February 15, 2026*
+*Changes v1.2: Added client profile building as skill creation methodology, author/voice verification as content fidelity check, content markers for post-generation verification (NCLC proof-of-concept)*
+*Changes v1.1: Updated phase ordering (Asset Sharing → MCP Deploy → Platform → Tools), added infrastructure decisions, added session tracking*

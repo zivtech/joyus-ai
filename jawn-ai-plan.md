@@ -37,11 +37,14 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 ### Tools Within the Platform
 
 1. **Asset Sharing Pipeline** (Phase 1 — ACTIVE)
-2. Presentation Generator (Phase 4)
-3. Document Generator (reports, proposals — Phase 4)
-4. Analysis Tools (financial, gap analysis, roadmaps — Phase 4)
-5. Research Tools (web, doc analysis — Phase 4)
-6. Support Tools (client comms, FAQs — Phase 4)
+2. **Client Profile Building** (Phase 3 — Skills System core)
+3. **Author Verification / Content Fidelity** (Phase 3 — Monitoring Layer)
+4. Presentation Generator (Phase 4)
+5. Document Generator (reports, proposals — Phase 4)
+6. Analysis Tools (financial, gap analysis, roadmaps — Phase 4)
+7. Author Attribution Service (Phase 4 — standalone client tool)
+8. Research Tools (web, doc analysis — Phase 4)
+9. Support Tools (client comms, FAQs — Phase 4)
 
 ---
 
@@ -69,6 +72,30 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 | Monitoring | Langfuse, Helicone for observability |
 
 See [Technical Research Report](research/jawn-ai-research.md) for full details.
+
+### NCLC: Proof of Concept for Client Profile Building + Author Verification
+
+The **NCLC (National Consumer Law Center)** project validates the core methodology for two Phase 3 platform capabilities: client profile building and author verification as content fidelity monitoring.
+
+**What was built:**
+- **Hybrid authorship attribution system** combining content-based markers + Burrows' Delta stylometrics
+- **94.6% accuracy** on 4-author model (37 documents), **97.9% on 9-author expansion** (108 documents)
+- **20 completed writing profiles** from 40 NCLC authors — capturing voice, vocabulary, citation patterns, structural preferences, audience calibration
+- **Web application** (FastAPI + React) with real-time attribution, expert question routing, batch processing
+- **3-gate validation** — Gate 1 (recognition) passed, Gate 2 (generation fidelity) passed, Gate 3 (audience calibration) pending human validation
+
+**What it proves for the platform:**
+- Corpus analysis → structured writing profiles is a **repeatable, generalizable process**
+- The profile schema (voice, vocabulary, citations, audience registers, anti-patterns) maps directly to jawn-ai's **Skills as Guardrails** architecture
+- Author verification works as a **post-generation content fidelity check** — detect whether AI output matches the intended voice profile before delivery
+- The feedback loop (mismatches → profile corrections → skill updates) implements **Constitution §2.5** in practice
+
+**What needs to be generalized:**
+- Profile-building pipeline is currently NCLC-specific — needs abstraction for arbitrary client domains (not just legal advocacy)
+- Profile schema standardization so any client's profiles plug into the orchestrator's skill loading
+- Self-service onboarding flow for new client corpus ingestion
+
+See `../claude-files/nclc/author-identification-research/` for full research, reports, and implementation.
 
 ---
 
@@ -107,6 +134,7 @@ See [Technical Research Report](research/jawn-ai-research.md) for full details.
 **Also in Phase 4:**
 - Document Generator (reports, proposals — DOCX, PDF)
 - Analysis Tools (financial modeling, research, data analysis)
+- **Author Attribution Service** — standalone client-facing tool for document authorship analysis (web app with real-time attribution, expert routing, batch processing; built on NCLC proof-of-concept)
 - Spec Kitty as Service (for clients who can't run locally)
 
 ### Phase 2: MCP Server Deployment
@@ -128,6 +156,8 @@ See [Technical Research Report](research/jawn-ai-research.md) for full details.
 - Internal AI portal (web app with chat interface, Google SSO)
 - Orchestrator (Claude Agent SDK)
 - Skills/Styles system for client-specific mediation
+- **Client Profile Building service** — automated pipeline to create writing/voice profiles from client corpora (proven methodology: NCLC project achieved 94.6% attribution accuracy across 4 authors, 97.9% across 9)
+- **Author Verification as Content Fidelity monitor** — post-generation validation that AI output matches the intended author/voice profile; feeds mismatches back into skill updates per Constitution §2.5
 - MCP Gateway for auth, routing, logging
 - Monitoring for usage and content fidelity
 - Sandboxed client environments
@@ -261,12 +291,14 @@ Break into work packages (see below)
 |----|------|-------------|-------------|
 | WP07 | Core Orchestrator | Claude Agent SDK setup, agent loop, tool routing | 3-4 days |
 | WP08 | Skills System | Skill registry, loading, validation, versioning | 4-5 days |
+| WP08a | Client Profile Building Pipeline | Generalized corpus analysis → writing profile pipeline. Ingest client documents, extract stylometric features + content markers, generate structured profiles (voice, vocabulary, citation patterns, audience calibration). Standardize profile schema for orchestrator consumption. Based on NCLC methodology (94.6%→97.9% accuracy). | 4-5 days |
+| WP08b | Author Verification / Content Fidelity | Post-generation validator that runs attribution on AI output, compares intended vs. detected voice profile, flags mismatches before delivery. Integrates with Monitoring Layer (WP10) as a Content Fidelity check. Implements Constitution §2.5 feedback loop: corrections → skill updates. | 3-4 days |
 | WP09 | MCP Gateway | Authentication, authorization, routing, logging | 4-5 days |
 | WP10 | Monitoring Layer | Usage tracking, fidelity checks, guardrail monitoring | 4-5 days |
 | WP11 | Sandbox Environments | Docker-based client environments, access control | 3-4 days |
-| WP12 | Client Onboarding | Skill creation workflow, configuration | 3-4 days |
+| WP12 | Client Onboarding | Skill creation workflow, configuration, profile intake | 3-4 days |
 
-**Phase 3 Effort:** 21-27 days (4-5 weeks)
+**Phase 3 Effort:** 28-36 days (5-7 weeks)
 
 ### Phase 4: Presentation Toolkit + Additional Tools
 
@@ -279,10 +311,11 @@ Break into work packages (see below)
 | WP17 | Skill Packaging | Package presentation toolkit as Claude Code/Cowork skill | 1-2 days |
 | WP18 | Document Generator | Reports, proposals (DOCX, PDF) | 3-4 days |
 | WP19 | Analysis Tools | Financial modeling, research, data analysis | 3-4 days |
+| WP19a | Author Attribution Service | Standalone client-facing attribution tool. Web app (FastAPI + React) for real-time document attribution, expert question routing by topic detection, batch processing. Generalizes NCLC webapp into multi-client platform tool. | 3-4 days |
 | WP20 | Zivtech Skills Library | Initial skills for common consulting tasks | 4-5 days |
 | WP21 | Dashboards | Monitoring dashboards, usage reports, alerts | 3-4 days |
 
-**Phase 4 Effort:** ~28-37 days (6-7 weeks)
+**Phase 4 Effort:** ~31-41 days (6-8 weeks)
 
 ---
 
@@ -494,5 +527,5 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 ---
 
 *Document maintained in: `jawn-ai/jawn-ai-plan.md`*
-*Updated: February 12, 2026 — Aligned with Feb 11-12 decisions, resolved Phase 1 questions*
+*Updated: February 15, 2026 — Added Client Profile Building (WP08a) and Author Verification (WP08b) to Phase 3; Author Attribution Service (WP19a) to Phase 4; NCLC proof-of-concept section. Prior: Feb 12 — Aligned with Feb 11-12 decisions, resolved Phase 1 questions*
 *Notion canonical: [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)*
