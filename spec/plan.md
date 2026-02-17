@@ -14,7 +14,8 @@
 |-------|------|--------|-------------|
 | **1** | Asset Sharing Pipeline | **Starting** | GitHub Pages + StatiCrypt for sharing PoCs behind passwords |
 | **2** | MCP Server Deployment | Planned | Deploy existing MCP server to AWS EC2 |
-| **3** | Platform Framework | Planned | Internal AI portal — web app, multi-tenant, skills system |
+| **2.5** | Profile Engine + Content Fidelity | **Priority** | Standalone library: corpus → profiles → skill files + two-tier verification. Platform's moat. |
+| **3** | Platform Framework | Planned | Internal AI portal — web app, multi-tenant, skills system (imports profile engine) |
 | **4** | Additional Tools | Future | Presentation toolkit, document generator, analysis tools |
 
 ### Key Decisions (Feb 11, 2026)
@@ -60,6 +61,35 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - [ ] AWS MCP servers for infrastructure management via Claude
 
 **Estimated effort:** 3 days
+
+### Phase 2.5: Profile Engine + Content Fidelity (PRIORITY)
+
+**Goal:** Standalone library that turns a client document corpus into structured writing profiles (skill files) and provides two-tier content fidelity verification. This is the platform's moat — the "thick domain" investment per Decision #18.
+
+**Why before Phase 3:** The profile engine is independent of the web portal, MCP gateway, and container infrastructure. Building it standalone means: (1) immediate use for NCLC, (2) validation on a second domain before the platform exists, (3) Phase 3 development gets simpler — the hardest piece is already built. Per Boris Cherny's insight: invest in domain knowledge and verification, keep orchestration thin.
+
+**What's already built (NCLC proof-of-concept):**
+- Tiered hybrid attribution model (Python, 3 confidence tiers)
+- 129-feature stylometric engine (Burrows' Delta)
+- Content marker extraction (topic-specific terminology as primary discriminator)
+- Comprehensive 22K-word, 12-section profile template
+- Author inventory (40 authors, 20 profiled, 94.6%→97.9% accuracy)
+- Validation scripts (`validate_new_profiles.py`, `validate_tier1_profiles.py`)
+- Webapp (FastAPI + React) for real-time attribution
+
+**Detailed spec:** See [`profile-engine-spec.md`](profile-engine-spec.md)
+
+**Implementation:**
+- [ ] Extract NCLC attribution code into domain-agnostic library
+- [ ] Parameterize corpus analyzer (remove NCLC-specific vocabulary)
+- [ ] Build skill file emitter (profile → SKILL.md + markers.json + stylometrics.json)
+- [ ] Build Tier 1 inline verification (marker presence + stylometric distance, ~100ms)
+- [ ] Build Tier 2 deep analysis (full Burrows' Delta, cross-document consistency)
+- [ ] CLI tools for profile building and content verification
+- [ ] NCLC regression tests (accuracy must not drop)
+- [ ] Second-domain validation (Zivtech internal writing profile)
+
+**Estimated effort:** 2-3 weeks
 
 ### Phase 3: Platform Framework
 
@@ -896,6 +926,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 16 | Orchestration (Phase 3) — revised | OMC / Thin server + native CC / Hybrid | **Thin server + native Claude Code** | Boris Cherny analysis: OMC solves wrong problem (power users don't need framework; web portal can't use CLI plugin); scaffolding gets subsumed by model upgrades; invest in skills + verification instead. Thin FastAPI + Agent SDK for portal, native Claude Code for internal CLI users. Supersedes Decision #4. | Feb 17 |
 | 17 | Attribution verification timing | Inline only / Async only / Two-tier | **Two-tier (inline + async)** | Boris Cherny's #1 insight: verification loops multiply quality 2-3x, but only if the model sees the failure and self-corrects. Tier 1: fast inline checks (~2-5s) as quality gate before delivery. Tier 2: deep async analysis for monitoring, drift detection, and skill improvement. | Feb 17 |
 | 18 | Layer investment principle | Equal / Model-dependent | **Thick domain, thin orchestration** | Boris Cherny's "scaffolding gets subsumed" principle: orchestration code gets deleted with model upgrades, but domain knowledge (skills, profiles, verification) is durable. Build skills and verification thick; keep orchestration as a thin router. | Feb 17 |
+| 19 | Profile engine timing | Phase 3 / Phase 2.5 standalone / Phase 4 | **Phase 2.5 standalone library** | Profile engine + content fidelity are independent of platform infrastructure (no web portal, MCP gateway, or containers needed). Building standalone means: immediate NCLC use, second-domain validation before platform exists, Phase 3 imports a tested library. This is the "thick domain" investment per Decision #18. | Feb 17 |
 
 ---
 
@@ -946,5 +977,5 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 ---
 
 *Plan created: January 29, 2026*
-*Updated: February 17, 2026 — Boris Cherny (Claude Code creator) analysis: replaced OMC with thin server orchestrator + native Claude Code (Decision #16), added two-tier content fidelity verification (Decision #17), added "thick domain, thin orchestration" architectural principle (Decision #18), resolved attribution timing and OMC open questions. Prior: Feb 15 — Client Profile Building pipeline, author verification, Attribution Service, decisions #14-15. Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
+*Updated: February 17, 2026 — Added Phase 2.5 (Profile Engine + Content Fidelity) as priority standalone library (Decision #19). Boris Cherny (Claude Code creator) analysis: replaced OMC with thin server orchestrator + native Claude Code (Decision #16), added two-tier content fidelity verification (Decision #17), added "thick domain, thin orchestration" architectural principle (Decision #18), resolved attribution timing and OMC open questions. Prior: Feb 15 — Client Profile Building pipeline, author verification, Attribution Service, decisions #14-15. Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
 *For: Zivtech AI Agent Platform*
