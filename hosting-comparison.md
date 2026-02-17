@@ -9,11 +9,11 @@
 
 | Workload | Decision | Cost |
 |----------|----------|------|
-| **MCP Server** | Docker Compose on AWS EC2 | ~$12-24/mo |
+| **MCP Server + Activepieces** | Docker Compose on AWS EC2 (t3.medium) | ~$33/mo |
 | **Static PoCs** | GitHub Pages + StatiCrypt | Free |
 | **Drupal PoCs** | Pantheon Multidev / Tugboat / Probo.ci (separate system) | Already covered |
 
-**Rationale:** Three separate, purpose-fit systems. Cheapest possible. No vendor lock-in. Drupal PoCs are a solved problem with existing tools — no need to bundle them with the platform hosting.
+**Rationale:** Three separate, purpose-fit systems. No vendor lock-in. Drupal PoCs are a solved problem with existing tools — no need to bundle them with the platform hosting. EC2 instance sized at t3.medium to accommodate Activepieces (Phase 2.5) alongside the MCP server.
 
 ---
 
@@ -22,6 +22,7 @@
 | Workload | Stack | Host | Notes |
 |----------|-------|------|-------|
 | **MCP Server** | Node.js + TypeScript + PostgreSQL | AWS EC2 + Docker Compose | The platform itself — auth, tool executors, scheduled tasks |
+| **Activepieces** | TypeScript + PostgreSQL + Redis | AWS EC2 + Docker Compose (same instance) | Workflow automation — visual builder, 200+ integrations, webhook triggers (Phase 2.5) |
 | **Static PoCs** | HTML, PDFs, built React apps | GitHub Pages + StatiCrypt | Password-protected, directory-based, git-managed |
 | **Drupal PoCs** | PHP + MySQL/PostgreSQL + webserver | Multidev / Tugboat / Probo.ci | Separate system, existing tools |
 
@@ -152,14 +153,27 @@ Use the best tool for each job. Two providers, clean separation.
 
 ### Chosen Architecture
 
-**1. MCP Server → Docker Compose on AWS EC2**
-- Node.js + PostgreSQL in containers
+**1. MCP Server + Activepieces → Docker Compose on AWS EC2**
+- Node.js + PostgreSQL in containers (MCP server)
+- Activepieces + separate PostgreSQL + Redis in containers (Phase 2.5)
 - Docker Compose for orchestration
 - GitHub Actions for CI/CD (build → push image → deploy)
-- AWS: ~$15-35/mo (t3.small/medium)
+- AWS: t3.medium ~$33/mo (4GB RAM — accommodates both services with headroom)
 - Scales to multi-tenant by adding services or upgrading instance
 - AWS MCP ecosystem (45+ official servers from awslabs) enables Claude to help manage infrastructure
 - Optional: Coolify as management UI (evaluate after initial deploy)
+
+**Resource breakdown (Phase 2.5):**
+
+| Service | RAM |
+|---------|-----|
+| MCP Server (Node.js) | ~400MB |
+| PostgreSQL (jawn-ai) | ~256MB |
+| Activepieces | ~1.5GB |
+| PostgreSQL (Activepieces) | ~256MB |
+| Redis (Activepieces) | ~128MB |
+| OS overhead | ~500MB |
+| **Total** | **~3.0GB** (1GB headroom on t3.medium) |
 
 **2. Static PoCs → GitHub Pages + StatiCrypt**
 - Free, zero infrastructure
@@ -177,9 +191,11 @@ Use the best tool for each job. Two providers, clean separation.
 
 ### Quick-Start Path
 
-1. Provision AWS EC2, install Docker + Compose
+1. Provision AWS EC2 (t3.medium), install Docker + Compose
 2. Deploy MCP server (Node.js + PostgreSQL containers)
 3. Set up GitHub Actions pipeline for the MCP server
 4. Configure GitHub Pages on jawn-ai or a dedicated PoC repo with StatiCrypt
 5. First static PoC deployed and password-protected
-6. Evaluate after 1 month; consider Coolify or scaling if needed
+6. Add Activepieces to Docker Compose (Phase 2.5) — app + PostgreSQL + Redis
+7. Build proof-of-concept workflows, validate resource usage
+8. Evaluate after 1 month; consider Coolify or scaling if needed

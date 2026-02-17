@@ -69,9 +69,10 @@ jawn-ai/
 | **1** | Asset Sharing Pipeline — GitHub Pages + StatiCrypt for PoC distribution | **In Progress** |
 | **S1** | Session & Context Management — MCP-first state persistence for Claude | **Specified** (9 WPs ready) |
 | **2** | MCP Server Deployment — Full MCP suite + skill runtime on AWS EC2 | Specified |
+| **2.5** | Activepieces Integration — Visual workflow automation, 200+ integrations, webhook triggers | Planned |
 | **S2** | Workflow Enforcement — Quality gates, skill routing, branch verification | Planned |
-| **3** | Platform Framework — Next.js web app, multi-tenant, Skills/Styles | Planned |
-| **4** | Additional Tools — Presentation Toolkit, Document Generator, etc. | Planned |
+| **3** | Platform Framework — Next.js web app, multi-tenant, Skills/Styles, MCP Gateway, code sandbox, job management | Planned |
+| **4** | Additional Tools — Presentation Toolkit, Document Generator, Analysis Tools, Visual Regression Testing, Spec Kitty as Service | Planned |
 
 ## Key Architecture Decisions
 
@@ -80,7 +81,7 @@ jawn-ai/
 | Session State Interface | MCP server (primary) | Users never run CLI commands; Claude calls MCP tools |
 | Session State Capture | Companion service (daemon) | Background fs watching for git events; MCP can't do long-running processes |
 | State Storage | JSON files at `~/.jawn-ai/` | Per-developer, offline, no external DB, 2-10KB per snapshot |
-| MCP Server Hosting | AWS EC2 + Docker Compose (~$15-35/mo) | Mature MCP ecosystem, Claude can manage infra |
+| MCP Server Hosting | AWS EC2 + Docker Compose (t3.medium, ~$33/mo) | Mature MCP ecosystem, Claude can manage infra |
 | Static PoC Hosting | GitHub Pages + StatiCrypt (free) | Git-native, AES-256, directory structure carries forward |
 | Enterprise Features | Claude Enterprise (not duplicated) | Audit logging, cost tracking, compliance handled by Enterprise |
 
@@ -88,7 +89,7 @@ jawn-ai/
 
 **Skills** — Prompt-based behavior modules loaded into Claude's context (Drupal standards, brand voice, ticket writing, Spec Kitty planning, etc.)
 
-**MCP Servers** — Tool providers via Model Context Protocol (Jira, Slack, GitHub, Google, jawn-ai-state, Playwright+Backstop.js, Memory, Office)
+**MCP Servers** — Tool providers via Model Context Protocol (Jira, Slack, GitHub, Google, jawn-ai-state, Activepieces (~400 tools), Playwright+Backstop.js, Memory, Office)
 
 **CLI Tools** — System executables Claude invokes through the shell (python-pptx, StatiCrypt, gh CLI, Docker, Vite, SquirrelScan)
 
@@ -101,6 +102,7 @@ jawn-ai/
 | Orchestrator | Claude Agent SDK |
 | Web App | Next.js (Phase 3) |
 | PoC Sharing | GitHub Pages + StatiCrypt |
+| Workflow Automation | Activepieces (self-hosted, MIT) |
 | Infrastructure | AWS EC2 + Docker Compose |
 | Development Framework | Spec Kitty |
 

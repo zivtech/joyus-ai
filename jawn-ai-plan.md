@@ -37,14 +37,15 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 ### Tools Within the Platform
 
 1. **Asset Sharing Pipeline** (Phase 1 — ACTIVE)
-2. **Client Profile Building** (Phase 3 — Skills System core)
-3. **Author Verification / Content Fidelity** (Phase 3 — Monitoring Layer)
-4. Presentation Generator (Phase 4)
-5. Document Generator (reports, proposals — Phase 4)
-6. Analysis Tools (financial, gap analysis, roadmaps — Phase 4)
-7. Author Attribution Service (Phase 4 — standalone client tool)
-8. Research Tools (web, doc analysis — Phase 4)
-9. Support Tools (client comms, FAQs — Phase 4)
+2. **Activepieces Workflow Automation** (Phase 2.5 — scheduling, visual workflows, 200+ integrations)
+3. **Client Profile Building** (Phase 3 — Skills System core)
+4. **Author Verification / Content Fidelity** (Phase 3 — Monitoring Layer)
+5. Presentation Generator (Phase 4)
+6. Document Generator (reports, proposals — Phase 4)
+7. Analysis Tools (financial, gap analysis, roadmaps — Phase 4)
+8. Author Attribution Service (Phase 4 — standalone client tool)
+9. Research Tools (web, doc analysis — Phase 4)
+10. Support Tools (client comms, FAQs — Phase 4)
 
 ---
 
@@ -144,10 +145,29 @@ See `../claude-files/nclc/author-identification-research/` for full research, re
 **What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `jawn-ai-mcp-server/`)
 
 **Implementation:**
-- Provision AWS EC2 (t3.small/medium)
+- Provision AWS EC2 (t3.medium — sized for Phase 2.5 Activepieces addition)
 - Docker Compose: Node.js app + PostgreSQL
 - GitHub Actions CI/CD pipeline
 - AWS MCP servers for infrastructure management via Claude
+
+### Phase 2.5: Activepieces Integration
+
+**Goal:** Add Activepieces as the visual workflow automation and scheduling layer, complementing the existing MCP server.
+
+**Why:** The existing node-cron scheduler has 11 hardcoded task types with no retries, no branching, no webhook triggers, and requires DB migrations to add new types. Activepieces provides a visual no-code workflow builder, 200+ integrations, webhook/event triggers, and per-project isolation for multi-tenancy.
+
+**Architecture:** Activepieces runs as a companion Docker service alongside the MCP server. Separate PostgreSQL + Redis containers. Communication via HTTP webhooks on Docker network. Jawn-ai tools remain canonical for Jira/Slack/GitHub/Gmail; Activepieces adds 196+ new integrations.
+
+**Implementation:**
+- Add Activepieces + PostgreSQL + Redis to `docker-compose.yml`
+- Add internal API endpoint (`/api/internal/execute-tool`) so Activepieces can call jawn-ai tools
+- Build 3 proof-of-concept flows (Standup Summary, PR Reminder, Visual Custom Sequence)
+- Validate resource usage on EC2 instance
+- Document admin access, flow creation, connection management
+
+**Migration:** Existing 11 node-cron task types continue running unchanged. New workflows go into Activepieces. Full migration to Activepieces happens during Phase 3.
+
+**Estimated effort:** 3-5 days
 
 ### Phase 3: Platform Framework
 
@@ -254,6 +274,7 @@ Break into work packages (see below)
 | MCP Gateway | Custom MCP server | 3 |
 | Monitoring | Langfuse + custom | 3 |
 | Session Tracking | Entire CLI (pilot) | 1 |
+| Workflow Automation | Activepieces (self-hosted, MIT) | 2.5 |
 | Presentation Generation | Python + Node.js (PptxGenJS) | 4 |
 | Document Generation | python-docx, ReportLab | 4 |
 | Development Framework | Spec Kitty | All |
@@ -284,6 +305,18 @@ Break into work packages (see below)
 | WP06e | Smoke Test + Monitoring | Verify all tool executors, basic uptime monitoring | 0.5 days |
 
 **Phase 2 Effort:** 3 days
+
+### Phase 2.5: Activepieces Integration
+
+| WP | Name | Description | Est. Effort |
+|----|------|-------------|-------------|
+| WP06f | Docker Compose Update | Add Activepieces, AP PostgreSQL, Redis services; pin image version; env vars | 0.5 days |
+| WP06g | Internal API Endpoint | Add `/api/internal/execute-tool` to MCP server — wraps existing `executeTool()`, Docker-network-only, shared secret auth | 0.5 days |
+| WP06h | Proof-of-Concept Flows | Build 3 flows in Activepieces UI: Standup Summary, PR Reminder, Visual Custom Sequence with branching | 1-1.5 days |
+| WP06i | Resource Validation | Monitor EC2 metrics, run 10 concurrent executions, confirm no OOM, document actual vs estimated usage | 0.5 days |
+| WP06j | Documentation | Admin guide, architecture decision record, update plan/hosting/README docs | 0.5-1 days |
+
+**Phase 2.5 Effort:** 3-5 days
 
 ### Phase 3: Platform Framework
 
@@ -373,11 +406,17 @@ Additional costs for:
 - [ ] Directory conventions documented
 
 ### Week 2: MCP Server Deployment (Phase 2)
-- [ ] WP06a-06e: Deploy MCP server to AWS EC2
+- [ ] WP06a-06e: Deploy MCP server to AWS EC2 (t3.medium)
 - [ ] All tool executors verified in production
 - [ ] GitHub Actions CI/CD pipeline working
 
-### Week 3-7: Platform Framework (Phase 3)
+### Week 3: Activepieces Integration (Phase 2.5)
+- [ ] WP06f-06j: Add Activepieces to Docker Compose
+- [ ] Internal API endpoint for tool bridge
+- [ ] 3 proof-of-concept flows validated
+- [ ] Resource usage confirmed on t3.medium
+
+### Week 4-8: Platform Framework (Phase 3)
 - [ ] WP07-12: Build web app, multi-tenant infrastructure
 - [ ] Google SSO, chat UI, MCP integrations
 - [ ] Internal pilot
@@ -428,7 +467,7 @@ Additional costs for:
 
 ### Hosting
 
-**MCP Server:** Docker Compose on AWS EC2 (~$15-35/mo, t3.small/medium). Node.js + PostgreSQL in containers, GitHub Actions CI/CD. AWS chosen for its mature MCP ecosystem (45+ official servers from awslabs) — enables Claude to help manage infrastructure directly.
+**MCP Server + Activepieces:** Docker Compose on AWS EC2 (t3.medium, ~$33/mo). MCP server (Node.js + PostgreSQL) plus Activepieces (app + separate PostgreSQL + Redis) in containers, GitHub Actions CI/CD. AWS chosen for its mature MCP ecosystem (45+ official servers from awslabs) — enables Claude to help manage infrastructure directly. Activepieces adds visual workflow automation, 200+ integrations, and webhook triggers alongside the existing MCP server.
 
 **Static PoCs:** GitHub Pages + StatiCrypt. Free, git-native, directory-based (`zivtech.github.io/poc-name/`). Custom domain (e.g., `demos.zivtech.com`) when ready.
 
@@ -472,8 +511,16 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 ### Phase 2 (MCP Deploy)
 | Question | Notes |
 |----------|-------|
-| AWS EC2 instance sizing | t3.small vs t3.medium for MCP server |
+| AWS EC2 instance sizing | **Resolved** — t3.medium ($33/mo) to accommodate Activepieces in Phase 2.5 |
 | Coolify vs raw Docker Compose | Evaluate management UI after 1 month |
+
+### Phase 2.5 (Activepieces)
+| Question | Notes |
+|----------|-------|
+| Activepieces image version pinning | Pin to specific release tag, not `latest` |
+| Shared vs separate PostgreSQL | Separate containers recommended; single PG with separate DBs acceptable for cost savings |
+| Custom piece development timeline | Build `jawn-ai-tools` piece during Phase 3 or use HTTP Request bridge indefinitely? |
+| Deduplication of Jira/Slack/GitHub/Gmail | Jawn-ai executors stay canonical; disable duplicate Activepieces pieces in Phase 3 MCP Gateway |
 
 ### Phase 3 (Platform)
 | Question | Notes |
@@ -527,5 +574,5 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 ---
 
 *Document maintained in: `jawn-ai/jawn-ai-plan.md`*
-*Updated: February 15, 2026 — Added Client Profile Building (WP08a) and Author Verification (WP08b) to Phase 3; Author Attribution Service (WP19a) to Phase 4; NCLC proof-of-concept section. Prior: Feb 12 — Aligned with Feb 11-12 decisions, resolved Phase 1 questions*
+*Updated: February 16, 2026 — Added Phase 2.5: Activepieces Integration (WP06f-06j) as workflow automation layer; updated hosting to t3.medium; resolved EC2 sizing question. Prior: Feb 15 — Added Client Profile Building (WP08a) and Author Verification (WP08b) to Phase 3; Author Attribution Service (WP19a) to Phase 4; NCLC proof-of-concept section. Feb 12 — Aligned with Feb 11-12 decisions, resolved Phase 1 questions*
 *Notion canonical: [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)*
