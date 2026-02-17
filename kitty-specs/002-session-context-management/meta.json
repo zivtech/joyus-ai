@@ -1,0 +1,8 @@
+{
+  "feature_number": "002",
+  "slug": "session-context-management",
+  "friendly_name": "Session & Context Management",
+  "mission": "software-dev",
+  "source_description": "jawn-ai mediator layer: canonical document management, session state continuity, and context handoff protocol. Domains 1, 2, 10 from jawn-ai-requirements-brief.md.",
+  "created_at": "2026-02-16T12:00:00Z"
+}
