@@ -1,14 +1,14 @@
 # Existing Projects Landscape Analysis
 
 **Date**: 2026-02-16
-**Purpose**: Identify established GitHub projects that overlap with jawn-ai's planned feature set to determine build-vs-leverage decisions.
-**Scope**: ~50+ projects surveyed across all 10 problem domains from jawn-ai-requirements-brief.md
+**Purpose**: Identify established GitHub projects that overlap with joyus-ai's planned feature set to determine build-vs-leverage decisions.
+**Scope**: ~50+ projects surveyed across all 10 problem domains from joyus-ai-requirements-brief.md
 
 ---
 
 ## Executive Summary
 
-jawn-ai's core value — an invisible mediator layer that protects non-technical users from workflow mistakes — is a genuine gap in the ecosystem. No existing project combines structured state management, canonical document tracking, skill auto-routing, and quality gates into a single system that the user never directly interacts with. Claude Enterprise covers observability, audit trails, and security, but does NOT cover working state persistence, workflow enforcement, or skill routing. The deployment model is: **MCP server + companion service** — the maximum the end user configures is connecting the MCP server (and possibly running a companion app). Everything else is invisible mediation.
+joyus-ai's core value — an invisible mediator layer that protects non-technical users from workflow mistakes — is a genuine gap in the ecosystem. No existing project combines structured state management, canonical document tracking, skill auto-routing, and quality gates into a single system that the user never directly interacts with. Claude Enterprise covers observability, audit trails, and security, but does NOT cover working state persistence, workflow enforcement, or skill routing. The deployment model is: **MCP server + companion service** — the maximum the end user configures is connecting the MCP server (and possibly running a companion app). Everything else is invisible mediation.
 
 ---
 
@@ -32,8 +32,8 @@ jawn-ai's core value — an invisible mediator layer that protects non-technical
 - **GitHub**: [doobidoo/mcp-memory-service](https://github.com/doobidoo/mcp-memory-service)
 - **Stars**: 1.3k | **Status**: Very active (v10.13.1, Feb 15, 2026)
 - **What it does**: Persistent memory across sessions for 13+ AI tools, semantic search + BM25 hybrid retrieval, 5ms performance, web dashboard.
-- **Relevance**: Handles stable/long-term memory (facts, preferences) — could complement jawn-ai's ephemeral state (branch, files, tests). Cross-platform via MCP.
-- **Recommendation**: **Could complement** jawn-ai for stable memory while hooks handle ephemeral state.
+- **Relevance**: Handles stable/long-term memory (facts, preferences) — could complement joyus-ai's ephemeral state (branch, files, tests). Cross-platform via MCP.
+- **Recommendation**: **Could complement** joyus-ai for stable memory while hooks handle ephemeral state.
 
 ### task-orchestrator
 - **GitHub**: [jpicklyk/task-orchestrator](https://github.com/jpicklyk/task-orchestrator)
@@ -219,7 +219,7 @@ jawn-ai's core value — an invisible mediator layer that protects non-technical
 ### Codacy Guardrails
 - **Website**: [codacy.com/guardrails](https://www.codacy.com/guardrails) (commercial, free tier)
 - **What it does**: MCP server for AI agent integration, real-time code checks, IDE extensions, Claude Code integration.
-- **Recommendation**: **Evaluate** — has native Claude Code MCP integration. Could complement or compete with jawn-ai's quality gates.
+- **Recommendation**: **Evaluate** — has native Claude Code MCP integration. Could complement or compete with joyus-ai's quality gates.
 
 ### NeMo Guardrails (NVIDIA)
 - **GitHub**: [NVIDIA-NeMo/Guardrails](https://github.com/NVIDIA-NeMo/Guardrails)
@@ -273,7 +273,7 @@ jawn-ai's core value — an invisible mediator layer that protects non-technical
 - **What it does**: Session persistence with SQLite WAL, 3-scope agent memory, multi-agent orchestration.
 - **Recommendation**: **Reference for** multi-agent persistence patterns. Too complex for session state alone.
 
-**Verdict**: All are the wrong abstraction level for jawn-ai. Either too abstract (orchestration) or too autonomous (coding agents). jawn-ai's mediator layer concept is a unique gap.
+**Verdict**: All are the wrong abstraction level for joyus-ai. Either too abstract (orchestration) or too autonomous (coding agents). joyus-ai's mediator layer concept is a unique gap.
 
 ---
 
@@ -318,13 +318,13 @@ jawn-ai's core value — an invisible mediator layer that protects non-technical
 - **Integration**: Already configured as MCP server (`mcp__context7__resolve-library-id`, `mcp__context7__query-docs`)
 - **What it does**: Up-to-date documentation and code examples for any library via MCP.
 - **Relevance**: Reduces hallucinated API usage, keeps agents current on library versions, saves context tokens.
-- **Recommendation**: **Already integrated** — complements jawn-ai (library knowledge vs project state/workflow).
+- **Recommendation**: **Already integrated** — complements joyus-ai (library knowledge vs project state/workflow).
 
 ### .cursorrules / CLAUDE.md Ecosystem
 - Various projects for project-specific AI coding rules
 - CodeRabbit auto-detects .cursorrules, CLAUDE.md, .clinerules, .windsurfrules
 - Conversion tools exist between formats
-- **Recommendation**: **Static files, not dynamic mediation** — jawn-ai goes beyond this.
+- **Recommendation**: **Static files, not dynamic mediation** — joyus-ai goes beyond this.
 
 ---
 
@@ -359,7 +359,7 @@ jawn-ai's core value — an invisible mediator layer that protects non-technical
 2. **Spec 2 can leverage existing hook runners** (Lefthook/pre-commit) and linting tools (Super-Linter/Trunk.io). Build the mediation/tiering layer on top.
 3. **Spec 3 should integrate, not build** — Langfuse/Phoenix for observability, LiteLLM for multi-backend routing.
 4. **The mediator layer concept is a real gap** — nobody has built a system that sits between users and AI agents to enforce workflow discipline with quality gates, canonical document management, and skill routing.
-5. **Context7 is complementary** — handles library knowledge while jawn-ai handles project state and workflow.
+5. **Context7 is complementary** — handles library knowledge while joyus-ai handles project state and workflow.
 
 ---
 
@@ -421,7 +421,7 @@ This means every "just configure the hooks" solution is invalid for the target a
 ```
 User talks to Claude Desktop/Code
         |
-Claude connects to jawn-ai MCP server (user configured this ONE thing)
+Claude connects to joyus-ai MCP server (user configured this ONE thing)
         |
 Companion service runs alongside (handles background state capture,
   event monitoring, things MCP protocol can't do)
@@ -487,16 +487,16 @@ The user never sees any of this. Claude is the UI.
 
 ## Key Takeaways (Revised 2026-02-16)
 
-1. **The product is an invisible mediator.** The user interacts with Claude. Claude interacts with jawn-ai's MCP server. The user never touches jawn-ai directly. Maximum setup: add MCP server + run companion app.
+1. **The product is an invisible mediator.** The user interacts with Claude. Claude interacts with joyus-ai's MCP server. The user never touches joyus-ai directly. Maximum setup: add MCP server + run companion app.
 2. **Claude Enterprise eliminates Spec 3.** Don't build audit logging, cost tracking, or security infrastructure. Enterprise handles it.
 3. **Spec 1 and Spec 2 are still fully valuable.** Enterprise doesn't do working state persistence, workflow enforcement, skill routing, or canonical document management.
 4. **MCP server first, CLI second.** The MCP server IS the product for non-technical users. The CLI is an admin tool built later.
-5. **Context7 handles library knowledge.** jawn-ai handles project state and workflow. They're complementary.
+5. **Context7 handles library knowledge.** joyus-ai handles project state and workflow. They're complementary.
 6. **Existing OSS tools (Lefthook, pre-commit, git-branchless, etc.) are useful internally** — the companion service can use them under the hood — but users never interact with them directly.
 
 ---
 
 *Research compiled: February 16, 2026*
 *Updated: February 16, 2026 (Claude Enterprise analysis, non-technical user reframing)*
-*For: jawn-ai — Mediator Layer landscape analysis*
+*For: joyus-ai — Mediator Layer landscape analysis*
 *Evidence: GitHub search, web research, MCP ecosystem analysis, Claude Enterprise documentation*

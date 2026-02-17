@@ -16,7 +16,7 @@ history:
 
 ## Objective
 
-Create all Docker configuration files for the 3-container architecture: Platform (jawn-ai MCP server + skill runtime), Playwright (browser automation), and PostgreSQL (database). This is the foundation everything else builds on.
+Create all Docker configuration files for the 3-container architecture: Platform (joyus-ai MCP server + skill runtime), Playwright (browser automation), and PostgreSQL (database). This is the foundation everything else builds on.
 
 ## Context
 
@@ -58,7 +58,7 @@ Create all Docker configuration files for the 3-container architecture: Platform
 
 ### T002: Write Platform Container Dockerfile
 
-**Purpose**: Multi-stage build that layers Node.js, Python, system packages, and CLI tools into a single image for the jawn-ai MCP server and skill runtime.
+**Purpose**: Multi-stage build that layers Node.js, Python, system packages, and CLI tools into a single image for the joyus-ai MCP server and skill runtime.
 
 **Steps**:
 1. Create `deploy/Dockerfile.platform` with multi-stage build:
@@ -89,9 +89,9 @@ Create all Docker configuration files for the 3-container architecture: Platform
    - **Stage 6 — Application code**:
      ```dockerfile
      WORKDIR /app
-     COPY jawn-ai-mcp-server/package*.json ./
+     COPY joyus-ai-mcp-server/package*.json ./
      RUN npm ci --production
-     COPY jawn-ai-mcp-server/ ./
+     COPY joyus-ai-mcp-server/ ./
      ```
    - **Stage 7 — Node packages for skills**:
      ```dockerfile
@@ -168,7 +168,7 @@ Create all Docker configuration files for the 3-container architecture: Platform
        timeout: 5s
        retries: 5
    ```
-2. Ensure the existing Drizzle ORM migrations from `jawn-ai-mcp-server/` run on startup (or via entrypoint script)
+2. Ensure the existing Drizzle ORM migrations from `joyus-ai-mcp-server/` run on startup (or via entrypoint script)
 
 **Files**:
 - Updates to `deploy/docker-compose.yml` (postgres service section)

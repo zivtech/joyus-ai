@@ -15,15 +15,15 @@
 - Include precise file paths or modules.
 
 ## Path Conventions
-- Source: `jawn-ai-state/src/`
-- Tests: `jawn-ai-state/tests/`
-- Binaries: `jawn-ai-state/bin/`
+- Source: `joyus-ai-state/src/`
+- Tests: `joyus-ai-state/tests/`
+- Binaries: `joyus-ai-state/bin/`
 
 ---
 
 ## Work Package WP01: Package Setup & Core Types (Priority: P0)
 
-**Goal**: Establish the `jawn-ai-state` package with all shared types, Zod validation schemas, and configuration loading.
+**Goal**: Establish the `joyus-ai-state` package with all shared types, Zod validation schemas, and configuration loading.
 **Independent Test**: Package compiles, types are importable, schemas validate sample data, config loading works with defaults.
 **Prompt**: `tasks/WP01-package-setup-core-types.md`
 
@@ -34,7 +34,7 @@
 - [ ] T004 Implement configuration loading (GlobalConfig, ProjectConfig, merging, defaults)
 
 ### Implementation Notes
-- Package name: `jawn-ai-state`. TypeScript 5.3+, Node.js 20+.
+- Package name: `joyus-ai-state`. TypeScript 5.3+, Node.js 20+.
 - All types derive from `data-model.md`. Zod schemas mirror the types exactly.
 - Config merging: project config overrides global config. Missing keys use defaults.
 - Dependencies: `@modelcontextprotocol/sdk`, `zod`, `@paralleldrive/cuid2`
@@ -59,7 +59,7 @@
 ### Included Subtasks
 - [ ] T005 Implement atomic snapshot write (temp file + rename pattern)
 - [ ] T006 Implement snapshot read (latest, by ID, list with date/event/branch filters)
-- [ ] T007 State directory initialization (create `~/.jawn-ai/projects/<hash>/` structure)
+- [ ] T007 State directory initialization (create `~/.joyus-ai/projects/<hash>/` structure)
 - [ ] T008 Implement divergence detection (stored snapshot vs live project state)
 
 ### Implementation Notes
@@ -122,7 +122,7 @@
 - [ ] T016 [P] Canonical status integration in snapshots (check modified files against declarations)
 
 ### Implementation Notes
-- Storage: `.jawn-ai/canonical.json` in project root (committed to git — team-shared).
+- Storage: `.joyus-ai/canonical.json` in project root (committed to git — team-shared).
 - Atomic writes (temp + rename) same pattern as state store.
 - checkPath priority: branch override > default path.
 - Warning format matches contracts/state-api.md.
@@ -178,11 +178,11 @@
 - [ ] T021 [P] `get_context` tool (load latest snapshot, run live collectors, merge, add divergence field)
 - [ ] T022 [P] `save_state` tool (accept event/note/decision params, run collectors, create and write snapshot)
 - [ ] T023 [P] `verify_action` tool (branch-match, uncommitted-changes, canonical-conflict, force-push checks)
-- [ ] T024 MCP server entry point (`bin/jawn-ai-mcp`, project root detection, stdio launch)
+- [ ] T024 MCP server entry point (`bin/joyus-ai-mcp`, project root detection, stdio launch)
 
 ### Implementation Notes
 - Uses `@modelcontextprotocol/sdk` Server + StdioServerTransport.
-- Server name: `jawn-ai-state`, version: `0.1.0`.
+- Server name: `joyus-ai-state`, version: `0.1.0`.
 - All logging to stderr (stdout reserved for MCP protocol).
 - Tool contracts match `contracts/state-api.md` exactly.
 - get_context is the most-used tool — must be <500ms.
@@ -204,21 +204,23 @@
 
 ## Work Package WP07: MCP Extended Tools (Priority: P1)
 
-**Goal**: Add the remaining MCP tools (`check_canonical`, `share_state`), consistent error handling across all tools, and Claude Desktop configuration documentation.
-**Independent Test**: All 5 MCP tools work end-to-end. Claude Desktop config correctly connects to the server.
+**Goal**: Add the remaining MCP tools (`check_canonical`, `share_state`, `query_snapshots`), consistent error handling across all tools, and Claude Desktop configuration documentation.
+**Independent Test**: All 6 MCP tools work end-to-end. Claude Desktop config correctly connects to the server.
 **Prompt**: `tasks/WP07-mcp-extended-tools.md`
 
 ### Included Subtasks
 - [ ] T025 `check_canonical` tool (check mode + declare mode, wraps canonical module from WP04)
 - [ ] T026 [P] `share_state` tool (export + import modes, wraps sharing module from WP05)
-- [ ] T027 [P] Tool input validation and error response handling (consistent pattern across all 5 tools)
+- [ ] T027 [P] Tool input validation and error response handling (consistent pattern across all 6 tools)
 - [ ] T028 Claude Desktop/Code MCP configuration (setup instructions, verification steps)
+- [ ] T039 [P] `query_snapshots` tool (list/filter snapshots by date range, event type, or branch; return summaries, not full payloads; wraps T006 store read)
 
 ### Implementation Notes
 - check_canonical has two modes: "check" (is this path canonical?) and "declare" (declare a new canonical source).
 - share_state has two modes: "export" (package + note) and "import" (load shared state).
+- query_snapshots is a thin wrapper over T006 store read with filters — returns snapshot summaries (timestamp, event type, branch, note) not full payloads. Fulfills FR-008 (query prior state on demand).
 - Error handling pattern: validate input with Zod → call core module → catch errors → return MCP error response.
-- Configuration: `npx jawn-ai-mcp` command for Claude Desktop `mcpServers` config.
+- Configuration: `npx joyus-ai-mcp` command for Claude Desktop `mcpServers` config.
 
 ### Parallel Opportunities
 - T025 and T026 are independent (different underlying modules). T027 is a cross-cutting refactor.
@@ -242,12 +244,13 @@
 - [ ] T030 Filesystem watcher (watch `.git/HEAD`, `.git/refs/`, project files; debouncing)
 - [ ] T031 [P] Event handler (classify detected events → EventType, route to snapshot capture)
 - [ ] T032 [P] MCP ↔ Service IPC (localhost HTTP or unix socket, health check, capture request)
-- [ ] T033 Service entry point (`bin/jawn-ai-service`, CLI flags, foreground mode)
+- [ ] T033 Service entry point (`bin/joyus-ai-service`, CLI flags, foreground mode)
+- [ ] T040 [P] Custom event trigger support — load user-defined triggers from config (glob pattern + label, e.g., {"pattern": "**/Dockerfile", "event": "docker-build"}); watcher evaluates custom triggers alongside built-in events; fires standard snapshot capture
 
 ### Implementation Notes
 - Uses `fs.watch` or `chokidar` for filesystem monitoring.
 - Debouncing: git events 500ms, test runs 2s, file changes 5s.
-- PID file: `~/.jawn-ai/projects/<hash>/service.pid` — MCP server checks this.
+- PID file: `~/.joyus-ai/projects/<hash>/service.pid` — MCP server checks this.
 - IPC: simple localhost HTTP server on a random port (port written to service.port file).
 - Service is optional — MCP server works without it (degraded but functional).
 - CPU usage target: <1% during idle periods.
@@ -279,7 +282,7 @@
 
 ### Implementation Notes
 - Integration tests use temp directories with fresh git repos.
-- Set HOME env var to temp location to avoid polluting real `~/.jawn-ai/`.
+- Set HOME env var to temp location to avoid polluting real `~/.joyus-ai/`.
 - Lock pattern: `O_CREAT | O_EXCL` for atomic creation, check PID for stale locks.
 - Golden rule: errors NEVER block the developer's work (FR-011).
 - All logging to stderr (stdout reserved for MCP protocol).
@@ -317,7 +320,7 @@ Phase 3 — Integration & Hardening:
 
 - **Parallelization**: WP02 ∥ WP03 after WP01. WP04 ∥ WP05 after WP02. WP06 ∥ WP08 after WP02+WP03. WP07 waits for WP04+WP05+WP06.
 - **MVP Scope**: WP01 → WP02 → WP03 → WP06 (foundation + MCP server with core tools). This gives Claude `get_context`, `save_state`, and `verify_action` — enough for session restoration and basic guardrails.
-- **Full Scope**: All 9 WPs deliver the complete MCP-first session & context management system with companion service.
+- **Full Scope**: All 9 WPs (40 subtasks) deliver the complete MCP-first session & context management system with companion service.
 
 ---
 
@@ -363,3 +366,5 @@ Phase 3 — Integration & Hardening:
 | T036 | Concurrent session handling | WP09 | P2 | No |
 | T037 | Error handling audit | WP09 | P2 | Yes |
 | T038 | Logging utility | WP09 | P2 | Yes |
+| T039 | `query_snapshots` MCP tool | WP07 | P1 | Yes |
+| T040 | Custom event trigger support | WP08 | P1 | Yes |

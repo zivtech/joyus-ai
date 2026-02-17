@@ -48,7 +48,7 @@ history:
 
 ## Context & Constraints
 
-- **002 Companion Service**: `jawn-ai-state/src/service/` -- daemon.ts, watcher.ts, event-handler.ts
+- **002 Companion Service**: `joyus-ai-state/src/service/` -- daemon.ts, watcher.ts, event-handler.ts
 - **Plan**: Companion service from 002 already watches filesystem and git events. This WP adds new event types.
 - **Spec**: User Story 5 (session-start hygiene), FR-008/FR-013 (skill auto-load on file change)
 - **Risk**: 002's companion service may not exist yet. Build event handlers as standalone modules.
@@ -61,7 +61,7 @@ history:
 
 - **Purpose**: When a new session starts (companion service boots or MCP server connects), automatically run branch hygiene checks and report to Claude.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/events/session-start.ts`
+  1. Create `joyus-ai-state/src/enforcement/events/session-start.ts`
   2. Implement `onSessionStart(config: EnforcementConfig): Promise<SessionStartReport>`:
      - Call `detectStaleBranches()` from git engine
      - Call `checkBranchCount()` from git engine
@@ -77,14 +77,14 @@ history:
        suggestions: string[];  // human-readable suggestions for Claude
      }
      ```
-- **Files**: `jawn-ai-state/src/enforcement/events/session-start.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/enforcement/events/session-start.ts` (new, ~50 lines)
 - **Parallel?**: Yes
 
 ### Subtask T043 -- Implement file-change skill auto-load trigger
 
 - **Purpose**: When files change that match skill mapping patterns, trigger skill reload so Claude has up-to-date constraints.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/events/file-change.ts`
+  1. Create `joyus-ai-state/src/enforcement/events/file-change.ts`
   2. Implement `onFileChange(changedFiles: string[], config: EnforcementConfig): Promise<SkillReloadResult>`:
      - Call `matchSkillsForFiles()` with changed file paths
      - If new skills matched: load them (with cache fallback)
@@ -93,7 +93,7 @@ history:
   3. Implement debouncing: rapid file changes (< 2 seconds apart) should be batched
   4. Only trigger reload if the matched skill set changes (avoid redundant reloads)
   5. Create audit entry with `actionType: 'skill-load'` for each newly loaded skill
-- **Files**: `jawn-ai-state/src/enforcement/events/file-change.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/enforcement/events/file-change.ts` (new, ~60 lines)
 - **Parallel?**: Yes
 - **Notes**: Debouncing is important -- rapid saves in an IDE shouldn't trigger 10 skill reloads.
 
@@ -101,16 +101,16 @@ history:
 
 - **Purpose**: When the developer switches branches, enforcement config may change (different branch may have different gates/rules). Reload config.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/events/branch-switch.ts`
+  1. Create `joyus-ai-state/src/enforcement/events/branch-switch.ts`
   2. Implement `onBranchSwitch(newBranch: string, config: EnforcementConfig): Promise<ConfigReloadResult>`:
-     - Reload project config from `.jawn-ai/config.json` (may be different on new branch)
+     - Reload project config from `.joyus-ai/config.json` (may be different on new branch)
      - Reload developer config (in case project hash changed)
      - Re-merge configs
      - Compare with previous config: detect what changed (new gates, different rules)
      - Create audit entry with `actionType: 'config-reload'`
      - Return diff summary of config changes
   3. Also check branch naming convention for the new branch
-- **Files**: `jawn-ai-state/src/enforcement/events/branch-switch.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/enforcement/events/branch-switch.ts` (new, ~50 lines)
 - **Parallel?**: Yes
 
 ### Subtask T045 -- Wire enforcement events into companion service
@@ -118,7 +118,7 @@ history:
 - **Purpose**: Connect the event handlers (T042-T044) to the companion service's event routing system.
 - **Steps**:
   1. If 002's `event-handler.ts` exists: extend it with new event types
-  2. If not: create `jawn-ai-state/src/enforcement/events/router.ts`:
+  2. If not: create `joyus-ai-state/src/enforcement/events/router.ts`:
      ```typescript
      export class EnforcementEventRouter {
        constructor(private config: EnforcementConfig, private auditWriter: AuditWriter) {}
@@ -137,7 +137,7 @@ history:
      - `{ type: 'file-change', files: string[] }`
      - `{ type: 'branch-switch', branch: string }`
   4. Export router for integration with 002's companion service (or standalone use)
-- **Files**: `jawn-ai-state/src/enforcement/events/router.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/events/router.ts` (new, ~40 lines)
 - **Notes**: Build as a standalone module that can be wired into 002's event system later. Don't create hard dependencies on 002's daemon if it doesn't exist yet.
 
 ## Risks & Mitigations

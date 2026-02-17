@@ -54,7 +54,7 @@ history:
 - **Spec**: FR-001 through FR-007 (quality gates), User Story 1
 - **Data Model**: QualityGate entity, GateType enum, EnforcementTier enum
 - **Research**: gate execution model (sequential fail-fast), timeout design (60s default, AbortController)
-- **Plan**: `jawn-ai-state/src/enforcement/gates/` directory
+- **Plan**: `joyus-ai-state/src/enforcement/gates/` directory
 - **Clarifications**: Sequential fail-fast confirmed. 60-second default confirmed.
 
 **Implementation command**: `spec-kitty implement WP03 --base WP02`
@@ -65,7 +65,7 @@ history:
 
 - **Purpose**: Provide a registry of supported gate types with metadata about each (display name, default command patterns, expected output format).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/gates/registry.ts`
+  1. Create `joyus-ai-state/src/enforcement/gates/registry.ts`
   2. Define `GateTypeInfo` interface: `{ type: GateType, displayName: string, defaultCommand?: string, outputParser?: (stdout: string) => GateOutput }`
   3. Register built-in gate types:
      - `lint`: default command pattern `npx eslint .`, parse for error count
@@ -75,13 +75,13 @@ history:
      - `custom`: user-provided command, no parsing (exit code only)
   4. Implement `getGateInfo(type: GateType): GateTypeInfo`
   5. Output parsers are best-effort -- if parsing fails, fall back to exit code (0 = pass, non-zero = fail)
-- **Files**: `jawn-ai-state/src/enforcement/gates/registry.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/enforcement/gates/registry.ts` (new, ~60 lines)
 
 ### Subtask T015 -- Implement sequential fail-fast gate runner
 
 - **Purpose**: Core gate execution engine. Runs gates in configured order, stops at first failure.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/gates/runner.ts`
+  1. Create `joyus-ai-state/src/enforcement/gates/runner.ts`
   2. Implement `runGates(config: GateRunConfig): Promise<GateRunResult>`:
      ```typescript
      interface GateRunConfig {
@@ -112,14 +112,14 @@ history:
           - If tier is `skip`: log, continue to next gate
        d. If result is `pass`, `timeout`, `unavailable`: log and continue
      - If all gates pass: `overallResult: 'pass'`
-- **Files**: `jawn-ai-state/src/enforcement/gates/runner.ts` (new, ~100 lines)
+- **Files**: `joyus-ai-state/src/enforcement/gates/runner.ts` (new, ~100 lines)
 - **Notes**: The runner doesn't make the block/allow decision for `ask-me` -- it reports the failure, and the MCP tool layer (WP06) lets Claude present the choice.
 
 ### Subtask T016 -- Implement gate timeout handling
 
 - **Purpose**: Prevent gates from hanging indefinitely. Kill the process after the configured timeout.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/gates/timeout.ts`
+  1. Create `joyus-ai-state/src/enforcement/gates/timeout.ts`
   2. Implement `executeGate(gate: QualityGate): Promise<GateExecutionResult>`:
      ```typescript
      interface GateExecutionResult {
@@ -143,14 +143,14 @@ history:
      - Zero exit code: return `result: 'pass'`
   6. Capture stdout + stderr, truncate to 2000 characters
   7. Measure duration with `performance.now()`
-- **Files**: `jawn-ai-state/src/enforcement/gates/timeout.ts` (new, ~80 lines)
+- **Files**: `joyus-ai-state/src/enforcement/gates/timeout.ts` (new, ~80 lines)
 - **Notes**: Use `signal` option on `spawn` for clean abort. Ensure child process and all descendants are killed (use `kill(-pid)` for process group).
 
 ### Subtask T017 -- Implement gate result mapping to enforcement tiers
 
 - **Purpose**: Determine the effective enforcement tier for each gate based on user tier, gate defaults, project policy, and developer overrides.
 - **Steps**:
-  1. Add to `runner.ts` or create `jawn-ai-state/src/enforcement/gates/tier-resolver.ts`:
+  1. Add to `runner.ts` or create `joyus-ai-state/src/enforcement/gates/tier-resolver.ts`:
   2. Implement `resolveGateTier(gate: QualityGate, userTier: UserTier, overrides: Record<string, EnforcementTier>, mandatoryGates: string[]): EnforcementTier`:
      - If gate is in `mandatoryGates`: return `'always-run'` (cannot be overridden)
      - If gate has a developer override: return the override
@@ -159,7 +159,7 @@ history:
        - `tier-2` (power user): gate's `defaultTier` (usually `'ask-me'`)
        - `tier-3` (non-technical): `'always-run'`
   3. Log the resolution path for debugging (SC-010 equivalent for gates)
-- **Files**: `jawn-ai-state/src/enforcement/gates/runner.ts` or new file (~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/gates/runner.ts` or new file (~40 lines)
 
 ### Subtask T018 -- Integrate gate execution with audit trail
 
@@ -177,7 +177,7 @@ history:
      - `branchName`: current branch
   3. Write entry via `AuditWriter.write()`
   4. Return `auditEntryIds` in the `GateRunResult`
-- **Files**: `jawn-ai-state/src/enforcement/gates/runner.ts` (extend, ~30 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/gates/runner.ts` (extend, ~30 lines added)
 
 ## Risks & Mitigations
 

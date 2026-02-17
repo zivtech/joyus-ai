@@ -21,14 +21,14 @@ Maximum effort: add the MCP server to Claude + run the companion service.
 
 ### Step 1: Add MCP Server to Claude
 
-Add jawn-ai to your Claude Desktop or Claude Code MCP configuration:
+Add joyus-ai to your Claude Desktop or Claude Code MCP configuration:
 
 ```json
 {
   "mcpServers": {
-    "jawn-ai-state": {
+    "joyus-ai-state": {
       "command": "npx",
-      "args": ["jawn-ai-mcp"]
+      "args": ["joyus-ai-mcp"]
     }
   }
 }
@@ -38,14 +38,14 @@ Add jawn-ai to your Claude Desktop or Claude Code MCP configuration:
 
 ```bash
 # Run the companion service (background state capture)
-npx jawn-ai-service
+npx joyus-ai-service
 ```
 
 The companion service watches for significant events (git commits, branch switches, test runs) and captures state snapshots automatically.
 
 ### Step 3: Done
 
-That's it. Claude now has access to jawn-ai tools and will use them automatically:
+That's it. Claude now has access to joyus-ai tools and will use them automatically:
 
 - **Session start**: Claude calls `get_context` and tells you where you left off
 - **During work**: Claude calls `save_state` after significant actions
@@ -53,7 +53,7 @@ That's it. Claude now has access to jawn-ai tools and will use them automaticall
 - **Document references**: Claude calls `check_canonical` to route to the right file
 - **Sharing context**: Claude calls `share_state` when you need help from a teammate
 
-You never run jawn-ai commands. Claude handles everything.
+You never run joyus-ai commands. Claude handles everything.
 
 ---
 
@@ -105,10 +105,10 @@ Add to `.claude/settings.json`:
 {
   "hooks": {
     "SessionStart": [
-      { "type": "command", "command": "jawn-ai snapshot --event=session-start --quiet" }
+      { "type": "command", "command": "joyus-ai snapshot --event=session-start --quiet" }
     ],
     "Stop": [
-      { "type": "command", "command": "jawn-ai snapshot --event=session-end --quiet" }
+      { "type": "command", "command": "joyus-ai snapshot --event=session-end --quiet" }
     ]
   }
 }
@@ -118,19 +118,19 @@ Add to `.claude/settings.json`:
 
 ```bash
 # Install the CLI globally
-cd jawn-ai-state
+cd joyus-ai-state
 npm install && npm run build && npm link
 
 # Initialize a project
 cd ~/my-project
-jawn-ai config init
+joyus-ai config init
 
 # Manual operations
-jawn-ai snapshot                    # Capture state now
-jawn-ai restore                    # Show last state
-jawn-ai status                     # Show live context
-jawn-ai canonical list             # List canonical docs
-jawn-ai share --note "need help"   # Share state
+joyus-ai snapshot                    # Capture state now
+joyus-ai restore                    # Show last state
+joyus-ai status                     # Show live context
+joyus-ai canonical list             # List canonical docs
+joyus-ai share --note "need help"   # Share state
 ```
 
 ---
@@ -149,7 +149,7 @@ After setup, verify everything works:
 
 ## Configuration
 
-Configuration is managed via `.jawn-ai/config.json` in the project root or `~/.jawn-ai/global-config.json` for user-wide defaults.
+Configuration is managed via `.joyus-ai/config.json` in the project root or `~/.joyus-ai/global-config.json` for user-wide defaults.
 
 ```json
 {
@@ -164,4 +164,4 @@ Configuration is managed via `.jawn-ai/config.json` in the project root or `~/.j
 }
 ```
 
-Power users can modify config via the admin CLI (`jawn-ai config set <key> <value>`) or by editing the JSON directly.
+Power users can modify config via the admin CLI (`joyus-ai config set <key> <value>`) or by editing the JSON directly.

@@ -1,4 +1,4 @@
-# Jawn AI Platform — Hosting Comparison
+# Joyus AI Platform — Hosting Comparison
 
 **Date:** February 11, 2026
 **Status:** ✅ Decisions made
@@ -168,7 +168,7 @@ Use the best tool for each job. Two providers, clean separation.
 | Service | RAM |
 |---------|-----|
 | MCP Server (Node.js) | ~400MB |
-| PostgreSQL (jawn-ai) | ~256MB |
+| PostgreSQL (joyus-ai) | ~256MB |
 | Activepieces | ~1.5GB |
 | PostgreSQL (Activepieces) | ~256MB |
 | Redis (Activepieces) | ~128MB |
@@ -194,7 +194,7 @@ Use the best tool for each job. Two providers, clean separation.
 1. Provision AWS EC2 (t3.medium), install Docker + Compose
 2. Deploy MCP server (Node.js + PostgreSQL containers)
 3. Set up GitHub Actions pipeline for the MCP server
-4. Configure GitHub Pages on jawn-ai or a dedicated PoC repo with StatiCrypt
+4. Configure GitHub Pages on joyus-ai or a dedicated PoC repo with StatiCrypt
 5. First static PoC deployed and password-protected
 6. Add Activepieces to Docker Compose (Phase 2.5) — app + PostgreSQL + Redis
 7. Build proof-of-concept workflows, validate resource usage

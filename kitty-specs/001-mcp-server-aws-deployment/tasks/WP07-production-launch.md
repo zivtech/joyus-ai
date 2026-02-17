@@ -49,16 +49,16 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 
 4. SSH in and run `setup-ec2.sh`:
    ```bash
-   scp -r deploy/ ubuntu@<EC2_IP>:/opt/jawn-ai/
+   scp -r deploy/ ubuntu@<EC2_IP>:/opt/joyus-ai/
    ssh ubuntu@<EC2_IP>
-   sudo /opt/jawn-ai/deploy/scripts/setup-ec2.sh
+   sudo /opt/joyus-ai/deploy/scripts/setup-ec2.sh
    ```
 
 5. Create `.env` file on EC2 from `.env.example`:
    ```bash
-   cp /opt/jawn-ai/deploy/.env.example /opt/jawn-ai/deploy/.env
+   cp /opt/joyus-ai/deploy/.env.example /opt/joyus-ai/deploy/.env
    # Edit with actual values
-   nano /opt/jawn-ai/deploy/.env
+   nano /opt/joyus-ai/deploy/.env
    ```
 
 **Validation**:
@@ -122,7 +122,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 **Purpose**: Configure all secrets needed for the CI/CD pipeline to deploy automatically.
 
 **Steps**:
-1. Set the following GitHub Actions secrets on the `zivtech/jawn-ai` repository:
+1. Set the following GitHub Actions secrets on the `zivtech/joyus-ai` repository:
 
    | Secret | Value | Notes |
    |--------|-------|-------|
@@ -134,7 +134,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 2. Set via GitHub CLI:
    ```bash
    gh secret set EC2_HOST --body "<elastic-ip>"
-   gh secret set EC2_SSH_KEY < ~/.ssh/jawn-ai-deploy.pem
+   gh secret set EC2_SSH_KEY < ~/.ssh/joyus-ai-deploy.pem
    gh secret set EC2_USER --body "ubuntu"
    gh secret set SLACK_WEBHOOK_URL --body "<webhook-url>"
    ```
@@ -222,7 +222,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
    ```json
    {
      "mcpServers": {
-       "jawn-ai": {
+       "joyus-ai": {
          "url": "https://ai.zivtech.com/mcp",
          "headers": {
            "Authorization": "Bearer <MCP_BEARER_TOKEN>"

@@ -21,14 +21,14 @@ Verify that all 10 MCP server endpoints and all skill runtime dependencies work 
 ## Context
 
 - **Dependencies**: WP01 (containers must be running via `docker compose up`)
-- **MCP servers to verify**: jawn-ai (Jira, Slack, GitHub, Google), Playwright, Memory, PowerPoint, Excel, Word
+- **MCP servers to verify**: joyus-ai (Jira, Slack, GitHub, Google), Playwright, Memory, PowerPoint, Excel, Word
 - **Skill audit result**: 19 total skills — 10 prompt-only (no CLI deps), 9 require CLI tools (Python, squirrel, git/composer/drush)
 - **Container-only skills**: local-drupal-development and drupal-setup require Lando/DDEV (workstation-only, excluded from server)
 - **Reference**: See `spec.md` FR1 and FR2, skill audit in spec session
 
 ## Subtasks
 
-### T021: Verify jawn-ai MCP Server Tool Executors
+### T021: Verify joyus-ai MCP Server Tool Executors
 
 **Purpose**: Confirm that Jira, Slack, GitHub, and Google tool executors respond correctly in the container.
 
@@ -297,7 +297,7 @@ Verify that all 10 MCP server endpoints and all skill runtime dependencies work 
 
 ## Definition of Done
 
-- [ ] All 4 jawn-ai tool executors (Jira, Slack, GitHub, Google) respond correctly
+- [ ] All 4 joyus-ai tool executors (Jira, Slack, GitHub, Google) respond correctly
 - [ ] Playwright navigates and captures screenshots
 - [ ] Backstop.js reference/test workflow completes
 - [ ] Memory MCP persists data across restarts

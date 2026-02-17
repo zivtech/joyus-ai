@@ -5,7 +5,7 @@
 
 ## Summary
 
-Build the workflow enforcement layer for jawn-ai — a structured mediation system that prevents common development mistakes through quality gates, automatic skill loading, git guardrails, and operation traceability. This extends the `jawn-ai-state` MCP server from feature 002 with new MCP tools and companion service event handlers. The user never interacts with enforcement directly; Claude mediates every action conversationally, adapting to the user's expertise tier.
+Build the workflow enforcement layer for joyus-ai — a structured mediation system that prevents common development mistakes through quality gates, automatic skill loading, git guardrails, and operation traceability. This extends the `joyus-ai-state` MCP server from feature 002 with new MCP tools and companion service event handlers. The user never interacts with enforcement directly; Claude mediates every action conversationally, adapting to the user's expertise tier.
 
 **Architecture**: Hybrid enforcement — MCP tool interception for gates and git checks (deterministic, unbypassable), context injection for skill loading (enriches Claude's generation context), companion service events for session-start advisories.
 
@@ -14,9 +14,9 @@ Build the workflow enforcement layer for jawn-ai — a structured mediation syst
 **Language/Version**: TypeScript 5.3+ / Node.js 20+
 **Primary Dependencies**: `@modelcontextprotocol/sdk` (MCP server), `zod` (schema validation), `better-sqlite3` (audit index)
 **Storage**: JSONL append-only log for raw audit writes + SQLite index for structured queries. Config extends 002's JSON file-based configuration. Skills cached locally from git-based skill repository.
-**Testing**: Vitest (matches `jawn-ai-state` from 002)
+**Testing**: Vitest (matches `joyus-ai-state` from 002)
 **Target Platform**: macOS (primary), Linux, Windows via WSL2
-**Project Type**: Extension of `jawn-ai-state` — adds enforcement modules to the existing MCP server + companion service
+**Project Type**: Extension of `joyus-ai-state` — adds enforcement modules to the existing MCP server + companion service
 **Performance Goals**: Gate execution overhead <500ms per gate (excluding the gate tool itself); skill loading <200ms; audit write <50ms; MCP tool response <500ms
 **Constraints**: Must work fully offline (SC-008). Sequential fail-fast gate execution. 60-second default gate timeout. No auto-pruning of audit data (warn at threshold). Global kill switch for emergency disable.
 **Scale/Scope**: Single developer per machine. Up to 20 quality gates per project. Up to 50 skill mappings. Hundreds of audit entries per day of active work.
@@ -33,7 +33,7 @@ Build the workflow enforcement layer for jawn-ai — a structured mediation syst
 | Monitor Everything | PASS | Audit trail captures 100% of enforcement actions (SC-006). Four audit dimensions: gate results, skill activity, branch checks, overrides. Claude Enterprise handles general monitoring; this handles enforcement-specific audit. |
 | Feedback Loops | PASS | FR-030/031 capture user corrections when Claude's output doesn't meet skill constraints. Corrections stored locally for future aggregation into skill updates. |
 | Spec-Driven Development | PASS | Using spec-kitty. |
-| Technology Choices | PASS | TypeScript/Node.js extends 002's `jawn-ai-state`. SQLite for audit queries is lightweight and serverless. JSONL for raw writes is crash-safe. |
+| Technology Choices | PASS | TypeScript/Node.js extends 002's `joyus-ai-state`. SQLite for audit queries is lightweight and serverless. JSONL for raw writes is crash-safe. |
 | Cost Awareness | PASS | All enforcement runs locally — no API calls or token usage. Gate tools are invoked via shell (existing local tools). Skill loading adds context to Claude's prompt but uses prompt caching. |
 | Checkpoint/Recovery | PASS | Audit trail provides recovery context. Kill switch activation is logged for traceability. Gate results are persisted even on failure. |
 
@@ -54,10 +54,10 @@ kitty-specs/004-workflow-enforcement/
 └── tasks.md             # Phase 2 output (NOT created by /spec-kitty.plan)
 ```
 
-### Source Code (extends jawn-ai-state from 002)
+### Source Code (extends joyus-ai-state from 002)
 
 ```
-jawn-ai-state/
+joyus-ai-state/
 ├── src/
 │   ├── enforcement/                    # NEW — all 004 code lives here
 │   │   ├── types.ts                    # Gate, SkillMapping, BranchRule, AuditEntry, Correction types
@@ -116,7 +116,7 @@ jawn-ai-state/
 │       └── enforcement-schema.test.ts
 ```
 
-**Structure Decision**: All enforcement code lives under `src/enforcement/` within the existing `jawn-ai-state` package. New MCP tools are added to `src/mcp/tools/`. The companion service's event handler is extended (not replaced) to add enforcement triggers. This keeps 002 and 004 code cleanly separated while sharing the same runtime.
+**Structure Decision**: All enforcement code lives under `src/enforcement/` within the existing `joyus-ai-state` package. New MCP tools are added to `src/mcp/tools/`. The companion service's event handler is extended (not replaced) to add enforcement triggers. This keeps 002 and 004 code cleanly separated while sharing the same runtime.
 
 ## Architecture
 
@@ -127,7 +127,7 @@ jawn-ai-state/
 │                         Developer Machine                             │
 │                                                                       │
 │  ┌──────────────────┐    ┌──────────────────────────────────────────┐│
-│  │ Claude Desktop    │    │  jawn-ai-state (extended by 004)         ││
+│  │ Claude Desktop    │    │  joyus-ai-state (extended by 004)         ││
 │  │ or Claude Code    │    │                                          ││
 │  │                   │    │  ┌────────────────────────────────────┐  ││
 │  │  User talks to    │◄──▶│  │         MCP Server                 │  ││

@@ -57,7 +57,7 @@ history:
 - **Contracts**: `kitty-specs/004-workflow-enforcement/contracts/mcp-tools.md` -- query_audit response schema
 - **Spec**: FR-020 through FR-025a (audit requirements), FR-030/FR-031 (corrections)
 - **Dependency**: `better-sqlite3` for SQLite queries
-- **Storage path**: `~/.jawn-ai/projects/<hash>/audit/`
+- **Storage path**: `~/.joyus-ai/projects/<hash>/audit/`
 
 **Implementation command**: `spec-kitty implement WP02 --base WP01`
 
@@ -67,9 +67,9 @@ history:
 
 - **Purpose**: Crash-safe, append-only audit log. JSONL format means each line is a complete JSON object -- partial writes are detectable and discardable.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/audit/writer.ts`
+  1. Create `joyus-ai-state/src/enforcement/audit/writer.ts`
   2. Implement `AuditWriter` class:
-     - Constructor takes `auditDir: string` (e.g., `~/.jawn-ai/projects/<hash>/audit/`)
+     - Constructor takes `auditDir: string` (e.g., `~/.joyus-ai/projects/<hash>/audit/`)
      - `write(entry: AuditEntry): void` -- serialize to JSON, append line to current day's file, fsync
      - File naming: `audit-YYYY-MM-DD.jsonl` (new file each day for easy manual cleanup)
      - Ensure directory exists on first write (`mkdirSync` with `recursive: true`)
@@ -81,14 +81,14 @@ history:
      - Validate each entry against `AuditEntrySchema`
   4. Implement `listAuditFiles(auditDir: string): string[]`:
      - Return sorted list of `audit-*.jsonl` files
-- **Files**: `jawn-ai-state/src/enforcement/audit/writer.ts` (new, ~80 lines)
+- **Files**: `joyus-ai-state/src/enforcement/audit/writer.ts` (new, ~80 lines)
 - **Notes**: Atomic append is critical. `appendFileSync` + `\n` means a crash mid-write produces a partial last line, which `readEntries` skips.
 
 ### Subtask T008 -- Implement audit entry Zod schemas
 
 - **Purpose**: Validate audit entries on write and read. Different action types have different required fields.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/audit/schema.ts`
+  1. Create `joyus-ai-state/src/enforcement/audit/schema.ts`
   2. Define `AuditEntrySchema` with:
      - Required fields: id (UUID), timestamp, sessionId, actionType, result, userTier, activeSkills
      - Optional fields: taskId, gateId, skillId, details, overrideReason, branchName
@@ -96,15 +96,15 @@ history:
      - Validate `result` against `AuditResult` enum
   3. Define `CorrectionSchema` with required fields from data model
   4. Export both schemas
-- **Files**: `jawn-ai-state/src/enforcement/audit/schema.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/enforcement/audit/schema.ts` (new, ~50 lines)
 
 ### Subtask T009 -- Set up SQLite database schema
 
 - **Purpose**: Create SQLite tables and indexes for structured audit queries.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/audit/index.ts`
+  1. Create `joyus-ai-state/src/enforcement/audit/index.ts`
   2. Implement `AuditIndex` class:
-     - Constructor takes `dbPath: string` (e.g., `~/.jawn-ai/projects/<hash>/audit/audit-index.db`)
+     - Constructor takes `dbPath: string` (e.g., `~/.joyus-ai/projects/<hash>/audit/audit-index.db`)
      - `initialize(): void` -- create tables if not exist:
        ```sql
        CREATE TABLE IF NOT EXISTS audit_entries (
@@ -129,7 +129,7 @@ history:
        CREATE INDEX IF NOT EXISTS idx_task_id ON audit_entries(task_id);
        ```
   3. Use `better-sqlite3` for synchronous operations
-- **Files**: `jawn-ai-state/src/enforcement/audit/index.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/enforcement/audit/index.ts` (new, ~60 lines)
 - **Notes**: Store `raw_json` for full fidelity. Indexed columns are extracted for query performance.
 
 ### Subtask T010 -- Implement audit query engine
@@ -144,7 +144,7 @@ history:
      - Return `{ entries: AuditEntry[], total: number, hasMore: boolean }`
   3. Implement `getStats(): AuditStats`:
      - Total entry count, entries by action type, entries by result, date range
-- **Files**: `jawn-ai-state/src/enforcement/audit/index.ts` (extend, ~80 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/audit/index.ts` (extend, ~80 lines added)
 
 ### Subtask T011 -- Implement incremental JSONL -> SQLite index sync
 
@@ -162,33 +162,33 @@ history:
      - Drop all entries, reset sync state, re-import all JSONL files
      - Used on first startup or manual repair
   5. Call `syncFromJSONL` on MCP server startup and every 50 writes (configurable)
-- **Files**: `jawn-ai-state/src/enforcement/audit/index.ts` (extend, ~100 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/audit/index.ts` (extend, ~100 lines added)
 - **Notes**: Sync must be idempotent -- running it twice produces the same result. Use entry `id` as dedup key.
 
 ### Subtask T012 -- Implement storage monitor
 
 - **Purpose**: Warn when audit storage exceeds a configurable threshold. No auto-pruning (clarification decision).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/audit/storage-monitor.ts`
+  1. Create `joyus-ai-state/src/enforcement/audit/storage-monitor.ts`
   2. Implement `checkStorageUsage(auditDir: string): StorageStatus`:
      - Calculate total size of all `audit-*.jsonl` files + SQLite database
      - Return `{ totalBytes: number, humanReadable: string, warningThreshold: number, isOverThreshold: boolean }`
   3. Default threshold: 100MB (configurable via enforcement config)
   4. Implement `formatBytes(bytes: number): string` utility
-- **Files**: `jawn-ai-state/src/enforcement/audit/storage-monitor.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/audit/storage-monitor.ts` (new, ~40 lines)
 
 ### Subtask T013 -- Implement correction capture and storage
 
 - **Purpose**: Capture user corrections when Claude's output doesn't meet skill constraints (FR-030/031). Stored locally for future aggregation.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/corrections/capture.ts`
+  1. Create `joyus-ai-state/src/enforcement/corrections/capture.ts`
   2. Implement `CorrectionStore` class:
      - Constructor takes `correctionsDir: string`
      - `record(correction: Correction): string` -- validate with CorrectionSchema, write to `corrections-YYYY-MM-DD.jsonl`, return correction ID
      - `list(filters?: { skillId?, dateRange? }): Correction[]` -- read and filter corrections
   3. Storage format: JSONL (same approach as audit, crash-safe)
   4. Also create an audit entry when a correction is recorded
-- **Files**: `jawn-ai-state/src/enforcement/corrections/capture.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/enforcement/corrections/capture.ts` (new, ~60 lines)
 
 ## Risks & Mitigations
 

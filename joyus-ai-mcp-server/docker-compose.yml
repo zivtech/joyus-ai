@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: jawn_ai_mcp
+      POSTGRES_DB: joyus_ai_mcp
     ports:
       - "5432:5432"
     volumes:
@@ -31,7 +31,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/jawn_ai_mcp
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/joyus_ai_mcp
       - BASE_URL=http://localhost:3000
       - SESSION_SECRET=${SESSION_SECRET:-dev-secret-change-me}
       - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY:-dev-key-change-me-in-prod}

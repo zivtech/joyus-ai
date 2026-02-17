@@ -29,10 +29,10 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 
 ### T016: Implement Health Check Endpoints
 
-**Purpose**: Add health check routes to the jawn-ai MCP server that report the status of all services.
+**Purpose**: Add health check routes to the joyus-ai MCP server that report the status of all services.
 
 **Steps**:
-1. Add health check routes to the jawn-ai MCP server (likely in `jawn-ai-mcp-server/src/`):
+1. Add health check routes to the joyus-ai MCP server (likely in `joyus-ai-mcp-server/src/`):
 
    **GET /health** — Aggregated health status:
    ```json
@@ -66,7 +66,7 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 4. Use try/catch for each service check — one service failure doesn't prevent checking others
 
 **Files**:
-- New routes in `jawn-ai-mcp-server/src/` (health controller, ~80 lines)
+- New routes in `joyus-ai-mcp-server/src/` (health controller, ~80 lines)
 
 **Validation**:
 - [ ] `GET /health` returns 200 with all services when healthy
@@ -194,7 +194,7 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 
 2. Configure nginx log rotation via logrotate:
    ```
-   # /etc/logrotate.d/nginx-jawn-ai
+   # /etc/logrotate.d/nginx-joyus-ai
    /var/log/nginx/access.log /var/log/nginx/error.log {
        daily
        rotate 14
@@ -222,7 +222,7 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
    ```
 
 **Files**:
-- `deploy/nginx/logrotate-jawn-ai` (new, ~12 lines)
+- `deploy/nginx/logrotate-joyus-ai` (new, ~12 lines)
 - Updates to `deploy/scripts/setup-ec2.sh` (deploy logrotate config)
 - Updates to `deploy/scripts/health-check.sh` (disk space check)
 
@@ -230,7 +230,7 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 - [ ] Docker logs rotate at 10MB per file, max 3 files per container
 - [ ] Nginx logs rotate daily, keep 14 days, compress old
 - [ ] Disk space warning at 85% usage
-- [ ] `logrotate --debug /etc/logrotate.d/nginx-jawn-ai` runs without errors
+- [ ] `logrotate --debug /etc/logrotate.d/nginx-joyus-ai` runs without errors
 
 ---
 
@@ -263,16 +263,16 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 
 2. Create a monitoring cron job wrapper:
    ```bash
-   # /opt/jawn-ai/monitor.sh
+   # /opt/joyus-ai/monitor.sh
    #!/usr/bin/env bash
-   FAIL_FILE="/tmp/jawn-ai-health-failures"
+   FAIL_FILE="/tmp/joyus-ai-health-failures"
 
-   if /opt/jawn-ai/deploy/scripts/health-check.sh http://localhost:3000 > /dev/null 2>&1; then
+   if /opt/joyus-ai/deploy/scripts/health-check.sh http://localhost:3000 > /dev/null 2>&1; then
      # Healthy — reset counter, send recovery if was failing
      if [ -f "$FAIL_FILE" ]; then
        FAILS=$(cat "$FAIL_FILE")
        if [ "$FAILS" -ge 3 ]; then
-         /opt/jawn-ai/deploy/scripts/slack-alert.sh "recovered" ""
+         /opt/joyus-ai/deploy/scripts/slack-alert.sh "recovered" ""
        fi
        rm -f "$FAIL_FILE"
      fi
@@ -284,14 +284,14 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
      echo "$FAILS" > "$FAIL_FILE"
 
      if [ "$FAILS" -eq 3 ]; then
-       /opt/jawn-ai/deploy/scripts/slack-alert.sh "down" "3 consecutive health check failures"
+       /opt/joyus-ai/deploy/scripts/slack-alert.sh "down" "3 consecutive health check failures"
      fi
    fi
    ```
 
 3. Add cron job to `setup-ec2.sh`:
    ```bash
-   (crontab -l 2>/dev/null; echo "* * * * * /opt/jawn-ai/monitor.sh") | crontab -
+   (crontab -l 2>/dev/null; echo "* * * * * /opt/joyus-ai/monitor.sh") | crontab -
    ```
 
 4. Alert triggers after 3 consecutive failures (3 minutes at 1-minute interval)

@@ -18,7 +18,7 @@
 | T006 | Write EC2 provisioning script (`setup-ec2.sh`) | WP02 | |
 | T007 | Configure nginx reverse proxy with path-based routing | WP02 | |
 | T008 | Set up Let's Encrypt TLS via certbot | WP02 | |
-| T009 | Configure firewall rules (UFW: 443, 22 only) | WP02 | [P] |
+| T009 | Configure firewall rules (UFW: 443 any, 22 Zivtech IPs only) | WP02 | [P] |
 | T010 | Create production Docker Compose overrides | WP02 | |
 | T011 | Create GitHub Actions workflow for CI/CD | WP03 | |
 | T012 | Configure GHCR image build and push | WP03 | |
@@ -30,7 +30,8 @@
 | T018 | Configure Docker restart policies for all services | WP04 | [P] |
 | T019 | Set up log aggregation and rotation | WP04 | [P] |
 | T020 | Configure Slack alerting for downtime (health check failures) | WP04 | |
-| T021 | Verify jawn-ai MCP server tool executors (Jira, Slack, GitHub, Google) | WP05 | |
+| T039 | Set up resource usage monitoring (CPU, memory, disk) | WP04 | [P] |
+| T021 | Verify joyus-ai MCP server tool executors (Jira, Slack, GitHub, Google) | WP05 | |
 | T022 | Verify Playwright MCP + Backstop.js visual regression | WP05 | [P] |
 | T023 | Verify Memory MCP persistent knowledge graph | WP05 | [P] |
 | T024 | Verify Office MCP servers (PowerPoint, Excel, Word) | WP05 | [P] |
@@ -85,7 +86,7 @@
 1. Write `deploy/scripts/setup-ec2.sh` — install Docker, Docker Compose, certbot, fail2ban, configure swap
 2. Create `deploy/nginx/nginx.conf` — reverse proxy with path-based routing (/mcp → :3000, /chat → :3001, /playwright → :3002, /health → aggregated)
 3. Add Let's Encrypt certbot setup with auto-renewal systemd timer
-4. Configure UFW firewall (443 HTTPS, 22 SSH only)
+4. Configure UFW firewall (443 HTTPS from any, 22 SSH from Zivtech IPs only per spec NFR)
 5. Create `deploy/docker-compose.prod.yml` — production overrides (restart policies, resource limits, log drivers)
 
 **Parallel opportunities**: T009 (firewall) independent of T007 (nginx).
@@ -103,7 +104,7 @@
 **Subtasks**: T011, T012, T013, T014, T015
 
 **Implementation sketch**:
-1. Create `.github/workflows/deploy-mcp.yml` — triggered on push to main (paths: `deploy/`, `jawn-ai-mcp-server/`, `web-chat/`)
+1. Create `.github/workflows/deploy-mcp.yml` — triggered on push to main (paths: `deploy/`, `joyus-ai-mcp-server/`, `web-chat/`)
 2. Build and push both Docker images to GHCR (tagged with SHA + `latest`)
 3. Write `deploy/scripts/deploy.sh` — SSH to EC2, pull new images, compose up, run health checks
 4. Implement rollback: on health check failure, revert to previous SHA tag
@@ -121,16 +122,17 @@
 **Priority**: P1 (Operational readiness)
 **Goal**: Health check endpoints, monitoring scripts, log management, and alerting.
 **Dependencies**: WP01
-**Subtasks**: T016, T017, T018, T019, T020
+**Subtasks**: T016, T017, T018, T019, T020, T039
 
 **Implementation sketch**:
-1. Add health check endpoints to jawn-ai MCP server: `/health` (aggregated), `/health/platform`, `/health/playwright`, `/health/db`
+1. Add health check endpoints to joyus-ai MCP server: `/health` (aggregated), `/health/platform`, `/health/playwright`, `/health/db`
 2. Write `deploy/scripts/health-check.sh` — curl each endpoint, report status
 3. Configure Docker restart policies (`unless-stopped`) and healthcheck directives in compose
 4. Set up log rotation (Docker logging driver with max-size/max-file, plus logrotate for nginx)
 5. Create Slack alerting: cron job runs health check, posts to Slack on failure (3 consecutive failures = alert)
+6. Set up resource usage monitoring: `docker stats` cron output to log file, disk usage alerts at 80%/90% thresholds, optional lightweight dashboard (ctop or Portainer CE)
 
-**Parallel opportunities**: T017, T018, T019 all independent of each other.
+**Parallel opportunities**: T017, T018, T019, T039 all independent of each other.
 **Success criteria**: `/health` endpoint returns correct service status. Logs rotate automatically. Slack alert fires on simulated downtime.
 **Risks**: Health check must not create excessive load. Use lightweight checks (TCP for DB, HTTP 200 for services).
 **Prompt file**: [tasks/WP04-monitoring-health.md](tasks/WP04-monitoring-health.md)
@@ -145,7 +147,7 @@
 **Subtasks**: T021, T022, T023, T024, T025, T026, T027
 
 **Implementation sketch**:
-1. Test jawn-ai MCP tool executors: Jira search, Slack post, GitHub PR list, Google query
+1. Test joyus-ai MCP tool executors: Jira search, Slack post, GitHub PR list, Google query
 2. Test Playwright MCP: navigate to URL, take screenshot. Test Backstop.js: run visual regression
 3. Test Memory MCP: create entity, query, verify persistence across container restart
 4. Test Office MCP: create a simple PPT, Excel spreadsheet, and Word doc
@@ -226,10 +228,10 @@ WP01 (Docker/Containers)
 | WP01 | Docker Compose & Container Images | 5 (T001-T005) | ~400 | P0 |
 | WP02 | EC2 Provisioning & Nginx | 5 (T006-T010) | ~350 | P0 |
 | WP03 | CI/CD Pipeline | 5 (T011-T015) | ~350 | P1 |
-| WP04 | Monitoring & Health Checks | 5 (T016-T020) | ~300 | P1 |
+| WP04 | Monitoring & Health Checks | 6 (T016-T020, T039) | ~350 | P1 |
 | WP05 | MCP Server & Skill Verification | 7 (T021-T027) | ~400 | P1 |
 | WP06 | Web Chat UI & Claude Desktop | 5 (T028-T032) | ~400 | P2 |
 | WP07 | Production Launch & Validation | 6 (T033-T038) | ~300 | P2 |
 
-**Total**: 7 work packages, 38 subtasks
+**Total**: 7 work packages, 39 subtasks
 **MVP scope**: WP01 + WP02 + WP05 (Docker + infra + verification = working MCP server on EC2)

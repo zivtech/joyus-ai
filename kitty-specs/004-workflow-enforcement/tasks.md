@@ -19,16 +19,16 @@
 **Estimated Size**: ~400 lines
 
 ### Included Subtasks
-- [ ] T001 Define enforcement TypeScript types in `jawn-ai-state/src/enforcement/types.ts`
-- [ ] T002 Create Zod validation schemas in `jawn-ai-state/src/enforcement/schemas.ts`
-- [ ] T003 Implement enforcement config loader in `jawn-ai-state/src/enforcement/config.ts`
+- [ ] T001 Define enforcement TypeScript types in `joyus-ai-state/src/enforcement/types.ts`
+- [ ] T002 Create Zod validation schemas in `joyus-ai-state/src/enforcement/schemas.ts`
+- [ ] T003 Implement enforcement config loader in `joyus-ai-state/src/enforcement/config.ts`
 - [ ] T004 Implement config inheritance/merging with enforcement policy constraints
 - [ ] T005 Implement config validation with safe defaults fallback (FR-029)
-- [ ] T006 Implement session-scoped kill switch in `jawn-ai-state/src/enforcement/kill-switch.ts`
+- [ ] T006 Implement session-scoped kill switch in `joyus-ai-state/src/enforcement/kill-switch.ts`
 
 ### Implementation Notes
 - Types derived from `data-model.md`: QualityGate, SkillMapping, BranchRule, AuditEntry, Correction, EnforcementConfig, DeveloperConfig, all enums
-- Config extends 002's existing JSON config system (`~/.jawn-ai/projects/<hash>/config.json` + `.jawn-ai/config.json`)
+- Config extends 002's existing JSON config system (`~/.joyus-ai/projects/<hash>/config.json` + `.joyus-ai/config.json`)
 - Kill switch is in-memory (session-scoped), checked by all enforcement engines before executing
 
 ### Parallel Opportunities
@@ -36,7 +36,7 @@
 - T006 (kill switch) is independent after types exist
 
 ### Dependencies
-- None (starting package). Assumes 002's `jawn-ai-state` package structure exists.
+- None (starting package). Assumes 002's `joyus-ai-state` package structure exists.
 
 ### Risks & Mitigations
 - 002's package may not exist yet: WP01 should create the `enforcement/` directory within the planned structure, with stubs for 002 imports if needed.
@@ -51,13 +51,13 @@
 **Estimated Size**: ~500 lines
 
 ### Included Subtasks
-- [ ] T007 Implement JSONL audit writer in `jawn-ai-state/src/enforcement/audit/writer.ts`
-- [ ] T008 Implement audit entry Zod schemas in `jawn-ai-state/src/enforcement/audit/schema.ts`
-- [ ] T009 Set up SQLite database schema in `jawn-ai-state/src/enforcement/audit/index.ts`
+- [ ] T007 Implement JSONL audit writer in `joyus-ai-state/src/enforcement/audit/writer.ts`
+- [ ] T008 Implement audit entry Zod schemas in `joyus-ai-state/src/enforcement/audit/schema.ts`
+- [ ] T009 Set up SQLite database schema in `joyus-ai-state/src/enforcement/audit/index.ts`
 - [ ] T010 Implement audit query engine with filters and pagination
 - [ ] T011 Implement incremental JSONL -> SQLite index sync
-- [ ] T012 Implement storage monitor in `jawn-ai-state/src/enforcement/audit/storage-monitor.ts`
-- [ ] T013 Implement correction capture in `jawn-ai-state/src/enforcement/corrections/capture.ts`
+- [ ] T012 Implement storage monitor in `joyus-ai-state/src/enforcement/audit/storage-monitor.ts`
+- [ ] T013 Implement correction capture in `joyus-ai-state/src/enforcement/corrections/capture.ts`
 
 ### Implementation Notes
 - JSONL files rotate daily: `audit-YYYY-MM-DD.jsonl`
@@ -88,9 +88,9 @@
 **Estimated Size**: ~400 lines
 
 ### Included Subtasks
-- [ ] T014 Implement gate type registry in `jawn-ai-state/src/enforcement/gates/registry.ts`
-- [ ] T015 Implement sequential fail-fast gate runner in `jawn-ai-state/src/enforcement/gates/runner.ts`
-- [ ] T016 Implement gate timeout handling in `jawn-ai-state/src/enforcement/gates/timeout.ts`
+- [ ] T014 Implement gate type registry in `joyus-ai-state/src/enforcement/gates/registry.ts`
+- [ ] T015 Implement sequential fail-fast gate runner in `joyus-ai-state/src/enforcement/gates/runner.ts`
+- [ ] T016 Implement gate timeout handling in `joyus-ai-state/src/enforcement/gates/timeout.ts`
 - [ ] T017 Implement gate result mapping to enforcement tiers (always-run/ask-me/skip per user tier)
 - [ ] T018 Integrate gate execution with audit trail logging
 
@@ -122,17 +122,17 @@
 **Estimated Size**: ~500 lines
 
 ### Included Subtasks
-- [ ] T019 [P] Implement file-pattern-to-skill mapper in `jawn-ai-state/src/enforcement/skills/loader.ts`
-- [ ] T020 [P] Implement skill cache in `jawn-ai-state/src/enforcement/skills/cache.ts`
+- [ ] T019 [P] Implement file-pattern-to-skill mapper in `joyus-ai-state/src/enforcement/skills/loader.ts`
+- [ ] T020 [P] Implement skill cache in `joyus-ai-state/src/enforcement/skills/cache.ts`
 - [ ] T021 Implement skill repo fallback (use cache when unreachable, warn user)
-- [ ] T022 Implement skill precedence resolver in `jawn-ai-state/src/enforcement/skills/precedence.ts`
-- [ ] T023 Implement skill context builder in `jawn-ai-state/src/enforcement/skills/context-builder.ts`
-- [ ] T024 [P] Implement skill validation tool framework in `jawn-ai-state/src/enforcement/skills/validator.ts`
+- [ ] T022 Implement skill precedence resolver in `joyus-ai-state/src/enforcement/skills/precedence.ts`
+- [ ] T023 Implement skill context builder in `joyus-ai-state/src/enforcement/skills/context-builder.ts`
+- [ ] T024 [P] Implement skill validation tool framework in `joyus-ai-state/src/enforcement/skills/validator.ts`
 - [ ] T025 Integrate skill loading with audit trail logging
 
 ### Implementation Notes
 - Skills are markdown files in a git-cloned repo (e.g., `zivtech-claude-skills/`)
-- Cache stored in `~/.jawn-ai/projects/<hash>/skill-cache/`
+- Cache stored in `~/.joyus-ai/projects/<hash>/skill-cache/`
 - Freshness check: compare git HEAD of skill repo with cached version; if fetch fails, use cache + warn
 - Precedence order: client-override > client-brand > core > platform-default (deterministic, logged per SC-010)
 - Context builder aggregates plain-language constraints from all active skills into a single `skillContext` string
@@ -159,11 +159,11 @@
 **Estimated Size**: ~450 lines
 
 ### Included Subtasks
-- [ ] T026 Implement branch verification in `jawn-ai-state/src/enforcement/git/branch-verify.ts`
-- [ ] T027 [P] Implement branch naming convention checker in `jawn-ai-state/src/enforcement/git/branch-hygiene.ts`
+- [ ] T026 Implement branch verification in `joyus-ai-state/src/enforcement/git/branch-verify.ts`
+- [ ] T027 [P] Implement branch naming convention checker in `joyus-ai-state/src/enforcement/git/branch-hygiene.ts`
 - [ ] T028 [P] Implement stale branch detection
 - [ ] T029 [P] Implement active branch count warning
-- [ ] T030 [P] Implement force-push warning in `jawn-ai-state/src/enforcement/git/guardrails.ts`
+- [ ] T030 [P] Implement force-push warning in `joyus-ai-state/src/enforcement/git/guardrails.ts`
 - [ ] T031 [P] Implement uncommitted changes detection before branch switch
 - [ ] T032 Integrate git guardrails with audit trail logging
 
@@ -195,11 +195,11 @@
 **Estimated Size**: ~400 lines
 
 ### Included Subtasks
-- [ ] T033 Implement `run_gates` MCP tool in `jawn-ai-state/src/mcp/tools/run-gates.ts`
-- [ ] T034 Implement `verify_branch` MCP tool in `jawn-ai-state/src/mcp/tools/verify-branch.ts`
-- [ ] T035 Implement `check_hygiene` MCP tool in `jawn-ai-state/src/mcp/tools/check-hygiene.ts`
-- [ ] T036 Implement `enforcement_status` MCP tool in `jawn-ai-state/src/mcp/tools/enforcement-status.ts`
-- [ ] T037 Implement `kill_switch` MCP tool in `jawn-ai-state/src/mcp/tools/kill-switch.ts`
+- [ ] T033 Implement `run_gates` MCP tool in `joyus-ai-state/src/mcp/tools/run-gates.ts`
+- [ ] T034 Implement `verify_branch` MCP tool in `joyus-ai-state/src/mcp/tools/verify-branch.ts`
+- [ ] T035 Implement `check_hygiene` MCP tool in `joyus-ai-state/src/mcp/tools/check-hygiene.ts`
+- [ ] T036 Implement `enforcement_status` MCP tool in `joyus-ai-state/src/mcp/tools/enforcement-status.ts`
+- [ ] T037 Implement `kill_switch` MCP tool in `joyus-ai-state/src/mcp/tools/kill-switch.ts`
 
 ### Implementation Notes
 - Each tool follows the MCP SDK `tool()` registration pattern from 002
@@ -227,10 +227,10 @@
 **Estimated Size**: ~350 lines
 
 ### Included Subtasks
-- [ ] T038 Implement `get_skills` MCP tool in `jawn-ai-state/src/mcp/tools/get-skills.ts`
-- [ ] T039 Implement `check_upstream` MCP tool in `jawn-ai-state/src/mcp/tools/check-upstream.ts`
-- [ ] T040 Implement `query_audit` MCP tool in `jawn-ai-state/src/mcp/tools/query-audit.ts`
-- [ ] T041 Implement `record_correction` MCP tool in `jawn-ai-state/src/mcp/tools/record-correction.ts`
+- [ ] T038 Implement `get_skills` MCP tool in `joyus-ai-state/src/mcp/tools/get-skills.ts`
+- [ ] T039 Implement `check_upstream` MCP tool in `joyus-ai-state/src/mcp/tools/check-upstream.ts`
+- [ ] T040 Implement `query_audit` MCP tool in `joyus-ai-state/src/mcp/tools/query-audit.ts`
+- [ ] T041 Implement `record_correction` MCP tool in `joyus-ai-state/src/mcp/tools/record-correction.ts`
 
 ### Implementation Notes
 - `get_skills`: calls skill engine, returns active skills + conflict resolutions + combined `skillContext` string

@@ -59,7 +59,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 ## Context & Constraints
 
-- **Plan**: Storage at `~/.jawn-ai/projects/<project-hash>/snapshots/`
+- **Plan**: Storage at `~/.joyus-ai/projects/<project-hash>/snapshots/`
 - **Data Model**: `data-model.md` — Snapshot entity, ProjectContext.hash
 - **Spec FR-006**: Survive dirty exits (atomic writes ensure this)
 - **Spec FR-009**: Handle concurrent sessions (locking deferred to WP09, atomic writes prevent corruption)
@@ -98,7 +98,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Never throw on write failure — log error, return gracefully
 
 - **Files**:
-  - `jawn-ai-state/src/state/store.ts` (new)
+  - `joyus-ai-state/src/state/store.ts` (new)
 
 - **Parallel?**: No -- T006 depends on the write pattern being established.
 
@@ -144,7 +144,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Handle corrupted files: skip with warning, never crash
 
 - **Files**:
-  - `jawn-ai-state/src/state/store.ts` (update)
+  - `joyus-ai-state/src/state/store.ts` (update)
 
 - **Parallel?**: No -- depends on T005 write pattern.
 - **Notes**: For the listing, consider reading only the first few lines of each file (id, timestamp, event, branch) rather than parsing the entire snapshot. But for v1, full parse is fine given small file sizes (2-10KB).
@@ -162,12 +162,12 @@ Use language identifiers in code blocks: ````python`, ````bash`
      export function getStateDir(projectRoot: string): string;
      ```
   2. `getProjectHash()`: SHA256 of the absolute, normalized project root path. Take first 16 hex chars.
-  3. `getStateDir()`: Returns `~/.jawn-ai/projects/<hash>/`
+  3. `getStateDir()`: Returns `~/.joyus-ai/projects/<hash>/`
   4. `initStateDirectory()`:
      - Compute project hash
      - Create directory tree:
        ```
-       ~/.jawn-ai/
+       ~/.joyus-ai/
        └── projects/
            └── <hash>/
                ├── snapshots/
@@ -176,9 +176,9 @@ Use language identifiers in code blocks: ````python`, ````bash`
                │   └── outgoing/
                └── config.json    (empty defaults if not exists)
        ```
-     - Also create `.jawn-ai/` in project root if it doesn't exist:
+     - Also create `.joyus-ai/` in project root if it doesn't exist:
        ```
-       .jawn-ai/
+       .joyus-ai/
        ├── config.json      (empty defaults if not exists)
        └── canonical.json   (empty { "documents": {} } if not exists)
        ```
@@ -187,8 +187,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Export from `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/src/state/store.ts` or `src/state/init.ts` (new/update)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/state/store.ts` or `src/state/init.ts` (new/update)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: Yes -- independent of T005/T006.
 
@@ -226,8 +226,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Export from `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/src/state/divergence.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/state/divergence.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: No -- depends on T005/T006 for reading stored snapshot, and on WP03 collectors for live state. But the function itself can be written against the types.
 - **Notes**: Divergence detection is called by `get_context` MCP tool (WP06). The function is pure — it takes a snapshot and live state as inputs, not fetching them itself.

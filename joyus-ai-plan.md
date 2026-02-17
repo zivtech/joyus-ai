@@ -4,7 +4,7 @@
 **Date:** January 29, 2026
 **Status:** Phase 1 Active (Asset Sharing Pipeline)
 **Notion:** [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)
-**Research:** [Technical Research Report](research/jawn-ai-research.md)
+**Research:** [Technical Research Report](research/joyus-ai-research.md)
 
 ---
 
@@ -72,7 +72,7 @@ Build a **multi-tenant AI agent platform** for Zivtech consulting that provides:
 | Skills | 500-5000 tokens each; use sparingly |
 | Monitoring | Langfuse, Helicone for observability |
 
-See [Technical Research Report](research/jawn-ai-research.md) for full details.
+See [Technical Research Report](research/joyus-ai-research.md) for full details.
 
 ### NCLC: Proof of Concept for Client Profile Building + Author Verification
 
@@ -87,7 +87,7 @@ The **NCLC (National Consumer Law Center)** project validates the core methodolo
 
 **What it proves for the platform:**
 - Corpus analysis → structured writing profiles is a **repeatable, generalizable process**
-- The profile schema (voice, vocabulary, citations, audience registers, anti-patterns) maps directly to jawn-ai's **Skills as Guardrails** architecture
+- The profile schema (voice, vocabulary, citations, audience registers, anti-patterns) maps directly to joyus-ai's **Skills as Guardrails** architecture
 - Author verification works as a **post-generation content fidelity check** — detect whether AI output matches the intended voice profile before delivery
 - The feedback loop (mismatches → profile corrections → skill updates) implements **Constitution §2.5** in practice
 
@@ -109,7 +109,7 @@ See `../claude-files/nclc/author-identification-research/` for full research, re
 **Why first:** Everything else we build needs somewhere to go. This is the foundational sharing layer.
 
 **Implementation:**
-- GitHub repo (dedicated or branch of jawn-ai) with GitHub Pages enabled
+- GitHub repo (dedicated or branch of joyus-ai) with GitHub Pages enabled
 - GitHub Actions workflow: push assets → StatiCrypt encrypts → GitHub Pages serves
 - Per-project passwords in GitHub Secrets
 - Directory-based organization (`zivtech.github.io/project-name/`)
@@ -142,7 +142,7 @@ See `../claude-files/nclc/author-identification-research/` for full research, re
 
 **Goal:** Deploy the existing MCP server to AWS EC2
 
-**What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `jawn-ai-mcp-server/`)
+**What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `joyus-ai-mcp-server/`)
 
 **Implementation:**
 - Provision AWS EC2 (t3.medium — sized for Phase 2.5 Activepieces addition)
@@ -160,7 +160,7 @@ See `../claude-files/nclc/author-identification-research/` for full research, re
 
 **Implementation:**
 - Add Activepieces + PostgreSQL + Redis to `docker-compose.yml`
-- Add internal API endpoint (`/api/internal/execute-tool`) so Activepieces can call jawn-ai tools
+- Add internal API endpoint (`/api/internal/execute-tool`) so Activepieces can call joyus-ai tools
 - Build 3 proof-of-concept flows (Standup Summary, PR Reminder, Visual Custom Sequence)
 - Validate resource usage on EC2 instance
 - Document admin access, flow creation, connection management
@@ -200,8 +200,8 @@ See `../claude-files/nclc/author-identification-research/` for full research, re
 
 #### Phase 0: Project Setup
 ```bash
-spec-kitty init jawn-ai-platform --ai claude
-cd jawn-ai-platform
+spec-kitty init joyus-ai-platform --ai claude
+cd joyus-ai-platform
 ```
 
 #### Spec Kitty Phase 1: Constitution (`/spec-kitty.constitution`) ✅
@@ -494,7 +494,7 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 - `telemetry: false` ✅ (fixed Feb 11)
 
 **Rollout Plan:**
-1. Pilot on jawn-ai itself with telemetry off and auto-push disabled
+1. Pilot on joyus-ai itself with telemetry off and auto-push disabled
 2. Review captured data for 2 weeks
 3. Decide on broader team rollout based on findings
 
@@ -519,7 +519,7 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 |----------|-------|
 | Activepieces image version pinning | Pin to specific release tag, not `latest` |
 | Shared vs separate PostgreSQL | Separate containers recommended; single PG with separate DBs acceptable for cost savings |
-| Custom piece development timeline | Build `jawn-ai-tools` piece during Phase 3 or use HTTP Request bridge indefinitely? |
+| Custom piece development timeline | Build `joyus-ai-tools` piece during Phase 3 or use HTTP Request bridge indefinitely? |
 | Deduplication of Jira/Slack/GitHub/Gmail | Jawn-ai executors stay canonical; disable duplicate Activepieces pieces in Phase 3 MCP Gateway |
 
 ### Phase 3 (Platform)
@@ -565,7 +565,7 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 
 ## References
 
-- [Technical Research Report](research/jawn-ai-research.md) — Full research findings
+- [Technical Research Report](research/joyus-ai-research.md) — Full research findings
 - [Spec Kitty GitHub](https://github.com/Priivacy-ai/spec-kitty) — Development framework
 - [Claude Agent SDK Docs](https://docs.anthropic.com/en/docs/agents) — Orchestration patterns
 - [Notion: Technical Learning Questions](https://www.notion.so/9daf8c36a31342428e29c8958e1ba782)
@@ -573,6 +573,6 @@ See `hosting-comparison.md` for full analysis and options evaluated.
 
 ---
 
-*Document maintained in: `jawn-ai/jawn-ai-plan.md`*
+*Document maintained in: `joyus-ai/joyus-ai-plan.md`*
 *Updated: February 16, 2026 — Added Phase 2.5: Activepieces Integration (WP06f-06j) as workflow automation layer; updated hosting to t3.medium; resolved EC2 sizing question. Prior: Feb 15 — Added Client Profile Building (WP08a) and Author Verification (WP08b) to Phase 3; Author Attribution Service (WP19a) to Phase 4; NCLC proof-of-concept section. Feb 12 — Aligned with Feb 11-12 decisions, resolved Phase 1 questions*
 *Notion canonical: [Crazy Ideas & Research](https://www.notion.so/2f798ac3bc5681f99793e84bf1f55c3a)*

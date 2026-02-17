@@ -138,7 +138,7 @@ Build a functional web chat interface for AFK access.
 
 #### 2.1 Next.js Web App Setup
 ```
-jawn-ai-web/
+joyus-ai-web/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx

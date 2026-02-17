@@ -3,7 +3,7 @@
 **Feature**: 004-workflow-enforcement
 **Date**: 2026-02-17
 
-All tools are registered on the `jawn-ai-state` MCP server alongside existing 002 tools.
+All tools are registered on the `joyus-ai-state` MCP server alongside existing 002 tools.
 
 ---
 

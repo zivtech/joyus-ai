@@ -35,7 +35,7 @@
 
 **Decision**: SHA256 hash of the absolute project root path
 
-**Rationale**: Need a stable, filesystem-safe identifier for the `~/.jawn-ai/projects/<id>/` directory. SHA256 of the absolute path is deterministic, collision-resistant, and works across sessions. A truncated hash (first 16 chars) is sufficient.
+**Rationale**: Need a stable, filesystem-safe identifier for the `~/.joyus-ai/projects/<id>/` directory. SHA256 of the absolute path is deterministic, collision-resistant, and works across sessions. A truncated hash (first 16 chars) is sufficient.
 
 **Alternatives considered**:
 - Git remote URL: Not all projects have remotes. Local-only repos would fail.
@@ -46,14 +46,14 @@
 
 ## R4: Claude Code Hook Integration
 
-**Decision**: Generate shell scripts that call the `jawn-ai` CLI binary
+**Decision**: Generate shell scripts that call the `joyus-ai` CLI binary
 
-**Rationale**: Claude Code hooks are shell commands defined in `.claude/settings.json`. The hooks call `jawn-ai snapshot --event=<event-type>` which is a fast, standalone CLI invocation. No dependency on the MCP server running. The hook generator creates the shell scripts from templates and installs them into the Claude Code settings.
+**Rationale**: Claude Code hooks are shell commands defined in `.claude/settings.json`. The hooks call `joyus-ai snapshot --event=<event-type>` which is a fast, standalone CLI invocation. No dependency on the MCP server running. The hook generator creates the shell scripts from templates and installs them into the Claude Code settings.
 
 **Hook mapping**:
-- `SessionStart` → `jawn-ai restore` (display prior state)
-- `PostToolUse` (git commit, git checkout, test commands) → `jawn-ai snapshot --event=<type>`
-- `Stop` / session end → `jawn-ai snapshot --event=session-end`
+- `SessionStart` → `joyus-ai restore` (display prior state)
+- `PostToolUse` (git commit, git checkout, test commands) → `joyus-ai snapshot --event=<type>`
+- `Stop` / session end → `joyus-ai snapshot --event=session-end`
 
 **Alternatives considered**:
 - Inline shell logic: Fragile, hard to maintain, can't share logic with MCP server.
@@ -64,7 +64,7 @@
 
 ## R5: MCP Server Architecture (Local)
 
-**Decision**: Standalone local MCP server using `@modelcontextprotocol/sdk`, separate from the remote `jawn-ai-mcp-server`
+**Decision**: Standalone local MCP server using `@modelcontextprotocol/sdk`, separate from the remote `joyus-ai-mcp-server`
 
 **Rationale**: The remote MCP server handles cloud tool execution (Jira, Slack, GitHub). The local state server handles per-developer session state. Different concerns, different deployment targets, different lifecycles. They share the TypeScript/Vitest toolchain and can share type packages.
 
@@ -83,9 +83,9 @@
 
 ## R6: Canonical Declaration Storage
 
-**Decision**: `canonical.json` in project root `.jawn-ai/` directory, committed to git
+**Decision**: `canonical.json` in project root `.joyus-ai/` directory, committed to git
 
-**Rationale**: Canonical declarations are team-shared ("the tracking CSV lives at X"). They belong in the repo so all developers see the same declarations. The `.jawn-ai/canonical.json` file is small, rarely changes, and merge-friendly (JSON with one entry per line).
+**Rationale**: Canonical declarations are team-shared ("the tracking CSV lives at X"). They belong in the repo so all developers see the same declarations. The `.joyus-ai/canonical.json` file is small, rarely changes, and merge-friendly (JSON with one entry per line).
 
 **Branch overrides**: Stored as additional keys in the same file. When on a branch with an override, the override takes precedence. Format: `{ "tracking-csv": { "default": "path/to/file.csv", "branches": { "feature/x": "other/path.csv" } } }`
 
@@ -100,7 +100,7 @@
 
 **Decision**: File-based export/import for v1, with API-based sync as future adapter
 
-**Rationale**: For v1, sharing state is: developer A runs `jawn-ai share --note "stuck on filter tests"` which writes a snapshot + note to a sharable location (e.g., project's `.jawn-ai/shared/` directory or a file they can send). Developer B runs `jawn-ai load <path-or-id>`. This is simple, works offline, and requires no infrastructure.
+**Rationale**: For v1, sharing state is: developer A runs `joyus-ai share --note "stuck on filter tests"` which writes a snapshot + note to a sharable location (e.g., project's `.joyus-ai/shared/` directory or a file they can send). Developer B runs `joyus-ai load <path-or-id>`. This is simple, works offline, and requires no infrastructure.
 
 Future: The remote MCP server adapter enables share-via-API (push state to server, teammate pulls from server). This is the Codex/web pathway.
 

@@ -64,7 +64,7 @@ A remote MCP (Model Context Protocol) server that enables Claude Desktop to inte
 
 ```bash
 # Clone and install
-cd jawn-ai-mcp-server
+cd joyus-ai-mcp-server
 npm install
 
 # Set up environment
@@ -280,11 +280,11 @@ Configure `notifyOnSuccess` and `notifyOnError` per task.
 
 ```yaml
 # app.yaml
-name: jawn-ai-mcp
+name: joyus-ai-mcp
 services:
   - name: web
     source:
-      repo: zivtech/jawn-ai
+      repo: zivtech/joyus-ai
       branch: main
     build_command: npm ci && npm run build
     run_command: npm run db:migrate && npm start

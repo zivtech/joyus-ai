@@ -36,7 +36,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 **Why first:** Everything else we build needs somewhere to go. This is the foundational sharing layer.
 
 **Implementation:**
-- [ ] GitHub repo (dedicated or branch of jawn-ai) with GitHub Pages enabled
+- [ ] GitHub repo (dedicated or branch of joyus-ai) with GitHub Pages enabled
 - [ ] GitHub Actions workflow: push assets → StatiCrypt encrypts → GitHub Pages serves
 - [ ] Per-project passwords in GitHub Secrets
 - [ ] Directory-based organization (`zivtech.github.io/project-name/`)
@@ -49,7 +49,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 
 **Goal:** Deploy the existing MCP server to AWS EC2.
 
-**What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `jawn-ai-mcp-server/`).
+**What's already built:** OAuth auth, MCP protocol endpoint, tool executors for Jira/Slack/GitHub/Google, scheduled tasks, encrypted token storage, Docker config (see `joyus-ai-mcp-server/`).
 
 **Implementation:**
 - [ ] Provision AWS EC2 (t3.small/medium)
@@ -101,7 +101,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - `telemetry: false` — no Posthog data collection
 
 **Rollout Plan:**
-1. Pilot on jawn-ai itself with telemetry off and auto-push disabled
+1. Pilot on joyus-ai itself with telemetry off and auto-push disabled
 2. Review captured data for 2 weeks
 3. Decide on broader team rollout based on findings
 
@@ -302,7 +302,7 @@ Central gateway for auth, routing, logging:
 ### Repository Structure
 
 ```
-jawn-ai-skills/                       (Git repository)
+joyus-ai-skills/                       (Git repository)
 ├── README.md
 ├── .skill-registry.json              (skill metadata, versions)
 │
@@ -749,7 +749,7 @@ Phase 4 Deliverables:
 
 #### Task 1: Repository Setup (1 day)
 
-- [ ] Create `jawn-ai-skills` repository
+- [ ] Create `joyus-ai-skills` repository
 - [ ] Set up folder structure (core/, clients/)
 - [ ] Create `.skill-registry.json`
 - [ ] Set up basic CI (linting, tests)

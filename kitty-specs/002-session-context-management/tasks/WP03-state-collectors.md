@@ -106,7 +106,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   7. Export from `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/src/collectors/git.ts` (new)
+  - `joyus-ai-state/src/collectors/git.ts` (new)
 
 - **Parallel?**: Yes -- fully independent of T010, T011.
 - **Notes**: `execFile` is preferred over `exec` because it doesn't spawn a shell. All arguments are passed as an array, preventing injection. If the upstream doesn't exist (local-only branch), ahead/behind should be `{ ahead: 0, behind: 0 }` and remoteBranch should be `null`.
@@ -134,7 +134,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Return empty arrays if not a git repo or on error
 
 - **Files**:
-  - `jawn-ai-state/src/collectors/files.ts` (new)
+  - `joyus-ai-state/src/collectors/files.ts` (new)
 
 - **Parallel?**: Yes -- fully independent.
 
@@ -163,7 +163,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Be permissive in parsing — extract what you can, ignore what you can't
 
 - **Files**:
-  - `jawn-ai-state/src/collectors/tests.ts` (new)
+  - `joyus-ai-state/src/collectors/tests.ts` (new)
 
 - **Parallel?**: Yes -- fully independent.
 - **Notes**: This collector is different from git/file collectors — it receives output text as input rather than running commands. The companion service or MCP tool passes test output to this function.
@@ -192,8 +192,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Resolved decisions stay in the list for context (but could be pruned after N snapshots — deferred)
 
 - **Files**:
-  - `jawn-ai-state/src/collectors/decisions.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/collectors/decisions.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: No -- logically depends on being able to read the last snapshot (WP02). But the function itself can be written against the types without the store.
 

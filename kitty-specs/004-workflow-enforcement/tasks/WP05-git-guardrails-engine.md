@@ -55,7 +55,7 @@ history:
 
 - **Spec**: FR-014 through FR-019 (git sanity), User Story 3 (branch verification), User Story 5 (git hygiene)
 - **Data Model**: BranchRule entity
-- **Plan**: `jawn-ai-state/src/enforcement/git/` directory
+- **Plan**: `joyus-ai-state/src/enforcement/git/` directory
 - **002 dependency**: State snapshot provides `expectedBranch` from task context
 
 **Implementation command**: `spec-kitty implement WP05 --base WP02`
@@ -66,7 +66,7 @@ history:
 
 - **Purpose**: Before commits/pushes, verify the current branch matches the expected branch from the active task context (FR-014, User Story 3).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/git/branch-verify.ts`
+  1. Create `joyus-ai-state/src/enforcement/git/branch-verify.ts`
   2. Implement `verifyBranch(config: BranchVerifyConfig): BranchVerifyResult`:
      ```typescript
      interface BranchVerifyConfig {
@@ -92,14 +92,14 @@ history:
   4. Implement `getCurrentBranch(): string`:
      - Run `git rev-parse --abbrev-ref HEAD`
      - Parse output, trim whitespace
-- **Files**: `jawn-ai-state/src/enforcement/git/branch-verify.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/enforcement/git/branch-verify.ts` (new, ~60 lines)
 - **Notes**: Expected branch comes from 002's state snapshot (task context). If 002's API isn't available yet, accept `expectedBranch` as a parameter.
 
 ### Subtask T027 -- Implement branch naming convention checker
 
 - **Purpose**: Enforce branch naming conventions when configured (FR-015).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/git/branch-hygiene.ts`
+  1. Create `joyus-ai-state/src/enforcement/git/branch-hygiene.ts`
   2. Implement `checkBranchNaming(branchName: string, rules: BranchRule): NamingResult`:
      - If `rules.namingConvention` is set: test branch against regex
      - If valid: `{ valid: true }`
@@ -108,7 +108,7 @@ history:
      - Simple heuristic: lowercase, replace spaces with hyphens, add `feature/` prefix if missing
      - Return best-effort suggestion (may not always be perfect)
   4. Skip check for protected branches (main, master, develop)
-- **Files**: `jawn-ai-state/src/enforcement/git/branch-hygiene.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/git/branch-hygiene.ts` (new, ~40 lines)
 - **Parallel?**: Yes
 
 ### Subtask T028 -- Implement stale branch detection
@@ -123,7 +123,7 @@ history:
      - Exclude protected branches
      - Return sorted by age (stalest first)
   3. Define `StaleBranch`: `{ name: string, lastModified: string, daysSinceModified: number }`
-- **Files**: `jawn-ai-state/src/enforcement/git/branch-hygiene.ts` (extend, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/git/branch-hygiene.ts` (extend, ~40 lines)
 - **Parallel?**: Yes
 
 ### Subtask T029 -- Implement active branch count warning
@@ -135,21 +135,21 @@ history:
      - Run `git branch --list | wc -l` or parse `git for-each-ref refs/heads/`
      - Compare count to `rules.maxActiveBranches` (default: 10)
      - Return `{ count: number, limit: number, overLimit: boolean }`
-- **Files**: `jawn-ai-state/src/enforcement/git/branch-hygiene.ts` (extend, ~20 lines)
+- **Files**: `joyus-ai-state/src/enforcement/git/branch-hygiene.ts` (extend, ~20 lines)
 - **Parallel?**: Yes
 
 ### Subtask T030 -- Implement force-push warning
 
 - **Purpose**: Warn before force-push operations with risk explanation (FR-018).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/git/guardrails.ts`
+  1. Create `joyus-ai-state/src/enforcement/git/guardrails.ts`
   2. Implement `checkForcePush(args: string[], rules: BranchRule): ForcePushResult`:
      - Detect `--force` or `-f` in git push arguments
      - Check if target branch is in `rules.protectedBranches`
      - If protected: `{ warning: 'critical', message: 'Force-pushing to protected branch...' }`
      - If not protected: `{ warning: 'caution', message: 'Force-push will overwrite remote history...' }`
      - If not force-push: `{ warning: 'none' }`
-- **Files**: `jawn-ai-state/src/enforcement/git/guardrails.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/git/guardrails.ts` (new, ~40 lines)
 - **Parallel?**: Yes
 
 ### Subtask T031 -- Implement uncommitted changes detection
@@ -162,7 +162,7 @@ history:
      - Parse output: count modified, added, deleted, untracked files
      - Return `{ hasChanges: boolean, modified: number, untracked: number, summary: string }`
   3. Summary format: "3 modified files, 1 untracked file"
-- **Files**: `jawn-ai-state/src/enforcement/git/guardrails.ts` (extend, ~30 lines)
+- **Files**: `joyus-ai-state/src/enforcement/git/guardrails.ts` (extend, ~30 lines)
 - **Parallel?**: Yes
 
 ### Subtask T032 -- Integrate git guardrails with audit trail
@@ -176,7 +176,7 @@ history:
   5. `auditForcePush(result, writer)`: log `force-push-warning`
   6. `auditUncommitted(result, writer)`: log `uncommitted-warning`
   7. Each audit entry includes `branchName`, `userTier`, `activeSkills`, `taskId` from context
-- **Files**: `jawn-ai-state/src/enforcement/git/branch-verify.ts` and `guardrails.ts` (extend, ~40 lines total)
+- **Files**: `joyus-ai-state/src/enforcement/git/branch-verify.ts` and `guardrails.ts` (extend, ~40 lines total)
 
 ## Risks & Mitigations
 

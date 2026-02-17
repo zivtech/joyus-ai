@@ -9,8 +9,8 @@
 ## Overview
 
 The State API is exposed through two interfaces:
-1. **MCP Tools** (primary) — Claude calls these on behalf of the user. The user never interacts with jawn-ai directly.
-2. **CLI** (deferred, admin/power users) — `jawn-ai <command>` for direct state inspection and debugging. Built after MCP tools are validated.
+1. **MCP Tools** (primary) — Claude calls these on behalf of the user. The user never interacts with joyus-ai directly.
+2. **CLI** (deferred, admin/power users) — `joyus-ai <command>` for direct state inspection and debugging. Built after MCP tools are validated.
 
 Both interfaces operate on the same underlying state store and snapshot format.
 
@@ -223,7 +223,7 @@ Export current state with a note for a teammate, or load a teammate's shared sta
 ```json
 {
   "action": "import",
-  "path": ".jawn-ai/shared/incoming/2026-02-16T14-30-00-share.json"
+  "path": ".joyus-ai/shared/incoming/2026-02-16T14-30-00-share.json"
 }
 ```
 
@@ -236,7 +236,7 @@ Export current state with a note for a teammate, or load a teammate's shared sta
 **Output** (export):
 ```json
 {
-  "sharedFile": ".jawn-ai/shared/outgoing/2026-02-16T14-30-00-share.json",
+  "sharedFile": ".joyus-ai/shared/outgoing/2026-02-16T14-30-00-share.json",
   "note": "stuck on filter tests — 2 failures I can't figure out"
 }
 ```
@@ -263,12 +263,12 @@ Export current state with a note for a teammate, or load a teammate's shared sta
 
 The following CLI commands will be implemented as thin wrappers around the same core logic that MCP tools use:
 
-### `jawn-ai snapshot`
+### `joyus-ai snapshot`
 
 Capture a state snapshot. Maps to `save_state` MCP tool.
 
 ```
-jawn-ai snapshot [--event=<type>] [--decision="<text>"] [--quiet]
+joyus-ai snapshot [--event=<type>] [--decision="<text>"] [--quiet]
 ```
 
 | Arg | Type | Default | Description |
@@ -287,12 +287,12 @@ Snapshot captured: 2026-02-16T14:30:00 [commit]
 
 ---
 
-### `jawn-ai restore`
+### `joyus-ai restore`
 
 Display the most recent snapshot. Maps to `get_context` MCP tool.
 
 ```
-jawn-ai restore [--format=<text|json>] [--id=<snapshot-id>]
+joyus-ai restore [--format=<text|json>] [--id=<snapshot-id>]
 ```
 
 **Output** (text format):
@@ -321,49 +321,49 @@ Canonical documents:
 
 ---
 
-### `jawn-ai status`
+### `joyus-ai status`
 
 Show live context with divergence detection. Maps to `get_context` MCP tool with live enrichment.
 
 ```
-jawn-ai status [--format=<text|json>]
+joyus-ai status [--format=<text|json>]
 ```
 
 ---
 
-### `jawn-ai canonical`
+### `joyus-ai canonical`
 
 Manage canonical document declarations. Maps to `check_canonical` MCP tool.
 
 ```
-jawn-ai canonical add <name> <path> [--branch=<branch>]
-jawn-ai canonical remove <name>
-jawn-ai canonical list
-jawn-ai canonical check <file-path>
+joyus-ai canonical add <name> <path> [--branch=<branch>]
+joyus-ai canonical remove <name>
+joyus-ai canonical list
+joyus-ai canonical check <file-path>
 ```
 
 ---
 
-### `jawn-ai share` / `jawn-ai load`
+### `joyus-ai share` / `joyus-ai load`
 
 Share and load state. Maps to `share_state` MCP tool.
 
 ```
-jawn-ai share [--note="<what I was doing>"] [--output=<path>]
-jawn-ai load <path> [--format=<text|json>]
+joyus-ai share [--note="<what I was doing>"] [--output=<path>]
+joyus-ai load <path> [--format=<text|json>]
 ```
 
 ---
 
-### `jawn-ai config`
+### `joyus-ai config`
 
 Manage settings (admin only).
 
 ```
-jawn-ai config get <key>
-jawn-ai config set <key> <value>
-jawn-ai config list
-jawn-ai config init
+joyus-ai config get <key>
+joyus-ai config set <key> <value>
+joyus-ai config list
+joyus-ai config init
 ```
 
 ---

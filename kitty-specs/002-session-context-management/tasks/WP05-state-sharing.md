@@ -60,7 +60,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 - **Spec**: User Story 6 (Share State for Troubleshooting), FR-015
 - **Data Model**: `SharerNote` type in `data-model.md`
 - **Contracts**: `contracts/state-api.md` — `share_state` MCP tool uses this module
-- **Shared state location**: `~/.jawn-ai/projects/<hash>/shared/outgoing/<timestamp>-share.json`
+- **Shared state location**: `~/.joyus-ai/projects/<hash>/shared/outgoing/<timestamp>-share.json`
 - **File transfer**: v1 is manual (file copy, chat, email). Future: API-based via remote MCP server.
 - **Depends on**: WP01 (types, schemas), WP02 (state store for reading latest snapshot)
 
@@ -96,7 +96,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      - Change the event type to `"share"`
      - Generate a new ID (CUID2) for the shared snapshot
      - Determine output path:
-       - Default: `~/.jawn-ai/projects/<hash>/shared/outgoing/<timestamp>-share.json`
+       - Default: `~/.joyus-ai/projects/<hash>/shared/outgoing/<timestamp>-share.json`
        - Custom: from `options.outputPath`
      - Ensure output directory exists
      - Write atomically (temp + rename)
@@ -104,8 +104,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   3. The shared file is a valid Snapshot that passes `SnapshotSchema` validation
 
 - **Files**:
-  - `jawn-ai-state/src/state/share.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/state/share.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: Yes -- can develop alongside T018.
 - **Notes**: The shared file must be self-contained. The recipient doesn't need access to the sharer's state store.
@@ -132,11 +132,11 @@ Use language identifiers in code blocks: ````python`, ````bash`
      - If validation fails: throw with clear error message about what's wrong
      - Extract the `sharer` field (may be null if it's a regular snapshot, not a shared one)
      - Return the snapshot and sharer note
-  3. Optionally copy the loaded file to `~/.jawn-ai/projects/<hash>/shared/incoming/` for record-keeping
+  3. Optionally copy the loaded file to `~/.joyus-ai/projects/<hash>/shared/incoming/` for record-keeping
   4. Accept any valid snapshot file — not just files from the shared/ directory
 
 - **Files**:
-  - `jawn-ai-state/src/state/share.ts` (update)
+  - `joyus-ai-state/src/state/share.ts` (update)
 
 - **Parallel?**: Yes -- can develop alongside T017.
 - **Notes**: If the file lacks a `sharer` field, return it as a regular snapshot with `sharerNote: null`. This allows loading any snapshot file, not just shared ones.
@@ -160,7 +160,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. `generateShareFilename()`: Returns `<ISO-timestamp>-share.json` with filesystem-safe characters
 
 - **Files**:
-  - `jawn-ai-state/src/state/share.ts` (update)
+  - `joyus-ai-state/src/state/share.ts` (update)
 
 - **Parallel?**: Yes -- utility functions used by T017 and T018.
 

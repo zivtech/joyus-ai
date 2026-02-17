@@ -5,7 +5,7 @@
 
 ## Summary
 
-Build the session state management layer for jawn-ai — an invisible mediator that enables AI coding agents to maintain awareness of active work across sessions, compactions, and crashes. The user never interacts with jawn-ai directly; Claude is the UI. The system captures structured snapshots on significant events, provides MCP tools that Claude calls to stay oriented, and manages canonical document routing — all invisible to the end user.
+Build the session state management layer for joyus-ai — an invisible mediator that enables AI coding agents to maintain awareness of active work across sessions, compactions, and crashes. The user never interacts with joyus-ai directly; Claude is the UI. The system captures structured snapshots on significant events, provides MCP tools that Claude calls to stay oriented, and manages canonical document routing — all invisible to the end user.
 
 **Deployment model**: MCP server + companion service. The user's maximum setup effort is adding the MCP server to Claude Desktop/Code and running the companion app.
 
@@ -22,8 +22,8 @@ Build the session state management layer for jawn-ai — an invisible mediator t
 **Language/Version**: TypeScript 5.3+ / Node.js 20+
 **Primary Dependencies**: `@modelcontextprotocol/sdk` (MCP server), `zod` (schema validation)
 **Secondary Dependencies** (deferred): `commander` (CLI, built after MCP server)
-**Storage**: JSON files on local filesystem (per-developer, gitignored). `~/.jawn-ai/projects/<project-hash>/` for state, `.jawn-ai/config.json` in project root for canonical declarations and settings.
-**Testing**: Vitest (matches existing `jawn-ai-mcp-server` setup)
+**Storage**: JSON files on local filesystem (per-developer, gitignored). `~/.joyus-ai/projects/<project-hash>/` for state, `.joyus-ai/config.json` in project root for canonical declarations and settings.
+**Testing**: Vitest (matches existing `joyus-ai-mcp-server` setup)
 **Target Platform**: macOS (primary), Linux, Windows via WSL2
 **Project Type**: Two components — MCP server (primary) + companion service (background state capture)
 **Performance Goals**: Snapshot capture <100ms (non-blocking); MCP tool response <500ms; state restore <500ms at session start
@@ -66,7 +66,7 @@ kitty-specs/002-session-context-management/
 ### Source Code (repository root)
 
 ```
-jawn-ai-state/
+joyus-ai-state/
 ├── package.json
 ├── tsconfig.json
 ├── src/
@@ -111,8 +111,8 @@ jawn-ai-state/
 │   └── contract/
 │       └── snapshot-schema.test.ts
 └── bin/
-    ├── jawn-ai-mcp              # MCP server entry point
-    └── jawn-ai-service          # Companion service entry point
+    ├── joyus-ai-mcp              # MCP server entry point
+    └── joyus-ai-service          # Companion service entry point
 ```
 
 **What was removed from the original plan:**
@@ -126,7 +126,7 @@ jawn-ai-state/
 - `mcp/tools/save-state.ts` — Claude can explicitly trigger state capture (not just hooks).
 - `mcp/tools/verify-action.ts` — Pre-action guardrail (lays groundwork for Spec 2 quality gates).
 
-**Structure Decision**: New `jawn-ai-state/` package at repo root, alongside existing `jawn-ai-mcp-server/`. They share the same TypeScript/Vitest toolchain but are independent packages. The session state system runs locally (MCP server + companion service); the existing MCP server runs remotely. Future integration (e.g., syncing shared state to the remote server) is deferred.
+**Structure Decision**: New `joyus-ai-state/` package at repo root, alongside existing `joyus-ai-mcp-server/`. They share the same TypeScript/Vitest toolchain but are independent packages. The session state system runs locally (MCP server + companion service); the existing MCP server runs remotely. Future integration (e.g., syncing shared state to the remote server) is deferred.
 
 ## Architecture
 
@@ -137,7 +137,7 @@ jawn-ai-state/
 │                      Developer Machine                        │
 │                                                               │
 │  ┌──────────────────┐    ┌─────────────────────────────────┐ │
-│  │ Claude Desktop    │    │  jawn-ai-state                  │ │
+│  │ Claude Desktop    │    │  joyus-ai-state                  │ │
 │  │ or Claude Code    │    │                                 │ │
 │  │                   │    │  ┌─────────────┐  ┌──────────┐ │ │
 │  │  User talks to    │◄──▶│  │ MCP Server  │  │Companion │ │ │
@@ -149,7 +149,7 @@ jawn-ai-state/
 │                           │         ▼              ▼        │ │
 │                           │  ┌──────────────────────────┐   │ │
 │                           │  │     State Store           │   │ │
-│                           │  │     ~/.jawn-ai/           │   │ │
+│                           │  │     ~/.joyus-ai/           │   │ │
 │                           │  │     projects/<hash>/      │   │ │
 │                           │  │     ├── snapshots/        │   │ │
 │                           │  │     ├── shared/           │   │ │
@@ -171,7 +171,7 @@ jawn-ai-state/
 
 **Primary path (all users):**
 1. **Companion service watches** for significant events (git commits, branch switches, test runs, file changes)
-2. **Service captures snapshot** atomically to `~/.jawn-ai/projects/<hash>/snapshots/<timestamp>.json`
+2. **Service captures snapshot** atomically to `~/.joyus-ai/projects/<hash>/snapshots/<timestamp>.json`
 3. **Claude starts new session** → calls `get_context` MCP tool → receives structured state
 4. **Claude presents summary** to user in natural language ("You were working on branch X, 3 files modified, 2 tests failing")
 5. **User says "continue"** → Claude has full context, resumes work
@@ -190,11 +190,12 @@ jawn-ai-state/
 | `check_canonical` | Verify a file path against canonical declarations; declare new canonical sources | Before reading/writing files that might have duplicates |
 | `verify_action` | Pre-action check (branch verification, etc.) | Before commits, pushes, or other risky git operations |
 | `share_state` | Export current state with a note for a teammate, or load a teammate's shared state | When user asks for help or loads shared context |
+| `query_snapshots` | List/filter past snapshots by date range, event type, or branch; return summaries | Mid-session when user asks "what did I do yesterday" or "show me recent test failures" |
 
 ### Storage Layout
 
 ```
-~/.jawn-ai/
+~/.joyus-ai/
 ├── global-config.json           # User-wide defaults
 └── projects/
     └── <project-hash>/          # SHA256 of project root path
@@ -208,18 +209,18 @@ jawn-ai-state/
             ├── incoming/        # Shared states received from teammates
             └── outgoing/        # Shared states exported for teammates
 
-.jawn-ai/                        # In project root (gitignored)
+.joyus-ai/                        # In project root (gitignored)
 ├── config.json                  # Project config (committed or gitignored per preference)
 └── canonical.json               # Canonical declarations (committed — shared across team)
 ```
 
-**Key decision**: `canonical.json` lives in the project root `.jawn-ai/` directory and IS committed to git (canonical declarations are team-shared). Snapshot state lives in `~/.jawn-ai/` (per-developer, never committed).
+**Key decision**: `canonical.json` lives in the project root `.joyus-ai/` directory and IS committed to git (canonical declarations are team-shared). Snapshot state lives in `~/.joyus-ai/` (per-developer, never committed).
 
 ### Companion Service (Background State Capture)
 
 The companion service is a locally-running daemon that handles event-driven state capture — the things the MCP request/response protocol can't do (long-running processes, filesystem watchers, proactive snapshot capture).
 
-**Entry point**: `bin/jawn-ai-service` → `src/service/daemon.ts`
+**Entry point**: `bin/joyus-ai-service` → `src/service/daemon.ts`
 
 **Responsibilities**:
 1. **Filesystem watching** (`src/service/watcher.ts`): Monitor the project directory for significant events using `fs.watch` or `chokidar`. Detect git operations (new commits, branch switches) by watching `.git/HEAD`, `.git/refs/`, and the git index. Detect test runs by watching for test output files or process events.
@@ -228,10 +229,10 @@ The companion service is a locally-running daemon that handles event-driven stat
 4. **Health/status endpoint**: Expose a simple local IPC mechanism (unix socket or HTTP on localhost) so the MCP server can check if the companion service is running and request immediate snapshot capture.
 
 **Lifecycle**:
-- Started by the user running `npx jawn-ai-service` (or via a system service manager)
+- Started by the user running `npx joyus-ai-service` (or via a system service manager)
 - Runs in the foreground by default (background via `&` or system service)
 - Graceful shutdown on SIGTERM/SIGINT
-- Writes a PID file to `~/.jawn-ai/projects/<hash>/service.pid` for the MCP server to detect
+- Writes a PID file to `~/.joyus-ai/projects/<hash>/service.pid` for the MCP server to detect
 - If the companion service is NOT running, the MCP server still works — Claude can still call `save_state` explicitly, and `get_context` still returns live git state. The service adds automatic event capture, not core functionality.
 
 **Event detection strategy**:
@@ -243,6 +244,7 @@ The companion service is a locally-running daemon that handles event-driven stat
 | Test run | Watch for known test output patterns (jest, vitest, phpunit, pytest) | 2s |
 | File change | Watch project files (respecting `.gitignore`) | 5s |
 | Session events | Receive notification from MCP server via IPC | None |
+| Custom trigger | Config-defined glob pattern match in watched files | Per-config debounce or 2s default |
 
 **MCP server ↔ Companion service communication**:
 - The MCP server checks for the companion service PID file on startup
@@ -302,7 +304,7 @@ Foundation (core types + store + collectors)
 5. State sharing (export/import with sharer note)
 
 **Phase 2 — Primary Interface** (parallel streams, after Phase 1):
-6. **MCP Server + all 5 tools** (get_context, save_state, check_canonical, verify_action, share_state) — this is the primary interface users interact with through Claude
+6. **MCP Server + all 6 tools** (get_context, save_state, check_canonical, verify_action, share_state, query_snapshots) — this is the primary interface users interact with through Claude
 7. **Companion Service** (daemon, filesystem watcher, event handler) — background state capture, runs alongside MCP server
 
 **Phase 3 — Integration & Hardening** (after Phase 2):

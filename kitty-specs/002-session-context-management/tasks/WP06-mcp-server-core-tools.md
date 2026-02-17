@@ -59,7 +59,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 ## Context & Constraints
 
-- **Architecture**: MCP server is the PRIMARY interface. Users never interact with jawn-ai directly. Claude calls these tools.
+- **Architecture**: MCP server is the PRIMARY interface. Users never interact with joyus-ai directly. Claude calls these tools.
 - **Contracts**: `contracts/state-api.md` — tool signatures, inputs, outputs (authoritative)
 - **Plan**: `plan.md` — MCP Tools table, Architecture section
 - **Quickstart**: `quickstart.md` — user-facing flow to validate against
@@ -88,7 +88,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      export async function startMcpServer(projectRoot: string): Promise<void>;
      ```
   2. `createMcpServer()`:
-     - Create a `Server` instance with name `"jawn-ai-state"` and version `"0.1.0"`
+     - Create a `Server` instance with name `"joyus-ai-state"` and version `"0.1.0"`
      - Set capabilities: `{ tools: {} }`
      - Register the `tools/list` handler to return all tool definitions
      - Register the `tools/call` handler to route tool calls to implementations
@@ -121,7 +121,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Global error handling: catch all errors in tool handlers, return MCP error responses
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/server.ts` (new)
+  - `joyus-ai-state/src/mcp/server.ts` (new)
 
 - **Parallel?**: No -- T021-T023 are registered as tools in this server.
 - **Notes**: Use stderr for all logging (`console.error`, not `console.log`). stdout is the MCP protocol channel.
@@ -171,7 +171,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Must be <500ms response time
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/tools/get-context.ts` (new)
+  - `joyus-ai-state/src/mcp/tools/get-context.ts` (new)
 
 - **Parallel?**: Yes -- fully independent of T022, T023.
 - **Notes**: The `_divergence` field is extra metadata not in the core Snapshot type — it's a response enhancement. If the companion service is running, the snapshot will be recent. If not, the live collectors provide current data regardless.
@@ -230,7 +230,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   3. Must be <100ms (non-blocking)
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/tools/save-state.ts` (new)
+  - `joyus-ai-state/src/mcp/tools/save-state.ts` (new)
 
 - **Parallel?**: Yes -- fully independent of T021, T023.
 
@@ -284,7 +284,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. `allowed` is a recommendation, not enforcement. Claude presents warnings and asks user for confirmation.
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/tools/verify-action.ts` (new)
+  - `joyus-ai-state/src/mcp/tools/verify-action.ts` (new)
 
 - **Parallel?**: Yes -- fully independent of T021, T022.
 - **Notes**: This tool lays groundwork for Spec 2 (Workflow Enforcement) quality gates. For now it's advisory only. When Spec 2 is implemented, the same checks can become enforceable.
@@ -295,7 +295,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 - **Purpose**: Create the executable entry point that Claude Desktop/Code launches when connecting to the MCP server.
 - **Steps**:
-  1. Update `bin/jawn-ai-mcp`:
+  1. Update `bin/joyus-ai-mcp`:
      ```javascript
      #!/usr/bin/env node
      import { startMcpServer } from '../dist/mcp/server.js';
@@ -306,22 +306,22 @@ Use language identifiers in code blocks: ````python`, ````bash`
        process.exit(1);
      });
      ```
-  2. Make executable: `chmod +x bin/jawn-ai-mcp`
+  2. Make executable: `chmod +x bin/joyus-ai-mcp`
   3. Verify it can be launched and responds to MCP protocol
   4. Document Claude Desktop config:
      ```json
      {
        "mcpServers": {
-         "jawn-ai-state": {
+         "joyus-ai-state": {
            "command": "npx",
-           "args": ["jawn-ai-mcp"]
+           "args": ["joyus-ai-mcp"]
          }
        }
      }
      ```
 
 - **Files**:
-  - `jawn-ai-state/bin/jawn-ai-mcp` (update from stub)
+  - `joyus-ai-state/bin/joyus-ai-mcp` (update from stub)
 
 - **Parallel?**: No -- depends on T020 server setup.
 

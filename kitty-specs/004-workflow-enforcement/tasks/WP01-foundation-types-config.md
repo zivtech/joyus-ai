@@ -55,10 +55,10 @@ history:
 ## Context & Constraints
 
 - **Data Model**: `kitty-specs/004-workflow-enforcement/data-model.md` (authoritative for all entity definitions)
-- **Plan**: `kitty-specs/004-workflow-enforcement/plan.md` -- project structure under `jawn-ai-state/src/enforcement/`
+- **Plan**: `kitty-specs/004-workflow-enforcement/plan.md` -- project structure under `joyus-ai-state/src/enforcement/`
 - **Spec**: `kitty-specs/004-workflow-enforcement/spec.md` -- FR-026 through FR-029 (configuration), FR-029a (kill switch)
 - **Research**: `kitty-specs/004-workflow-enforcement/research.md` -- config strategy (extend 002), kill switch design
-- **002 Reference**: `kitty-specs/002-session-context-management/plan.md` -- existing config system at `~/.jawn-ai/` and `.jawn-ai/`
+- **002 Reference**: `kitty-specs/002-session-context-management/plan.md` -- existing config system at `~/.joyus-ai/` and `.joyus-ai/`
 - **Dependencies**: `zod` (schema validation), TypeScript 5.3+
 
 **Implementation command**: `spec-kitty implement WP01`
@@ -69,7 +69,7 @@ history:
 
 - **Purpose**: Create the type foundation that all enforcement modules import. Every entity in the data model needs a corresponding TypeScript type.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/types.ts`
+  1. Create `joyus-ai-state/src/enforcement/types.ts`
   2. Define the following types (see `data-model.md` for exact fields):
      - `GateType`: union type `'lint' | 'test' | 'a11y' | 'visual-regression' | 'custom'`
      - `TriggerPoint`: union type `'pre-commit' | 'pre-push'`
@@ -89,14 +89,14 @@ history:
      - `EnforcementConfig`: project-level config interface (contains gates[], skillMappings[], branchRules, enforcementPolicy)
      - `DeveloperConfig`: per-developer config interface (contains tier, gateOverrides, skillOverrides)
   3. Export all types
-- **Files**: `jawn-ai-state/src/enforcement/types.ts` (new, ~150 lines)
+- **Files**: `joyus-ai-state/src/enforcement/types.ts` (new, ~150 lines)
 - **Notes**: Use `interface` for object types and `type` for unions. Keep all types in one file for easy importing.
 
 ### Subtask T002 -- Create Zod validation schemas
 
 - **Purpose**: Runtime validation of config files loaded from disk. Zod schemas ensure invalid config is caught at load time, not at runtime deep in enforcement logic.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/schemas.ts`
+  1. Create `joyus-ai-state/src/enforcement/schemas.ts`
   2. Define Zod schemas mirroring every TypeScript type from T001:
      - `QualityGateSchema`: validate gate config with defaults (timeout: 60, defaultTier: 'always-run')
      - `SkillMappingSchema`: validate file patterns are valid globs
@@ -108,27 +108,27 @@ history:
      - `DeveloperConfigSchema`: per-developer config schema
   3. Export schemas and inferred types (`z.infer<typeof Schema>`)
   4. Ensure schemas have sensible `.default()` values for optional fields
-- **Files**: `jawn-ai-state/src/enforcement/schemas.ts` (new, ~120 lines)
+- **Files**: `joyus-ai-state/src/enforcement/schemas.ts` (new, ~120 lines)
 - **Notes**: Use `z.preprocess` for any coercion needed (e.g., string timeout -> number). Schemas should be strict enough to catch typos but flexible enough that missing optional fields get defaults.
 
 ### Subtask T003 -- Implement enforcement config loader
 
 - **Purpose**: Load enforcement configuration from both project-level and developer-level config files, validate with Zod, and provide a merged result.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/config.ts`
+  1. Create `joyus-ai-state/src/enforcement/config.ts`
   2. Implement `loadProjectConfig(projectRoot: string): EnforcementConfig`:
-     - Read `.jawn-ai/config.json` from project root
+     - Read `.joyus-ai/config.json` from project root
      - Extract `enforcement` section
      - Validate with `EnforcementConfigSchema`
      - Return parsed config (or defaults if section missing)
   3. Implement `loadDeveloperConfig(projectHash: string): DeveloperConfig`:
-     - Read `~/.jawn-ai/projects/<projectHash>/config.json`
+     - Read `~/.joyus-ai/projects/<projectHash>/config.json`
      - Extract `enforcement` section
      - Validate with `DeveloperConfigSchema`
      - Return parsed config (or defaults if section missing)
   4. Handle file-not-found gracefully: return default config, don't throw
   5. Log validation errors but fall back to safe defaults (FR-029)
-- **Files**: `jawn-ai-state/src/enforcement/config.ts` (new, ~80 lines)
+- **Files**: `joyus-ai-state/src/enforcement/config.ts` (new, ~80 lines)
 - **Notes**: Reuse 002's project hash function if available. If 002's config loader exists, extend it rather than reimplementing file I/O.
 
 ### Subtask T004 -- Implement config inheritance/merging with policy constraints
@@ -143,7 +143,7 @@ history:
      - Apply developer skill overrides: for each skill, check if it's in `mandatorySkills` -- if so, ignore the override
      - Return merged config with a `overridesApplied` array logging which overrides were applied vs rejected
   3. Define `MergedEnforcementConfig` type (extends EnforcementConfig with resolved tier and override log)
-- **Files**: `jawn-ai-state/src/enforcement/config.ts` (extend, ~60 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/config.ts` (extend, ~60 lines added)
 - **Notes**: Policy enforcement is critical -- a project admin must be able to mark gates as mandatory. Log rejected overrides so developers understand why their preferences were ignored.
 
 ### Subtask T005 -- Implement config validation with safe defaults fallback
@@ -162,14 +162,14 @@ history:
      - No skill mappings (no skills auto-loaded)
      - Default branch rules (staleDays: 14, maxActiveBranches: 10)
      - Tier: `tier-2` (power user -- least disruptive default)
-- **Files**: `jawn-ai-state/src/enforcement/config.ts` (extend, ~40 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/config.ts` (extend, ~40 lines added)
 - **Notes**: The principle is "never block a developer due to config errors." Invalid config should degrade to permissive defaults, not strict lockdown.
 
 ### Subtask T006 -- Implement session-scoped kill switch
 
 - **Purpose**: Provide a global toggle that disables all enforcement for the current session. Essential for emergency hotfixes and debugging (FR-029a).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/kill-switch.ts`
+  1. Create `joyus-ai-state/src/enforcement/kill-switch.ts`
   2. Implement a simple state module:
      ```typescript
      let enforcementDisabled = false;
@@ -184,12 +184,12 @@ history:
   3. `isEnforcementActive()` is the function all engines call before executing
   4. State is in-memory only -- new session (new process) starts with enforcement active
   5. Kill switch does NOT disable audit logging -- the switch itself is always recorded
-- **Files**: `jawn-ai-state/src/enforcement/kill-switch.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/kill-switch.ts` (new, ~40 lines)
 - **Notes**: Keep this dead simple. No persistence, no config dependency. The kill switch MCP tool (WP06) will call these functions and handle audit logging.
 
 ## Risks & Mitigations
 
-- **002 package may not exist**: Create `jawn-ai-state/src/enforcement/` directory. If 002's package.json doesn't exist yet, create minimal stubs for config path utilities.
+- **002 package may not exist**: Create `joyus-ai-state/src/enforcement/` directory. If 002's package.json doesn't exist yet, create minimal stubs for config path utilities.
 - **Type drift from data model**: Data model document is the source of truth. If types diverge during implementation, update the code to match the document.
 - **Config schema too strict**: Start permissive (most fields optional with defaults), tighten based on real usage.
 

@@ -62,7 +62,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 - **Spec**: User Story 2 (Canonical Document Declaration), FR-004, FR-005
 - **Data Model**: `CanonicalDeclaration` format in `data-model.md`, `CanonicalStatus` entity
 - **Contracts**: `contracts/state-api.md` — `check_canonical` tool uses this module
-- **Storage**: `.jawn-ai/canonical.json` in project root (committed to git — team-shared)
+- **Storage**: `.joyus-ai/canonical.json` in project root (committed to git — team-shared)
 - **Format**: `{ "documents": { "<name>": { "default": "<path>", "branches": { "<branch>": "<path>" } } } }`
 - **Depends on**: WP01 (types), WP02 (store — atomic write pattern)
 
@@ -89,16 +89,16 @@ Use language identifiers in code blocks: ````python`, ````bash`
      export function removeDeclaration(declarations: CanonicalDeclarations, name: string): CanonicalDeclarations;
      export function listDeclarations(declarations: CanonicalDeclarations): Array<{ name: string; defaultPath: string; branchOverrides: string[] }>;
      ```
-  2. `loadCanonical()`: Read `.jawn-ai/canonical.json`. Return `{ documents: {} }` if missing or corrupted.
-  3. `saveCanonical()`: Write atomically (temp + rename) to `.jawn-ai/canonical.json`
+  2. `loadCanonical()`: Read `.joyus-ai/canonical.json`. Return `{ documents: {} }` if missing or corrupted.
+  3. `saveCanonical()`: Write atomically (temp + rename) to `.joyus-ai/canonical.json`
   4. `addDeclaration()`: If `branch` provided, add as branch override. Otherwise set/replace default path.
   5. `removeDeclaration()`: Remove by name. Return unchanged if name doesn't exist.
   6. `listDeclarations()`: Return flat list of all declarations with their branch overrides.
   7. Export from `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/src/state/canonical.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/state/canonical.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: No -- T014-T016 build on this.
 
@@ -136,7 +136,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Handle both exact match and basename-only match
 
 - **Files**:
-  - `jawn-ai-state/src/state/canonical.ts` (update)
+  - `joyus-ai-state/src/state/canonical.ts` (update)
 
 - **Parallel?**: No -- depends on T013 data structures.
 
@@ -160,7 +160,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Warning is informational — it does not block any operation
 
 - **Files**:
-  - `jawn-ai-state/src/state/canonical.ts` (update)
+  - `joyus-ai-state/src/state/canonical.ts` (update)
 
 - **Parallel?**: Yes -- can develop alongside T016 once T014 is done.
 
@@ -188,7 +188,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   3. This function is called during snapshot assembly (by `save_state` MCP tool or companion service)
 
 - **Files**:
-  - `jawn-ai-state/src/state/canonical.ts` (update)
+  - `joyus-ai-state/src/state/canonical.ts` (update)
 
 - **Parallel?**: Yes -- independent of T015.
 
@@ -209,7 +209,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 - Verify branch overrides take precedence over defaults in `checkPath`
 - Verify `checkPath` handles: exact canonical match, basename-only match, no match
 - Verify warning text matches `contracts/state-api.md` format
-- Verify `loadCanonical` works when `.jawn-ai/canonical.json` doesn't exist yet
+- Verify `loadCanonical` works when `.joyus-ai/canonical.json` doesn't exist yet
 - Verify path normalization is consistent (trailing slashes, relative vs absolute)
 - Verify `getCanonicalStatuses` correctly reports missing files
 

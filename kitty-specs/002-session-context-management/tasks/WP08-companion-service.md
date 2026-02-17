@@ -63,7 +63,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 - **Architecture**: The companion service handles background state capture that the MCP request/response protocol can't do (long-running processes, filesystem watchers)
 - **Optional**: MCP server works without the companion service (degraded but functional). The service adds automatic event capture.
 - **Performance**: <1% CPU during idle. Snapshot capture <100ms. Event detection non-blocking.
-- **Lifecycle**: User runs `npx jawn-ai-service`. Writes PID file. Graceful shutdown on SIGTERM/SIGINT.
+- **Lifecycle**: User runs `npx joyus-ai-service`. Writes PID file. Graceful shutdown on SIGTERM/SIGINT.
 - **Depends on**: WP01 (types), WP02 (state store), WP03 (collectors)
 
 **Implementation command**: `spec-kitty implement WP08 --base WP03`
@@ -91,7 +91,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      - Compute state directory from project root
      - Check if another service instance is already running (check PID file)
      - If running, log warning and exit
-     - Write PID file: `~/.jawn-ai/projects/<hash>/service.pid` containing `{ pid: process.pid, startedAt: ISO8601 }`
+     - Write PID file: `~/.joyus-ai/projects/<hash>/service.pid` containing `{ pid: process.pid, startedAt: ISO8601 }`
      - Initialize the filesystem watcher (T030)
      - Initialize the event handler (T031)
      - Initialize the IPC server (T032)
@@ -111,7 +111,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. `isServiceRunning()`: Check PID file exists and process is alive (`process.kill(pid, 0)`)
 
 - **Files**:
-  - `jawn-ai-state/src/service/daemon.ts` (new)
+  - `joyus-ai-state/src/service/daemon.ts` (new)
 
 - **Parallel?**: No -- T030-T032 are components of the daemon.
 - **Notes**: The PID file check prevents multiple service instances for the same project. If the PID file exists but the process is dead (stale PID), remove the file and start normally.
@@ -166,7 +166,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   6. CPU budget: <1% during idle. File watchers are kernel-level (inotify/FSEvents) so this should be achievable.
 
 - **Files**:
-  - `jawn-ai-state/src/service/watcher.ts` (new)
+  - `joyus-ai-state/src/service/watcher.ts` (new)
 
 - **Parallel?**: No -- T031 consumes events from this watcher.
 - **Notes**: `fs.watch` on macOS uses FSEvents which is efficient. On Linux, it uses inotify which has a limit on watch descriptors. For large repos, we may need to watch only `.git/` and a limited set of project paths rather than the entire tree.
@@ -199,12 +199,12 @@ Use language identifiers in code blocks: ````python`, ````bash`
      - If test event: parse test output if available
      - Carry forward decisions from last snapshot
      - Assemble and write snapshot
-     - Log the capture to stderr: `[jawn-ai-service] Snapshot captured: <timestamp> [<event>]`
+     - Log the capture to stderr: `[joyus-ai-service] Snapshot captured: <timestamp> [<event>]`
   4. Error handling: catch all errors, log to stderr, never crash the service
   5. Connect to the FileWatcher events in the daemon (T029)
 
 - **Files**:
-  - `jawn-ai-state/src/service/event-handler.ts` (new)
+  - `joyus-ai-state/src/service/event-handler.ts` (new)
 
 - **Parallel?**: Yes -- can be developed alongside T032 (IPC). Depends on T030 for event types.
 
@@ -234,7 +234,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      ```
   2. IPC server (runs inside companion service):
      - Create a simple HTTP server on localhost with a random port
-     - Write port to `~/.jawn-ai/projects/<hash>/service.port`
+     - Write port to `~/.joyus-ai/projects/<hash>/service.port`
      - Endpoints:
        - `GET /health` → `{ status: "running", pid, uptime, lastCapture }`
        - `POST /capture` → trigger immediate snapshot, body: `{ event?: EventType }`
@@ -245,7 +245,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. If port file doesn't exist or connection fails: service is not running (return false / no-op)
 
 - **Files**:
-  - `jawn-ai-state/src/service/ipc.ts` (new)
+  - `joyus-ai-state/src/service/ipc.ts` (new)
 
 - **Parallel?**: Yes -- independent of T030/T031.
 - **Notes**: Using HTTP on localhost is simple and debuggable. Unix sockets would be slightly more efficient but harder to debug. HTTP is fine for v1 since the traffic is minimal (a few requests per session).
@@ -256,7 +256,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 - **Purpose**: Create the executable entry point that users run to start the companion service.
 - **Steps**:
-  1. Update `bin/jawn-ai-service`:
+  1. Update `bin/joyus-ai-service`:
      ```javascript
      #!/usr/bin/env node
      import { startService } from '../dist/service/daemon.js';
@@ -268,7 +268,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
        process.exit(1);
      });
      ```
-  2. Make executable: `chmod +x bin/jawn-ai-service`
+  2. Make executable: `chmod +x bin/joyus-ai-service`
   3. Support CLI flags (parse process.argv):
      - `--project <path>`: explicit project root (overrides cwd)
      - `--stop`: stop a running service for the project
@@ -277,7 +277,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Verify graceful shutdown on Ctrl+C
 
 - **Files**:
-  - `jawn-ai-state/bin/jawn-ai-service` (update from stub)
+  - `joyus-ai-state/bin/joyus-ai-service` (update from stub)
 
 - **Parallel?**: No -- depends on T029 daemon.
 

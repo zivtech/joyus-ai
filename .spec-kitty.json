@@ -1,5 +1,5 @@
 {
-  "name": "jawn-ai-agent-platform",
+  "name": "joyus-ai-agent-platform",
   "phase": "research",
   "version": "1.1.0",
   "created": "2026-01-29",
@@ -22,7 +22,7 @@
     },
     "research": {
       "status": "in-progress",
-      "file": "research/jawn-ai-research.md",
+      "file": "research/joyus-ai-research.md",
       "note": "Hosting comparison complete, session tracking evaluated"
     }
   }

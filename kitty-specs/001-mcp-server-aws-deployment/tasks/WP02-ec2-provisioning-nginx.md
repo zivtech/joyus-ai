@@ -68,10 +68,10 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
    ```
 7. Create application directory:
    ```bash
-   mkdir -p /opt/jawn-ai
-   chown ubuntu:ubuntu /opt/jawn-ai
+   mkdir -p /opt/joyus-ai
+   chown ubuntu:ubuntu /opt/joyus-ai
    ```
-8. Copy nginx config to `/etc/nginx/sites-available/jawn-ai`
+8. Copy nginx config to `/etc/nginx/sites-available/joyus-ai`
 
 **Files**:
 - `deploy/scripts/setup-ec2.sh` (new, ~100 lines)
@@ -82,7 +82,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
 - [ ] Nginx installed and running
 - [ ] Fail2ban active
 - [ ] 1GB swap enabled
-- [ ] `/opt/jawn-ai` directory exists with correct ownership
+- [ ] `/opt/joyus-ai` directory exists with correct ownership
 
 **Edge Cases**:
 - Script should be idempotent (safe to re-run)
@@ -259,7 +259,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
    version: "3.8"
    services:
      platform:
-       image: ghcr.io/zivtech/jawn-ai-platform:latest
+       image: ghcr.io/zivtech/joyus-ai-platform:latest
        restart: unless-stopped
        deploy:
          resources:
@@ -274,7 +274,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
            max-file: "3"
 
      playwright:
-       image: ghcr.io/zivtech/jawn-ai-playwright:latest
+       image: ghcr.io/zivtech/joyus-ai-playwright:latest
        restart: unless-stopped
        deploy:
          resources:

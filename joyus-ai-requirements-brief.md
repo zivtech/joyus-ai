@@ -1,6 +1,6 @@
-# jawn-ai Requirements Brief
+# joyus-ai Requirements Brief
 
-> **Purpose:** Feed this into `spec-kitty specify` to generate the feature spec for jawn-ai.
+> **Purpose:** Feed this into `spec-kitty specify` to generate the feature spec for joyus-ai.
 > **Generated:** 2026-02-16 by Claude session in ~/gitjawns/nclclib
 > **Evidence source:** Workflow analysis of the nclclib Drupal accessibility project (PR #708, 43 branches, 15+ defect fixes across multiple sessions)
 
@@ -25,9 +25,9 @@ This brief was produced by analyzing real workflow failures in the nclclib proje
 
 ## Feature Description
 
-**jawn-ai** is a mediator layer between less-technical users and AI coding agents (Claude Code, Codex, etc.). It enforces workflow discipline, quality gates, and contextual awareness that individual AI sessions lack on their own.
+**joyus-ai** is a mediator layer between less-technical users and AI coding agents (Claude Code, Codex, etc.). It enforces workflow discipline, quality gates, and contextual awareness that individual AI sessions lack on their own.
 
-The product does NOT replace Claude Code or spec-kitty. Spec-kitty manages specifications. Claude Code executes tasks. **jawn-ai sits between the user and the agent**, enriching prompts with context, enforcing skill usage, gating risky actions, and maintaining state across sessions.
+The product does NOT replace Claude Code or spec-kitty. Spec-kitty manages specifications. Claude Code executes tasks. **joyus-ai sits between the user and the agent**, enriching prompts with context, enforcing skill usage, gating risky actions, and maintaining state across sessions.
 
 ### The core thesis
 
@@ -40,7 +40,7 @@ AI coding agents are powerful but stateless and permissive. They will:
 
 Less-technical users (junior devs, PMs, content editors) amplify all of these failure modes because they don't know what to ask for and can't catch mistakes in code they don't understand.
 
-jawn-ai prevents these failures through **structured mediation** -- not by limiting what users can do, but by ensuring the right checks, context, and skills are always in play.
+joyus-ai prevents these failures through **structured mediation** -- not by limiting what users can do, but by ensuring the right checks, context, and skills are always in play.
 
 ---
 
@@ -216,9 +216,9 @@ jawn-ai prevents these failures through **structured mediation** -- not by limit
 
 These need to be resolved during the spec/plan phase:
 
-1. **Runtime form:** Is jawn-ai a CLI wrapper, a daemon, a set of hooks, or a service? How does it intercept user-to-Claude communication?
+1. **Runtime form:** Is joyus-ai a CLI wrapper, a daemon, a set of hooks, or a service? How does it intercept user-to-Claude communication?
 
-2. **Hook vs middleware:** Does jawn-ai work via Claude Code hooks (pre/post tool use) or as a middleware that rewrites prompts before they reach Claude?
+2. **Hook vs middleware:** Does joyus-ai work via Claude Code hooks (pre/post tool use) or as a middleware that rewrites prompts before they reach Claude?
 
 3. **State storage:** Where does session state live? A file? A local DB? An API? How does it survive across Claude Code restarts?
 
@@ -226,9 +226,9 @@ These need to be resolved during the spec/plan phase:
 
 5. **Risk tiering:** Who defines what's low/medium/high risk? Is it per-project config, per-user, or derived from the action itself (e.g., `git push` = high, `edit file` = low)?
 
-6. **Multi-agent coordination:** If jawn-ai mediates multiple AI agents (Claude, Codex, Gemini), how does it maintain consistent state and skill enforcement across them?
+6. **Multi-agent coordination:** If joyus-ai mediates multiple AI agents (Claude, Codex, Gemini), how does it maintain consistent state and skill enforcement across them?
 
-7. **Spec-kitty integration:** jawn-ai is separate from spec-kitty, but spec-kitty manages its spec. At runtime, does jawn-ai use spec-kitty artifacts (constitution, task lists) as input, or are they independent?
+7. **Spec-kitty integration:** joyus-ai is separate from spec-kitty, but spec-kitty manages its spec. At runtime, does joyus-ai use spec-kitty artifacts (constitution, task lists) as input, or are they independent?
 
 ---
 
@@ -238,7 +238,7 @@ These need to be resolved during the spec/plan phase:
 - Must be incrementally adoptable -- teams can start with just quality gates and add more later
 - Must not require users to learn a new CLI -- mediation should be invisible or minimal
 - Must be open to multiple AI backends (Claude, Codex, Gemini) even if Claude is first
-- Spec-kitty manages the spec; jawn-ai is the product
+- Spec-kitty manages the spec; joyus-ai is the product
 - Existing zivtech-claude-skills should be leveraged, not rewritten (redesign is a later phase)
 
 ---

@@ -5,26 +5,26 @@
 
 ## Prerequisites
 
-- Feature 002 (`jawn-ai-state`) MCP server and companion service running
+- Feature 002 (`joyus-ai-state`) MCP server and companion service running
 - Node.js 20+
 - At least one quality gate tool installed (e.g., `eslint`, `vitest`)
 - Skills repository cloned locally (e.g., `zivtech-claude-skills/`)
 
 ## Setup
 
-### 1. Update jawn-ai-state
+### 1. Update joyus-ai-state
 
-Workflow enforcement is built into `jawn-ai-state`. After updating:
+Workflow enforcement is built into `joyus-ai-state`. After updating:
 
 ```bash
-cd jawn-ai-state
+cd joyus-ai-state
 npm install    # installs better-sqlite3 for audit queries
 npm run build
 ```
 
 ### 2. Configure Project Enforcement
 
-Add enforcement config to your project's `.jawn-ai/config.json`:
+Add enforcement config to your project's `.joyus-ai/config.json`:
 
 ```json
 {
@@ -76,7 +76,7 @@ Add enforcement config to your project's `.jawn-ai/config.json`:
 
 ### 3. Configure Developer Tier
 
-Add tier config to `~/.jawn-ai/projects/<project-hash>/config.json`:
+Add tier config to `~/.joyus-ai/projects/<project-hash>/config.json`:
 
 ```json
 {
@@ -98,7 +98,7 @@ Ensure the skill repository path is in your project config:
 {
   "skills": {
     "repoPath": "/path/to/zivtech-claude-skills",
-    "cachePath": "~/.jawn-ai/projects/<hash>/skill-cache"
+    "cachePath": "~/.joyus-ai/projects/<hash>/skill-cache"
   }
 }
 ```

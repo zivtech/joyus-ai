@@ -58,7 +58,7 @@
 3. Python packages: python-pptx, python-docx, openpyxl, lxml, pypdf, pillow, imageio, numpy, requests, PyYAML, packaging
 4. Node packages: html2pptx
 5. Binaries: squirrel CLI, drush (via composer global)
-6. Application: jawn-ai-mcp-server code
+6. Application: joyus-ai-mcp-server code
 **Excluded**: Lando, DDEV (local-only container runtimes — would be Docker-in-Docker, not practical)
 
 ## R7: Nginx Routing
@@ -68,7 +68,7 @@
 
 | Path | Target | Service |
 |------|--------|---------|
-| `/mcp` | Platform :3000 | jawn-ai MCP protocol endpoint |
+| `/mcp` | Platform :3000 | joyus-ai MCP protocol endpoint |
 | `/api/*` | Platform :3000 | REST API |
 | `/chat` | Platform :3001 | Web chat UI |
 | `/playwright` | Playwright :3002 | Playwright MCP endpoint |

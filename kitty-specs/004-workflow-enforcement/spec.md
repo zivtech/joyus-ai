@@ -5,9 +5,9 @@
 **Status**: Draft
 **Input**: Domains 2 (Quality Gates), 3 (Skill Enforcement), 4 (Git Sanity) from 003-platform-architecture-overview, plus residual audit/traceability from eliminated Spec 3
 
-> **Architecture Note**: This spec follows the MCP-first architecture established in 002 (Session & Context Management). The user never interacts with jawn-ai directly — Claude is the UI. Claude calls MCP tools; the companion service handles background enforcement. All enforcement is conversational: Claude explains what's happening and why, adapting verbosity to the user's tier.
+> **Architecture Note**: This spec follows the MCP-first architecture established in 002 (Session & Context Management). The user never interacts with joyus-ai directly — Claude is the UI. Claude calls MCP tools; the companion service handles background enforcement. All enforcement is conversational: Claude explains what's happening and why, adapting verbosity to the user's tier.
 
-> **Terminology**: This spec covers the **local workflow enforcement system** running on each developer's machine, extending the local MCP server (`jawn-ai-state`) from feature 002. The remote MCP server from feature 001 (AWS deployment) is a separate system.
+> **Terminology**: This spec covers the **local workflow enforcement system** running on each developer's machine, extending the local MCP server (`joyus-ai-state`) from feature 002. The remote MCP server from feature 001 (AWS deployment) is a separate system.
 
 ---
 
@@ -244,7 +244,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 - The state snapshot infrastructure from 002 (branch, modified files, task context) is available and provides the context for branch verification and task linking.
 - Skills are stored in a git-based skill repository (as defined in 003 architecture overview) and are available on the local filesystem.
 - Quality gate tools (linters, test runners, etc.) are installed on the developer's machine. The system invokes them but does not install them.
-- Claude Enterprise handles general audit logging, cost tracking, and security compliance. This system handles only jawn-ai-specific enforcement audit (gate results, skill activity, branch checks).
+- Claude Enterprise handles general audit logging, cost tracking, and security compliance. This system handles only joyus-ai-specific enforcement audit (gate results, skill activity, branch checks).
 - Per-developer storage (from 002) is used for audit data and developer-specific configuration. Team-wide aggregation is Phase 3 scope.
 - The companion service from 002 provides event detection (git commits, branch switches, file changes) that triggers enforcement actions.
 
@@ -275,7 +275,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 
 ## Relationship to Other Specs
 
-This is **Spec 2 of 2** for the jawn-ai mediator layer:
+This is **Spec 2 of 2** for the joyus-ai mediator layer:
 
 1. **Session & Context Management** (002) — knowing where you are and what's current
 2. **Workflow Enforcement** (this spec) — preventing mistakes, routing skills, enforcing quality gates
@@ -306,5 +306,5 @@ Session & Context Management is foundational — this spec depends on the state 
 
 *Specification captured: February 17, 2026*
 *Discovery conducted with: Alex UA*
-*Evidence source: 003-platform-architecture-overview (Domains 2-4), jawn-ai-requirements-brief.md, 002 deferred items*
-*For: jawn-ai — Mediator Layer, Spec 2 of 2*
+*Evidence source: 003-platform-architecture-overview (Domains 2-4), joyus-ai-requirements-brief.md, 002 deferred items*
+*For: joyus-ai — Mediator Layer, Spec 2 of 2*

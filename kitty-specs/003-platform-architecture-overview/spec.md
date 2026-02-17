@@ -1,30 +1,30 @@
-# Feature Specification: jawn-ai Platform Architecture Overview
+# Feature Specification: joyus-ai Platform Architecture Overview
 
 **Feature Branch**: `003-platform-architecture-overview`
 **Created**: 2026-02-17
 **Status**: Draft
-**Input**: Umbrella specification — high-level architecture and domain inventory for jawn-ai, the Zivtech AI Agent Platform
+**Input**: Umbrella specification — high-level architecture and domain inventory for joyus-ai, the Zivtech AI Agent Platform
 
 ---
 
 ## Platform Identity
 
-**jawn-ai** is a multi-tenant AI agent platform that mediates between users and AI coding agents (Claude Code, Codex, Gemini, etc.). It enforces workflow discipline, quality gates, skill-based guardrails, and contextual awareness that individual AI sessions lack on their own.
+**joyus-ai** is a multi-tenant AI agent platform that mediates between users and AI coding agents (Claude Code, Codex, Gemini, etc.). It enforces workflow discipline, quality gates, skill-based guardrails, and contextual awareness that individual AI sessions lack on their own.
 
 ### Core Thesis
 
 AI coding agents are powerful but stateless and permissive. They will commit to the wrong branch, ignore coding standards, lose track of canonical files, push without tests, and burn through context with unfocused work. Less-technical users amplify these failure modes because they don't know what to ask for and can't catch mistakes in code they don't understand.
 
-jawn-ai prevents these failures through **structured mediation** — not by limiting what users can do, but by ensuring the right checks, context, and skills are always in play.
+joyus-ai prevents these failures through **structured mediation** — not by limiting what users can do, but by ensuring the right checks, context, and skills are always in play.
 
-### What jawn-ai Is
+### What joyus-ai Is
 
 - A mediator layer between users and AI agents
 - A multi-tenant platform for Zivtech internal use and client deployments
 - A skills-as-guardrails system where outputs are guided by constraints
 - A Claude Code alternative for clients who can't grant deep system access
 
-### What jawn-ai Is NOT
+### What joyus-ai Is NOT
 
 - A replacement for Claude Code or spec-kitty (it sits between the user and the agent)
 - A consumer product (it's for Zivtech internal + managed client use)
@@ -38,7 +38,7 @@ jawn-ai prevents these failures through **structured mediation** — not by limi
 
 ### User Story 1 — Junior Dev Gets Workflow Guardrails (Priority: P1)
 
-A junior developer at Zivtech uses Claude Code to work on a Drupal client project. jawn-ai intercepts their session, loads the correct skills (drupal-coding-standards, drupal-security), enforces branch verification, and gates pushes behind quality checks — all without the developer needing to remember any of this.
+A junior developer at Zivtech uses Claude Code to work on a Drupal client project. joyus-ai intercepts their session, loads the correct skills (drupal-coding-standards, drupal-security), enforces branch verification, and gates pushes behind quality checks — all without the developer needing to remember any of this.
 
 **Why this priority**: Junior devs are the highest-risk, highest-volume users. Preventing their mistakes has the largest ROI.
 
@@ -46,15 +46,15 @@ A junior developer at Zivtech uses Claude Code to work on a Drupal client projec
 
 **Acceptance Scenarios**:
 
-1. **Given** a junior dev starts a Claude Code session on a Drupal project, **When** they begin editing a `.module` or `.theme` file, **Then** jawn-ai auto-loads the relevant Drupal skills without manual invocation.
-2. **Given** a junior dev asks Claude to push code, **When** the push is initiated, **Then** jawn-ai prompts for configured quality checks (linting, tests, visual regression) before allowing the push.
-3. **Given** a junior dev is on branch X but their task is assigned to branch Y, **When** they attempt to commit, **Then** jawn-ai warns about the branch mismatch and offers to switch.
+1. **Given** a junior dev starts a Claude Code session on a Drupal project, **When** they begin editing a `.module` or `.theme` file, **Then** joyus-ai auto-loads the relevant Drupal skills without manual invocation.
+2. **Given** a junior dev asks Claude to push code, **When** the push is initiated, **Then** joyus-ai prompts for configured quality checks (linting, tests, visual regression) before allowing the push.
+3. **Given** a junior dev is on branch X but their task is assigned to branch Y, **When** they attempt to commit, **Then** joyus-ai warns about the branch mismatch and offers to switch.
 
 ---
 
 ### User Story 2 — Power User Gets Consistency Without Hand-Holding (Priority: P1)
 
-An experienced developer (Alex-tier) uses jawn-ai with configurable flags. They get session state continuity across compactions, skill enforcement for consistency, and cost tracking — but can bypass gates with explicit flags when needed.
+An experienced developer (Alex-tier) uses joyus-ai with configurable flags. They get session state continuity across compactions, skill enforcement for consistency, and cost tracking — but can bypass gates with explicit flags when needed.
 
 **Why this priority**: Power users are the testbed — if it works for them, it works for everyone. They also define the platform's configuration model.
 
@@ -62,9 +62,9 @@ An experienced developer (Alex-tier) uses jawn-ai with configurable flags. They 
 
 **Acceptance Scenarios**:
 
-1. **Given** a power user's session compacts mid-task, **When** a new session starts, **Then** jawn-ai restores active state (branch, modified files, pending tasks, last test results) automatically.
-2. **Given** a power user has configured quality gates as "ask me", **When** they push code, **Then** jawn-ai presents available checks as options rather than blocking.
-3. **Given** a power user runs a week of sessions, **When** they check usage, **Then** jawn-ai shows token consumption, cost attribution, and task-type breakdown.
+1. **Given** a power user's session compacts mid-task, **When** a new session starts, **Then** joyus-ai restores active state (branch, modified files, pending tasks, last test results) automatically.
+2. **Given** a power user has configured quality gates as "ask me", **When** they push code, **Then** joyus-ai presents available checks as options rather than blocking.
+3. **Given** a power user runs a week of sessions, **When** they check usage, **Then** joyus-ai shows token consumption, cost attribution, and task-type breakdown.
 
 ---
 
@@ -86,7 +86,7 @@ Zivtech onboards a new client onto the platform. They create a workspace with th
 
 ### User Story 4 — Non-Technical Staff Uses Chat Interface (Priority: P3)
 
-A PM or content editor accesses jawn-ai through a web-based chat interface. They can request AI assistance for tasks within their permission level, with maximum automation and human-readable explanations. They cannot access CLI or code-level features.
+A PM or content editor accesses joyus-ai through a web-based chat interface. They can request AI assistance for tasks within their permission level, with maximum automation and human-readable explanations. They cannot access CLI or code-level features.
 
 **Why this priority**: Broadest user base but requires the web app (Phase 3 platform framework) to exist first.
 
@@ -94,7 +94,7 @@ A PM or content editor accesses jawn-ai through a web-based chat interface. They
 
 **Acceptance Scenarios**:
 
-1. **Given** a PM logs into the web interface, **When** they ask to summarize recent Jira activity, **Then** jawn-ai queries Jira via MCP and returns a human-readable summary.
+1. **Given** a PM logs into the web interface, **When** they ask to summarize recent Jira activity, **Then** joyus-ai queries Jira via MCP and returns a human-readable summary.
 2. **Given** a content editor requests a document draft, **When** the draft is generated, **Then** it uses the client's brand voice skill and is flagged for review before delivery.
 
 ---
@@ -245,7 +245,7 @@ Each domain is summarized here. Each will receive its own deep specification via
 
 ### Measurable Outcomes
 
-- **SC-001**: Junior developers produce zero wrong-branch commits after jawn-ai is enabled (measured over 30-day period)
+- **SC-001**: Junior developers produce zero wrong-branch commits after joyus-ai is enabled (measured over 30-day period)
 - **SC-002**: Skills are auto-loaded for 100% of file edits matching configured patterns, with zero manual invocation required
 - **SC-003**: Session state restores within 5 seconds of a new session starting, with all active context (branch, files, tasks) intact
 - **SC-004**: Quality gate adoption reaches 90%+ of push/commit operations within 2 weeks of enabling for a project
@@ -264,13 +264,13 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 
 | # | Question | Impact | Resolution Path |
 |---|----------|--------|-----------------|
-| 1 | Runtime form: Is jawn-ai a CLI wrapper, daemon, hooks system, or service? | High | Resolve during `/spec-kitty.plan` |
-| 2 | Hook vs middleware: Does jawn-ai work via Claude Code hooks or as a prompt-rewriting middleware? | High | Resolve during `/spec-kitty.plan` |
+| 1 | Runtime form: Is joyus-ai a CLI wrapper, daemon, hooks system, or service? | High | Resolve during `/spec-kitty.plan` |
+| 2 | Hook vs middleware: Does joyus-ai work via Claude Code hooks or as a prompt-rewriting middleware? | High | Resolve during `/spec-kitty.plan` |
 | 3 | State storage: Where does session state live (file, local DB, API)? | High | Resolve in Domain 1 spec |
 | 4 | Skill routing engine: How does file-pattern-to-skill matching work at runtime? | Medium | Resolve in Domain 3 spec |
 | 5 | Risk tiering: Who defines low/medium/high risk — per-project config, per-user, or derived from action? | Medium | Resolve in Domain 2 spec |
 | 6 | Multi-agent coordination: How to maintain consistent state across Claude, Codex, Gemini? | Medium | Resolve in Domain 1 spec |
-| 7 | Spec-kitty integration: Does jawn-ai use spec-kitty artifacts as input at runtime? | Low | Resolve during `/spec-kitty.plan` |
+| 7 | Spec-kitty integration: Does joyus-ai use spec-kitty artifacts as input at runtime? | Low | Resolve during `/spec-kitty.plan` |
 | 8 | Billing model: Zivtech-managed vs BYOK vs both? | High | Resolve in Domain 11 spec |
 | 9 | Orchestration: OMC, standalone service, or hybrid? | High | Evaluation planned for Phase 3 |
 
@@ -293,7 +293,7 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 - Must be incrementally adoptable — teams can start with just one domain and add more later
 - Must not require users to learn a new CLI — mediation should be invisible or minimal
 - Must be open to multiple AI backends even if Claude is first
-- Spec-kitty manages specs; jawn-ai is the product being specified
+- Spec-kitty manages specs; joyus-ai is the product being specified
 - Client data governance follows the tier classification in the constitution (Tiers 1-4)
 - Never use client data for model training
 
@@ -305,7 +305,7 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 |----------|----------|-------------|
 | Constitution | `spec/constitution.md` | Governing principles — this spec must not contradict |
 | Implementation Plan | `spec/plan.md` | Phased roadmap, decision log, open questions |
-| Requirements Brief | `jawn-ai-requirements-brief.md` | Evidence-based problem descriptions from nclclib workflow |
+| Requirements Brief | `joyus-ai-requirements-brief.md` | Evidence-based problem descriptions from nclclib workflow |
 | Session Context Spec | `kitty-specs/002-session-context-management/spec.md` | Domain 1 deep spec (already exists) |
 | MCP Server Deployment | `kitty-specs/001-mcp-server-aws-deployment/spec.md` | Phase 2 infrastructure dependency |
 | Internal Portal Spec | `spec/internal-ai-portal-spec.md` | Earlier portal spec — superseded by this umbrella |
@@ -314,4 +314,4 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 
 *Specification captured: February 17, 2026*
 *Interview conducted with: Alex UA*
-*For: jawn-ai — Zivtech AI Agent Platform (Feature 003)*
+*For: joyus-ai — Zivtech AI Agent Platform (Feature 003)*

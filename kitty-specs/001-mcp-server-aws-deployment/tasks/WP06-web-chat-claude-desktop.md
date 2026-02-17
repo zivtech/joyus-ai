@@ -40,13 +40,13 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
    <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Jawn AI — Chat</title>
+     <title>Joyus AI — Chat</title>
      <link rel="stylesheet" href="src/styles.css">
    </head>
    <body>
      <div id="app">
        <header>
-         <h1>Jawn AI</h1>
+         <h1>Joyus AI</h1>
          <div id="status-indicator" class="status"></div>
        </header>
        <main id="messages"></main>
@@ -123,7 +123,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
    }
    ```
 
-2. Create a server-side chat endpoint in the Platform container (`jawn-ai-mcp-server/src/` or new file):
+2. Create a server-side chat endpoint in the Platform container (`joyus-ai-mcp-server/src/` or new file):
    - POST `/api/chat` — accepts `{ message: string }`, calls Claude API with MCP tools attached
    - Streams response back via chunked transfer or Server-Sent Events (SSE)
    - Includes all MCP tools in the Claude API call so Claude can use Jira, Slack, etc.
@@ -140,7 +140,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 
 **Files**:
 - `web-chat/src/chat.js` (new, ~150 lines)
-- New chat endpoint in `jawn-ai-mcp-server/src/` (~100 lines)
+- New chat endpoint in `joyus-ai-mcp-server/src/` (~100 lines)
 
 **Validation**:
 - [ ] Message sent and response received
@@ -257,7 +257,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
    ```json
    {
      "mcpServers": {
-       "jawn-ai": {
+       "joyus-ai": {
          "url": "https://ai.zivtech.com/mcp",
          "headers": {
            "Authorization": "Bearer <YOUR_MCP_BEARER_TOKEN>"

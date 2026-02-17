@@ -47,7 +47,7 @@
 
 **Implementation notes**:
 - Skills are loaded from the local filesystem (git-cloned skill repo)
-- Skill cache: copy of last-loaded skills stored in `~/.jawn-ai/projects/<hash>/skill-cache/`
+- Skill cache: copy of last-loaded skills stored in `~/.joyus-ai/projects/<hash>/skill-cache/`
 - Cache freshness: check git repo on skill load; if fetch fails, use cache + warn
 - Skill injection: MCP tool responses include `skill_context` field with plain-language constraints
 - Validation tools: generated dynamically based on loaded skills' anti-pattern lists
@@ -76,11 +76,11 @@
 
 **Decision**: Extend 002's configuration system
 
-**Rationale**: A single configuration system reduces developer cognitive load. 002 already defines `~/.jawn-ai/projects/<hash>/config.json` (per-developer) and `.jawn-ai/config.json` (per-project). Adding enforcement sections to these files is cleaner than introducing new config files.
+**Rationale**: A single configuration system reduces developer cognitive load. 002 already defines `~/.joyus-ai/projects/<hash>/config.json` (per-developer) and `.joyus-ai/config.json` (per-project). Adding enforcement sections to these files is cleaner than introducing new config files.
 
 **Implementation notes**:
-- Project config (`.jawn-ai/config.json`) adds sections: `gates`, `skillMappings`, `branchRules`, `enforcementPolicy`
-- Developer config (`~/.jawn-ai/projects/<hash>/config.json`) adds sections: `tier`, `gateOverrides`, `skillOverrides`
+- Project config (`.joyus-ai/config.json`) adds sections: `gates`, `skillMappings`, `branchRules`, `enforcementPolicy`
+- Developer config (`~/.joyus-ai/projects/<hash>/config.json`) adds sections: `tier`, `gateOverrides`, `skillOverrides`
 - Inheritance: project config provides defaults; developer config overrides where enforcement policy permits
 - Validation: Zod schemas validate config on load; invalid config falls back to safe defaults (FR-029)
 - Config format: JSON (matches 002's existing format)

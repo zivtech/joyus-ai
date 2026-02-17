@@ -171,7 +171,7 @@ Every tool execution is logged with:
 ## File Structure
 
 ```
-jawn-ai-mcp-server/
+joyus-ai-mcp-server/
 ├── src/
 │   ├── index.ts              # Express server, MCP endpoint
 │   ├── db/

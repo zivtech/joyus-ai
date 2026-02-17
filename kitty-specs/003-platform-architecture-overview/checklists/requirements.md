@@ -1,4 +1,4 @@
-# Specification Quality Checklist: jawn-ai Platform Architecture Overview
+# Specification Quality Checklist: joyus-ai Platform Architecture Overview
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-02-17

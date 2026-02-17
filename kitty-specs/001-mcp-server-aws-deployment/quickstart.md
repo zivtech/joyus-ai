@@ -47,7 +47,7 @@ Push to `main` triggers automatic deployment. To deploy manually:
 
 ```bash
 # On EC2:
-cd /opt/jawn-ai
+cd /opt/joyus-ai
 docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ./deploy/scripts/health-check.sh
@@ -70,7 +70,7 @@ Add to Claude Desktop MCP config (`claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
-    "jawn-ai": {
+    "joyus-ai": {
       "url": "https://ai.zivtech.com/mcp",
       "headers": {
         "Authorization": "Bearer <MCP_BEARER_TOKEN>"
@@ -92,5 +92,5 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-re
   --pull never  # Uses locally cached previous images
 
 # Or specify a specific SHA:
-# Edit docker-compose.prod.yml image tags to ghcr.io/zivtech/jawn-ai-platform:<sha>
+# Edit docker-compose.prod.yml image tags to ghcr.io/zivtech/joyus-ai-platform:<sha>
 ```

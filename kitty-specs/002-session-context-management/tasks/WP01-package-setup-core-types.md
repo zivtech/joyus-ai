@@ -50,7 +50,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 ## Objectives & Success Criteria
 
-- Create the `jawn-ai-state` package with TypeScript 5.3+ / Node.js 20+ toolchain
+- Create the `joyus-ai-state` package with TypeScript 5.3+ / Node.js 20+ toolchain
 - Define all core types from the data model (Snapshot, EventType, GitState, FileState, etc.)
 - Create Zod schemas that validate snapshot JSON files
 - Implement configuration loading with global/project merging and sensible defaults
@@ -59,11 +59,11 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Context & Constraints
 
 - **Data Model**: `kitty-specs/002-session-context-management/data-model.md` (authoritative for all entity definitions)
-- **Plan**: `plan.md` — project structure under `jawn-ai-state/`
+- **Plan**: `plan.md` — project structure under `joyus-ai-state/`
 - **Contracts**: `contracts/state-api.md` — EventType enum values
 - **Dependencies**: `@modelcontextprotocol/sdk` (MCP server, used later), `zod` (schema validation), `@paralleldrive/cuid2` (ID generation)
 - **Testing**: Vitest (configured in this WP, tests written in WP09)
-- **Storage paths**: `~/.jawn-ai/global-config.json` (global), `.jawn-ai/config.json` (project)
+- **Storage paths**: `~/.joyus-ai/global-config.json` (global), `.joyus-ai/config.json` (project)
 
 **Implementation command**: `spec-kitty implement WP01`
 
@@ -73,18 +73,18 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 - **Purpose**: Set up the package directory, dependencies, TypeScript config, and build toolchain so all subsequent WPs can build on a working foundation.
 - **Steps**:
-  1. Create `jawn-ai-state/` directory at repo root
+  1. Create `joyus-ai-state/` directory at repo root
   2. Create `package.json`:
      ```json
      {
-       "name": "jawn-ai-state",
+       "name": "joyus-ai-state",
        "version": "0.1.0",
        "type": "module",
        "main": "dist/index.js",
        "types": "dist/index.d.ts",
        "bin": {
-         "jawn-ai-mcp": "./bin/jawn-ai-mcp",
-         "jawn-ai-service": "./bin/jawn-ai-service"
+         "joyus-ai-mcp": "./bin/joyus-ai-mcp",
+         "joyus-ai-service": "./bin/joyus-ai-service"
        },
        "scripts": {
          "build": "tsc",
@@ -126,7 +126,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      │   └── tools/
      └── service/           # Companion service (WP08)
      ```
-  7. Create stub `bin/jawn-ai-mcp` and `bin/jawn-ai-service` entry points:
+  7. Create stub `bin/joyus-ai-mcp` and `bin/joyus-ai-service` entry points:
      ```bash
      #!/usr/bin/env node
      // Stub — implemented in WP06/WP08
@@ -134,12 +134,12 @@ Use language identifiers in code blocks: ````python`, ````bash`
   8. Verify `npm run build` succeeds with empty `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/package.json` (new)
-  - `jawn-ai-state/tsconfig.json` (new)
-  - `jawn-ai-state/vitest.config.ts` (new)
-  - `jawn-ai-state/src/index.ts` (new, stub)
-  - `jawn-ai-state/bin/jawn-ai-mcp` (new, stub)
-  - `jawn-ai-state/bin/jawn-ai-service` (new, stub)
+  - `joyus-ai-state/package.json` (new)
+  - `joyus-ai-state/tsconfig.json` (new)
+  - `joyus-ai-state/vitest.config.ts` (new)
+  - `joyus-ai-state/src/index.ts` (new, stub)
+  - `joyus-ai-state/bin/joyus-ai-mcp` (new, stub)
+  - `joyus-ai-state/bin/joyus-ai-service` (new, stub)
 
 - **Parallel?**: No -- must complete before T002-T004.
 
@@ -185,8 +185,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Export all types from `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/src/core/types.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/core/types.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: Yes -- independent of T004 once T001 is done.
 
@@ -237,8 +237,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Consider: derive TypeScript types from Zod schemas (`z.infer<typeof SnapshotSchema>`) to be single source of truth — if so, update T002 types to use inference
 
 - **Files**:
-  - `jawn-ai-state/src/core/schema.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/core/schema.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: No -- depends on T002 types being defined (or replaces them via z.infer).
 - **Notes**: Prefer Zod-first approach (define schemas, infer types) to prevent drift. If this approach is taken, `types.ts` becomes re-exports of inferred types rather than manual definitions.
@@ -282,15 +282,15 @@ Use language identifiers in code blocks: ````python`, ````bash`
        project: ProjectConfig;
      }>;
      ```
-  2. `loadGlobalConfig()`: Read `~/.jawn-ai/global-config.json`. Return defaults if missing. Deep-merge found values over defaults.
-  3. `loadProjectConfig()`: Read `.jawn-ai/config.json` in project root. Return defaults if missing. Deep-merge.
+  2. `loadGlobalConfig()`: Read `~/.joyus-ai/global-config.json`. Return defaults if missing. Deep-merge found values over defaults.
+  3. `loadProjectConfig()`: Read `.joyus-ai/config.json` in project root. Return defaults if missing. Deep-merge.
   4. `loadConfig()`: Load both, return merged result.
   5. Handle errors gracefully: if config file is corrupted JSON, log warning and return defaults.
   6. Export from `src/index.ts`
 
 - **Files**:
-  - `jawn-ai-state/src/core/config.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/core/config.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
 
 - **Parallel?**: Yes -- independent of T002/T003 once T001 is done.
 - **Notes**: Config merging should be shallow for top-level keys but deep for `eventTriggers` (individual trigger settings override, not replace the whole object).
@@ -304,7 +304,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 | Zod schema drift from data model | Use Zod-first approach: define schemas, infer types |
 | MCP SDK version mismatch | Pin exact version. Verify import works at build time. |
 | Config file corruption | Always fall back to defaults. Log warning. Never crash. |
-| Package name conflicts | Check npm registry for `jawn-ai-state`. Use scoped name if needed. |
+| Package name conflicts | Check npm registry for `joyus-ai-state`. Use scoped name if needed. |
 
 ## Review Guidance
 

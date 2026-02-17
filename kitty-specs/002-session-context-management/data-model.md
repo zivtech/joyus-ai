@@ -117,7 +117,7 @@ session-start | session-end | manual | file-change | compaction | share
 
 ## Configuration Entities
 
-### GlobalConfig (`~/.jawn-ai/global-config.json`)
+### GlobalConfig (`~/.joyus-ai/global-config.json`)
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -126,7 +126,7 @@ session-start | session-end | manual | file-change | compaction | share
 | `autoRestore` | boolean | true | Show state summary on session start |
 | `verbosity` | "minimal" \| "normal" \| "verbose" | "normal" | How much detail in restore output |
 
-### ProjectConfig (`.jawn-ai/config.json` in project root)
+### ProjectConfig (`.joyus-ai/config.json` in project root)
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -144,7 +144,7 @@ session-start | session-end | manual | file-change | compaction | share
 | `canonicalUpdate` | boolean | true | Snapshot when canonical doc modified |
 | `sessionEnd` | boolean | true | Snapshot on clean session end |
 
-### CanonicalDeclaration (`.jawn-ai/canonical.json` in project root)
+### CanonicalDeclaration (`.joyus-ai/canonical.json` in project root)
 
 ```json
 {

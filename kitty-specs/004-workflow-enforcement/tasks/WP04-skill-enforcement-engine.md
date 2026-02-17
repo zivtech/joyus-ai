@@ -59,7 +59,7 @@ history:
 - **Research**: layered skill representation (context injection + validation tools)
 - **Clarifications**: Skill repo fallback uses cached version with warning
 - **Existing skills**: `zivtech-claude-skills/` repository (markdown files with rules)
-- **Plan**: `jawn-ai-state/src/enforcement/skills/` directory
+- **Plan**: `joyus-ai-state/src/enforcement/skills/` directory
 
 **Implementation command**: `spec-kitty implement WP04 --base WP02`
 
@@ -69,7 +69,7 @@ history:
 
 - **Purpose**: Given a file path, determine which skills should be loaded based on configured skill mappings (FR-008).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/skills/loader.ts`
+  1. Create `joyus-ai-state/src/enforcement/skills/loader.ts`
   2. Implement `matchSkillsForFile(filePath: string, mappings: SkillMapping[]): MatchResult`:
      - For each mapping, test `filePath` against each glob in `mapping.filePatterns`
      - Use `picomatch` or `micromatch` for glob matching
@@ -79,7 +79,7 @@ history:
      - Union of all matches across all files
      - Used when multiple files are being edited in a session
   4. Install `picomatch` as a dependency
-- **Files**: `jawn-ai-state/src/enforcement/skills/loader.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/enforcement/skills/loader.ts` (new, ~50 lines)
 - **Parallel?**: Yes -- independent of cache and validator
 - **Notes**: Edge case from spec: "a file matches both `*.module` and `*.php`" -- both skills load, conflicts resolved by precedence (T022).
 
@@ -87,9 +87,9 @@ history:
 
 - **Purpose**: Cache skills locally so they're available offline and when the git repo is unreachable (FR-013a).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/skills/cache.ts`
+  1. Create `joyus-ai-state/src/enforcement/skills/cache.ts`
   2. Implement `SkillCache` class:
-     - Constructor takes `cachePath: string` (e.g., `~/.jawn-ai/projects/<hash>/skill-cache/`)
+     - Constructor takes `cachePath: string` (e.g., `~/.joyus-ai/projects/<hash>/skill-cache/`)
      - `cacheSkill(skillId: string, content: SkillContent): void` -- write skill to cache dir
      - `getCachedSkill(skillId: string): SkillContent | null` -- read from cache
      - `getCacheAge(skillId: string): number` -- milliseconds since last cache update
@@ -107,7 +107,7 @@ history:
      }
      ```
   4. Cache files stored as JSON: `skill-cache/<skillId>.json`
-- **Files**: `jawn-ai-state/src/enforcement/skills/cache.ts` (new, ~70 lines)
+- **Files**: `joyus-ai-state/src/enforcement/skills/cache.ts` (new, ~70 lines)
 - **Parallel?**: Yes -- independent of loader and validator
 
 ### Subtask T021 -- Implement skill repo fallback
@@ -126,14 +126,14 @@ history:
      - If cached version found: return it with `{ source: 'cache', stale: true, warning: 'Skill repo unreachable, using cached version' }`
      - If no cache: return `{ source: 'none', error: 'Skill not available' }`
   4. Log the load source in the result for audit trail
-- **Files**: `jawn-ai-state/src/enforcement/skills/loader.ts` (extend, ~60 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/skills/loader.ts` (extend, ~60 lines added)
 - **Notes**: The exact skill file format depends on the `zivtech-claude-skills` repo structure. Start with a simple markdown parser; refine when real skills are tested.
 
 ### Subtask T022 -- Implement skill precedence resolver
 
 - **Purpose**: When multiple skills are loaded and have conflicting rules, resolve conflicts deterministically (FR-009, SC-010).
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/skills/precedence.ts`
+  1. Create `joyus-ai-state/src/enforcement/skills/precedence.ts`
   2. Define precedence order (highest to lowest):
      - `client-override` (4)
      - `client-brand` (3)
@@ -146,14 +146,14 @@ history:
      - `ConflictResolution`: `{ winner: string, loser: string, reason: string }`
   4. Resolution MUST be deterministic: same input always produces same output
   5. Log all conflict resolutions
-- **Files**: `jawn-ai-state/src/enforcement/skills/precedence.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/enforcement/skills/precedence.ts` (new, ~50 lines)
 - **Notes**: For MVP, "conflict" is defined as two skills with the same constraint domain (e.g., both define database access rules). Simple precedence sort is sufficient; semantic conflict detection can be added later.
 
 ### Subtask T023 -- Implement skill context builder
 
 - **Purpose**: Aggregate plain-language constraints from all active skills into a single string for injection into Claude's context.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/skills/context-builder.ts`
+  1. Create `joyus-ai-state/src/enforcement/skills/context-builder.ts`
   2. Implement `buildSkillContext(skills: Skill[]): string`:
      - Sort skills by precedence (highest first)
      - For each skill, format as:
@@ -166,13 +166,13 @@ history:
   3. Implement `buildSkillSummary(skills: Skill[]): SkillSummary[]`:
      - Return array of `{ id, name, source, precedence, cachedFrom? }` for each active skill
      - Used by `get_skills` MCP tool
-- **Files**: `jawn-ai-state/src/enforcement/skills/context-builder.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/enforcement/skills/context-builder.ts` (new, ~40 lines)
 
 ### Subtask T024 -- Implement skill validation tool framework
 
 - **Purpose**: Post-generation validation -- check Claude's output against skill anti-patterns before commit/push.
 - **Steps**:
-  1. Create `jawn-ai-state/src/enforcement/skills/validator.ts`
+  1. Create `joyus-ai-state/src/enforcement/skills/validator.ts`
   2. Implement `validateAgainstSkills(content: string, skills: Skill[]): ValidationResult`:
      - For each skill with `antiPatterns`:
        - Check `content` against each anti-pattern (string matching or regex)
@@ -181,7 +181,7 @@ history:
   3. Implement `validateFile(filePath: string, skills: Skill[]): ValidationResult`:
      - Read file content, call `validateAgainstSkills`
   4. Anti-pattern format in skills: simple strings or regex patterns (prefixed with `/`)
-- **Files**: `jawn-ai-state/src/enforcement/skills/validator.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/enforcement/skills/validator.ts` (new, ~60 lines)
 - **Parallel?**: Yes -- independent of loader and cache
 - **Notes**: This is a best-effort check. Anti-pattern matching won't catch semantic violations (e.g., "should use database abstraction"). That's what the plain-language context injection handles.
 
@@ -194,7 +194,7 @@ history:
   3. On skill bypass (power user override): create entry with `actionType: 'skill-bypass'`, `skillId`, `overrideReason`
   4. On conflict resolution: include resolution details in the load entry's `details`
   5. Pass `AuditWriter` as dependency to the skill loader
-- **Files**: `jawn-ai-state/src/enforcement/skills/loader.ts` (extend, ~20 lines added)
+- **Files**: `joyus-ai-state/src/enforcement/skills/loader.ts` (extend, ~20 lines added)
 
 ## Risks & Mitigations
 

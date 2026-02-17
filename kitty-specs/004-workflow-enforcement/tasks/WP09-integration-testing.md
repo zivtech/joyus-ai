@@ -52,7 +52,7 @@ history:
 
 ## Context & Constraints
 
-- **Testing**: Vitest -- all tests in `jawn-ai-state/tests/`
+- **Testing**: Vitest -- all tests in `joyus-ai-state/tests/`
 - **Spec**: Success criteria SC-001 through SC-010
 - **All WPs**: This WP tests the integrated system built by WP01-WP08
 - **Test isolation**: Each test creates temp directories for config, audit, and skill cache
@@ -65,7 +65,7 @@ history:
 
 - **Purpose**: Verify the complete gate flow: config -> trigger -> execute -> block/pass -> audit.
 - **Steps**:
-  1. Create `jawn-ai-state/tests/integration/gate-execution.test.ts`
+  1. Create `joyus-ai-state/tests/integration/gate-execution.test.ts`
   2. Test scenarios:
      - **Happy path**: Configure 2 gates (lint + test), both pass -> `overallResult: 'pass'`, 2 audit entries
      - **Fail-fast**: Configure 3 gates, gate 2 fails -> gate 3 is `skipped`, `overallResult: 'fail'`
@@ -75,14 +75,14 @@ history:
      - **Dry run**: Run with `dryRun: true` -> gates listed but not executed
   3. Mock gate commands: create temp shell scripts that exit 0 (pass) or exit 1 (fail) or sleep (timeout)
   4. Verify audit entries exist for each scenario
-- **Files**: `jawn-ai-state/tests/integration/gate-execution.test.ts` (new, ~150 lines)
+- **Files**: `joyus-ai-state/tests/integration/gate-execution.test.ts` (new, ~150 lines)
 - **Parallel?**: Yes
 
 ### Subtask T047 -- End-to-end skill loading flow test
 
 - **Purpose**: Verify: file edit -> pattern match -> skill load -> context injection.
 - **Steps**:
-  1. Create `jawn-ai-state/tests/integration/skill-loading.test.ts`
+  1. Create `joyus-ai-state/tests/integration/skill-loading.test.ts`
   2. Setup: create temp skill repo with test skills (markdown files with constraints and anti-patterns)
   3. Test scenarios:
      - **Pattern match**: File `test.module` matches `*.module` -> drupal skills loaded
@@ -94,14 +94,14 @@ history:
      - **Context building**: Loaded skills produce combined constraint string
      - **Validation**: Anti-pattern in content is detected
   4. Verify audit entries for each skill load and conflict resolution
-- **Files**: `jawn-ai-state/tests/integration/skill-loading.test.ts` (new, ~150 lines)
+- **Files**: `joyus-ai-state/tests/integration/skill-loading.test.ts` (new, ~150 lines)
 - **Parallel?**: Yes
 
 ### Subtask T048 -- Audit roundtrip test
 
 - **Purpose**: Verify: write JSONL -> build SQLite index -> query -> get correct results.
 - **Steps**:
-  1. Create `jawn-ai-state/tests/integration/audit-roundtrip.test.ts`
+  1. Create `joyus-ai-state/tests/integration/audit-roundtrip.test.ts`
   2. Test scenarios:
      - **Write and read**: Write 10 audit entries to JSONL, rebuild index, query all -> 10 results
      - **Filter by time**: Write entries across 3 timestamps, query with time range -> subset returned
@@ -112,14 +112,14 @@ history:
      - **Incremental sync**: Write 5 entries, sync, write 5 more, sync -> 10 total in SQLite, no dupes
      - **Crash recovery**: Write partial JSONL line, read -> partial line skipped, valid entries returned
   3. Use temp directories for all files
-- **Files**: `jawn-ai-state/tests/integration/audit-roundtrip.test.ts` (new, ~120 lines)
+- **Files**: `joyus-ai-state/tests/integration/audit-roundtrip.test.ts` (new, ~120 lines)
 - **Parallel?**: Yes
 
 ### Subtask T049 -- Tier-specific behavior test matrix
 
 - **Purpose**: Verify enforcement behaves correctly for each user tier across all domains.
 - **Steps**:
-  1. Create `jawn-ai-state/tests/integration/tier-behavior.test.ts`
+  1. Create `joyus-ai-state/tests/integration/tier-behavior.test.ts`
   2. Test matrix (3 tiers x 3 domains = 9 combinations):
      - **Tier 1 (junior) + gates**: Gate failure blocks operation
      - **Tier 1 + branch**: Branch mismatch blocks commit
@@ -131,14 +131,14 @@ history:
      - **Tier 3 + branch**: Branch mismatch blocks
      - **Tier 3 + skills**: Skills always active, no bypass option
   3. Verify each scenario produces correct enforcement level and audit entry
-- **Files**: `jawn-ai-state/tests/integration/tier-behavior.test.ts` (new, ~100 lines)
+- **Files**: `joyus-ai-state/tests/integration/tier-behavior.test.ts` (new, ~100 lines)
 - **Parallel?**: Yes
 
 ### Subtask T050 -- Error handling edge cases
 
 - **Purpose**: Verify graceful degradation for all failure modes identified in spec and clarifications.
 - **Steps**:
-  1. Create `jawn-ai-state/tests/integration/error-handling.test.ts`
+  1. Create `joyus-ai-state/tests/integration/error-handling.test.ts`
   2. Test scenarios:
      - **Gate tool not installed**: ENOENT from spawn -> `unavailable`, no block (FR-005)
      - **Skill repo unreachable**: path doesn't exist -> cache used, warning (FR-013a)
@@ -151,16 +151,16 @@ history:
      - **Concurrent writes**: two rapid audit writes -> both succeed (append is atomic)
      - **Offline operation (SC-008)**: Verify no network calls in gate execution, skill loading, branch checks, or audit logging — all enforcement works with local filesystem only
   3. Each test verifies: no crash, appropriate warning, audit entry logged
-- **Files**: `jawn-ai-state/tests/integration/error-handling.test.ts` (new, ~120 lines)
+- **Files**: `joyus-ai-state/tests/integration/error-handling.test.ts` (new, ~120 lines)
 - **Parallel?**: Yes
 
 ### Subtask T051 -- Config validation edge cases
 
 - **Purpose**: Verify config loading handles all invalid input gracefully (FR-029).
 - **Steps**:
-  1. Create `jawn-ai-state/tests/integration/config-validation.test.ts`
+  1. Create `joyus-ai-state/tests/integration/config-validation.test.ts`
   2. Test scenarios:
-     - **Missing config file**: no `.jawn-ai/config.json` -> safe defaults returned
+     - **Missing config file**: no `.joyus-ai/config.json` -> safe defaults returned
      - **Empty config**: `{}` -> defaults applied
      - **Invalid gate config**: timeout is string instead of number -> warning, default timeout used
      - **Invalid regex in naming convention**: bad regex in branchRules -> warning, naming check skipped
@@ -170,7 +170,7 @@ history:
      - **Missing required fields**: gate without `command` -> warning, gate skipped
      - **Config inheritance**: project + developer configs merge correctly with policy
   3. Each test verifies: no crash, appropriate warning, fallback to safe defaults
-- **Files**: `jawn-ai-state/tests/integration/config-validation.test.ts` (new, ~100 lines)
+- **Files**: `joyus-ai-state/tests/integration/config-validation.test.ts` (new, ~100 lines)
 - **Parallel?**: Yes
 
 ## Risks & Mitigations

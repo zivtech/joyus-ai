@@ -86,7 +86,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
        beforeEach(async () => {
          // Create temp directory with fresh git repo
-         // Set HOME to temp location (isolate ~/.jawn-ai/)
+         // Set HOME to temp location (isolate ~/.joyus-ai/)
          // Initialize state directory
          // Create MCP server for the project
        });
@@ -148,7 +148,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      - Cleans up after itself
 
 - **Files**:
-  - `jawn-ai-state/tests/integration/mcp-tools.test.ts` (new)
+  - `joyus-ai-state/tests/integration/mcp-tools.test.ts` (new)
 
 - **Parallel?**: Yes -- independent of T035.
 
@@ -206,7 +206,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   3. Tests must clean up watchers and servers to avoid resource leaks
 
 - **Files**:
-  - `jawn-ai-state/tests/integration/service.test.ts` (new)
+  - `joyus-ai-state/tests/integration/service.test.ts` (new)
 
 - **Parallel?**: Yes -- independent of T034.
 
@@ -237,7 +237,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      async write(snapshot: Snapshot): Promise<string | null> {
        const locked = await acquireLock(this.lockPath, 5000);
        if (!locked) {
-         console.error('[jawn-ai] Could not acquire write lock, skipping snapshot');
+         console.error('[joyus-ai] Could not acquire write lock, skipping snapshot');
          return null;
        }
        try {
@@ -251,7 +251,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
   5. Never block the user — if lock can't be acquired, skip the write silently
 
 - **Files**:
-  - `jawn-ai-state/src/state/store.ts` (update — add locking)
+  - `joyus-ai-state/src/state/store.ts` (update — add locking)
 
 - **Parallel?**: No -- modifies the core store.
 
@@ -270,7 +270,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
      - **Companion service**: Log errors. Never crash. Continue running.
   2. Test specific failure scenarios:
      - Corrupted snapshot file (invalid JSON) → skip, load next valid
-     - Missing `.jawn-ai/` directory → create on demand
+     - Missing `.joyus-ai/` directory → create on demand
      - Git not installed or not a git repo → return defaults
      - Permission denied on state directory → log warning, degrade
      - Snapshot file exceeds schema validation → reject with warning, skip
@@ -280,7 +280,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 - **Files**:
   - Various modules (updates for error handling)
-  - `jawn-ai-state/tests/unit/error-handling.test.ts` (new)
+  - `joyus-ai-state/tests/unit/error-handling.test.ts` (new)
 
 - **Parallel?**: Yes -- can develop alongside T036 and T038.
 
@@ -308,17 +308,17 @@ Use language identifiers in code blocks: ````python`, ````bash`
      export function logDebug(message: string): void;
      ```
   2. All output goes to stderr (`console.error`), never stdout
-  3. Format: `[jawn-ai] [LEVEL] message`
+  3. Format: `[joyus-ai] [LEVEL] message`
   4. `logError` includes stack trace in debug mode
   5. Default level: WARN (show errors and warnings)
-  6. Environment variable `JAWN_AI_LOG_LEVEL` to override (ERROR, WARN, INFO, DEBUG)
+  6. Environment variable `JOYUS_AI_LOG_LEVEL` to override (ERROR, WARN, INFO, DEBUG)
   7. Verbose mode (DEBUG) shows collector timing, snapshot sizes, file paths
   8. Export from `src/index.ts`
   9. Update existing modules to use the logger instead of direct `console.error`
 
 - **Files**:
-  - `jawn-ai-state/src/utils/logger.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
+  - `joyus-ai-state/src/utils/logger.ts` (new)
+  - `joyus-ai-state/src/index.ts` (update exports)
   - Various modules (update to use logger)
 
 - **Parallel?**: Yes -- independent utility.

@@ -61,7 +61,7 @@ history:
 
 - **Purpose**: MCP tool Claude calls to execute quality gates before push/commit.
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/run-gates.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/run-gates.ts`
   2. Register tool with MCP server:
      ```typescript
      server.tool('run_gates', RunGatesInputSchema, async (params) => { ... })
@@ -74,14 +74,14 @@ history:
      - Otherwise: call `runGates()` from gate engine (WP03)
      - Format response per `contracts/mcp-tools.md` run_gates output schema
   5. Return gate results, overall result, failed gate ID, audit entry IDs
-- **Files**: `jawn-ai-state/src/mcp/tools/run-gates.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/run-gates.ts` (new, ~60 lines)
 - **Parallel?**: Yes
 
 ### Subtask T034 -- Implement `verify_branch` MCP tool
 
 - **Purpose**: MCP tool Claude calls before commits to check branch correctness.
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/verify-branch.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/verify-branch.ts`
   2. Register with MCP server
   3. Input: `{ operation: 'commit' | 'push' | 'merge' }`
   4. Logic:
@@ -92,14 +92,14 @@ history:
      - Create audit entry
      - Format response per contract
   5. Return: currentBranch, expectedBranch, match, enforcement level, naming validity
-- **Files**: `jawn-ai-state/src/mcp/tools/verify-branch.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/verify-branch.ts` (new, ~50 lines)
 - **Parallel?**: Yes
 
 ### Subtask T035 -- Implement `check_hygiene` MCP tool
 
 - **Purpose**: MCP tool for branch hygiene checks (stale branches, branch count).
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/check-hygiene.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/check-hygiene.ts`
   2. Register with MCP server
   3. Input: (none required)
   4. Logic:
@@ -107,14 +107,14 @@ history:
      - Call `detectStaleBranches()` and `checkBranchCount()`
      - Format response per contract
   5. Return: stale branches list, active count, limit, over-limit flag
-- **Files**: `jawn-ai-state/src/mcp/tools/check-hygiene.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/check-hygiene.ts` (new, ~40 lines)
 - **Parallel?**: Yes
 
 ### Subtask T036 -- Implement `enforcement_status` MCP tool
 
 - **Purpose**: MCP tool that returns current enforcement state for Claude to report to user.
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/enforcement-status.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/enforcement-status.ts`
   2. Register with MCP server
   3. Input: (none required)
   4. Logic:
@@ -124,14 +124,14 @@ history:
      - Check audit storage usage
      - Aggregate into status response
   5. Return: enforcementActive, userTier, gate count, skill count, storage usage, companion status
-- **Files**: `jawn-ai-state/src/mcp/tools/enforcement-status.ts` (new, ~50 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/enforcement-status.ts` (new, ~50 lines)
 - **Parallel?**: Yes
 
 ### Subtask T037 -- Implement `kill_switch` MCP tool
 
 - **Purpose**: MCP tool Claude calls to enable/disable enforcement for the session.
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/kill-switch.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/kill-switch.ts`
   2. Register with MCP server
   3. Input: `{ action: 'disable' | 'enable', reason?: string }`
   4. Logic:
@@ -140,7 +140,7 @@ history:
      - Audit logging ALWAYS works even when enforcement is disabled
      - Return new enforcement state
   5. Return: enforcementActive, auditEntryId, message
-- **Files**: `jawn-ai-state/src/mcp/tools/kill-switch.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/kill-switch.ts` (new, ~40 lines)
 - **Parallel?**: Yes
 
 ## Risks & Mitigations

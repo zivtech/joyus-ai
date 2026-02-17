@@ -13,7 +13,7 @@ This feature is infrastructure-focused. The "data model" is the service topology
 
 | Service | Container | Port | Protocol | State |
 |---------|-----------|------|----------|-------|
-| jawn-ai MCP Server | Platform | 3000 | MCP/HTTP | Stateful (PostgreSQL) |
+| joyus-ai MCP Server | Platform | 3000 | MCP/HTTP | Stateful (PostgreSQL) |
 | Memory MCP | Platform | (internal) | MCP | Stateful (file-based knowledge graph) |
 | Office MCP (PPT/Excel/Word) | Platform | (internal) | MCP | Stateless |
 | Skill Runtime | Platform | (internal) | Bash/Python/Node | Stateless |

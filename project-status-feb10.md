@@ -2,7 +2,7 @@
 
 ## Repository State
 
-**Repo:** [zivtech/jawn-ai](https://github.com/zivtech/jawn-ai) on GitHub
+**Repo:** [zivtech/joyus-ai](https://github.com/zivtech/joyus-ai) on GitHub
 **Branch:** `main`
 **Last commit:** `78e4277` — Add project README
 **Status:** All work committed and pushed. Clean working tree.
@@ -12,14 +12,14 @@
 ## What's Been Built
 
 ### 1. Project Planning & Spec (Complete)
-- **Project Plan v2** (`jawn-ai-plan.md`) — Full roadmap with phased approach, cost model, data governance, success criteria
+- **Project Plan v2** (`joyus-ai-plan.md`) — Full roadmap with phased approach, cost model, data governance, success criteria
 - **Spec Kitty Framework** — Constitution, specification, plan, and toolkit diagnosis all documented in `spec/`
-- **Implementation Plan** — 6-phase, 6-8 week plan in `jawn-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md`
-- **Platform Architecture** — Full architecture doc with diagrams in `jawn-ai-mcp-server/docs/`
+- **Implementation Plan** — 6-phase, 6-8 week plan in `joyus-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md`
+- **Platform Architecture** — Full architecture doc with diagrams in `joyus-ai-mcp-server/docs/`
 - **Technical Research** — Manus architecture analysis, cost modeling, tooling research in `research/`
 
 ### 2. MCP Server (Phase 0 — Foundation Built)
-**Location:** `jawn-ai-mcp-server/`
+**Location:** `joyus-ai-mcp-server/`
 **Stack:** Node.js + TypeScript + Express + Drizzle ORM + PostgreSQL
 
 **Working components:**
@@ -36,12 +36,12 @@
 - Audit logging
 
 ### 3. Presentation Toolkit (Separate Repos)
-Managed in their own repositories (not in jawn-ai):
+Managed in their own repositories (not in joyus-ai):
 - **`zivtech/claude-presentation-toolkit`** — Modular Python toolkit (~3,655 lines) for content extraction, template analysis, classification, migration planning, assembly, validation
 - **`zivtech/drupal-brand-skill`** — Drupal brand integration bridge
 
 ### 4. Platform Overview UI
-- Interactive React/JSX artifact showing the platform vision (`jawn-ai-platform-overview.jsx`)
+- Interactive React/JSX artifact showing the platform vision (`joyus-ai-platform-overview.jsx`)
 - Skills marketplace architecture design (`zivtech-skills-marketplace-architecture.html`)
 
 ---
@@ -69,12 +69,12 @@ The project is in **Phase 0 → Phase 1 transition** — the foundation MCP serv
 **Decision:** StatiCrypt for near-term password-protected sharing of PoC websites/web apps. AES-256 encryption, zero server deps, CI encrypts on push. Directory-based structure carries forward to eventual Drupal portal.
 
 ### Session Tracking
-**Decision:** Entire CLI for git-native AI chat session tracking. Pilot on jawn-ai with telemetry disabled and manual-commit strategy. Review captured data for 2 weeks before broader rollout. ✅ Telemetry set to `false` in `.entire/settings.json`.
+**Decision:** Entire CLI for git-native AI chat session tracking. Pilot on joyus-ai with telemetry disabled and manual-commit strategy. Review captured data for 2 weeks before broader rollout. ✅ Telemetry set to `false` in `.entire/settings.json`.
 
 ### Hosting
 **Decision:** MCP server on AWS EC2 (Docker Compose, ~$15-35/mo). Static PoCs on GitHub Pages + StatiCrypt (free). Drupal PoCs on existing tools (Multidev/Tugboat/Probo.ci). AWS chosen over GCP for its significantly more mature MCP ecosystem — 45+ official servers enable Claude to help manage infrastructure.
 
-See `hosting-comparison.md` for full analysis and `jawn-ai-plan.md` → "Infrastructure Requirements" for details.
+See `hosting-comparison.md` for full analysis and `joyus-ai-plan.md` → "Infrastructure Requirements" for details.
 
 ---
 
@@ -112,4 +112,4 @@ See `hosting-comparison.md` for full analysis and `jawn-ai-plan.md` → "Infrast
 To run the MCP server locally:
 - Node.js 20+
 - PostgreSQL
-- OAuth credentials for Jira, Slack, GitHub, Google (see `jawn-ai-mcp-server/.env.example`)
+- OAuth credentials for Jira, Slack, GitHub, Google (see `joyus-ai-mcp-server/.env.example`)

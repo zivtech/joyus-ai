@@ -59,7 +59,7 @@ history:
 
 - **Purpose**: MCP tool that returns active skills, conflict resolutions, and the combined skill context string for Claude's context injection.
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/get-skills.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/get-skills.ts`
   2. Register with MCP server
   3. Input: `{ filePath?: string }` (optional: check skills for a specific file)
   4. Logic:
@@ -70,14 +70,14 @@ history:
      - Build context string via `buildSkillContext()`
      - Build summary via `buildSkillSummary()`
   5. Return: activeSkills array, conflictsResolved array, skillContext string
-- **Files**: `jawn-ai-state/src/mcp/tools/get-skills.ts` (new, ~60 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/get-skills.ts` (new, ~60 lines)
 - **Parallel?**: Yes
 
 ### Subtask T039 -- Implement `check_upstream` MCP tool
 
 - **Purpose**: MCP tool that searches project dependencies before Claude writes new code (FR-011, User Story 4).
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/check-upstream.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/check-upstream.ts`
   2. Register with MCP server
   3. Input: `{ description: string, language?: string }`
   4. Logic:
@@ -94,7 +94,7 @@ history:
      - High-confidence match found: `'use-existing'`
      - Possible match: `'investigate-further'`
      - No matches: `'implement-new'`
-- **Files**: `jawn-ai-state/src/mcp/tools/check-upstream.ts` (new, ~80 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/check-upstream.ts` (new, ~80 lines)
 - **Parallel?**: Yes
 - **Notes**: Start with `package.json` and `composer.json` parsing. Add others incrementally. This is a best-effort heuristic, not an exhaustive search.
 
@@ -102,7 +102,7 @@ history:
 
 - **Purpose**: MCP tool for querying the audit trail with filters (FR-024).
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/query-audit.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/query-audit.ts`
   2. Register with MCP server
   3. Input: `{ timeRange?, actionType?, skillId?, taskId?, result?, limit?, offset? }`
   4. Logic:
@@ -110,14 +110,14 @@ history:
      - Call `AuditIndex.query()` with provided filters
      - Format entries for response (deserialize JSON fields)
   5. Return: entries array, total count, hasMore flag
-- **Files**: `jawn-ai-state/src/mcp/tools/query-audit.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/query-audit.ts` (new, ~40 lines)
 - **Parallel?**: Yes
 
 ### Subtask T041 -- Implement `record_correction` MCP tool
 
 - **Purpose**: MCP tool that captures user corrections when Claude's output didn't meet skill constraints (FR-030/031).
 - **Steps**:
-  1. Create `jawn-ai-state/src/mcp/tools/record-correction.ts`
+  1. Create `joyus-ai-state/src/mcp/tools/record-correction.ts`
   2. Register with MCP server
   3. Input: `{ skillId, originalOutput, correctedOutput, explanation?, filePath? }`
   4. Logic:
@@ -126,7 +126,7 @@ history:
      - Call `CorrectionStore.record()` to persist
      - Create audit entry with `actionType: 'correction-captured'`
   5. Return: correctionId, auditEntryId, stored: true
-- **Files**: `jawn-ai-state/src/mcp/tools/record-correction.ts` (new, ~40 lines)
+- **Files**: `joyus-ai-state/src/mcp/tools/record-correction.ts` (new, ~40 lines)
 - **Parallel?**: Yes
 
 ## Risks & Mitigations

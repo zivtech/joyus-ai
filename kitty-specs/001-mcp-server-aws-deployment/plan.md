@@ -7,7 +7,7 @@
 
 ## Summary
 
-Deploy the jawn-ai MCP server and a full suite of MCP servers to AWS EC2 with Docker Compose. Three consolidated containers (Platform, Playwright, PostgreSQL) serve the Zivtech team via Claude Desktop and a lightweight web chat UI for mobile/AFK access. The Platform container includes the skill runtime with all CLI dependencies (Python, Node, git, composer, drush, squirrel, Office packages). CI/CD via GitHub Actions pushes to GHCR and deploys automatically. Domain: `ai.zivtech.com` with Let's Encrypt TLS.
+Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with Docker Compose. Three consolidated containers (Platform, Playwright, PostgreSQL) serve the Zivtech team via Claude Desktop and a lightweight web chat UI for mobile/AFK access. The Platform container includes the skill runtime with all CLI dependencies (Python, Node, git, composer, drush, squirrel, Office packages). CI/CD via GitHub Actions pushes to GHCR and deploys automatically. Domain: `ai.zivtech.com` with Let's Encrypt TLS.
 
 ## Technical Context
 
@@ -87,7 +87,7 @@ web-chat/
     └── deploy-mcp.yml          # CI/CD: build → push GHCR → deploy EC2
 ```
 
-**Structure Decision**: Infrastructure-focused layout. `deploy/` contains all Docker and deployment config. `web-chat/` is the lightweight mobile/AFK UI. The existing `jawn-ai-mcp-server/` remains unchanged — the Platform Dockerfile builds from it. CI/CD workflow goes in `.github/workflows/`.
+**Structure Decision**: Infrastructure-focused layout. `deploy/` contains all Docker and deployment config. `web-chat/` is the lightweight mobile/AFK UI. The existing `joyus-ai-mcp-server/` remains unchanged — the Platform Dockerfile builds from it. CI/CD workflow goes in `.github/workflows/`.
 
 ## Container Architecture
 
@@ -105,7 +105,7 @@ web-chat/
 │  ┌──────────▼──────────┐  │  ┌─────────────────────┐   │
 │  │  Platform Container │  │  │ Playwright Container │   │
 │  │                     │  │  │                      │   │
-│  │  • jawn-ai MCP srv  │  │  │ • Playwright MCP     │   │
+│  │  • joyus-ai MCP srv  │  │  │ • Playwright MCP     │   │
 │  │  • Memory MCP       │  │  │ • Backstop.js        │   │
 │  │  • Office MCP       │  │  │ • Chromium browser    │   │
 │  │    (PPT/Excel/Word) │  │  │                      │   │
@@ -126,7 +126,7 @@ web-chat/
 - Base: `node:20-bookworm` (Debian for broad package support)
 - Layers: Node.js app → Python 3 + pip packages → git/composer/drush → squirrel CLI
 - Ports: 3000 (MCP), 3001 (web chat)
-- Services: jawn-ai MCP server, Memory MCP, Office MCP (PPT/Excel/Word)
+- Services: joyus-ai MCP server, Memory MCP, Office MCP (PPT/Excel/Word)
 - Skill runtime: All Python/Node packages, squirrel binary
 
 **Playwright Container** (`Dockerfile.playwright`):
@@ -155,8 +155,8 @@ Push to main
     ▼
 GitHub Actions (.github/workflows/deploy-mcp.yml)
     │
-    ├── Build Platform image → ghcr.io/zivtech/jawn-ai-platform:latest
-    ├── Build Playwright image → ghcr.io/zivtech/jawn-ai-playwright:latest
+    ├── Build Platform image → ghcr.io/zivtech/joyus-ai-platform:latest
+    ├── Build Playwright image → ghcr.io/zivtech/joyus-ai-playwright:latest
     │
     ▼
 SSH to EC2
@@ -170,7 +170,7 @@ SSH to EC2
 ```
 
 ### Rollback Strategy
-- Each successful build is tagged with git SHA (e.g., `ghcr.io/zivtech/jawn-ai-platform:abc123`)
+- Each successful build is tagged with git SHA (e.g., `ghcr.io/zivtech/joyus-ai-platform:abc123`)
 - `latest` tag always points to current production
 - Rollback: `docker compose` with previous SHA tag
 - PostgreSQL volume persists across deployments

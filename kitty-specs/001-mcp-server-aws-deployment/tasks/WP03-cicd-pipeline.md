@@ -22,7 +22,7 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 
 - **Dependencies**: WP01 (Dockerfiles), WP02 (EC2 setup + nginx)
 - **Registry**: GitHub Container Registry (GHCR) — free tier, migrate to ECR later
-- **Trigger**: Push to `main` branch, scoped to `deploy/`, `jawn-ai-mcp-server/`, `web-chat/` paths
+- **Trigger**: Push to `main` branch, scoped to `deploy/`, `joyus-ai-mcp-server/`, `web-chat/` paths
 - **Target**: EC2 instance accessible via SSH from GitHub Actions runner
 - **Reference**: See `plan.md` CI/CD Pipeline section and `quickstart.md` Deploy section
 
@@ -42,7 +42,7 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
        branches: [main]
        paths:
          - 'deploy/**'
-         - 'jawn-ai-mcp-server/**'
+         - 'joyus-ai-mcp-server/**'
          - 'web-chat/**'
          - '.github/workflows/deploy-mcp.yml'
 
@@ -52,8 +52,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 
    env:
      REGISTRY: ghcr.io
-     PLATFORM_IMAGE: ghcr.io/zivtech/jawn-ai-platform
-     PLAYWRIGHT_IMAGE: ghcr.io/zivtech/jawn-ai-playwright
+     PLATFORM_IMAGE: ghcr.io/zivtech/joyus-ai-platform
+     PLAYWRIGHT_IMAGE: ghcr.io/zivtech/joyus-ai-playwright
 
    jobs:
      build-and-push:
@@ -111,7 +111,7 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
              username: ${{ secrets.EC2_USER }}
              key: ${{ secrets.EC2_SSH_KEY }}
              script: |
-               cd /opt/jawn-ai
+               cd /opt/joyus-ai
                ./deploy/scripts/deploy.sh ${{ github.sha }}
    ```
 2. Use `concurrency` to prevent overlapping deployments
@@ -136,8 +136,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 
 **Steps**:
 1. Each image gets two tags on every build:
-   - `ghcr.io/zivtech/jawn-ai-platform:latest` — current production
-   - `ghcr.io/zivtech/jawn-ai-platform:<git-sha>` — immutable rollback point
+   - `ghcr.io/zivtech/joyus-ai-platform:latest` — current production
+   - `ghcr.io/zivtech/joyus-ai-platform:<git-sha>` — immutable rollback point
 2. Same pattern for Playwright image
 3. Docker Buildx with GHA cache for faster builds:
    - First build may take 5-10 minutes
@@ -148,8 +148,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 - Part of `.github/workflows/deploy-mcp.yml` (build steps)
 
 **Validation**:
-- [ ] `docker pull ghcr.io/zivtech/jawn-ai-platform:latest` works
-- [ ] `docker pull ghcr.io/zivtech/jawn-ai-platform:<sha>` works for specific commit
+- [ ] `docker pull ghcr.io/zivtech/joyus-ai-platform:latest` works
+- [ ] `docker pull ghcr.io/zivtech/joyus-ai-platform:<sha>` works for specific commit
 - [ ] GHCR packages visible under zivtech org
 - [ ] Build cache reduces subsequent build times
 
@@ -170,7 +170,7 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
    set -euo pipefail
 
    SHA="${1:-latest}"
-   COMPOSE_DIR="/opt/jawn-ai"
+   COMPOSE_DIR="/opt/joyus-ai"
    COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
 
    cd "$COMPOSE_DIR"
@@ -178,8 +178,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
    echo "=== Deploying SHA: $SHA ==="
 
    # Save current image SHAs for rollback
-   PREV_PLATFORM=$(docker inspect --format='{{.Image}}' jawn-ai-platform-1 2>/dev/null || echo "none")
-   PREV_PLAYWRIGHT=$(docker inspect --format='{{.Image}}' jawn-ai-playwright-1 2>/dev/null || echo "none")
+   PREV_PLATFORM=$(docker inspect --format='{{.Image}}' joyus-ai-platform-1 2>/dev/null || echo "none")
+   PREV_PLAYWRIGHT=$(docker inspect --format='{{.Image}}' joyus-ai-playwright-1 2>/dev/null || echo "none")
 
    # Pull new images
    docker compose $COMPOSE_FILES pull
@@ -231,8 +231,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
      docker compose $COMPOSE_FILES down
 
      # If we have a previous SHA, use it
-     if [ -f /opt/jawn-ai/.last-good-sha ]; then
-       ROLLBACK_SHA=$(cat /opt/jawn-ai/.last-good-sha)
+     if [ -f /opt/joyus-ai/.last-good-sha ]; then
+       ROLLBACK_SHA=$(cat /opt/joyus-ai/.last-good-sha)
        echo "Rolling back to SHA: $ROLLBACK_SHA"
        # Update compose override with pinned SHA tags
        sed -i "s|:latest|:${ROLLBACK_SHA}|g" docker-compose.prod.yml
@@ -246,7 +246,7 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
      fi
    }
    ```
-2. On successful deploy, save current SHA to `/opt/jawn-ai/.last-good-sha`
+2. On successful deploy, save current SHA to `/opt/joyus-ai/.last-good-sha`
 3. On failed deploy, read `.last-good-sha` and pull those tagged images
 4. PostgreSQL data volume is never affected by rollback (persistent)
 

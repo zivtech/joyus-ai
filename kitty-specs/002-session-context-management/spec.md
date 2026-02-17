@@ -4,11 +4,11 @@
 **Created**: 2026-02-16
 **Revised**: 2026-02-16 (architecture reframing, Enterprise overlap analysis)
 **Status**: Draft
-**Input**: Domains 1, 2, 10 from jawn-ai-requirements-brief.md (Canonical Document Management, Session State Continuity, Context Handoff Protocol)
+**Input**: Domains 1, 2, 10 from joyus-ai-requirements-brief.md (Canonical Document Management, Session State Continuity, Context Handoff Protocol)
 
 > **Architecture Note (2026-02-16 revision):** This spec was originally written assuming a CLI + hooks architecture for technical users. After landscape analysis and Claude Enterprise overlap review, the architecture has been reframed:
 >
-> - **Primary interface**: MCP server that Claude calls on behalf of the user. The user never interacts with jawn-ai directly.
+> - **Primary interface**: MCP server that Claude calls on behalf of the user. The user never interacts with joyus-ai directly.
 > - **Deployment model**: User adds MCP server to Claude Desktop + runs a companion service. That's the maximum setup effort.
 > - **Target user**: Non-technical staff who cannot configure hooks, write scripts, or manage git workflows. Claude is the UI.
 > - **Companion service**: Handles background state capture, event monitoring, and anything the MCP request/response protocol can't do (long-running processes, filesystem watchers, etc.)
@@ -141,7 +141,7 @@ A junior developer hits a problem they can't resolve — tests are failing, they
 - **FR-004**: System MUST support declaring canonical source paths for named documents within a project. Declarations are project-wide by default, with optional per-branch overrides when explicitly set.
 - **FR-005**: System MUST warn users when they access or modify a non-canonical copy of a declared document.
 - **FR-006**: System MUST survive dirty exits (crash, force-quit) by persisting state at events, not only at clean exit.
-- **FR-007**: System MUST distinguish between stable memory (facts, preferences) and ephemeral state (branch, modified files, in-progress work).
+- **FR-007**: System MUST distinguish between stable memory (facts, preferences) and ephemeral state (branch, modified files, in-progress work). This distinction is enforced by design: stable memory lives in CLAUDE.md and memory.md (user-managed, committed to git); ephemeral state lives in the snapshot store (~/.joyus-ai/, gitignored, per-developer). The system never writes to stable memory files and never reads ephemeral state from them.
 - **FR-008**: System MUST support querying prior state on demand (not just at session start) for users who want to check context mid-session.
 - **FR-009**: System MUST handle concurrent sessions in the same project without data loss or corruption. State is per-developer by default; concurrent sessions from the same developer are partitioned or locked, while different developers' states are isolated.
 - **FR-015**: System MUST store state files in a per-developer location (gitignored or user-specific) by default, with an explicit "share context" action that allows a developer to make their current state visible to teammates. The share action MUST prompt the sharer to add an optional note describing what they were trying to do.
@@ -176,8 +176,8 @@ A junior developer hits a problem they can't resolve — tests are failing, they
 
 ## Assumptions
 
-- The primary user interface is Claude (Desktop or Code). Users interact with Claude; Claude interacts with jawn-ai's MCP server. Users do not run jawn-ai commands directly.
-- Maximum user setup effort: add the jawn-ai MCP server to Claude Desktop/Code + run a companion service. No hook configuration, no YAML editing, no CLI usage required from end users.
+- The primary user interface is Claude (Desktop or Code). Users interact with Claude; Claude interacts with joyus-ai's MCP server. Users do not run joyus-ai commands directly.
+- Maximum user setup effort: add the joyus-ai MCP server to Claude Desktop/Code + run a companion service. No hook configuration, no YAML editing, no CLI usage required from end users.
 - A companion service (daemon/background process) runs alongside the MCP server to handle event-driven state capture, filesystem monitoring, and background tasks that the MCP request/response protocol cannot support.
 - Claude Code hooks (SessionStart, PreToolUse, PostToolUse, session end) are available for technical users (Tier 2) and for the companion service, but are NOT required for end users.
 - MCP server infrastructure exists or will exist (from 001-mcp-server-aws-deployment) to provide interactive context query tools.
@@ -191,12 +191,12 @@ A junior developer hits a problem they can't resolve — tests are failing, they
 
 ## Dependencies
 
-- **001-mcp-server-aws-deployment** (partial): The MCP server infrastructure provides the interactive query layer.
-- **Claude Desktop/Code MCP support**: Required for the primary user interface. Users connect to the jawn-ai MCP server through Claude's MCP configuration.
-- **Companion service**: A locally-running service that handles background state capture, event monitoring, and filesystem watching. This is a new component that ships with jawn-ai.
+- **001-mcp-server-aws-deployment** (partial): The remote MCP server (deployed to AWS in feature 001) provides tool executors for Jira, Slack, GitHub, and Google. This feature (002) creates a separate local MCP server (`joyus-ai-state`) that runs on the developer's machine for session state management. The two servers are independently deployable and serve different purposes: 001 = remote tool access, 002 = local state awareness. Future integration (e.g., syncing shared state to the remote server) is deferred.
+- **Claude Desktop/Code MCP support**: Required for the primary user interface. Users connect to the joyus-ai MCP server through Claude's MCP configuration.
+- **Companion service**: A locally-running service that handles background state capture, event monitoring, and filesystem watching. This is a new component that ships with joyus-ai.
 - **Claude Code hooks system** (optional): Hooks provide tighter integration for Tier 2 (power users) but are not required for the core MCP-based workflow.
 - **Existing memory.md convention**: State management must coexist with, not conflict with, the existing memory system.
-- **Claude Enterprise** (recommended): Audit logging, spend controls, and compliance features are handled by Enterprise. jawn-ai works without Enterprise but benefits from it.
+- **Claude Enterprise** (recommended): Audit logging, spend controls, and compliance features are handled by Enterprise. joyus-ai works without Enterprise but benefits from it.
 
 ---
 
@@ -215,7 +215,7 @@ A junior developer hits a problem they can't resolve — tests are failing, they
 
 ## Relationship to Other Specs
 
-This is **Spec 1 of 2** for the jawn-ai mediator layer (revised from 3 after Enterprise overlap analysis):
+This is **Spec 1 of 2** for the joyus-ai mediator layer (revised from 3 after Enterprise overlap analysis):
 
 1. **Session & Context Management** (this spec) — knowing where you are and what's current
 2. **Workflow Enforcement** (next) — preventing mistakes, routing skills, enforcing quality gates
@@ -240,18 +240,18 @@ Session & Context Management is foundational — Spec 2 depends on the state and
 After landscape analysis of ~50+ existing projects and Claude Enterprise feature overlap review:
 
 - Q: What is the deployment model? → A: MCP server + companion service. User adds the MCP server to Claude Desktop/Code and runs a companion app alongside it. That's the maximum setup effort. No hook configuration, no CLI usage, no YAML editing required from end users.
-- Q: Who is the primary user? → A: Non-technical staff (Tier 1/3) who cannot configure developer tools. Claude is the UI. The user talks to Claude; Claude calls jawn-ai's MCP tools. Power users (Tier 2) get optional CLI and hook access for admin/debugging.
-- Q: What does Claude Enterprise already cover? → A: Audit logging (180-day, Compliance API), cost/token tracking (OpenTelemetry, spend caps), security (SOC 2, SSO, SCIM, ZDR), basic session resume (Agent SDK, Tasks), and team collaboration (Projects, Cowork). jawn-ai does NOT duplicate these. See `research/existing-projects-landscape.md` section 9.
-- Q: What does Enterprise NOT cover that jawn-ai provides? → A: Working state snapshots (branch, files, tests, decisions), canonical document management, structured handoff documents, quality gates, skill auto-routing, branch verification, and structured context sharing with notes.
+- Q: Who is the primary user? → A: Non-technical staff (Tier 1/3) who cannot configure developer tools. Claude is the UI. The user talks to Claude; Claude calls joyus-ai's MCP tools. Power users (Tier 2) get optional CLI and hook access for admin/debugging.
+- Q: What does Claude Enterprise already cover? → A: Audit logging (180-day, Compliance API), cost/token tracking (OpenTelemetry, spend caps), security (SOC 2, SSO, SCIM, ZDR), basic session resume (Agent SDK, Tasks), and team collaboration (Projects, Cowork). joyus-ai does NOT duplicate these. See `research/existing-projects-landscape.md` section 9.
+- Q: What does Enterprise NOT cover that joyus-ai provides? → A: Working state snapshots (branch, files, tests, decisions), canonical document management, structured handoff documents, quality gates, skill auto-routing, branch verification, and structured context sharing with notes.
 - Q: Should we still build Spec 3 (Observability)? → A: No. Enterprise covers ~80% of it. Residual needs (change-to-requirement traceability, skill invocation audit) fold into Spec 2. Roadmap is now Spec 1 + Spec 2, not Spec 1 + 2 + 3.
 - Q: Are there existing projects we should use as dependencies? → A: No direct dependencies, but study patterns from Continuous-Claude-v3 (YAML handoffs), oh-my-claudecode (compaction-resilient state), task-orchestrator (MCP API design). Existing OSS tools (Lefthook, git-branchless, etc.) may be used internally by the companion service but are invisible to users.
 - Q: What should we defer? → A: Adapter pattern (multi-platform), historical snapshot queries, retention policies, CLI (build after MCP server). MCP server is the priority.
-- Q: What about Context7? → A: Context7 MCP server handles library documentation for AI agents. Already configured. Complementary to jawn-ai (library knowledge vs project state/workflow). Will use for our own tech stack documentation needs.
+- Q: What about Context7? → A: Context7 MCP server handles library documentation for AI agents. Already configured. Complementary to joyus-ai (library knowledge vs project state/workflow). Will use for our own tech stack documentation needs.
 
 ---
 
 *Specification captured: February 16, 2026*
 *Revised: February 16, 2026 (architecture reframing, Enterprise overlap)*
 *Discovery conducted with: Alex UA*
-*Evidence source: jawn-ai-requirements-brief.md (nclclib workflow analysis), existing-projects-landscape.md*
-*For: jawn-ai — Mediator Layer, Spec 1 of 2*
+*Evidence source: joyus-ai-requirements-brief.md (nclclib workflow analysis), existing-projects-landscape.md*
+*For: joyus-ai — Mediator Layer, Spec 1 of 2*

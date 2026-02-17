@@ -587,7 +587,7 @@ async function executeTool(name: string, input: any, user: any, connections: Map
 # .env.local
 
 # Database
-DATABASE_URL="postgresql://user:pass@host:5432/jawn_ai_portal"
+DATABASE_URL="postgresql://user:pass@host:5432/joyus_ai_portal"
 
 # NextAuth
 NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
@@ -621,7 +621,7 @@ TOKEN_ENCRYPTION_KEY="generate-32-byte-key"
 ```yaml
 # app.yaml
 
-name: jawn-ai-portal
+name: joyus-ai-portal
 services:
   - name: web
     source:
@@ -643,7 +643,7 @@ databases:
   - name: db
     engine: PG
     production: true
-    cluster_name: jawn-ai-db
+    cluster_name: joyus-ai-db
     db_name: ai_portal
     db_user: ai_portal
 ```

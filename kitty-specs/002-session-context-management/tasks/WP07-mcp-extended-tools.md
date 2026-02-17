@@ -52,7 +52,7 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Objectives & Success Criteria
 
 - Add the remaining two MCP tools: `check_canonical` and `share_state`
-- Establish consistent input validation and error response handling across all 5 tools
+- Establish consistent input validation and error response handling across all 6 tools
 - Document Claude Desktop/Code MCP configuration and verification steps
 - **Done when**: All 5 MCP tools work end-to-end, consistent error handling, Claude Desktop config documented and tested
 
@@ -126,8 +126,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Register in the MCP server's tool list and call handler (update `src/mcp/server.ts`)
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/tools/check-canonical.ts` (new)
-  - `jawn-ai-state/src/mcp/server.ts` (update — register tool)
+  - `joyus-ai-state/src/mcp/tools/check-canonical.ts` (new)
+  - `joyus-ai-state/src/mcp/server.ts` (update — register tool)
 
 - **Parallel?**: Yes -- independent of T026.
 
@@ -179,8 +179,8 @@ Use language identifiers in code blocks: ````python`, ````bash`
   4. Register in MCP server
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/tools/share-state.ts` (new)
-  - `jawn-ai-state/src/mcp/server.ts` (update — register tool)
+  - `joyus-ai-state/src/mcp/tools/share-state.ts` (new)
+  - `joyus-ai-state/src/mcp/server.ts` (update — register tool)
 
 - **Parallel?**: Yes -- independent of T025.
 
@@ -226,12 +226,12 @@ Use language identifiers in code blocks: ````python`, ````bash`
   7. Wrap every handler in try/catch that returns `createErrorResponse` on any unexpected error
 
 - **Files**:
-  - `jawn-ai-state/src/mcp/tools/utils.ts` (new)
-  - `jawn-ai-state/src/mcp/tools/get-context.ts` (update)
-  - `jawn-ai-state/src/mcp/tools/save-state.ts` (update)
-  - `jawn-ai-state/src/mcp/tools/verify-action.ts` (update)
-  - `jawn-ai-state/src/mcp/tools/check-canonical.ts` (update)
-  - `jawn-ai-state/src/mcp/tools/share-state.ts` (update)
+  - `joyus-ai-state/src/mcp/tools/utils.ts` (new)
+  - `joyus-ai-state/src/mcp/tools/get-context.ts` (update)
+  - `joyus-ai-state/src/mcp/tools/save-state.ts` (update)
+  - `joyus-ai-state/src/mcp/tools/verify-action.ts` (update)
+  - `joyus-ai-state/src/mcp/tools/check-canonical.ts` (update)
+  - `joyus-ai-state/src/mcp/tools/share-state.ts` (update)
 
 - **Parallel?**: Yes -- can be done alongside T025/T026 or as a refactor after.
 
@@ -245,23 +245,23 @@ Use language identifiers in code blocks: ````python`, ````bash`
      ```json
      {
        "mcpServers": {
-         "jawn-ai-state": {
+         "joyus-ai-state": {
            "command": "npx",
-           "args": ["jawn-ai-mcp"]
+           "args": ["joyus-ai-mcp"]
          }
        }
      }
      ```
   2. Test alternative configurations:
-     - Direct path: `{ "command": "/path/to/jawn-ai-state/bin/jawn-ai-mcp" }`
-     - With explicit project root: `{ "command": "npx", "args": ["jawn-ai-mcp"], "env": { "PROJECT_ROOT": "/path/to/project" } }`
-  3. Verify the server responds to `tools/list` with all 5 tools
+     - Direct path: `{ "command": "/path/to/joyus-ai-state/bin/joyus-ai-mcp" }`
+     - With explicit project root: `{ "command": "npx", "args": ["joyus-ai-mcp"], "env": { "PROJECT_ROOT": "/path/to/project" } }`
+  3. Verify the server responds to `tools/list` with all 6 tools
   4. Verify each tool can be called and returns valid responses
-  5. Update `bin/jawn-ai-mcp` to support `PROJECT_ROOT` env variable as override for `process.cwd()`
+  5. Update `bin/joyus-ai-mcp` to support `PROJECT_ROOT` env variable as override for `process.cwd()`
   6. Ensure `quickstart.md` setup instructions match the actual configuration
 
 - **Files**:
-  - `jawn-ai-state/bin/jawn-ai-mcp` (update — PROJECT_ROOT support)
+  - `joyus-ai-state/bin/joyus-ai-mcp` (update — PROJECT_ROOT support)
 
 - **Parallel?**: Yes -- independent of T025-T027.
 

@@ -11,7 +11,7 @@
 
 ### Problem
 
-The jawn-ai MCP server and supporting tools are fully built but running only locally. The Zivtech team needs centralized, always-on access to all MCP-connected tools and Claude skills — from Claude Desktop at their workstations and from the web when working from a phone or away from their computer.
+The joyus-ai MCP server and supporting tools are fully built but running only locally. The Zivtech team needs centralized, always-on access to all MCP-connected tools and Claude skills — from Claude Desktop at their workstations and from the web when working from a phone or away from their computer.
 
 ### Solution
 
@@ -22,6 +22,8 @@ Deploy the complete MCP server suite to AWS EC2 with Docker Compose, including a
 - **Zivtech team** — connecting via Claude Desktop (primary) and web browser (mobile/AFK)
 - No client access at this phase
 
+> **Terminology**: This spec covers the **remote MCP server** — deployed to AWS, accessed over HTTPS. Feature 002 (Session & Context Management) defines a separate **local MCP server** (`joyus-ai-state`) that runs on each developer's machine. They are independent systems.
+
 ---
 
 ## 2. Functional Requirements
@@ -31,7 +33,7 @@ Deploy the complete MCP server suite to AWS EC2 with Docker Compose, including a
 Deploy the following MCP servers as containerized services:
 
 **Platform Server:**
-- jawn-ai MCP server (`/mcp` endpoint) — Jira, Slack, GitHub, Google tool executors with OAuth auth, encrypted token storage, scheduled tasks
+- joyus-ai MCP server (`/mcp` endpoint) — Jira, Slack, GitHub, Google tool executors with OAuth auth, encrypted token storage, scheduled tasks
 
 **Additional MCP Servers:**
 - Playwright + Backstop.js — browser automation and visual regression testing
@@ -125,7 +127,7 @@ The deployment must include a runtime environment that supports all Zivtech Clau
 A Zivtech developer configures their Claude Desktop MCP client to point at the deployed server. They can immediately search Jira issues, post to Slack, create GitHub PRs, and query Google services — all through natural conversation. Skills like ticket-writing standards and coding standards are enforced automatically.
 
 ### Scenario 2: Mobile/AFK Access
-Alex is away from his computer and needs to check on a project. From his phone's web browser, he connects to the MCP server and can query Jira, check Slack threads, and review GitHub PRs without needing Claude Desktop.
+Alex is away from his computer and needs to check on a project. From his phone's web browser, he opens the lightweight web chat UI hosted on the server. Through a conversational interface backed by the Claude API, he can ask about Jira issues, check Slack threads, and review GitHub PRs — the chat UI routes requests through the MCP tool executors behind the scenes.
 
 ### Scenario 3: Automated Deployment
 A developer pushes a fix to the MCP server code on main. GitHub Actions automatically builds a new Docker image, pushes it to the registry, and deploys it to EC2. The team sees the update live within minutes.
@@ -168,7 +170,7 @@ A team member invokes the PowerPoint MCP server to generate a branded client pre
 
 - AWS account already exists or can be created for Zivtech
 - DNS can be configured for `ai.zivtech.com`
-- The existing jawn-ai MCP server codebase is deployment-ready (Phase 0 complete)
+- The existing joyus-ai MCP server codebase is deployment-ready (Phase 0 complete)
 - Team members have Claude Desktop installed and configured
 - GitHub Actions runners have access to deploy to EC2
 
