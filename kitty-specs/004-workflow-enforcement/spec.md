@@ -148,6 +148,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 - What happens when the companion service isn't running? The MCP server should still function — Claude can explicitly trigger checks, but automatic event-driven enforcement is degraded.
 - What happens when a user is offline? All enforcement should work locally. No network dependency for core quality gates, skill loading, or branch verification.
 - What happens when two developers have different tier configurations for the same project? Each developer's tier is per-developer configuration, not per-project. The same project can have junior and power users with different enforcement levels.
+- What happens when the skill repository is unreachable or corrupted (e.g., git fetch fails)? The system uses the last-cached version of skills locally, warns the user that skills may be stale, and logs the failure in the audit trail. Skill enforcement continues with cached data rather than blocking or disabling.
 
 ---
 
@@ -157,12 +158,12 @@ A team lead reviews what happened during a junior developer's coding session. Th
 
 #### Quality Gates
 
-- **FR-001**: System MUST support configurable quality gates that run before specified trigger points (pre-commit, pre-push).
+- **FR-001**: System MUST support configurable quality gates that run before specified trigger points (pre-commit, pre-push). When multiple gates are configured for the same trigger point, they MUST execute sequentially in configured order with fail-fast behavior — execution stops at the first gate failure.
 - **FR-002**: System MUST support three enforcement tiers per gate: "always run" (blocks on failure), "ask me" (Claude presents choice on failure), and "skip" (gate runs but result is informational only).
 - **FR-003**: System MUST map enforcement tiers to user tiers by default: Tier 1 (junior) = "always run", Tier 2 (power user) = "ask me", Tier 3 (non-technical) = "always run" (invisible). Defaults are overridable per-project and per-user.
-- **FR-004**: System MUST support these gate types at minimum: linting, unit tests, accessibility audit, visual regression. Additional gate types are extensible via configuration.
+- **FR-004**: System MUST support these gate types at minimum: linting, unit tests, accessibility audit, visual regression, and custom command (arbitrary shell command). Additional gate types are extensible via configuration.
 - **FR-005**: System MUST handle gate tool unavailability gracefully — warn and continue rather than blocking the operation.
-- **FR-006**: System MUST support gate timeouts with user notification when a gate exceeds a configurable duration.
+- **FR-006**: System MUST support gate timeouts with user notification when a gate exceeds a configurable duration (default: 60 seconds per gate).
 - **FR-007**: System MUST record gate results (pass/fail/skip/timeout/unavailable) in the audit trail for every execution.
 
 #### Skill Enforcement
@@ -170,9 +171,10 @@ A team lead reviews what happened during a junior developer's coding session. Th
 - **FR-008**: System MUST auto-load skills based on file-pattern-to-skill mappings configured per project.
 - **FR-009**: System MUST support a skill precedence order for conflict resolution: client-specific override > client brand/voice > core skill > platform default.
 - **FR-010**: System MUST support explicit skill bypass by power users (Tier 2), with the bypass recorded in the audit trail.
-- **FR-011**: System MUST prompt users to check for existing upstream solutions before implementing new code, when a "check upstream" skill is active.
+- **FR-011**: System MUST provide an MCP tool (`check_upstream`) that searches project dependencies for existing solutions before implementing new code. Claude calls this tool on-demand when a user requests new functionality that may already exist in installed packages.
 - **FR-012**: System MUST report which skills are currently active when queried, including how each was loaded (auto-loaded by pattern, manually loaded, inherited from project config).
 - **FR-013**: System MUST detect when skill-relevant files are modified and ensure the corresponding skills are loaded before the modification proceeds.
+- **FR-013a**: System MUST cache skills locally and fall back to the cached version when the skill repository is unreachable. The system MUST warn the user that cached skills may be stale and log the repository failure in the audit trail.
 
 #### Git Sanity
 
@@ -191,6 +193,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 - **FR-023**: System MUST record the user tier and any enforcement overrides (bypasses, force flags) in each audit entry.
 - **FR-024**: System MUST support querying the audit trail by time range, action type, skill, and task/ticket ID.
 - **FR-025**: System MUST store audit data locally per-developer. Team-wide audit aggregation is deferred to the platform (Phase 3).
+- **FR-025a**: System MUST NOT auto-prune audit data. The developer manages retention manually. System MUST warn when local audit storage exceeds a configurable size threshold (default: 100 MB).
 
 #### Configuration
 
@@ -198,6 +201,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 - **FR-027**: System MUST support per-developer configuration for user tier, enforcement overrides, and gate tier preferences.
 - **FR-028**: System MUST support configuration inheritance: project config provides defaults; developer config overrides where permitted by the project's enforcement policy.
 - **FR-029**: System MUST validate configuration on load and report errors clearly, falling back to safe defaults when configuration is invalid.
+- **FR-029a**: System MUST support a global enforcement kill switch — a single MCP tool call that disables all enforcement (gates, skill enforcement, branch checks) for the current session. The kill switch activation and deactivation MUST be recorded in the audit trail.
 
 #### Feedback Capture
 
@@ -208,7 +212,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 
 - **Quality Gate**: A configurable check (lint, test, a11y audit, visual regression) that runs at a defined trigger point (pre-commit, pre-push). Each gate has an enforcement tier (always-run, ask-me, skip) that can vary by user tier and project.
 - **Skill Mapping**: A file-pattern-to-skill association. When a file matching the pattern is touched, the mapped skill is auto-loaded. Stored in project configuration.
-- **Skill**: A constraint system defining acceptable outputs, restrictions, and anti-patterns. Loaded from the skills repository. Has a precedence level for conflict resolution.
+- **Skill**: A constraint document (markdown with YAML frontmatter) defining acceptable outputs, restrictions, and anti-patterns. Loaded from the git-based skills repository (structure defined in 003). Has a precedence level for conflict resolution. Cached locally for offline/fallback use.
 - **Branch Rule**: A project-level rule governing branch naming, expected branch for a task, stale branch threshold, and active branch limits.
 - **Audit Entry**: A timestamped record of an enforcement action — gate execution result, skill load/bypass, branch verification outcome, or git guardrail trigger. Includes active skills, user tier, task/ticket ID, and any overrides.
 - **Correction**: A captured instance where the user corrected Claude's output because it didn't meet a skill constraint. Includes the original output, the correction, and the relevant skill.
@@ -225,7 +229,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 - **SC-003**: Skills auto-load for 100% of file edits matching configured patterns, with zero manual invocation required.
 - **SC-004**: Developers using Tier 1 (junior) enforcement produce zero unvetted pushes (all pushes pass configured gates or are explicitly reviewed).
 - **SC-005**: Power users (Tier 2) can bypass any non-mandatory gate or skill within 10 seconds — enforcement must not impede expert workflows.
-- **SC-006**: The audit trail captures 100% of enforcement actions with sufficient detail to reconstruct the enforcement decisions of any session.
+- **SC-006**: The audit trail captures 100% of enforcement actions. Each audit entry includes timestamp, action type, result, active skill IDs, user tier, task/ticket ID, and any overrides — sufficient to reconstruct the enforcement decisions of any session.
 - **SC-007**: Configuration for a new project (gates, skills, branch rules) can be completed in under 15 minutes using documented templates.
 - **SC-008**: System works fully offline — no network dependency for core enforcement features (gates, skills, branch checks, audit logging).
 - **SC-009**: Gate unavailability (tool not installed) never blocks a developer — the system degrades gracefully with a clear warning.
@@ -289,6 +293,14 @@ Session & Context Management is foundational — this spec depends on the state 
 - Q: Should these four domains (Quality Gates, Skill Enforcement, Git Sanity, Audit) be separate specs? -> A: Combined into one spec. The domains are deeply coupled at runtime (skills inform gates, gates check git state, git state determines skills). Splitting creates circular cross-spec dependencies.
 - Q: How should quality gate results surface to the user in the MCP-first model? -> A: Claude mediates conversationally. Claude calls the gate, gets a result, and based on the tier config either blocks and explains, presents a choice, or logs and proceeds. The user's experience is conversational, not CLI prompts.
 - Q: What's the scope boundary with 002? -> A: 002 handles state awareness (snapshots, restore, canonical docs). This spec handles active enforcement (gates, skills, branch checks, audit). 002 provides the infrastructure; this spec provides the rules.
+
+### Session 2026-02-17 (Clarify)
+
+- Q: When multiple quality gates are configured for a trigger point, how should they execute? → A: Sequential fail-fast — run gates in configured order, stop at first failure.
+- Q: What retention policy should apply to local audit data? → A: No auto-pruning — developer manually manages; system warns when storage exceeds a configurable size threshold.
+- Q: When the git-based skill repository is unreachable or corrupted, what should happen? → A: Degrade gracefully — use last-cached version of skills and warn the user that skills may be stale.
+- Q: Should there be a global kill switch to disable all enforcement? → A: Yes — a single MCP tool call disables all enforcement for the current session, logged in the audit trail.
+- Q: What default timeout should quality gates use? → A: 60 seconds. Configurable per gate.
 
 ---
 
