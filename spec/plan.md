@@ -109,6 +109,19 @@ See `hosting-comparison.md` for full infrastructure analysis.
 
 ## 1. Platform Architecture Overview
 
+### Architectural Principle: Thick Domain, Thin Orchestration (Decision #18)
+
+Informed by Boris Cherny's (Claude Code creator) design philosophy: orchestration scaffolding gets subsumed by model upgrades — his team deletes product code with every new model release. Domain knowledge is durable.
+
+| Layer | Investment | Why |
+|-------|-----------|-----|
+| **Skills Layer** | **Thick** | Domain knowledge (brand assets, author profiles, client constraints). The model can't know this without being told. Durable across model upgrades. |
+| **Content Fidelity / Verification** | **Thick** | Verification loops multiply quality 2-3x (Boris's #1 insight). Attribution model, content markers, stylometrics — this is the platform's moat. |
+| **Monitoring** | **Thick** | Usage analytics, cost attribution, guardrail hits. Business infrastructure, not model scaffolding. |
+| **MCP Gateway** | **Medium** | Auth, routing, logging — standard infrastructure. Won't change with model upgrades. Keep protocol surface minimal. |
+| **Orchestration** | **Thin** | Router, not engine. Authenticate → load skills → inject verification → call Agent SDK → log → return. The model handles planning, retries, and output formatting. |
+| **Context Management** | **Thin** | Agentic search over skill files, not vector embeddings. Boris's team moved away from embeddings — same accuracy, cleaner deployment. |
+
 ### Core Architecture
 
 ```
@@ -526,9 +539,11 @@ Internal (Zivtech):           External (Clients):
 - Two codepaths to maintain
 - Potential feature drift
 
-### Option D: Oh My Claude Code (OMC)
+### Option D: Oh My Claude Code (OMC) — EVALUATED, NOT ADOPTED (Decision #16)
 
-Use [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode) as the orchestration layer for internal use.
+~~Use [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode) as the orchestration layer for internal use.~~
+
+> **Feb 17, 2026:** After analyzing Boris Cherny's Claude Code design philosophy, OMC was determined to solve the wrong problem. Power users don't need an orchestration framework (Boris runs vanilla Claude Code with workflow discipline). Web portal users can't use a CLI plugin. Replaced by Option E: thin server orchestrator. See Recommendation below.
 
 ```
 ┌─────────────────────────────────────────┐
@@ -573,24 +588,51 @@ Use [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode) as the 
 - How does state isolation work for multiple projects?
 - Maintenance/stability trajectory?
 
-### Recommendation
+### Recommendation (Updated Feb 17, 2026)
 
-**Evaluate Option D (OMC) for Phase 3**, with Option C (Hybrid) as the Phase 4+ path.
+**Option E: Thin server orchestrator + native Claude Code for internal use.** Skip OMC.
 
 ```
-Phase 3 Decision Tree:
+Phase 3 Architecture:
 ┌─────────────────────────────────────────────────────────┐
-│  Try OMC for internal platform orchestration            │
+│  Internal (Zivtech CLI users):                          │
+│  └─ Native Claude Code + subagents + Plan Mode          │
+│     └─ Skills loaded via CLAUDE.md / skill files        │
 │                                                         │
-│  ├─ If OMC works well:                                  │
-│  │   └─ Use OMC for internal, custom service for clients│
-│  │                                                      │
-│  └─ If OMC doesn't fit:                                 │
-│      └─ Fall back to Option A (plain skill)            │
+│  Web Portal (Zivtech staff + future clients):           │
+│  └─ Thin FastAPI orchestrator + Agent SDK               │
+│     └─ Authenticate → load skills → inject verification │
+│        → call Agent SDK → log → return                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Rationale: OMC's Pipeline mode and cost optimization align with our needs. Worth experimenting before building custom orchestration. Client deployments will still need standalone service regardless.
+**Rationale — informed by Boris Cherny (Claude Code creator) insights:**
+
+1. **OMC solves the wrong problem.** Boris runs 10-15 raw Claude Code sessions with no framework. His "orchestration" is workflow discipline: Plan Mode on every task, CLAUDE.md for institutional memory, native subagents for parallel work. Power users don't need a framework layer.
+
+2. **OMC can't serve the web portal.** It's a local CLI plugin. The Phase 3 web portal (for Zivtech Windows users and future clients) needs server-side orchestration regardless. Building two orchestration paths (OMC + server) creates maintenance burden for no gain.
+
+3. **Scaffolding gets subsumed.** Boris's team deletes product code with every model upgrade. Complex orchestration logic has an expiration date. Domain knowledge (skills, client profiles, verification) does not. Invest there instead.
+
+4. **The orchestrator should be a thin router, not a smart engine.**
+
+```
+What the orchestrator DOES:
+  1. Authenticate user, resolve client context
+  2. Load skills (client brand + author profile + task skill)
+  3. Inject verification hook (content fidelity check)
+  4. Call Agent SDK with tools + skills as context
+  5. Log everything to monitoring layer
+  6. Return result
+
+What the orchestrator DOES NOT do:
+  - Multi-step planning logic (model does this)
+  - Complex retry/fallback chains (model handles retries)
+  - Output post-processing or reformatting (model + skills)
+  - Template filling or structured generation (model + skills)
+```
+
+**Previous recommendation (Jan 29):** ~~Evaluate Option D (OMC) for Phase 3.~~ Superseded by analysis of Boris Cherny's design philosophy and evaluation of where OMC adds vs. doesn't add value. See Decision #16.
 
 ---
 
@@ -622,12 +664,25 @@ Rationale: OMC's Pipeline mode and cost optimization align with our needs. Worth
 │  │   • Token consumption trends                                             ││
 │  │   • Cost attribution                                                     ││
 │  │                                                                          ││
-│  │   Layer 2: Content Fidelity                                              ││
+│  │   Layer 2: Content Fidelity (Two-Tier Verification)                       ││
+│  │                                                                          ││
+│  │   TIER 1 — Inline verification loop (in-context, per-generation):       ││
+│  │   • Content marker presence check (~ms)                                  ││
+│  │   • Stylometric distance from author profile (~100ms)                   ││
+│  │   • On mismatch: feed details back to model, regenerate (max 3x)       ││
+│  │   • Latency budget: ~2-5s per verification pass                         ││
+│  │   • This is the quality gate — model self-corrects before delivery     ││
+│  │                                                                          ││
+│  │   TIER 2 — Deep async analysis (monitoring layer, post-delivery):       ││
+│  │   • Full Burrows' Delta stylometric analysis (heavier compute)          ││
+│  │   • Cross-document consistency over time                                 ││
+│  │   • Voice drift detection across sessions                               ││
+│  │   • Correction aggregation → skill update recommendations              ││
+│  │   • Monthly quality reports per client                                   ││
+│  │                                                                          ││
+│  │   Also:                                                                  ││
 │  │   • Output validation results                                            ││
 │  │   • Brand compliance scoring                                             ││
-│  │   • **Author verification** — run attribution on AI output,             ││
-│  │     compare intended vs. detected voice profile, flag mismatches        ││
-│  │     (hybrid model: content markers + Burrows' Delta stylometrics)       ││
 │  │   • Correction frequency                                                 ││
 │  │                                                                          ││
 │  │   Layer 3: Guardrail Monitoring                                          ││
@@ -785,7 +840,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 
 **Phase 3: Platform Framework**
 - **Web App** — Next.js + FastAPI, Google SSO, chat UI
-- **Orchestration layer** — Decide on skill vs service, implement
+- **Orchestration layer** — Thin server orchestrator (FastAPI + Agent SDK): authenticate → load skills → inject verification → call Agent SDK → log. Not a smart engine — the model does the thinking. (Decision #16)
 - **MCP Gateway** — Expose platform as MCP server; include browser abstraction layer (high-level navigate/click/extract actions over raw Playwright, per-user browser contexts)
 - **Client Profile Building** — Automated pipeline: ingest client corpus → extract stylometric features + content markers → generate structured writing profiles → output as platform-consumable skill files. Generalizes NCLC methodology (94.6%→97.9% accuracy) into multi-domain service
 - **Author Verification / Content Fidelity** — Post-generation validator: run attribution model on AI output, compare intended vs. detected voice, flag mismatches before delivery, feed corrections back into skill updates (Constitution §2.5)
@@ -826,8 +881,8 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 1 | Skills storage | Git / DB / Files | **Git repo** | Version control, easy rollback, familiar workflow | Jan 29 |
 | 2 | Initial isolation | Skill / Container / Full | **Skill-based** | Start simple, evolve as needed | Jan 29 |
 | 3 | MCP role | Server / Client / Both | **Both** | Platform exposes interface AND consumes services | Jan 29 |
-| 4 | Orchestration (Phase 3) | Skill / OMC / Service / Hybrid | **Evaluate OMC** | Pipeline mode + cost savings worth testing; fall back to plain skill | Jan 29 |
-| 5 | Orchestration (Phase 4+) | OMC / Service / Hybrid | **TBD** | Depends on Phase 3 learnings + client requirements | Jan 29 |
+| 4 | ~~Orchestration (Phase 3)~~ | ~~Skill / OMC / Service / Hybrid~~ | ~~Evaluate OMC~~ | ~~Pipeline mode + cost savings worth testing; fall back to plain skill~~ | ~~Jan 29~~ | **Superseded by Decision #16 (Feb 17)** |
+| 5 | Orchestration (Phase 4+) | Thin server / Service / Hybrid | **Thin server + Agent SDK** | Same thin orchestrator scales to client deployments; add container isolation as needed | Jan 29 (updated Feb 17) |
 | 6 | MCP server hosting | Platform.sh / AWS / GCP / VPS / Railway | **AWS EC2 + Docker Compose** | Mature MCP ecosystem (45+ awslabs servers); Claude can manage infra; ~$15-35/mo | Feb 11 |
 | 7 | Static PoC hosting | GitHub Pages / Cloudflare Pages / Netlify / S3 | **GitHub Pages + StatiCrypt** | Free, git-native, directory-based; AES-256 password protection | Feb 11 |
 | 8 | Drupal PoC hosting | Platform.sh / AWS / Self-host | **Existing tools (separate)** | Pantheon Multidev / Tugboat / Probo.ci — already solved, no new infra | Feb 11 |
@@ -838,6 +893,9 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 13 | Manus-MCP pattern | Emulate manus-mcp / Extract capabilities / Skip | **Extract capabilities, better architecture** | Adopt code sandbox, job mgmt, browser abstraction, research tool — but with container isolation, per-user contexts, proper search API instead of manus-mcp's weak directory sandbox and Google scraping | Feb 13 |
 | 14 | Client Profile Building | Manual skill creation / Automated pipeline / Hybrid | **Automated pipeline (proven)** | NCLC project validates methodology: corpus analysis → content markers + stylometrics → structured profiles. 94.6% accuracy (4 authors), 97.9% (9 authors). Generalizable to arbitrary client domains. Pipeline outputs platform-consumable skill files. | Feb 15 |
 | 15 | Author Verification placement | Phase 4 tool only / Phase 3 monitoring only / Both | **Both: Phase 3 monitor + Phase 4 tool** | Internal use as Content Fidelity check (Phase 3 Monitoring Layer 2) + external use as standalone Attribution Service (Phase 4). Same core engine, different interfaces. | Feb 15 |
+| 16 | Orchestration (Phase 3) — revised | OMC / Thin server + native CC / Hybrid | **Thin server + native Claude Code** | Boris Cherny analysis: OMC solves wrong problem (power users don't need framework; web portal can't use CLI plugin); scaffolding gets subsumed by model upgrades; invest in skills + verification instead. Thin FastAPI + Agent SDK for portal, native Claude Code for internal CLI users. Supersedes Decision #4. | Feb 17 |
+| 17 | Attribution verification timing | Inline only / Async only / Two-tier | **Two-tier (inline + async)** | Boris Cherny's #1 insight: verification loops multiply quality 2-3x, but only if the model sees the failure and self-corrects. Tier 1: fast inline checks (~2-5s) as quality gate before delivery. Tier 2: deep async analysis for monitoring, drift detection, and skill improvement. | Feb 17 |
+| 18 | Layer investment principle | Equal / Model-dependent | **Thick domain, thin orchestration** | Boris Cherny's "scaffolding gets subsumed" principle: orchestration code gets deleted with model upgrades, but domain knowledge (skills, profiles, verification) is durable. Build skills and verification thick; keep orchestration as a thin router. | Feb 17 |
 
 ---
 
@@ -856,10 +914,10 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | Content structure schema design | Claude | Phase 4 | Open |
 | Layout decision heuristics | Claude | Phase 4 | Open |
 | First client pilot | Alex | Phase 3 | Open |
-| **OMC evaluation** | Alex | Phase 3 | Open |
-| ├─ Does OMC support custom skills? | | | |
-| ├─ State isolation for multi-project? | | | |
-| └─ Stability/maintenance trajectory? | | | |
+| ~~OMC evaluation~~ | Alex | Phase 3 | **Resolved (Feb 17)** — Skip OMC. Thin server orchestrator + native Claude Code. See Decision #16. |
+| ├─ ~~Does OMC support custom skills?~~ | | | Moot — not adopting OMC |
+| ├─ ~~State isolation for multi-project?~~ | | | Moot — not adopting OMC |
+| └─ ~~Stability/maintenance trajectory?~~ | | | Moot — not adopting OMC |
 | Skill testing/validation methodology | Alex + Claude | Phase 3 | Open — how to measure whether a skill is effective; detect unanticipated side effects from restrictions; acceptance criteria for skill quality |
 | Feedback loop mechanics | Alex + Claude | Phase 3 | Open — how user corrections flow into skill updates; who approves changes; update cadence; Constitution S2.5 declares first-class but mechanism unspecified |
 | Client onboarding workflow | Alex | Phase 3 | Open — what goes into a single-entry-point package; integration with existing client tools; skill creation process; brand asset intake |
@@ -871,9 +929,14 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | **Author Verification / Content Fidelity** | Alex + Claude | Phase 3 | Open |
 | ├─ Confidence threshold: what score triggers a mismatch flag? | | | NCLC used content markers as primary discriminator; need calibration per client |
 | ├─ Feedback loop mechanics: how do flagged mismatches flow into skill updates? | | | Constitution §2.5 declares first-class but mechanism unspecified |
-| └─ Performance: can attribution run in-line or must it be async post-generation? | | | Latency budget for real-time fidelity checks |
+| └─ ~~Performance: can attribution run in-line or must it be async post-generation?~~ | | | **Resolved (Feb 17)** — Both. Two-tier: fast inline checks (~2-5s) as quality gate + deep async analysis for monitoring. See Decision #17. |
 | **Code execution sandbox** | Alex + Claude | Phase 3 | Open — container tech (Docker vs gVisor vs Firecracker); resource limit defaults; supported languages; network policy |
 | **Job/task management** | Alex + Claude | Phase 3 | Open — queue implementation (Redis, PostgreSQL, in-memory); status API design; log streaming; cancellation semantics |
+| **API account & billing model** | Alex + Claude | Phase 3 | Open — Anthropic API uses Organizations → Workspaces → API keys (separate from Claude Team/Pro subscriptions). Key decisions: |
+| ├─ Zivtech-managed (one org, workspace per client) vs BYOK (client brings own API key)? | | | Zivtech-managed is simpler; BYOK gives clients billing control but adds complexity |
+| ├─ Per-workspace spend limits sufficient, or need per-user/per-task limits? | | | Workspaces have built-in spend caps; finer granularity requires platform-level tracking |
+| ├─ Admin API integration for programmatic workspace/key management? | | | Admin API (`sk-ant-admin...`) can create workspaces, manage keys, set limits |
+| └─ Usage & Cost API integration for billing attribution? | | | Anthropic provides token consumption breakdowns by model, workspace, service tier |
 | **Visual regression testing service** | Alex + Claude | Phase 4 | Open |
 | ├─ Baseline storage: Git LFS, S3, or local? | | | |
 | ├─ PR detection: GitHub webhooks, manual trigger, or CI integration? | | | |
@@ -883,5 +946,5 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 ---
 
 *Plan created: January 29, 2026*
-*Updated: February 15, 2026 — Added Client Profile Building pipeline to Skills Architecture (§3), author verification to Content Fidelity monitoring (§5), Author Attribution Service to Phase 4 (§7), profiles to skill repo structure, decisions #14-15, open questions for profile building and verification. Prior: Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
+*Updated: February 17, 2026 — Boris Cherny (Claude Code creator) analysis: replaced OMC with thin server orchestrator + native Claude Code (Decision #16), added two-tier content fidelity verification (Decision #17), added "thick domain, thin orchestration" architectural principle (Decision #18), resolved attribution timing and OMC open questions. Prior: Feb 15 — Client Profile Building pipeline, author verification, Attribution Service, decisions #14-15. Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
 *For: Zivtech AI Agent Platform*
