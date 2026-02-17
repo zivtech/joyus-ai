@@ -1,25 +1,27 @@
 ---
-work_package_id: "WP03"
+work_package_id: WP03
+title: State Collectors
+lane: planned
+dependencies:
+- WP01
+- WP02
 subtasks:
-  - "T008"
-  - "T009"
-  - "T010"
-  - "T011"
-title: "State Collectors"
-phase: "Phase 1 - Core Modules"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
-dependencies: ["WP01"]
+- T009
+- T010
+- T011
+- T012
+phase: Phase 1 - Foundation
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-02-16T19:42:12Z"
-    lane: "planned"
-    agent: "system"
-    shell_pid: ""
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-02-17T03:14:10Z'
+  lane: planned
+  agent: system
+  shell_pid: ''
+  action: Prompt generated via /spec-kitty.tasks (MCP-first architecture)
 ---
 
 # Work Package Prompt: WP03 -- State Collectors
@@ -50,146 +52,150 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 ## Objectives & Success Criteria
 
-- Build four data collection modules that gather the raw data included in every snapshot
-- Each collector is independent and produces a typed result matching the data model
-- Collectors must handle errors gracefully (return partial data, never crash the snapshot process)
-- **Done when**: Each collector independently gathers its data and returns a typed result; decision tracker carries forward across snapshots
+- Build collectors that gather live project state from git, filesystem, test output, and decision history
+- Each collector returns structured data matching the corresponding type from WP01
+- Collectors never throw — they return partial/default data on error
+- **Done when**: Git collector returns GitState from a real repo, file collector returns FileState, test collector parses common runner output, decision tracker carries forward decisions
 
 ## Context & Constraints
 
-- **Data Model**: `kitty-specs/002-session-context-management/data-model.md`
-- **Research**: `kitty-specs/002-session-context-management/research.md` (R8: append-only decision tracking)
-- **Spec FR-001**: Persist state on significant events; collectors provide the data
-- **Spec FR-006**: Survive dirty exits; collectors must be fast (<100ms total)
-- **Spec FR-011**: Fall back gracefully; if git isn't available, return what you can
-- **Depends on WP01**: Uses types from `core/types.ts`
-- **Performance target**: All collectors combined must complete in <100ms (they run on every snapshot event)
+- **Data Model**: `data-model.md` — GitState, FileState, TestResults, Decision types
+- **Spec FR-001**: Persist state on significant events (collectors provide the data)
+- **Plan**: Files under `src/collectors/` — git.ts, files.ts, tests.ts, decisions.ts
+- **Performance**: All collectors combined must complete in <100ms for snapshot capture
+- **Error handling**: Collectors NEVER throw. Return default/empty data on error. Log warnings.
+- **Depends on**: WP01 (types). T012 also needs WP02 (read last snapshot for decision carry-forward).
 
 **Implementation command**: `spec-kitty implement WP03 --base WP01`
 
+(Note: WP03 depends on WP01. T012 also depends on WP02 for reading last snapshot, but can be written against the interface.)
+
 ## Subtasks & Detailed Guidance
 
-### Subtask T008 -- Git state collector [P]
+### Subtask T009 -- Git state collector
 
-- **Purpose**: Collect the current git state (branch, commit, status, ahead/behind) for inclusion in every snapshot. This is the most critical collector -- wrong-branch awareness is the #1 pain point.
+- **Purpose**: Collect current git state by shelling out to `git` commands. This is the most important collector — branch awareness prevents wrong-branch commits.
 - **Steps**:
-  1. Create `src/collectors/git.ts` with:
+  1. Create `src/collectors/git.ts`:
      ```typescript
      export async function collectGitState(projectRoot: string): Promise<GitState>;
      ```
-  2. Implement by shelling out to `git` commands:
-     - `git rev-parse --abbrev-ref HEAD` -- current branch name (or "HEAD" if detached)
-     - `git rev-parse --short HEAD` -- short commit hash
-     - `git log -1 --format=%s` -- commit message (first line)
-     - `git rev-parse --is-inside-work-tree` -- verify we're in a git repo
-     - `git status --porcelain` -- check for uncommitted changes (any output = true)
-     - `git rev-parse --abbrev-ref @{upstream}` -- upstream tracking branch (may fail if no upstream)
-     - `git rev-list --left-right --count HEAD...@{upstream}` -- ahead/behind counts
-  3. Detect detached HEAD: `branch === "HEAD"` means detached
-  4. Handle errors per-command:
-     - No git repo: Return a GitState with empty/default values, `branch: "unknown"`, `isDetached: false`
-     - No upstream: Set `remoteBranch: null`, `aheadBehind: { ahead: 0, behind: 0 }`
-     - Individual command failure: Use defaults for that field, continue collecting others
-  5. Use `child_process.execFile` (not `exec`) for security -- no shell injection risk
-  6. Set a 5-second timeout per git command to prevent hangs
+  2. Implementation (shell out to git commands):
+     - `git rev-parse --abbrev-ref HEAD` → branch name (returns "HEAD" if detached)
+     - `git rev-parse --short HEAD` → commit hash
+     - `git log -1 --format=%s` → commit message (first line)
+     - `git rev-parse --is-inside-work-tree` → detect if it's a git repo
+     - `git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null` → ahead/behind (may fail if no upstream)
+     - `git rev-parse --verify --quiet @{upstream}` → remote branch name
+     - `git status --porcelain` → check if any changes exist (hasUncommittedChanges)
+  3. Use `child_process.execFile` (not `exec`) for safety — no shell injection
+  4. Set `cwd` to `projectRoot` for all git commands
+  5. Set reasonable timeout (5 seconds per command)
+  6. If git is not installed or not a git repo, return a default empty GitState:
+     ```typescript
+     const DEFAULT_GIT_STATE: GitState = {
+       branch: 'unknown',
+       commitHash: '',
+       commitMessage: '',
+       isDetached: false,
+       hasUncommittedChanges: false,
+       remoteBranch: null,
+       aheadBehind: { ahead: 0, behind: 0 },
+     };
+     ```
+  7. Export from `src/index.ts`
 
 - **Files**:
   - `jawn-ai-state/src/collectors/git.ts` (new)
 
-- **Parallel?**: Yes -- fully independent of T009, T010, T011.
-- **Notes**: All git commands should run with `cwd: projectRoot` to support being called from any directory. The `--porcelain` flag on `git status` gives machine-parseable output. For `execFile`, wrap in a utility that returns a promise with timeout.
+- **Parallel?**: Yes -- fully independent of T010, T011.
+- **Notes**: `execFile` is preferred over `exec` because it doesn't spawn a shell. All arguments are passed as an array, preventing injection. If the upstream doesn't exist (local-only branch), ahead/behind should be `{ ahead: 0, behind: 0 }` and remoteBranch should be `null`.
 
 ---
 
-### Subtask T009 -- File state collector [P]
+### Subtask T010 -- File state collector
 
-- **Purpose**: Collect the lists of staged, unstaged, and untracked files. This tells the restored session exactly what files were being worked on.
+- **Purpose**: Collect the list of staged, unstaged, and untracked files using `git status`.
 - **Steps**:
-  1. Create `src/collectors/files.ts` with:
+  1. Create `src/collectors/files.ts`:
      ```typescript
      export async function collectFileState(projectRoot: string): Promise<FileState>;
      ```
-  2. Parse `git status --porcelain` output:
-     - Lines starting with `M ` (index) or `A ` (index): **staged** files
-     - Lines starting with ` M` (worktree) or ` D` (worktree): **unstaged** files
-     - Lines starting with `??`: **untracked** files
-     - Lines with both index and worktree changes (e.g., `MM`): include in both staged and unstaged
-  3. Return file paths relative to project root
-  4. Handle empty output (clean working tree): return `{ staged: [], unstaged: [], untracked: [] }`
-  5. Handle git not available: return empty FileState
+  2. Parse `git status --porcelain=v1` output:
+     - First column = index status, second column = work tree status
+     - `M_` (staged modified), `A_` (staged added), `D_` (staged deleted) → `staged[]`
+     - `_M` (unstaged modified), `_D` (unstaged deleted) → `unstaged[]`
+     - `??` (untracked) → `untracked[]`
+     - `MM` (staged + further modified) → appears in both `staged[]` and `unstaged[]`
+  3. Handle edge cases:
+     - Renamed files: `R_` format includes `old -> new`
+     - Binary files: same format, just different content
+     - Submodules: may appear with special markers
+  4. Return empty arrays if not a git repo or on error
 
 - **Files**:
   - `jawn-ai-state/src/collectors/files.ts` (new)
 
 - **Parallel?**: Yes -- fully independent.
-- **Notes**: Consider sharing the `git status --porcelain` call with T008 to avoid running it twice. You can either: (a) have a shared utility that caches the output, or (b) accept the duplication since the command is fast (<50ms). Decision: option (b) is simpler and avoids coupling. Each collector should be self-contained.
 
 ---
 
-### Subtask T010 -- Test results collector [P]
+### Subtask T011 -- Test results collector
 
-- **Purpose**: Parse test results from the last test run to include in snapshots. Tells the restored session which tests were passing/failing.
+- **Purpose**: Parse test output from common runners (vitest, jest, phpunit, pytest) to extract pass/fail counts and failing test names.
 - **Steps**:
-  1. Create `src/collectors/tests.ts` with:
+  1. Create `src/collectors/tests.ts`:
      ```typescript
-     export async function collectTestResults(
-       stdout: string,
-       command: string
-     ): Promise<TestResults | null>;
+     export function parseTestResults(output: string, runner?: string): TestResults | null;
      ```
-  2. Implement parsers for common test runners (detect from output patterns):
-     - **Vitest**: Look for `Tests  X passed | Y failed` pattern
-     - **Jest**: Look for `Tests:  X passed, Y failed, Z total` pattern
-     - **PHPUnit**: Look for `OK (X tests, Y assertions)` or `FAILURES! Tests: X, Assertions: Y, Failures: Z`
-     - **pytest**: Look for `X passed, Y failed` or `X passed in Ys`
-  3. For each parser, extract:
-     - `runner`: detected runner name
-     - `passed`, `failed`, `skipped` counts
-     - `failingTests`: names of failing tests (max 20, with truncation note if more)
-     - `duration`: total run time in seconds
-     - `command`: the original command string
-  4. Return `null` if the output doesn't match any known pattern (unknown test runner)
-  5. Note: This collector is NOT called automatically from git hooks. It's called when the `--event=test-run` flag is passed to the snapshot command. The hook template (WP08) decides when test output is available.
+  2. Auto-detect runner from output patterns if not specified:
+     - Vitest/Jest: `Tests:  X passed, Y failed` or `Test Suites:` patterns
+     - PHPUnit: `OK (X tests, Y assertions)` or `FAILURES! Tests: X, Assertions: Y, Failures: Z`
+     - Pytest: `X passed, Y failed` or `===` delimiter patterns
+  3. Extract:
+     - `passed`: count of passing tests
+     - `failed`: count of failing tests
+     - `skipped`: count of skipped tests
+     - `failingTests`: names of failing tests (max 20, truncate with note)
+     - `duration`: total runtime if available
+     - `command`: the command that was run (passed as parameter)
+  4. Return `null` if output doesn't match any known runner pattern
+  5. Be permissive in parsing — extract what you can, ignore what you can't
 
 - **Files**:
   - `jawn-ai-state/src/collectors/tests.ts` (new)
 
 - **Parallel?**: Yes -- fully independent.
-- **Notes**: Start with Vitest and Jest patterns (most likely for this TypeScript project). PHPUnit and pytest are stretch goals. The parser should be extensible -- use a registry pattern so new runners can be added without modifying existing code. Cap `failingTests` at 20 entries per the data model validation rules.
+- **Notes**: This collector is different from git/file collectors — it receives output text as input rather than running commands. The companion service or MCP tool passes test output to this function.
 
 ---
 
-### Subtask T011 -- Decision tracker
+### Subtask T012 -- Decision tracking
 
-- **Purpose**: Track pending and resolved decisions incrementally across snapshots. Decisions are the highest-value context for resumed sessions -- they capture the reasoning that's hardest to reconstruct.
+- **Purpose**: Manage the list of pending decisions across snapshots. Decisions carry forward from the last snapshot and can be added to or resolved.
 - **Steps**:
-  1. Create `src/collectors/decisions.ts` with:
+  1. Create `src/collectors/decisions.ts`:
      ```typescript
-     export class DecisionTracker {
-       constructor(existingDecisions?: Decision[]);
-       addPending(question: string, context: string, options?: string[]): Decision;
-       resolve(decisionId: string, answer: string): Decision;
-       getAll(): Decision[];
-       getPending(): Decision[];
-       getResolved(): Decision[];
-     }
+     export function carryForwardDecisions(
+       previousDecisions: Decision[],
+       newDecision?: string,
+       resolvedId?: string,
+       resolvedAnswer?: string
+     ): Decision[];
      ```
   2. Implementation:
-     - Constructor accepts existing decisions from the last snapshot (for carry-forward)
-     - `addPending()`: Creates a new Decision with `resolved: false`, `answer: null`, generates a CUID2 `id`
-     - `resolve()`: Finds decision by ID, sets `answer`, `resolved: true`, `resolvedAt` to current ISO timestamp
-     - `getAll()`: Returns all decisions (pending + resolved) in chronological order
-     - `getPending()`: Returns only unresolved decisions
-     - `getResolved()`: Returns only resolved decisions
-  3. Decisions are append-only within a session
-  4. When creating a new snapshot, pass the current `DecisionTracker.getAll()` as the `decisions` field
-  5. When restoring from a snapshot, initialize `new DecisionTracker(snapshot.decisions)` to carry forward
+     - Start with `previousDecisions` (from last snapshot)
+     - If `newDecision` provided: create a new Decision with unique ID (CUID2), `resolved: false`
+     - If `resolvedId` provided: find matching decision, set `resolved: true`, `answer: resolvedAnswer`, `resolvedAt: now`
+     - Return the full list (pending + resolved)
+  3. Decisions persist across snapshots — pending decisions carry forward until resolved
+  4. Resolved decisions stay in the list for context (but could be pruned after N snapshots — deferred)
 
 - **Files**:
   - `jawn-ai-state/src/collectors/decisions.ts` (new)
+  - `jawn-ai-state/src/index.ts` (update exports)
 
-- **Parallel?**: Logically independent but shares types from WP01.
-- **Notes**: The DecisionTracker is stateful (class-based) unlike the other collectors (pure functions). This is intentional -- decisions accumulate within a session. Use `@paralleldrive/cuid2` for ID generation (same as snapshot IDs). The `--decision` CLI flag (WP04) calls `addPending()`.
+- **Parallel?**: No -- logically depends on being able to read the last snapshot (WP02). But the function itself can be written against the types without the store.
 
 ---
 
@@ -197,21 +203,20 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 | Risk | Mitigation |
 |------|-----------|
-| Git not installed or not a git repo | Return partial/default data, never crash |
-| Git commands hang (network operations) | 5-second timeout per command |
-| Unknown test runner output | Return null, don't guess |
-| Decision ID collisions | CUID2 is collision-resistant by design |
-| Collector performance too slow | Each collector should complete in <25ms; monitor with simple timing logs |
+| Git not installed | Return default empty state. Log warning. |
+| Git command timeout (large repo) | 5-second timeout per command. Return partial state on timeout. |
+| Test output format changes | Parsers are best-effort. Return null if no pattern matches. |
+| Non-standard git status output | Use `--porcelain=v1` for stable output format. |
 
 ## Review Guidance
 
-- Verify each collector handles errors without throwing (returns defaults/null/partial)
-- Verify git collector uses `execFile` not `exec` (security)
-- Verify test results parser caps `failingTests` at 20
-- Verify DecisionTracker preserves chronological order
-- Verify DecisionTracker validates that `resolve()` fails gracefully for non-existent IDs
-- Verify all git commands use `cwd: projectRoot`
+- Verify git collector works in a real git repo with commits, branches, upstream
+- Verify git collector returns defaults when git is not available
+- Verify file collector correctly categorizes staged/unstaged/untracked
+- Verify test parser handles vitest, jest, phpunit, and pytest output samples
+- Verify decision carry-forward preserves pending decisions across calls
+- Verify NO collector ever throws an exception
 
 ## Activity Log
 
-- 2026-02-16T19:42:12Z -- system -- lane=planned -- Prompt created.
+- 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.

@@ -1,27 +1,29 @@
 ---
-work_package_id: "WP02"
+work_package_id: WP02
+title: State Store
+lane: planned
+dependencies:
+- WP01
 subtasks:
-  - "T005"
-  - "T006"
-  - "T007"
-title: "State Store & Retention"
-phase: "Phase 0 - Foundation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
-dependencies: ["WP01"]
+- T005
+- T006
+- T007
+- T008
+phase: Phase 1 - Foundation
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-02-16T19:42:12Z"
-    lane: "planned"
-    agent: "system"
-    shell_pid: ""
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-02-17T03:14:10Z'
+  lane: planned
+  agent: system
+  shell_pid: ''
+  action: Prompt generated via /spec-kitty.tasks (MCP-first architecture)
 ---
 
-# Work Package Prompt: WP02 -- State Store & Retention
+# Work Package Prompt: WP02 -- State Store
 
 ## IMPORTANT: Review Feedback Status
 
@@ -49,140 +51,186 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 ## Objectives & Success Criteria
 
-- Implement the on-disk state store with atomic writes (temp file + rename)
-- Support reading the latest snapshot, listing all snapshots, and querying by criteria
-- Enforce retention policy (7-day window + 50MB cap, oldest-first pruning)
-- Detect when stored state diverges from the live git state
-- **Done when**: Can write a snapshot, read it back, list snapshots, prune old ones, and detect divergence from live git state
+- Implement atomic read/write of snapshot JSON files to disk
+- Create snapshot listing with date, event, and branch filters
+- Initialize per-project state directory structure
+- Detect divergence between stored state and live project state
+- **Done when**: Can write a snapshot atomically, read it back, list/filter snapshots, detect branch divergence
 
 ## Context & Constraints
 
-- **Data Model**: `kitty-specs/002-session-context-management/data-model.md`
-- **Research**: `kitty-specs/002-session-context-management/research.md` (R2: atomic writes, R3: project hash)
-- **Contracts**: `kitty-specs/002-session-context-management/contracts/state-api.md`
-- **Storage path**: `~/.jawn-ai/projects/<hash>/snapshots/<timestamp>.json`
-- **Atomic writes**: Write to `.tmp` suffix in same directory, then `fs.rename()` (POSIX-atomic) -- Research R2
-- **Retention**: 7-day default + 50MB safety cap. Snapshots are 2-10KB each. Retention runs inline after each write.
-- **Concurrent access**: Use a lockfile in the state directory to prevent concurrent writes. Reads are always safe (atomic writes guarantee consistency).
-- **Depends on WP01**: Uses types from `core/types.ts`, schemas from `core/schema.ts`, and `getStateDir`/`ensureStateDir` from `core/config.ts`
+- **Plan**: Storage at `~/.jawn-ai/projects/<project-hash>/snapshots/`
+- **Data Model**: `data-model.md` — Snapshot entity, ProjectContext.hash
+- **Spec FR-006**: Survive dirty exits (atomic writes ensure this)
+- **Spec FR-009**: Handle concurrent sessions (locking deferred to WP09, atomic writes prevent corruption)
+- **Spec FR-011**: Fall back gracefully on corrupted/missing state
+- **Performance**: Snapshot write <100ms (non-blocking)
+- **Depends on**: WP01 (types, schemas, config)
 
 **Implementation command**: `spec-kitty implement WP02 --base WP01`
 
 ## Subtasks & Detailed Guidance
 
-### Subtask T005 -- Implement state store (atomic write, read, list)
+### Subtask T005 -- Atomic snapshot write
 
-- **Purpose**: The state store is the persistence layer that all commands and tools write to and read from. Reliability is critical -- corrupted state defeats the entire feature.
+- **Purpose**: Write snapshot files atomically so crashes mid-write never produce corrupted files. This is the foundation of crash safety (FR-006).
 - **Steps**:
-  1. Create `src/state/store.ts` with the following interface:
+  1. Create `src/state/store.ts`:
      ```typescript
-     export interface StateStore {
-       write(snapshot: Snapshot): Promise<void>;
-       readLatest(): Promise<Snapshot | null>;
-       readById(id: string): Promise<Snapshot | null>;
-       list(options?: { since?: Date; until?: Date; event?: EventType; branch?: string; limit?: number }): Promise<SnapshotSummary[]>;
+     export class StateStore {
+       constructor(private stateDir: string) {}
+
+       async write(snapshot: Snapshot): Promise<string>;
+       async readLatest(): Promise<Snapshot | null>;
+       async readById(id: string): Promise<Snapshot | null>;
+       async list(filter?: SnapshotFilter): Promise<SnapshotSummary[]>;
      }
      ```
-  2. Implement `SnapshotSummary` type (lightweight): `{ id, timestamp, event, branch, commitMessage }`
-  3. Implement `write()`:
-     - Generate filename from timestamp: `YYYY-MM-DDTHH-MM-SS.json` (replace colons with hyphens for filesystem safety)
-     - Serialize snapshot to JSON with 2-space indentation
-     - Validate against `SnapshotSchema` before writing (reject invalid snapshots)
-     - Check file size does not exceed 1MB safety limit
-     - Write to `<snapshots-dir>/<timestamp>.tmp`
-     - `fs.rename()` the `.tmp` file to the final `.json` filename
-     - Acquire lockfile before write, release after rename
-  4. Implement `readLatest()`:
-     - List all `.json` files in snapshots directory
-     - Sort by filename (timestamps sort lexicographically)
-     - Read and validate the newest file
-     - If validation fails, try the next newest (skip corrupt snapshots per FR-011)
-     - Return `null` if no valid snapshots exist
-  5. Implement `readById()`:
-     - Scan filenames for matching ID (each snapshot has an `id` field)
-     - Read and validate the matching file
-  6. Implement `list()`:
-     - Read all snapshot files (stat for timestamps, parse only metadata fields)
-     - Filter by `since`, `until`, `event`, `branch` criteria
-     - Sort by timestamp descending
-     - Apply `limit` (default 10)
-     - Return `SnapshotSummary[]` (not full snapshots -- for performance)
-  7. Use a simple lockfile mechanism: create `<state-dir>/snapshot.lock` with PID. Check for stale locks (PID no longer running). Timeout after 5 seconds.
+  2. `write()` implementation:
+     - Validate snapshot with `SnapshotSchema.parse()` — reject invalid data before writing
+     - Generate filename: `<ISO-timestamp>.json` (replace colons with dashes for filesystem safety)
+     - If filename already exists (rapid snapshots), append `-<cuid2-suffix>`
+     - Write to a temp file: `<filename>.tmp` in the snapshots directory
+     - Use `fs.writeFile()` with `JSON.stringify(snapshot, null, 2)` for readability
+     - Rename temp file to final filename with `fs.rename()` (atomic on same filesystem)
+     - Return the snapshot ID
+  3. Ensure the snapshots directory exists before writing (create if missing)
+  4. Never throw on write failure — log error, return gracefully
 
 - **Files**:
   - `jawn-ai-state/src/state/store.ts` (new)
-  - `jawn-ai-state/src/index.ts` (update exports)
 
-- **Parallel?**: No -- T006 and T007 depend on the store interface.
-- **Notes**: Never throw on read errors -- return `null` or empty arrays. Log warnings for corrupt/unreadable files. Use `cuid2` for snapshot IDs (add `@paralleldrive/cuid2` to dependencies).
+- **Parallel?**: No -- T006 depends on the write pattern being established.
 
 ---
 
-### Subtask T006 -- Implement retention policy
+### Subtask T006 -- Snapshot read and listing
 
-- **Purpose**: Prevent unbounded disk growth. Snapshots are cheap (2-10KB) but accumulate over weeks of active work.
+- **Purpose**: Read snapshots back from disk — latest, by ID, or filtered list. This is used by `get_context` (latest), `save_state` (carry-forward decisions), and future query features.
 - **Steps**:
-  1. Create `src/state/retention.ts` with:
+  1. Add to `src/state/store.ts`:
      ```typescript
-     export async function enforceRetention(
-       snapshotsDir: string,
-       config: { retentionDays: number; retentionMaxBytes: number }
-     ): Promise<{ pruned: number; freedBytes: number }>;
-     ```
-  2. Implementation:
-     - List all `.json` files in `snapshotsDir` with `fs.stat()` for size and mtime
-     - Calculate total size
-     - **Time-based pruning**: Delete files older than `retentionDays` (7 default)
-     - **Size-based pruning**: If total size still exceeds `retentionMaxBytes` (50MB default), delete oldest files until under the cap
-     - Always keep at least the 1 most recent snapshot (never prune everything)
-     - Return count of pruned files and freed bytes for logging
-  3. Integrate with the store's `write()` method: call `enforceRetention()` after each successful write
-  4. Handle filesystem errors gracefully (log and continue if a file can't be deleted)
-
-- **Files**:
-  - `jawn-ai-state/src/state/retention.ts` (new)
-
-- **Parallel?**: Yes -- can develop alongside T007 once T005 establishes the store.
-- **Notes**: Retention runs inline (not as a separate process). It's fast because it only does `stat()` + `unlink()`. The 50MB cap is a safety net -- typical usage is 5-10MB for a week of active work.
-
----
-
-### Subtask T007 -- Implement divergence detection
-
-- **Purpose**: Detect when the stored state no longer matches the live project state (e.g., user switched branches in a separate terminal). Supports FR-012.
-- **Steps**:
-  1. Create `src/state/divergence.ts` with:
-     ```typescript
-     export interface DivergenceReport {
-       isDiverged: boolean;
-       fields: DivergenceField[];
+     export interface SnapshotFilter {
+       since?: string;     // ISO 8601
+       until?: string;     // ISO 8601
+       event?: EventType;
+       branch?: string;
+       limit?: number;     // default: 10
      }
 
-     export interface DivergenceField {
-       field: string;         // e.g., "branch", "commitHash", "hasUncommittedChanges"
-       stored: string;        // value from snapshot
-       actual: string;        // value from live git
+     export interface SnapshotSummary {
+       id: string;
+       timestamp: string;
+       event: EventType;
+       branch: string;
+       commitMessage: string;
+     }
+     ```
+  2. `readLatest()`:
+     - List all `.json` files in snapshots directory (not `.tmp` files)
+     - Sort by filename descending (timestamps are sortable)
+     - Read and parse the first valid file
+     - If the first file is corrupted (invalid JSON or schema), log warning and try next
+     - Return null if no valid snapshots exist
+  3. `readById()`:
+     - Scan filenames or read all and match by `id` field
+     - Return null if not found
+  4. `list()`:
+     - Read all snapshot files (or use filename timestamps for pre-filtering)
+     - Apply filters: since/until (timestamp range), event type, branch name
+     - Return `SnapshotSummary` objects (not full snapshots — performance)
+     - Apply limit (default 10)
+     - Sort by timestamp descending (newest first)
+  5. Handle corrupted files: skip with warning, never crash
+
+- **Files**:
+  - `jawn-ai-state/src/state/store.ts` (update)
+
+- **Parallel?**: No -- depends on T005 write pattern.
+- **Notes**: For the listing, consider reading only the first few lines of each file (id, timestamp, event, branch) rather than parsing the entire snapshot. But for v1, full parse is fine given small file sizes (2-10KB).
+
+---
+
+### Subtask T007 -- State directory initialization
+
+- **Purpose**: Create the per-project state directory structure when a project is first set up. Also used to create shared state directories.
+- **Steps**:
+  1. Create a utility function in `src/state/store.ts` or separate `src/state/init.ts`:
+     ```typescript
+     export async function initStateDirectory(projectRoot: string): Promise<string>;
+     export function getProjectHash(projectRoot: string): string;
+     export function getStateDir(projectRoot: string): string;
+     ```
+  2. `getProjectHash()`: SHA256 of the absolute, normalized project root path. Take first 16 hex chars.
+  3. `getStateDir()`: Returns `~/.jawn-ai/projects/<hash>/`
+  4. `initStateDirectory()`:
+     - Compute project hash
+     - Create directory tree:
+       ```
+       ~/.jawn-ai/
+       └── projects/
+           └── <hash>/
+               ├── snapshots/
+               ├── shared/
+               │   ├── incoming/
+               │   └── outgoing/
+               └── config.json    (empty defaults if not exists)
+       ```
+     - Also create `.jawn-ai/` in project root if it doesn't exist:
+       ```
+       .jawn-ai/
+       ├── config.json      (empty defaults if not exists)
+       └── canonical.json   (empty { "documents": {} } if not exists)
+       ```
+     - Use `fs.mkdir` with `{ recursive: true }` for safe creation
+     - Return the state directory path
+  5. Export from `src/index.ts`
+
+- **Files**:
+  - `jawn-ai-state/src/state/store.ts` or `src/state/init.ts` (new/update)
+  - `jawn-ai-state/src/index.ts` (update exports)
+
+- **Parallel?**: Yes -- independent of T005/T006.
+
+---
+
+### Subtask T008 -- Divergence detection
+
+- **Purpose**: Detect when the stored snapshot no longer matches the live project state. Used by `get_context` to warn Claude that the state has changed since the last snapshot.
+- **Steps**:
+  1. Create `src/state/divergence.ts`:
+     ```typescript
+     export interface DivergenceReport {
+       diverged: boolean;
+       changes: DivergenceChange[];
+     }
+
+     export interface DivergenceChange {
+       field: string;           // 'branch', 'commitHash', 'files'
+       stored: string;          // value from snapshot
+       live: string;            // current value
+       severity: 'info' | 'warning' | 'critical';
      }
 
      export async function detectDivergence(
        snapshot: Snapshot,
-       liveGitState: GitState
+       liveGit: GitState,
+       liveFiles: FileState
      ): Promise<DivergenceReport>;
      ```
-  2. Compare the following fields between `snapshot.git` and `liveGitState`:
-     - `branch` (most critical -- wrong-branch work is the #1 pain point)
-     - `commitHash` (indicates new commits since snapshot)
-     - `hasUncommittedChanges` (indicates new or discarded changes)
-     - `isDetached` (detached HEAD state changed)
-  3. Return a `DivergenceReport` with specific field-level diffs
-  4. The caller (restore/status commands) decides how to present divergence to the user
+  2. Compare fields:
+     - Branch changed: **critical** (might commit to wrong branch)
+     - Commit hash changed: **warning** (someone committed outside the session)
+     - Modified files changed: **info** (files were edited outside the session)
+  3. Return `{ diverged: false, changes: [] }` if no divergence
+  4. Export from `src/index.ts`
 
 - **Files**:
   - `jawn-ai-state/src/state/divergence.ts` (new)
   - `jawn-ai-state/src/index.ts` (update exports)
 
-- **Parallel?**: Yes -- can develop alongside T006. Depends on T005 for Snapshot type but not for the store itself.
-- **Notes**: This module does NOT collect live git state -- it receives it as a parameter. The git collector (WP03 T008) provides the live state. This keeps divergence detection pure and easy to test.
+- **Parallel?**: No -- depends on T005/T006 for reading stored snapshot, and on WP03 collectors for live state. But the function itself can be written against the types.
+- **Notes**: Divergence detection is called by `get_context` MCP tool (WP06). The function is pure — it takes a snapshot and live state as inputs, not fetching them itself.
 
 ---
 
@@ -190,21 +238,20 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 | Risk | Mitigation |
 |------|-----------|
-| Concurrent writes from multiple hooks | Lockfile with PID tracking and stale lock detection |
-| Partial writes on crash | Atomic write pattern: temp file + rename |
-| Snapshot directory doesn't exist | `ensureStateDir()` from config module creates it |
-| Corrupt snapshot blocks restore | `readLatest()` skips corrupt files, tries next |
-| Retention deletes actively-used snapshot | Always keep at least 1 most recent snapshot |
+| Atomic rename fails on cross-filesystem | Temp file in same directory as target. `fs.rename` is atomic on same FS. |
+| Rapid snapshots produce filename collisions | Append CUID2 suffix when timestamp collides. |
+| Large snapshots directory slows listing | Snapshots are 2-10KB. Thousands before perf matters. Defer optimization. |
+| Corrupted snapshot blocks restore | Skip corrupted files, try next valid one. Log warning. |
 
 ## Review Guidance
 
-- Verify atomic write pattern: write to `.tmp`, then `fs.rename()` -- never write directly to final filename
-- Verify lockfile handles stale locks (check if PID is still running)
-- Verify retention never deletes the most recent snapshot
-- Verify `readLatest()` gracefully handles corrupt files (skip, try next)
-- Verify `list()` doesn't read full snapshot content (performance -- use stat/metadata only)
-- Verify all filesystem operations handle errors without throwing
+- Verify atomic write pattern: if process is killed mid-write, no corrupted `.json` files exist (only `.tmp` stubs)
+- Verify `readLatest()` skips corrupted files and returns the next valid snapshot
+- Verify `list()` filters work: date range, event type, branch, limit
+- Verify directory initialization creates all expected directories
+- Verify `getProjectHash()` is deterministic for the same path
+- Verify all functions handle missing directories gracefully (create on demand)
 
 ## Activity Log
 
-- 2026-02-16T19:42:12Z -- system -- lane=planned -- Prompt created.
+- 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.

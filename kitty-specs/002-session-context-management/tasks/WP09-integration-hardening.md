@@ -2,25 +2,25 @@
 work_package_id: WP09
 title: Integration & Hardening
 lane: planned
-dependencies:
-- WP01
+dependencies: []
 subtasks:
+- T034
 - T035
 - T036
 - T037
 - T038
-phase: Phase 4 - Polish
+phase: Phase 3 - Integration & Hardening
 assignee: ''
 agent: ''
 shell_pid: ''
 review_status: ''
 reviewed_by: ''
 history:
-- timestamp: '2026-02-16T19:42:12Z'
+- timestamp: '2026-02-17T03:14:10Z'
   lane: planned
   agent: system
   shell_pid: ''
-  action: Prompt generated via /spec-kitty.tasks
+  action: Prompt generated via /spec-kitty.tasks (MCP-first architecture)
 ---
 
 # Work Package Prompt: WP09 -- Integration & Hardening
@@ -51,240 +51,277 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 ## Objectives & Success Criteria
 
-- Verify full snapshot -> restore cycle works end-to-end in a real git repository
-- Verify hooks fire correctly and produce valid snapshots
-- Implement concurrent session handling (file locking, stale lock detection)
-- Harden error handling across all components (corrupted files, missing git, partial state)
-- **Done when**: E2E tests pass; concurrent sessions don't corrupt state; errors are logged but never block the user
+- Verify full system works end-to-end: MCP tools + companion service + state store
+- Implement concurrent session handling with file locking
+- Harden error handling across all components
+- Add logging infrastructure
+- **Done when**: E2E tests pass; concurrent sessions don't corrupt state; errors are logged but never block the user; all components degrade gracefully
 
 ## Context & Constraints
 
 - **Spec FR-006**: Survive dirty exits (crash, force-quit)
 - **Spec FR-009**: Handle concurrent sessions without data loss
-- **Spec FR-011**: Fall back gracefully on corrupted/missing/stale state
+- **Spec FR-011**: Fall back gracefully on corrupted/missing/stale state — NEVER block session start
 - **Spec SC-005**: After simulated crash, next session recovers state no more than one event behind
 - **Quickstart**: `quickstart.md` verification section defines the E2E acceptance flow
-- **Depends on**: ALL previous WPs (WP01-WP08) -- this is the integration layer
+- **Golden rule**: Errors in state capture must not block the developer's work. Log, return gracefully.
+- **Depends on**: ALL Phase 2 packages (WP06, WP07, WP08)
 
 **Implementation command**: `spec-kitty implement WP09 --base WP08`
 
-(Note: WP09 depends on all prior WPs. Use `--base WP08` as the last WP in the chain.)
+(Note: WP09 depends on all Phase 2 WPs. Use `--base WP08` as the latest dependency.)
 
 ## Subtasks & Detailed Guidance
 
-### Subtask T035 -- End-to-end integration test
+### Subtask T034 -- MCP tools integration tests
 
-- **Purpose**: Verify the full lifecycle works: init -> snapshot -> restore -> status -> canonical -> share -> load. This is the acceptance test for the entire feature.
+- **Purpose**: Verify the full MCP tool lifecycle works end-to-end in a real git repository: get_context → save_state → verify_action → check_canonical → share_state.
 - **Steps**:
-  1. Create `tests/integration/cli.test.ts` with:
+  1. Create `tests/integration/mcp-tools.test.ts`:
      ```typescript
-     describe('jawn-ai CLI E2E', () => {
+     describe('MCP Tools E2E', () => {
        let tempDir: string;
        let projectRoot: string;
+       let server: Server;
 
        beforeEach(async () => {
-         // Create temp directory
-         // Initialize a git repo with initial commit
-         // Run jawn-ai config init
+         // Create temp directory with fresh git repo
+         // Set HOME to temp location (isolate ~/.jawn-ai/)
+         // Initialize state directory
+         // Create MCP server for the project
        });
 
        afterEach(async () => {
+         // Stop server
          // Clean up temp directory
        });
 
-       test('snapshot -> restore cycle', async () => {
-         // 1. Make a git commit
-         // 2. Run jawn-ai snapshot --event=commit
-         // 3. Verify snapshot file exists in ~/.jawn-ai/projects/<hash>/snapshots/
-         // 4. Run jawn-ai restore
-         // 5. Verify output includes branch, commit hash, commit message
+       test('get_context returns live state when no snapshots exist', async () => {
+         // Call get_context
+         // Verify response has git state (branch, commit) but null tests/decisions
        });
 
-       test('status shows live context', async () => {
-         // 1. Create a snapshot
-         // 2. Switch branches
-         // 3. Run jawn-ai status
-         // 4. Verify divergence warning (branch changed)
+       test('save_state → get_context round-trip', async () => {
+         // Make a git commit
+         // Call save_state with event=commit
+         // Call get_context
+         // Verify response includes the commit
        });
 
-       test('canonical workflow', async () => {
-         // 1. Create a test file
-         // 2. jawn-ai canonical add "test-doc" path/to/file
-         // 3. jawn-ai canonical check path/to/file -> isCanonical: true
-         // 4. jawn-ai canonical check other/path/to/file -> warning
-         // 5. jawn-ai canonical list -> shows declaration
+       test('verify_action catches branch mismatch', async () => {
+         // Save state on feature branch
+         // Switch to main
+         // Call verify_action with action=commit
+         // Verify warning about branch mismatch
        });
 
-       test('share -> load workflow', async () => {
-         // 1. Create a snapshot
-         // 2. jawn-ai share --note "test note"
-         // 3. Verify shared file exists
-         // 4. jawn-ai load <shared-file-path>
-         // 5. Verify output includes sharer note
+       test('check_canonical declare and check', async () => {
+         // Create a test file
+         // Call check_canonical with action=declare
+         // Call check_canonical with action=check on canonical path → isCanonical: true
+         // Call check_canonical with action=check on different path → isCanonical: false
        });
 
-       test('config init creates required files', async () => {
-         // Verify .jawn-ai/config.json exists
-         // Verify .jawn-ai/canonical.json exists
-         // Verify ~/.jawn-ai/projects/<hash>/ exists
-       });
-     });
-     ```
-  2. Each test should:
-     - Use a temporary directory with a fresh git repo
-     - Run CLI commands via `execFile` (testing the actual binary)
-     - Validate output format matches contracts
-     - Clean up after itself
-  3. Follow the verification flow from `quickstart.md`
-
-- **Files**:
-  - `jawn-ai-state/tests/integration/cli.test.ts` (new)
-
-- **Parallel?**: Yes -- can develop alongside T036.
-- **Notes**: Use `os.tmpdir()` for temp directories. Set `HOME` environment variable to a temp location to avoid polluting real `~/.jawn-ai/`. Each test must be fully isolated.
-
----
-
-### Subtask T036 -- Hook integration test
-
-- **Purpose**: Verify that Claude Code hooks correctly trigger snapshots on the right events.
-- **Steps**:
-  1. Create `tests/integration/hook-integration.test.ts`:
-     ```typescript
-     describe('Hook Integration', () => {
-       test('hooks install creates correct settings.json', async () => {
-         // 1. Create a project with .claude/ directory
-         // 2. Run jawn-ai hooks install --platform=claude-code
-         // 3. Read .claude/settings.json
-         // 4. Verify SessionStart, PostToolUse, Stop hooks are present
-         // 5. Verify hook scripts reference the correct binary path
+       test('share_state export and import', async () => {
+         // Save a snapshot
+         // Call share_state with action=export and a note
+         // Verify shared file exists
+         // Call share_state with action=import on the shared file
+         // Verify sharer note is returned
        });
 
-       test('session-start hook runs restore', async () => {
-         // 1. Create a snapshot
-         // 2. Execute the session-start hook script directly
-         // 3. Verify output matches restore format
-       });
-
-       test('post-tool-use hook captures commit snapshot', async () => {
-         // 1. Execute the post-tool-use hook with git commit args
-         // 2. Verify a new snapshot was created with event=commit
-       });
-
-       test('post-tool-use hook captures branch-switch snapshot', async () => {
-         // 1. Execute the post-tool-use hook with git checkout args
-         // 2. Verify a new snapshot was created with event=branch-switch
-       });
-
-       test('session-end hook captures final snapshot', async () => {
-         // 1. Execute the session-end hook script
-         // 2. Verify a new snapshot was created with event=session-end
-       });
-
-       test('hooks install preserves existing hooks', async () => {
-         // 1. Create .claude/settings.json with existing hooks
-         // 2. Run jawn-ai hooks install
-         // 3. Verify existing hooks are still present
-         // 4. Verify jawn-ai hooks were added
-       });
-
-       test('hooks uninstall removes only jawn-ai hooks', async () => {
-         // 1. Install jawn-ai hooks alongside existing hooks
-         // 2. Run jawn-ai hooks uninstall
-         // 3. Verify jawn-ai hooks removed
-         // 4. Verify existing hooks still present
+       test('full lifecycle', async () => {
+         // 1. get_context (empty)
+         // 2. Make commit, save_state
+         // 3. get_context (has commit)
+         // 4. Declare canonical doc
+         // 5. verify_action (branch check passes)
+         // 6. Share state
+         // 7. Load shared state
        });
      });
      ```
-  2. Test hook scripts by executing them directly with simulated arguments
-  3. Verify hooks never fail (always exit 0)
+  2. Each test:
+     - Uses isolated temp directory with fresh git repo
+     - Calls tool handlers directly (not via stdio — faster and more controllable)
+     - Validates response format matches `contracts/state-api.md`
+     - Cleans up after itself
 
 - **Files**:
-  - `jawn-ai-state/tests/integration/hook-integration.test.ts` (new)
+  - `jawn-ai-state/tests/integration/mcp-tools.test.ts` (new)
 
-- **Parallel?**: Yes -- can develop alongside T035.
-- **Notes**: Hook scripts are shell scripts -- test them by running with `bash -c` or `execFile`. The key assertion for every hook: it must exit 0 even on error.
+- **Parallel?**: Yes -- independent of T035.
 
 ---
 
-### Subtask T037 -- Concurrent session handling
+### Subtask T035 -- Companion service integration tests
 
-- **Purpose**: Ensure multiple sessions writing to the same state store don't corrupt data. This is critical for developers running multiple terminal windows.
+- **Purpose**: Verify the companion service detects events and captures snapshots automatically.
 - **Steps**:
-  1. Create or enhance `src/state/store.ts` with robust locking:
+  1. Create `tests/integration/service.test.ts`:
      ```typescript
-     // Lockfile: <state-dir>/snapshot.lock
+     describe('Companion Service Integration', () => {
+       test('detects git commit and captures snapshot', async () => {
+         // Start watcher on temp git repo
+         // Make a commit (modify .git/refs/heads/main)
+         // Wait for debounce period
+         // Verify a snapshot was created
+       });
+
+       test('detects branch switch and captures snapshot', async () => {
+         // Start watcher
+         // Switch branches (modify .git/HEAD)
+         // Wait for debounce
+         // Verify snapshot with event=branch-switch
+       });
+
+       test('debounces rapid events', async () => {
+         // Start watcher
+         // Trigger 5 rapid file changes within 1 second
+         // Wait for debounce period
+         // Verify only 1 snapshot was created (not 5)
+       });
+
+       test('IPC health check works', async () => {
+         // Start service
+         // Call checkServiceHealth
+         // Verify returns true with status info
+       });
+
+       test('IPC capture request works', async () => {
+         // Start service
+         // Call requestCapture
+         // Verify new snapshot was created
+       });
+
+       test('graceful shutdown cleans up', async () => {
+         // Start service
+         // Verify PID file exists
+         // Send SIGTERM
+         // Verify PID and port files removed
+       });
+     });
+     ```
+  2. Use short debounce periods in tests (100ms instead of 500ms) for speed
+  3. Tests must clean up watchers and servers to avoid resource leaks
+
+- **Files**:
+  - `jawn-ai-state/tests/integration/service.test.ts` (new)
+
+- **Parallel?**: Yes -- independent of T034.
+
+---
+
+### Subtask T036 -- Concurrent session handling
+
+- **Purpose**: Ensure multiple sessions writing to the same state store don't corrupt data. Critical for developers with multiple terminal windows.
+- **Steps**:
+  1. Add file locking to `src/state/store.ts`:
+     ```typescript
+     // Lockfile: <state-dir>/snapshots/write.lock
      // Contains: { pid: number, timestamp: string }
-     // Timeout: 5 seconds (acquire lock or give up)
-     // Stale detection: Check if PID is still running (process.kill(pid, 0))
+     // Strategy:
+     //   1. Try atomic create (O_CREAT | O_EXCL)
+     //   2. If exists, check PID alive
+     //   3. If stale, remove and retry
+     //   4. If alive, wait up to 5s (100ms polling)
+     //   5. If timeout, give up gracefully (log warning, skip write)
      ```
   2. Implement lock acquisition:
-     - Try to create lockfile with `O_CREAT | O_EXCL` (atomic creation)
-     - If file exists, check if PID is still running
-     - If PID is dead (stale lock), remove and retry
-     - If PID is alive, wait up to 5 seconds with 100ms polling
-     - If timeout, give up gracefully (log warning, don't write) -- FR-011 never blocks
-  3. Implement lock release:
-     - Remove lockfile after write completes
-     - Use try/finally to ensure release even on error
-  4. Create `tests/unit/concurrent.test.ts`:
-     - Test concurrent writes don't corrupt the snapshot directory
-     - Test stale lock detection works
-     - Test lock timeout behavior
-     - Simulate concurrent writes using Promise.all with multiple store.write() calls
+     ```typescript
+     async function acquireLock(lockPath: string, timeoutMs: number): Promise<boolean>;
+     async function releaseLock(lockPath: string): Promise<void>;
+     ```
+  3. Wrap `StateStore.write()` with lock:
+     ```typescript
+     async write(snapshot: Snapshot): Promise<string | null> {
+       const locked = await acquireLock(this.lockPath, 5000);
+       if (!locked) {
+         console.error('[jawn-ai] Could not acquire write lock, skipping snapshot');
+         return null;
+       }
+       try {
+         // ... existing write logic ...
+       } finally {
+         await releaseLock(this.lockPath);
+       }
+     }
+     ```
+  4. Key invariant: even without locking, atomic writes (temp + rename) prevent corruption. Locking prevents duplicate/missed snapshots, not data corruption.
+  5. Never block the user — if lock can't be acquired, skip the write silently
 
 - **Files**:
-  - `jawn-ai-state/src/state/store.ts` (update -- add/enhance locking)
-  - `jawn-ai-state/tests/unit/concurrent.test.ts` (new)
+  - `jawn-ai-state/src/state/store.ts` (update — add locking)
 
-- **Parallel?**: Yes -- can develop alongside T038.
-- **Notes**: The locking doesn't need to be perfect -- the worst case is a missed snapshot, which is acceptable (FR-011). The key invariant is: writes never produce corrupted files (atomic write pattern from T005 ensures this regardless of locking).
+- **Parallel?**: No -- modifies the core store.
 
 ---
 
-### Subtask T038 -- Error handling and graceful degradation
+### Subtask T037 -- Error handling audit
 
-- **Purpose**: Ensure every component degrades gracefully when things go wrong. The system must NEVER block the developer's workflow.
+- **Purpose**: Audit all public functions across all modules and ensure graceful degradation. The system must NEVER block the developer's workflow.
 - **Steps**:
-  1. Audit all public functions across all modules for error handling:
-     - **Collectors**: Return partial/default data on error (never throw)
-     - **Store**: Return null on read errors, log on write errors (never throw to caller)
-     - **CLI commands**: Catch all errors, print user-friendly message, exit(1) but NEVER hang
-     - **MCP tools**: Return MCP error responses (never crash server)
-     - **Hooks**: Already protected by `|| true` in templates
+  1. Audit each module category:
+     - **Collectors** (git, files, tests, decisions): Must return partial/default data on error. Never throw.
+     - **State store** (write, read, list): Return null on read errors. Log on write errors. Never throw to caller.
+     - **Canonical** (load, save, check): Return empty declarations if file missing/corrupted. Never throw.
+     - **Sharing** (export, import): Return clear error messages. Never throw unhandled.
+     - **MCP tools**: Wrap in try/catch. Return MCP error responses. Never crash server.
+     - **Companion service**: Log errors. Never crash. Continue running.
   2. Test specific failure scenarios:
-     - Corrupted snapshot file (invalid JSON)
-     - Missing `.jawn-ai/` directory
-     - Git not installed or not a git repo
-     - Disk full during write
-     - Permission denied on state directory
-     - Snapshot file exceeds 1MB size limit
-     - Config file with invalid values
-  3. Create `tests/unit/error-handling.test.ts` with:
-     ```typescript
-     describe('Graceful Degradation', () => {
-       test('corrupted snapshot is skipped, next valid one loaded', ...);
-       test('missing git returns default GitState', ...);
-       test('missing state directory is created on first write', ...);
-       test('invalid config values use defaults', ...);
-       test('oversized snapshot is rejected with warning', ...);
-       test('restore with no snapshots prints friendly message', ...);
-     });
-     ```
-  4. Add a logging utility (simple stderr logger with levels):
-     ```typescript
-     export function logWarn(message: string): void;  // Always show
-     export function logDebug(message: string): void; // Only in verbose mode
-     export function logError(message: string): void; // Always show
-     ```
+     - Corrupted snapshot file (invalid JSON) → skip, load next valid
+     - Missing `.jawn-ai/` directory → create on demand
+     - Git not installed or not a git repo → return defaults
+     - Permission denied on state directory → log warning, degrade
+     - Snapshot file exceeds schema validation → reject with warning, skip
+     - Config file with invalid values → use defaults for invalid fields
+  3. Create `tests/unit/error-handling.test.ts` with tests for each scenario
+  4. Fix any functions that throw on expected error conditions
 
 - **Files**:
   - Various modules (updates for error handling)
-  - `jawn-ai-state/src/utils/logger.ts` (new -- simple logging utility)
   - `jawn-ai-state/tests/unit/error-handling.test.ts` (new)
 
-- **Parallel?**: Yes -- can develop alongside T037.
-- **Notes**: The golden rule from the spec: **errors in state capture must not block the developer's work**. Log the error, return gracefully. This applies to every single public function. When in doubt, fail silently rather than crash.
+- **Parallel?**: Yes -- can develop alongside T036 and T038.
+
+---
+
+### Subtask T038 -- Logging utility
+
+- **Purpose**: Centralize logging with levels, stderr output, and verbose mode. Used by all components.
+- **Steps**:
+  1. Create `src/utils/logger.ts`:
+     ```typescript
+     export enum LogLevel {
+       ERROR = 0,
+       WARN = 1,
+       INFO = 2,
+       DEBUG = 3,
+     }
+
+     let currentLevel: LogLevel = LogLevel.WARN;
+
+     export function setLogLevel(level: LogLevel): void;
+     export function logError(message: string, error?: Error): void;
+     export function logWarn(message: string): void;
+     export function logInfo(message: string): void;
+     export function logDebug(message: string): void;
+     ```
+  2. All output goes to stderr (`console.error`), never stdout
+  3. Format: `[jawn-ai] [LEVEL] message`
+  4. `logError` includes stack trace in debug mode
+  5. Default level: WARN (show errors and warnings)
+  6. Environment variable `JAWN_AI_LOG_LEVEL` to override (ERROR, WARN, INFO, DEBUG)
+  7. Verbose mode (DEBUG) shows collector timing, snapshot sizes, file paths
+  8. Export from `src/index.ts`
+  9. Update existing modules to use the logger instead of direct `console.error`
+
+- **Files**:
+  - `jawn-ai-state/src/utils/logger.ts` (new)
+  - `jawn-ai-state/src/index.ts` (update exports)
+  - Various modules (update to use logger)
+
+- **Parallel?**: Yes -- independent utility.
 
 ---
 
@@ -292,20 +329,22 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 | Risk | Mitigation |
 |------|-----------|
-| Flaky tests from filesystem timing | Use proper async/await. Add small delays where needed. Use isolated temp dirs. |
+| Flaky tests from filesystem timing | Use proper async/await. Add small delays where needed. Isolated temp dirs. |
 | Platform differences (macOS vs Linux vs WSL2) | Primary target is macOS. Document known differences. |
-| Lock contention under heavy use | 5-second timeout with graceful fallback. Locks are held for <100ms. |
-| Error handling audit misses edge cases | Structure audit by module. Create a checklist of failure scenarios. |
+| Lock contention under heavy use | 5-second timeout with graceful fallback. Locks held for <100ms. |
+| Error handling audit misses edge cases | Structure audit by module. Create checklist of failure scenarios. |
+| Logging too verbose | Default to WARN level. Only show errors and warnings unless explicitly set to DEBUG. |
 
 ## Review Guidance
 
-- Run E2E tests and verify they pass in a clean environment
-- Verify ALL hook scripts exit 0 even when jawn-ai binary is missing
+- Run integration tests and verify they pass in a clean environment
 - Verify concurrent write test actually tests concurrency (not sequential)
-- Verify corrupted snapshot handling (manually corrupt a file and test restore)
-- Verify the golden rule: no error path blocks the developer
-- Check that logging goes to stderr (not stdout) to avoid interfering with CLI output or MCP protocol
+- Verify corrupted snapshot handling (manually corrupt a file and test read)
+- Verify the golden rule: NO error path blocks the developer
+- Verify all logging goes to stderr (not stdout)
+- Verify service graceful degradation (kill -9 then restart)
+- Verify SC-005: after simulated crash, next session recovers state no more than one event behind
 
 ## Activity Log
 
-- 2026-02-16T19:42:12Z -- system -- lane=planned -- Prompt created.
+- 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
