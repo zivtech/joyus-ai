@@ -66,3 +66,9 @@ export type { SnapshotFilter, SnapshotSummary } from './state/store.js';
 // --- Divergence detection ---
 export { detectDivergence } from './state/divergence.js';
 export type { DivergenceReport, DivergenceChange } from './state/divergence.js';
+
+// --- Collectors ---
+export { collectGitState } from './collectors/git.js';
+export { collectFileState } from './collectors/files.js';
+export { parseTestResults } from './collectors/tests.js';
+export { carryForwardDecisions } from './collectors/decisions.js';
