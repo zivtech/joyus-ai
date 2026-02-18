@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: State Store
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP01
 base_branch: 002-session-context-management-WP01
@@ -14,7 +14,7 @@ subtasks:
 - T008
 phase: Phase 1 - Foundation
 assignee: ''
-agent: ''
+agent: "claude-opus"
 shell_pid: "24754"
 review_status: ''
 reviewed_by: ''
@@ -258,3 +258,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Activity Log
 
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T22:47:57Z – claude-opus – shell_pid=24754 – lane=for_review – Moved to for_review
