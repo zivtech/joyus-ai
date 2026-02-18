@@ -28,10 +28,10 @@
 **Prompt**: `tasks/WP01-package-setup-core-types.md`
 
 ### Included Subtasks
-- [ ] T001 Create package scaffolding (package.json, tsconfig.json, vitest config, directory structure)
-- [ ] T002 Define core TypeScript types from data-model.md (Snapshot, EventType, GitState, FileState, etc.)
-- [ ] T003 Create Zod schemas for snapshot format validation
-- [ ] T004 Implement configuration loading (GlobalConfig, ProjectConfig, merging, defaults)
+- [x] T001 Create package scaffolding (package.json, tsconfig.json, vitest config, directory structure)
+- [x] T002 Define core TypeScript types from data-model.md (Snapshot, EventType, GitState, FileState, etc.)
+- [x] T003 Create Zod schemas for snapshot format validation
+- [x] T004 Implement configuration loading (GlobalConfig, ProjectConfig, merging, defaults)
 
 ### Implementation Notes
 - Package name: `joyus-ai-state`. TypeScript 5.3+, Node.js 20+.
