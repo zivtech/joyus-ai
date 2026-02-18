@@ -1,10 +1,13 @@
 ---
 work_package_id: WP06
 title: MCP Tools -- Gates, Branch & Status
-lane: planned
+lane: "doing"
 dependencies:
 - WP03
 - WP05
+base_branch: 004-workflow-enforcement-WP06-merge-base
+base_commit: 0a0a7874eacaee8259976cf86da33da562576c37
+created_at: '2026-02-18T18:00:15.827864+00:00'
 subtasks:
 - T033
 - T034
@@ -14,7 +17,7 @@ subtasks:
 phase: Phase 3 - MCP Tools & Events
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "36767"
 review_status: ''
 reviewed_by: ''
 history:
