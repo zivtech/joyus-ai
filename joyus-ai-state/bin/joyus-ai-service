@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// Stub — implemented in WP08
+console.error('joyus-ai-service: not yet implemented (see WP08)');
+process.exit(1);
