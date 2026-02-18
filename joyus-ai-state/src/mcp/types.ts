@@ -1,5 +1,5 @@
 /**
- * Shared types for MCP tool registration — WP06
+ * Shared types for MCP tool registration — WP06/WP07
  */
 
 export interface ToolContext {
