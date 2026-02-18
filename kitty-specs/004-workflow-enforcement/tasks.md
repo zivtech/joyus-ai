@@ -88,11 +88,11 @@
 **Estimated Size**: ~400 lines
 
 ### Included Subtasks
-- [ ] T014 Implement gate type registry in `joyus-ai-state/src/enforcement/gates/registry.ts`
-- [ ] T015 Implement sequential fail-fast gate runner in `joyus-ai-state/src/enforcement/gates/runner.ts`
-- [ ] T016 Implement gate timeout handling in `joyus-ai-state/src/enforcement/gates/timeout.ts`
-- [ ] T017 Implement gate result mapping to enforcement tiers (always-run/ask-me/skip per user tier)
-- [ ] T018 Integrate gate execution with audit trail logging
+- [x] T014 Implement gate type registry in `joyus-ai-state/src/enforcement/gates/registry.ts`
+- [x] T015 Implement sequential fail-fast gate runner in `joyus-ai-state/src/enforcement/gates/runner.ts`
+- [x] T016 Implement gate timeout handling in `joyus-ai-state/src/enforcement/gates/timeout.ts`
+- [x] T017 Implement gate result mapping to enforcement tiers (always-run/ask-me/skip per user tier)
+- [x] T018 Integrate gate execution with audit trail logging
 
 ### Implementation Notes
 - Gates execute shell commands via `child_process.spawn`
