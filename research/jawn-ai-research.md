@@ -449,6 +449,10 @@ Skills are not just capability enhancers — they're **constraint systems** that
 > - Sonnet for most tasks
 > - Opus for complex reasoning
 
+### Model Routing Cost Insight (2026-02-17 CTO Discussion)
+
+Claude Code's `--opus-plan` flag uses Opus for planning and Sonnet for execution. Internal testing suggests this can reduce token usage by up to 80% compared to running Opus for everything. The joyus-ai mediator should support similar model-tier routing — automatically selecting the appropriate model tier based on operation type. This applies to both human sessions and automated pipelines (e.g., the bug triage pipeline doesn't need Opus for ticket enrichment but may benefit from it for diagnosis).
+
 > **"Best practices for preventing mid-task crashes on business-critical agentic workflows (checkpointing, circuit breakers)"**
 > - Checkpoint after each tool call
 > - Circuit breaker for repeated failures

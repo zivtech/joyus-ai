@@ -189,9 +189,9 @@ Each domain is summarized here. Each will receive its own deep specification via
 
 ### Domain 10: Multi-Tier User Interface
 
-**Problem**: Non-technical staff (PMs, content editors) can't use CLI directly but need AI assistance.
+**Problem**: Non-technical staff (PMs, content editors) can't use CLI directly but need AI assistance. Power users want to interact with the platform from anywhere — including voice commands while driving or mobile access away from their desk.
 
-**Scope**: Web-based chat interface, role-based access control, maximum automation with human-readable explanations, permission-gated capabilities.
+**Scope**: Web-based chat interface, voice interaction mode (mobile/car), role-based access control, maximum automation with human-readable explanations, permission-gated capabilities. Session handoff (Domain 1) enables seamless transitions between desktop, mobile, and voice access modes.
 
 ---
 
@@ -202,6 +202,18 @@ Each domain is summarized here. Each will receive its own deep specification via
 **Scope**: Anthropic API workspace management (one organization, workspace per client), BYOK (Bring Your Own Key) support, per-workspace spend limits, Admin API integration for programmatic workspace/key management, Usage & Cost API integration for billing attribution.
 
 **Key context**: Anthropic's API uses Organizations > Workspaces > API keys. This is entirely separate from Claude Team/Pro subscriptions. Workspaces have per-workspace API keys and spend limits. The Admin API (`sk-ant-admin...`) enables programmatic management. The Usage & Cost API provides token consumption breakdowns by model, workspace, and service tier.
+
+---
+
+### Domain 12: Automated Bug Triage & Remediation
+
+**Problem**: When a client reports a bug, the ticket often has incomplete information. A developer must manually read the ticket, try to reproduce, diagnose, and fix — or escalate. This is time-consuming, especially for straightforward issues that an AI agent could handle autonomously.
+
+**Scope**: An event-driven pipeline triggered by bug ticket creation (via Activepieces or similar automation). The pipeline has five stages: (1) **Enrich** — parse the ticket, identify missing information (environment, steps to reproduce, affected URLs), and update the ticket; (2) **Confirm** — access staging/dev environments (via Playwright MCP) to attempt reproduction, capture screenshots or logs as evidence; (3) **Diagnose** — load project-specific skills (e.g., drupal-coding-standards, drupal-security), search the codebase via GitHub, identify likely root cause, and update the ticket with analysis; (4) **Fix** — attempt a code fix, run quality gates (from 004-workflow-enforcement) to validate; (5) **Deliver** — if successful, create a PR linked to the Jira ticket and notify the PM/assignee; if unsuccessful, leave detailed diagnosis notes and transition the ticket for human developer pickup.
+
+**Key dependencies**: 001 (MCP server — GitHub, Jira access), 004 (quality gates and skill enforcement for the fix stage), Playwright MCP (browser access for reproduction), Activepieces or similar (event trigger/orchestration).
+
+**Existing work**: Concept described as "Probo on steroids" — extending Zivtech's existing proactive monitoring approach with AI-powered diagnosis and remediation. Validated by CTO (Jonathan DeLaigle) as a high-value addition to the pipeline.
 
 ---
 
@@ -228,6 +240,8 @@ Each domain is summarized here. Each will receive its own deep specification via
 - **FR-017**: System MUST monitor content fidelity including brand compliance and voice consistency
 - **FR-018**: System MUST never use client data for model training
 - **FR-019**: System MUST provide all outputs as reviewable before delivery to end clients
+- **FR-020**: System MUST support event-driven automated pipelines triggered by external events (e.g., Jira ticket creation), with configurable stages that can enrich, confirm, diagnose, fix, and deliver without human intervention
+- **FR-021**: System MUST leave structured diagnostic notes on tickets when automated remediation is unsuccessful, providing enough context for a human developer to pick up the work efficiently
 
 ### Key Entities
 
@@ -235,6 +249,7 @@ Each domain is summarized here. Each will receive its own deep specification via
 - **Workspace**: An Anthropic API workspace mapped to a tenant, with its own API keys and spend limits
 - **Skill**: A constraint system defining acceptable outputs, brand/voice guidelines, domain terminology, restrictions, and anti-patterns
 - **Writing Profile**: A structured skill derived from corpus analysis — voice, vocabulary, citation patterns, audience registers
+- **Automated Pipeline**: An event-driven workflow triggered by an external event (e.g., bug ticket creation) that executes a sequence of stages (enrich, confirm, diagnose, fix, deliver) autonomously, using skills and quality gates from the platform
 - **Session State**: Ephemeral work-in-progress data (branch, modified files, pending tasks, test results) distinct from persistent memory
 - **Quality Gate**: A configurable check (lint, test, visual regression, a11y audit) that runs at defined trigger points (pre-commit, pre-push)
 - **Audit Entry**: A record linking a change to its requirement, session, agent, active skills, and human/AI attribution
@@ -273,6 +288,9 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 | 7 | Spec-kitty integration: Does joyus-ai use spec-kitty artifacts as input at runtime? | Low | Resolve during `/spec-kitty.plan` |
 | 8 | Billing model: Zivtech-managed vs BYOK vs both? | High | Resolve in Domain 11 spec |
 | 9 | Orchestration: OMC, standalone service, or hybrid? | High | Evaluation planned for Phase 3 |
+| 10 | Bug triage pipeline: What constraints should limit automated fixes (file count, risk level, project type)? | High | Resolve in Domain 12 spec |
+| 11 | Bug triage pipeline: How does the agent access staging/dev environments safely for reproduction? | High | Resolve in Domain 12 spec (Playwright MCP + sandboxing) |
+| 12 | Bug triage pipeline: What is the orchestration trigger — Activepieces, custom webhook, or Jira automation? | Medium | Resolve in Domain 12 spec |
 
 ---
 

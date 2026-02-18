@@ -284,6 +284,8 @@ Session & Context Management is foundational — this spec depends on the state 
 
 **Spec 3 (Observability & Data) has been eliminated** — Claude Enterprise covers ~80% of it. The residual (change-to-requirement traceability, skill invocation audit trail) is incorporated here as the Audit & Traceability domain.
 
+**Automated pipelines**: The enforcement system defined here (quality gates, skill enforcement, audit trail) is designed to work in both human-mediated sessions and fully-automated pipelines. Domain 12 (Automated Bug Triage & Remediation, defined in 003) will be a major consumer of this spec's capabilities — its Fix stage runs quality gates and loads project skills exactly as a human developer's session would. The enforcement model is agent-agnostic: whether a human asked Claude to push code or an automated pipeline generated a fix, the same gates and skills apply.
+
 ---
 
 ## Clarifications

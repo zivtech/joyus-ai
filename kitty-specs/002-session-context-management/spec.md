@@ -120,6 +120,22 @@ A junior developer hits a problem they can't resolve — tests are failing, they
 
 ---
 
+### User Story 7 - Session Switching (Priority: P3)
+
+A power user has multiple Claude Code sessions running across different projects. From within their current session, they ask to see what other sessions are active and jump to one — picking up that session's full context without opening a new terminal. This mirrors OpenCode's session handler, where you can navigate between running sessions from a single interface.
+
+**Why this priority**: Convenience feature for power users managing multiple concurrent workstreams. Not blocking for MVP but improves the multi-project workflow significantly.
+
+**Independent Test**: Can be tested by running two sessions in different projects, then from one session requesting a list of active sessions and switching to the other. Verify that the switched-to session's full state is loaded.
+
+**Acceptance Scenarios**:
+
+1. **Given** multiple sessions are active across different projects, **When** a user requests a list of active sessions, **Then** the system returns session identifiers with project name, branch, and last activity timestamp.
+2. **Given** a list of active sessions, **When** the user selects one to switch to, **Then** the current session's state is snapshotted and the target session's full context is loaded.
+3. **Given** a user switches sessions, **When** they switch back to the original session later, **Then** the original session's state is intact from the snapshot taken at switch time.
+
+---
+
 ### Edge Cases
 
 - What happens when the state snapshot is corrupted or unparseable? The system must fall back gracefully — present what it can, warn about missing fields, and never block session start.
