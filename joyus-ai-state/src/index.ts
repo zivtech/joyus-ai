@@ -96,3 +96,9 @@ export {
   generateShareFilename,
 } from './state/share.js';
 export type { ShareOptions, LoadResult } from './state/share.js';
+
+// --- MCP server ---
+export { createMcpServer, startMcpServer } from './mcp/server.js';
+export { getContextToolDef, handleGetContext } from './mcp/tools/get-context.js';
+export { saveStateToolDef, handleSaveState } from './mcp/tools/save-state.js';
+export { verifyActionToolDef, handleVerifyAction } from './mcp/tools/verify-action.js';
