@@ -1,9 +1,12 @@
 ---
 work_package_id: WP02
 title: State Store
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
+base_branch: 002-session-context-management-WP01
+base_commit: 94115df32060d4fd7b5120bf3ec3a1762344b93c
+created_at: '2026-02-18T21:19:40.141709+00:00'
 subtasks:
 - T005
 - T006
@@ -12,7 +15,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "24754"
 review_status: ''
 reviewed_by: ''
 history:
