@@ -57,10 +57,10 @@
 **Prompt**: `tasks/WP02-state-store.md`
 
 ### Included Subtasks
-- [ ] T005 Implement atomic snapshot write (temp file + rename pattern)
-- [ ] T006 Implement snapshot read (latest, by ID, list with date/event/branch filters)
-- [ ] T007 State directory initialization (create `~/.joyus-ai/projects/<hash>/` structure)
-- [ ] T008 Implement divergence detection (stored snapshot vs live project state)
+- [x] T005 Implement atomic snapshot write (temp file + rename pattern)
+- [x] T006 Implement snapshot read (latest, by ID, list with date/event/branch filters)
+- [x] T007 State directory initialization (create `~/.joyus-ai/projects/<hash>/` structure)
+- [x] T008 Implement divergence detection (stored snapshot vs live project state)
 
 ### Implementation Notes
 - Atomic writes prevent corruption: write to `.tmp` file, then `rename()`.
