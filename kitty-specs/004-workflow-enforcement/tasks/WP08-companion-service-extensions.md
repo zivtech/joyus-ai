@@ -1,10 +1,13 @@
 ---
 work_package_id: WP08
 title: Companion Service Extensions
-lane: planned
+lane: "doing"
 dependencies:
 - WP04
 - WP05
+base_branch: 004-workflow-enforcement-WP08-merge-base
+base_commit: 0a0a7874eacaee8259976cf86da33da562576c37
+created_at: '2026-02-18T19:41:44.077305+00:00'
 subtasks:
 - T042
 - T043
@@ -13,7 +16,7 @@ subtasks:
 phase: Phase 3 - MCP Tools & Events
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "22467"
 review_status: ''
 reviewed_by: ''
 history:
