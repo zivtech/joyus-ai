@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: MCP Tools -- Gates, Branch & Status
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP03
 - WP05
@@ -162,3 +162,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T18:13:12Z – unknown – shell_pid=36767 – lane=for_review – Ready for review: 5 MCP tools (run_gates, verify_branch, check_hygiene, enforcement_status, kill_switch) with 24 passing tests
