@@ -18,7 +18,7 @@
     "validate": "npm run typecheck && npm test"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@paralleldrive/cuid2": "^3.3.0",
     "better-sqlite3": "^12.6.2",
     "picomatch": "^4.0.3",
