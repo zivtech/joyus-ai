@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Audit Trail Infrastructure
-lane: "for_review"
+lane: "doing"
 dependencies:
 - WP01
 base_branch: 004-workflow-enforcement-WP01
@@ -17,8 +17,8 @@ subtasks:
 - T013
 phase: Phase 1 - Foundation
 assignee: ''
-agent: ''
-shell_pid: "47492"
+agent: "claude-opus"
+shell_pid: "64492"
 review_status: ''
 reviewed_by: ''
 history:
@@ -211,3 +211,4 @@ history:
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T16:56:18Z – unknown – shell_pid=47492 – lane=for_review – Ready for review: JSONL audit writer, SQLite index with incremental sync, storage monitor, correction capture. All 29 new tests pass (57 total).
+- 2026-02-18T16:56:49Z – claude-opus – shell_pid=64492 – lane=doing – Started review via workflow command
