@@ -86,10 +86,10 @@
 **Prompt**: `tasks/WP03-state-collectors.md`
 
 ### Included Subtasks
-- [ ] T009 Git state collector (branch, commit hash/message, ahead/behind, detached HEAD)
-- [ ] T010 [P] File state collector (staged, unstaged, untracked from `git status --porcelain`)
-- [ ] T011 [P] Test results collector (parse output from vitest, jest, phpunit, pytest)
-- [ ] T012 Decision tracking (carry-forward pending decisions from last snapshot, add new, resolve)
+- [x] T009 Git state collector (branch, commit hash/message, ahead/behind, detached HEAD)
+- [x] T010 [P] File state collector (staged, unstaged, untracked from `git status --porcelain`)
+- [x] T011 [P] Test results collector (parse output from vitest, jest, phpunit, pytest)
+- [x] T012 Decision tracking (carry-forward pending decisions from last snapshot, add new, resolve)
 
 ### Implementation Notes
 - Git collector shells out to `git` commands (not libgit2 — simpler, no native deps).
