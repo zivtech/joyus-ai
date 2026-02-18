@@ -1,9 +1,12 @@
 ---
 work_package_id: WP06
 title: MCP Server + Core Tools
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
+base_branch: 002-session-context-management-WP05
+base_commit: 8ee9a39e3adb6c27899eda52dc3cdab59581c89e
+created_at: '2026-02-18T23:05:17.059480+00:00'
 subtasks:
 - T020
 - T021
@@ -13,7 +16,7 @@ subtasks:
 phase: Phase 2 - Primary Interface
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "15858"
 review_status: ''
 reviewed_by: ''
 history:
