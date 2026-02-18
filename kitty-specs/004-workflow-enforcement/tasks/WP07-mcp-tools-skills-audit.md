@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: MCP Tools -- Skills, Upstream, Audit & Corrections
-lane: "for_review"
+lane: "doing"
 dependencies:
 - WP02
 - WP04
@@ -15,8 +15,8 @@ subtasks:
 - T041
 phase: Phase 3 - MCP Tools & Events
 assignee: ''
-agent: ''
-shell_pid: "63854"
+agent: "claude-opus"
+shell_pid: "2803"
 review_status: ''
 reviewed_by: ''
 history:
@@ -150,3 +150,4 @@ history:
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T19:08:19Z – unknown – shell_pid=63854 – lane=for_review – Ready for review: 4 MCP tools (get_skills, check_upstream, query_audit, record_correction) with 19 passing tests
+- 2026-02-18T19:08:28Z – claude-opus – shell_pid=2803 – lane=doing – Started review via workflow command
