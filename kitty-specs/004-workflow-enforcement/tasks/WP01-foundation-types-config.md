@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Foundation -- Types, Schemas, Config & Kill Switch
-lane: planned
+lane: "doing"
 dependencies: []
 subtasks:
 - T001
@@ -12,8 +12,8 @@ subtasks:
 - T006
 phase: Phase 1 - Foundation
 assignee: ''
-agent: ''
-shell_pid: ''
+agent: "claude-opus"
+shell_pid: "13603"
 review_status: ''
 reviewed_by: ''
 history:
@@ -204,3 +204,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T16:20:16Z – claude-opus – shell_pid=13603 – lane=doing – Started implementation via workflow command
