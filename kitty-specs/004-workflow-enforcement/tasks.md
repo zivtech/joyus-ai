@@ -227,10 +227,10 @@
 **Estimated Size**: ~350 lines
 
 ### Included Subtasks
-- [ ] T038 Implement `get_skills` MCP tool in `joyus-ai-state/src/mcp/tools/get-skills.ts`
-- [ ] T039 Implement `check_upstream` MCP tool in `joyus-ai-state/src/mcp/tools/check-upstream.ts`
-- [ ] T040 Implement `query_audit` MCP tool in `joyus-ai-state/src/mcp/tools/query-audit.ts`
-- [ ] T041 Implement `record_correction` MCP tool in `joyus-ai-state/src/mcp/tools/record-correction.ts`
+- [x] T038 Implement `get_skills` MCP tool in `joyus-ai-state/src/mcp/tools/get-skills.ts`
+- [x] T039 Implement `check_upstream` MCP tool in `joyus-ai-state/src/mcp/tools/check-upstream.ts`
+- [x] T040 Implement `query_audit` MCP tool in `joyus-ai-state/src/mcp/tools/query-audit.ts`
+- [x] T041 Implement `record_correction` MCP tool in `joyus-ai-state/src/mcp/tools/record-correction.ts`
 
 ### Implementation Notes
 - `get_skills`: calls skill engine, returns active skills + conflict resolutions + combined `skillContext` string
