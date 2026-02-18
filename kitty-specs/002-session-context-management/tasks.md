@@ -145,9 +145,9 @@
 **Prompt**: `tasks/WP05-state-sharing.md`
 
 ### Included Subtasks
-- [ ] T017 Share state export (package latest snapshot + sharer note, write to shared/outgoing/)
-- [ ] T018 [P] Load shared state import (read file, validate schema, extract sharer note)
-- [ ] T019 [P] Shared state directory management (ensure incoming/outgoing dirs exist, naming convention)
+- [x] T017 Share state export (package latest snapshot + sharer note, write to shared/outgoing/)
+- [x] T018 [P] Load shared state import (read file, validate schema, extract sharer note)
+- [x] T019 [P] Shared state directory management (ensure incoming/outgoing dirs exist, naming convention)
 
 ### Implementation Notes
 - Shared file is a valid Snapshot with the `sharer` field populated.
