@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Companion Service Extensions
-lane: "doing"
+lane: "done"
 dependencies:
 - WP04
 - WP05
@@ -17,8 +17,8 @@ phase: Phase 3 - MCP Tools & Events
 assignee: ''
 agent: "claude-opus"
 shell_pid: "31513"
-review_status: ''
-reviewed_by: ''
+review_status: "approved"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
 - timestamp: '2026-02-17T15:00:00Z'
   lane: planned
@@ -162,3 +162,4 @@ history:
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T19:44:29Z – unknown – shell_pid=22467 – lane=for_review – Ready for review: 4 event handlers (session-start, file-change, branch-switch, router) with 16 passing tests
 - 2026-02-18T19:44:38Z – claude-opus – shell_pid=31513 – lane=doing – Started review via workflow command
+- 2026-02-18T19:45:34Z – claude-opus – shell_pid=31513 – lane=done – Review passed: Session-start hygiene with suggestions, file-change debounced reload, branch-switch config diff, router handles unknown events. 16 tests passing.
