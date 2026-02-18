@@ -1,9 +1,12 @@
 ---
 work_package_id: WP07
 title: MCP Extended Tools
-lane: planned
+lane: "doing"
 dependencies:
 - WP04
+base_branch: 002-session-context-management-WP06
+base_commit: 7417e518d49204a8456b4d95258b823fa4ee34e0
+created_at: '2026-02-18T23:12:24.279696+00:00'
 subtasks:
 - T025
 - T026
@@ -12,7 +15,7 @@ subtasks:
 phase: Phase 2 - Primary Interface
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "39122"
 review_status: ''
 reviewed_by: ''
 history:
