@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: MCP Tools -- Skills, Upstream, Audit & Corrections
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP02
 - WP04
@@ -149,3 +149,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T19:08:19Z – unknown – shell_pid=63854 – lane=for_review – Ready for review: 4 MCP tools (get_skills, check_upstream, query_audit, record_correction) with 19 passing tests
