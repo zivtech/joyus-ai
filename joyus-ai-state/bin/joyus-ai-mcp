@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// Stub — implemented in WP06
+console.error('joyus-ai-mcp: not yet implemented (see WP06)');
+process.exit(1);
