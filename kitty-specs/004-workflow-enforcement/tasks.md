@@ -19,12 +19,12 @@
 **Estimated Size**: ~400 lines
 
 ### Included Subtasks
-- [ ] T001 Define enforcement TypeScript types in `joyus-ai-state/src/enforcement/types.ts`
-- [ ] T002 Create Zod validation schemas in `joyus-ai-state/src/enforcement/schemas.ts`
-- [ ] T003 Implement enforcement config loader in `joyus-ai-state/src/enforcement/config.ts`
-- [ ] T004 Implement config inheritance/merging with enforcement policy constraints
-- [ ] T005 Implement config validation with safe defaults fallback (FR-029)
-- [ ] T006 Implement session-scoped kill switch in `joyus-ai-state/src/enforcement/kill-switch.ts`
+- [x] T001 Define enforcement TypeScript types in `joyus-ai-state/src/enforcement/types.ts`
+- [x] T002 Create Zod validation schemas in `joyus-ai-state/src/enforcement/schemas.ts`
+- [x] T003 Implement enforcement config loader in `joyus-ai-state/src/enforcement/config.ts`
+- [x] T004 Implement config inheritance/merging with enforcement policy constraints
+- [x] T005 Implement config validation with safe defaults fallback (FR-029)
+- [x] T006 Implement session-scoped kill switch in `joyus-ai-state/src/enforcement/kill-switch.ts`
 
 ### Implementation Notes
 - Types derived from `data-model.md`: QualityGate, SkillMapping, BranchRule, AuditEntry, Correction, EnforcementConfig, DeveloperConfig, all enums
