@@ -174,11 +174,11 @@
 **Prompt**: `tasks/WP06-mcp-server-core-tools.md`
 
 ### Included Subtasks
-- [ ] T020 MCP server setup (Server instance, stdio transport, tool registration, error handling)
-- [ ] T021 [P] `get_context` tool (load latest snapshot, run live collectors, merge, add divergence field)
-- [ ] T022 [P] `save_state` tool (accept event/note/decision params, run collectors, create and write snapshot)
-- [ ] T023 [P] `verify_action` tool (branch-match, uncommitted-changes, canonical-conflict, force-push checks)
-- [ ] T024 MCP server entry point (`bin/joyus-ai-mcp`, project root detection, stdio launch)
+- [x] T020 MCP server setup (Server instance, stdio transport, tool registration, error handling)
+- [x] T021 [P] `get_context` tool (load latest snapshot, run live collectors, merge, add divergence field)
+- [x] T022 [P] `save_state` tool (accept event/note/decision params, run collectors, create and write snapshot)
+- [x] T023 [P] `verify_action` tool (branch-match, uncommitted-changes, canonical-conflict, force-push checks)
+- [x] T024 MCP server entry point (`bin/joyus-ai-mcp`, project root detection, stdio launch)
 
 ### Implementation Notes
 - Uses `@modelcontextprotocol/sdk` Server + StdioServerTransport.
