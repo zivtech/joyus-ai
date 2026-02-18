@@ -1,10 +1,13 @@
 ---
 work_package_id: WP04
 title: Skill Enforcement Engine
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
 - WP02
+base_branch: 004-workflow-enforcement-WP04-merge-base
+base_commit: fb3062c7457a64310965cf349ecffa31a260b03d
+created_at: '2026-02-18T17:19:17.070456+00:00'
 subtasks:
 - T019
 - T020
@@ -16,7 +19,7 @@ subtasks:
 phase: Phase 2 - Enforcement Engines
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "93782"
 review_status: ''
 reviewed_by: ''
 history:
