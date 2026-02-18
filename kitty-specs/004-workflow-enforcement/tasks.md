@@ -159,13 +159,13 @@
 **Estimated Size**: ~450 lines
 
 ### Included Subtasks
-- [ ] T026 Implement branch verification in `joyus-ai-state/src/enforcement/git/branch-verify.ts`
-- [ ] T027 [P] Implement branch naming convention checker in `joyus-ai-state/src/enforcement/git/branch-hygiene.ts`
-- [ ] T028 [P] Implement stale branch detection
-- [ ] T029 [P] Implement active branch count warning
-- [ ] T030 [P] Implement force-push warning in `joyus-ai-state/src/enforcement/git/guardrails.ts`
-- [ ] T031 [P] Implement uncommitted changes detection before branch switch
-- [ ] T032 Integrate git guardrails with audit trail logging
+- [x] T026 Implement branch verification in `joyus-ai-state/src/enforcement/git/branch-verify.ts`
+- [x] T027 [P] Implement branch naming convention checker in `joyus-ai-state/src/enforcement/git/branch-hygiene.ts`
+- [x] T028 [P] Implement stale branch detection
+- [x] T029 [P] Implement active branch count warning
+- [x] T030 [P] Implement force-push warning in `joyus-ai-state/src/enforcement/git/guardrails.ts`
+- [x] T031 [P] Implement uncommitted changes detection before branch switch
+- [x] T032 Integrate git guardrails with audit trail logging
 
 ### Implementation Notes
 - Branch verification uses 002's state snapshot (task context includes expected branch)
