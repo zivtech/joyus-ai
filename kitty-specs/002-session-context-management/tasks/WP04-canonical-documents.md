@@ -1,9 +1,12 @@
 ---
 work_package_id: WP04
 title: Canonical Document Management
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
+base_branch: 002-session-context-management-WP03
+base_commit: e4c1468c6705d26544d258d9d90d092d41960c01
+created_at: '2026-02-18T22:59:09.744208+00:00'
 subtasks:
 - T013
 - T014
@@ -12,7 +15,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "94429"
 review_status: ''
 reviewed_by: ''
 history:
