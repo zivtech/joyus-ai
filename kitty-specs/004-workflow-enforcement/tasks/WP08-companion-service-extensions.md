@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Companion Service Extensions
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP04
 - WP05
@@ -160,3 +160,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T19:44:29Z – unknown – shell_pid=22467 – lane=for_review – Ready for review: 4 event handlers (session-start, file-change, branch-switch, router) with 16 passing tests
