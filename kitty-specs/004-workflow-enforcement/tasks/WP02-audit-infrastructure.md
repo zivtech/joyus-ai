@@ -1,9 +1,12 @@
 ---
 work_package_id: WP02
 title: Audit Trail Infrastructure
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
+base_branch: 004-workflow-enforcement-WP01
+base_commit: c74ffb6739aee02713461db00541d736f286266e
+created_at: '2026-02-18T16:50:56.900800+00:00'
 subtasks:
 - T007
 - T008
@@ -15,7 +18,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "47492"
 review_status: ''
 reviewed_by: ''
 history:
