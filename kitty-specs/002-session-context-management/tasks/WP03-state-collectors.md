@@ -1,10 +1,13 @@
 ---
 work_package_id: WP03
 title: State Collectors
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
 - WP02
+base_branch: 002-session-context-management-WP02
+base_commit: d7427b5ba80f3ede1ca07b2e23a3db4bfd842eb9
+created_at: '2026-02-18T22:52:01.044386+00:00'
 subtasks:
 - T009
 - T010
@@ -13,7 +16,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "71838"
 review_status: ''
 reviewed_by: ''
 history:
