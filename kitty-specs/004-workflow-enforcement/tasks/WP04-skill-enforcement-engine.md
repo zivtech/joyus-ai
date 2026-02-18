@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Skill Enforcement Engine
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP01
 - WP02
@@ -217,3 +217,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T17:25:01Z – unknown – shell_pid=93782 – lane=for_review – Ready for review: File-pattern-to-skill mapper, skill cache, repo fallback, precedence resolver, context builder, anti-pattern validator, audit integration. All 46 new tests pass.
