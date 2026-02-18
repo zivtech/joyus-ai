@@ -4,5 +4,7 @@
   "friendly_name": "Session & Context Management",
   "mission": "software-dev",
   "source_description": "joyus-ai mediator layer: canonical document management, session state continuity, and context handoff protocol. Domains 1, 2, 10 from joyus-ai-requirements-brief.md.",
-  "created_at": "2026-02-16T12:00:00Z"
+  "created_at": "2026-02-16T12:00:00Z",
+  "vcs": "git",
+  "vcs_locked_at": "2026-02-18T21:19:39.761240+00:00"
 }
