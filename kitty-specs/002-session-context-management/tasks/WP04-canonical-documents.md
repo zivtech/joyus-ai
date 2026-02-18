@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Canonical Document Management
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP01
 base_branch: 002-session-context-management-WP03
@@ -14,7 +14,7 @@ subtasks:
 - T016
 phase: Phase 1 - Foundation
 assignee: ''
-agent: ''
+agent: "claude-opus"
 shell_pid: "94429"
 review_status: ''
 reviewed_by: ''
@@ -219,3 +219,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Activity Log
 
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T23:01:04Z – claude-opus – shell_pid=94429 – lane=for_review – Moved to for_review
