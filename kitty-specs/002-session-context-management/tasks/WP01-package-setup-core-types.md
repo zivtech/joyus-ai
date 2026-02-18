@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Package Setup & Core Types
-lane: "for_review"
+lane: "doing"
 dependencies: []
 subtasks:
 - T001
@@ -11,7 +11,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: "claude-opus"
-shell_pid: "85970"
+shell_pid: "18533"
 review_status: ''
 reviewed_by: ''
 history:
@@ -321,3 +321,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T20:31:21Z – claude-opus – shell_pid=85970 – lane=doing – Started implementation via workflow command
 - 2026-02-18T21:13:47Z – claude-opus – shell_pid=85970 – lane=for_review – Ready for review: Core types, Zod schemas, config loading, 16 tests passing
+- 2026-02-18T21:16:12Z – claude-opus – shell_pid=18533 – lane=doing – Started review via workflow command
