@@ -1,11 +1,14 @@
 ---
 work_package_id: WP09
 title: Integration Testing & Hardening
-lane: planned
+lane: "doing"
 dependencies:
 - WP06
 - WP07
 - WP08
+base_branch: 004-workflow-enforcement-WP09-merge-base
+base_commit: a6b6790e51b8c2ae114c4f6086bea2a87189d80a
+created_at: '2026-02-18T19:46:21.515257+00:00'
 subtasks:
 - T046
 - T047
@@ -16,7 +19,7 @@ subtasks:
 phase: Phase 4 - Integration & Hardening
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "35397"
 review_status: ''
 reviewed_by: ''
 history:
