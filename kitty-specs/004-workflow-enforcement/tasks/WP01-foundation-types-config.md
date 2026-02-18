@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Foundation -- Types, Schemas, Config & Kill Switch
-lane: "doing"
+lane: "for_review"
 dependencies: []
 subtasks:
 - T001
@@ -205,3 +205,4 @@ history:
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T16:20:16Z – claude-opus – shell_pid=13603 – lane=doing – Started implementation via workflow command
+- 2026-02-18T16:46:33Z – claude-opus – shell_pid=13603 – lane=for_review – Ready for review: All 6 subtasks complete. Types match data model, Zod schemas with defaults, config loader with policy-constrained merging, kill switch in-memory only. 28 tests passing.
