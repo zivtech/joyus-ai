@@ -1,9 +1,12 @@
 ---
 work_package_id: WP05
 title: State Sharing
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
+base_branch: 002-session-context-management-WP04
+base_commit: 97f690d5546ebdf9a07b0e3dc1850908824e7187
+created_at: '2026-02-18T23:02:33.095742+00:00'
 subtasks:
 - T017
 - T018
@@ -11,7 +14,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "5872"
 review_status: ''
 reviewed_by: ''
 history:
