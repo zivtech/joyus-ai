@@ -116,10 +116,10 @@
 **Prompt**: `tasks/WP04-canonical-documents.md`
 
 ### Included Subtasks
-- [ ] T013 Canonical declaration CRUD (load, save, add, remove, list)
-- [ ] T014 checkPath logic with branch override resolution
-- [ ] T015 Non-canonical access warning generation
-- [ ] T016 [P] Canonical status integration in snapshots (check modified files against declarations)
+- [x] T013 Canonical declaration CRUD (load, save, add, remove, list)
+- [x] T014 checkPath logic with branch override resolution
+- [x] T015 Non-canonical access warning generation
+- [x] T016 [P] Canonical status integration in snapshots (check modified files against declarations)
 
 ### Implementation Notes
 - Storage: `.joyus-ai/canonical.json` in project root (committed to git — team-shared).
