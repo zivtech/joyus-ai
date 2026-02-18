@@ -51,13 +51,13 @@
 **Estimated Size**: ~500 lines
 
 ### Included Subtasks
-- [ ] T007 Implement JSONL audit writer in `joyus-ai-state/src/enforcement/audit/writer.ts`
-- [ ] T008 Implement audit entry Zod schemas in `joyus-ai-state/src/enforcement/audit/schema.ts`
-- [ ] T009 Set up SQLite database schema in `joyus-ai-state/src/enforcement/audit/index.ts`
-- [ ] T010 Implement audit query engine with filters and pagination
-- [ ] T011 Implement incremental JSONL -> SQLite index sync
-- [ ] T012 Implement storage monitor in `joyus-ai-state/src/enforcement/audit/storage-monitor.ts`
-- [ ] T013 Implement correction capture in `joyus-ai-state/src/enforcement/corrections/capture.ts`
+- [x] T007 Implement JSONL audit writer in `joyus-ai-state/src/enforcement/audit/writer.ts`
+- [x] T008 Implement audit entry Zod schemas in `joyus-ai-state/src/enforcement/audit/schema.ts`
+- [x] T009 Set up SQLite database schema in `joyus-ai-state/src/enforcement/audit/index.ts`
+- [x] T010 Implement audit query engine with filters and pagination
+- [x] T011 Implement incremental JSONL -> SQLite index sync
+- [x] T012 Implement storage monitor in `joyus-ai-state/src/enforcement/audit/storage-monitor.ts`
+- [x] T013 Implement correction capture in `joyus-ai-state/src/enforcement/corrections/capture.ts`
 
 ### Implementation Notes
 - JSONL files rotate daily: `audit-YYYY-MM-DD.jsonl`
