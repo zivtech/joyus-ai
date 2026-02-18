@@ -72,3 +72,16 @@ export { collectGitState } from './collectors/git.js';
 export { collectFileState } from './collectors/files.js';
 export { parseTestResults } from './collectors/tests.js';
 export { carryForwardDecisions } from './collectors/decisions.js';
+
+// --- Canonical documents ---
+export {
+  loadCanonical,
+  saveCanonical,
+  addDeclaration,
+  removeDeclaration,
+  listDeclarations,
+  checkPath,
+  generateWarning,
+  getCanonicalStatuses,
+} from './state/canonical.js';
+export type { CanonicalDeclarations, CheckResult } from './state/canonical.js';
