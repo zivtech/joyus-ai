@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Git Guardrails Engine
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP01
 - WP02
@@ -199,3 +199,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T17:38:27Z – unknown – shell_pid=10944 – lane=for_review – Ready for review: Branch verification, naming convention enforcement, stale branch detection, branch count warnings, force-push detection, uncommitted changes detection, audit integration. All 31 new tests pass.
