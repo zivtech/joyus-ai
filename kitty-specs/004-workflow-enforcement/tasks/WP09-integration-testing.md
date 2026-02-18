@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Integration Testing & Hardening
-lane: "for_review"
+lane: "doing"
 dependencies:
 - WP06
 - WP07
@@ -18,8 +18,8 @@ subtasks:
 - T051
 phase: Phase 4 - Integration & Hardening
 assignee: ''
-agent: ''
-shell_pid: "35397"
+agent: "claude-opus"
+shell_pid: "56988"
 review_status: ''
 reviewed_by: ''
 history:
@@ -194,3 +194,4 @@ history:
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T20:04:54Z – unknown – shell_pid=35397 – lane=for_review – Ready for review: 6 integration test files (51 tests) covering gate execution, skill loading, audit roundtrip, tier behavior matrix, error handling, and config validation
+- 2026-02-18T20:05:27Z – claude-opus – shell_pid=56988 – lane=doing – Started review via workflow command
