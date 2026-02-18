@@ -257,10 +257,10 @@
 **Estimated Size**: ~300 lines
 
 ### Included Subtasks
-- [ ] T042 Implement session-start hygiene check trigger in companion service
-- [ ] T043 Implement file-change skill auto-load trigger
-- [ ] T044 Implement branch-switch config reload trigger
-- [ ] T045 Wire enforcement events into existing companion service event handler
+- [x] T042 Implement session-start hygiene check trigger in companion service
+- [x] T043 Implement file-change skill auto-load trigger
+- [x] T044 Implement branch-switch config reload trigger
+- [x] T045 Wire enforcement events into existing companion service event handler
 
 ### Implementation Notes
 - Companion service from 002 already watches filesystem and git events
