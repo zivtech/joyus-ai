@@ -122,13 +122,13 @@
 **Estimated Size**: ~500 lines
 
 ### Included Subtasks
-- [ ] T019 [P] Implement file-pattern-to-skill mapper in `joyus-ai-state/src/enforcement/skills/loader.ts`
-- [ ] T020 [P] Implement skill cache in `joyus-ai-state/src/enforcement/skills/cache.ts`
-- [ ] T021 Implement skill repo fallback (use cache when unreachable, warn user)
-- [ ] T022 Implement skill precedence resolver in `joyus-ai-state/src/enforcement/skills/precedence.ts`
-- [ ] T023 Implement skill context builder in `joyus-ai-state/src/enforcement/skills/context-builder.ts`
-- [ ] T024 [P] Implement skill validation tool framework in `joyus-ai-state/src/enforcement/skills/validator.ts`
-- [ ] T025 Integrate skill loading with audit trail logging
+- [x] T019 [P] Implement file-pattern-to-skill mapper in `joyus-ai-state/src/enforcement/skills/loader.ts`
+- [x] T020 [P] Implement skill cache in `joyus-ai-state/src/enforcement/skills/cache.ts`
+- [x] T021 Implement skill repo fallback (use cache when unreachable, warn user)
+- [x] T022 Implement skill precedence resolver in `joyus-ai-state/src/enforcement/skills/precedence.ts`
+- [x] T023 Implement skill context builder in `joyus-ai-state/src/enforcement/skills/context-builder.ts`
+- [x] T024 [P] Implement skill validation tool framework in `joyus-ai-state/src/enforcement/skills/validator.ts`
+- [x] T025 Integrate skill loading with audit trail logging
 
 ### Implementation Notes
 - Skills are markdown files in a git-cloned repo (e.g., `zivtech-claude-skills/`)
