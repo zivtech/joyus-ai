@@ -195,11 +195,11 @@
 **Estimated Size**: ~400 lines
 
 ### Included Subtasks
-- [ ] T033 Implement `run_gates` MCP tool in `joyus-ai-state/src/mcp/tools/run-gates.ts`
-- [ ] T034 Implement `verify_branch` MCP tool in `joyus-ai-state/src/mcp/tools/verify-branch.ts`
-- [ ] T035 Implement `check_hygiene` MCP tool in `joyus-ai-state/src/mcp/tools/check-hygiene.ts`
-- [ ] T036 Implement `enforcement_status` MCP tool in `joyus-ai-state/src/mcp/tools/enforcement-status.ts`
-- [ ] T037 Implement `kill_switch` MCP tool in `joyus-ai-state/src/mcp/tools/kill-switch.ts`
+- [x] T033 Implement `run_gates` MCP tool in `joyus-ai-state/src/mcp/tools/run-gates.ts`
+- [x] T034 Implement `verify_branch` MCP tool in `joyus-ai-state/src/mcp/tools/verify-branch.ts`
+- [x] T035 Implement `check_hygiene` MCP tool in `joyus-ai-state/src/mcp/tools/check-hygiene.ts`
+- [x] T036 Implement `enforcement_status` MCP tool in `joyus-ai-state/src/mcp/tools/enforcement-status.ts`
+- [x] T037 Implement `kill_switch` MCP tool in `joyus-ai-state/src/mcp/tools/kill-switch.ts`
 
 ### Implementation Notes
 - Each tool follows the MCP SDK `tool()` registration pattern from 002
