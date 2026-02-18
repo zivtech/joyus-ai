@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Package Setup & Core Types
-lane: planned
+lane: "doing"
 dependencies: []
 subtasks:
 - T001
@@ -10,8 +10,8 @@ subtasks:
 - T004
 phase: Phase 1 - Foundation
 assignee: ''
-agent: ''
-shell_pid: ''
+agent: "claude-opus"
+shell_pid: "85970"
 review_status: ''
 reviewed_by: ''
 history:
@@ -319,3 +319,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Activity Log
 
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T20:31:21Z – claude-opus – shell_pid=85970 – lane=doing – Started implementation via workflow command
