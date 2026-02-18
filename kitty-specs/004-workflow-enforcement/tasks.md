@@ -289,12 +289,12 @@
 **Estimated Size**: ~450 lines
 
 ### Included Subtasks
-- [ ] T046 End-to-end gate execution flow test (config -> trigger -> execute -> block/pass -> audit)
-- [ ] T047 End-to-end skill loading flow test (file edit -> pattern match -> skill load -> context injection)
-- [ ] T048 Audit roundtrip test (write JSONL -> build index -> query SQLite -> verify results)
-- [ ] T049 Tier-specific behavior test matrix (Tier 1/2/3 x gates/skills/git guardrails)
-- [ ] T050 Error handling: gate unavailable, skill repo down, timeout, kill switch during execution
-- [ ] T051 Config validation edge cases (invalid config, missing fields, conflicting overrides, policy enforcement)
+- [x] T046 End-to-end gate execution flow test (config -> trigger -> execute -> block/pass -> audit)
+- [x] T047 End-to-end skill loading flow test (file edit -> pattern match -> skill load -> context injection)
+- [x] T048 Audit roundtrip test (write JSONL -> build index -> query SQLite -> verify results)
+- [x] T049 Tier-specific behavior test matrix (Tier 1/2/3 x gates/skills/git guardrails)
+- [x] T050 Error handling: gate unavailable, skill repo down, timeout, kill switch during execution
+- [x] T051 Config validation edge cases (invalid config, missing fields, conflicting overrides, policy enforcement)
 
 ### Implementation Notes
 - Use Vitest for all tests
