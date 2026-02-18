@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: MCP Tools -- Gates, Branch & Status
-lane: "for_review"
+lane: "doing"
 dependencies:
 - WP03
 - WP05
@@ -16,8 +16,8 @@ subtasks:
 - T037
 phase: Phase 3 - MCP Tools & Events
 assignee: ''
-agent: ''
-shell_pid: "36767"
+agent: "claude-opus"
+shell_pid: "57078"
 review_status: ''
 reviewed_by: ''
 history:
@@ -163,3 +163,4 @@ history:
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T18:13:12Z – unknown – shell_pid=36767 – lane=for_review – Ready for review: 5 MCP tools (run_gates, verify_branch, check_hygiene, enforcement_status, kill_switch) with 24 passing tests
+- 2026-02-18T18:15:40Z – claude-opus – shell_pid=57078 – lane=doing – Started review via workflow command
