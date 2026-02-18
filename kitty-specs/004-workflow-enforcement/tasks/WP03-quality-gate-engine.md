@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: Quality Gate Engine
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP01
 - WP02
@@ -200,3 +200,4 @@ history:
 ## Activity Log
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T17:15:27Z – unknown – shell_pid=72066 – lane=for_review – Ready for review: Gate type registry, sequential fail-fast runner, timeout handling, tier resolution, audit integration. All 33 new tests pass.
