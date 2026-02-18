@@ -1,10 +1,13 @@
 ---
 work_package_id: WP07
 title: MCP Tools -- Skills, Upstream, Audit & Corrections
-lane: planned
+lane: "doing"
 dependencies:
 - WP02
 - WP04
+base_branch: 004-workflow-enforcement-WP07-merge-base
+base_commit: 96863181c325da0d7eae21523eddfd754ef90049
+created_at: '2026-02-18T18:20:12.302745+00:00'
 subtasks:
 - T038
 - T039
@@ -13,7 +16,7 @@ subtasks:
 phase: Phase 3 - MCP Tools & Events
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "63854"
 review_status: ''
 reviewed_by: ''
 history:
