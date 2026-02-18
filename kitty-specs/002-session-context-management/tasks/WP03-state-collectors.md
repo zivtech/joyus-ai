@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: State Collectors
-lane: "for_review"
+lane: "doing"
 dependencies:
 - WP01
 - WP02
@@ -16,7 +16,7 @@ subtasks:
 phase: Phase 1 - Foundation
 assignee: ''
 agent: "claude-opus"
-shell_pid: "71838"
+shell_pid: "87819"
 review_status: ''
 reviewed_by: ''
 history:
@@ -224,3 +224,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T22:56:04Z – claude-opus – shell_pid=71838 – lane=for_review – Moved to for_review
+- 2026-02-18T22:57:32Z – claude-opus – shell_pid=87819 – lane=doing – Started review via workflow command
