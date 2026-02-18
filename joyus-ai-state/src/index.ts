@@ -52,3 +52,17 @@ export {
   loadProjectConfig,
   loadConfig,
 } from './core/config.js';
+
+// --- State store ---
+export {
+  StateStore,
+  getProjectHash,
+  getStateDir,
+  getSnapshotsDir,
+  initStateDirectory,
+} from './state/store.js';
+export type { SnapshotFilter, SnapshotSummary } from './state/store.js';
+
+// --- Divergence detection ---
+export { detectDivergence } from './state/divergence.js';
+export type { DivergenceReport, DivergenceChange } from './state/divergence.js';
