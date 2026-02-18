@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: MCP Server + Core Tools
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP01
 base_branch: 002-session-context-management-WP05
@@ -15,7 +15,7 @@ subtasks:
 - T024
 phase: Phase 2 - Primary Interface
 assignee: ''
-agent: ''
+agent: "claude-opus"
 shell_pid: "15858"
 review_status: ''
 reviewed_by: ''
@@ -355,3 +355,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Activity Log
 
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
+- 2026-02-18T23:11:58Z – claude-opus – shell_pid=15858 – lane=for_review – Moved to for_review
