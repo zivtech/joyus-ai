@@ -85,3 +85,14 @@ export {
   getCanonicalStatuses,
 } from './state/canonical.js';
 export type { CanonicalDeclarations, CheckResult } from './state/canonical.js';
+
+// --- State sharing ---
+export {
+  exportSharedState,
+  loadSharedState,
+  getSharedOutgoingDir,
+  getSharedIncomingDir,
+  ensureSharedDirs,
+  generateShareFilename,
+} from './state/share.js';
+export type { ShareOptions, LoadResult } from './state/share.js';
