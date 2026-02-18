@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Skill Enforcement Engine
-lane: "for_review"
+lane: "doing"
 dependencies:
 - WP01
 - WP02
@@ -18,8 +18,8 @@ subtasks:
 - T025
 phase: Phase 2 - Enforcement Engines
 assignee: ''
-agent: ''
-shell_pid: "93782"
+agent: "claude-opus"
+shell_pid: "6428"
 review_status: ''
 reviewed_by: ''
 history:
@@ -218,3 +218,4 @@ history:
 
 - 2026-02-17T15:00:00Z -- system -- lane=planned -- Prompt created.
 - 2026-02-18T17:25:01Z – unknown – shell_pid=93782 – lane=for_review – Ready for review: File-pattern-to-skill mapper, skill cache, repo fallback, precedence resolver, context builder, anti-pattern validator, audit integration. All 46 new tests pass.
+- 2026-02-18T17:25:42Z – claude-opus – shell_pid=6428 – lane=doing – Started review via workflow command
