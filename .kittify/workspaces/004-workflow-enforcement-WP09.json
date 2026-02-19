@@ -1,0 +1,16 @@
+{
+  "wp_id": "WP09",
+  "feature_slug": "004-workflow-enforcement",
+  "worktree_path": ".worktrees/004-workflow-enforcement-WP09",
+  "branch_name": "004-workflow-enforcement-WP09",
+  "base_branch": "004-workflow-enforcement-WP09-merge-base",
+  "base_commit": "a6b6790e51b8c2ae114c4f6086bea2a87189d80a",
+  "dependencies": [
+    "WP06",
+    "WP07",
+    "WP08"
+  ],
+  "created_at": "2026-02-18T19:46:21.515257+00:00",
+  "created_by": "implement-command-multi-parent-merge",
+  "vcs_backend": "git"
+}
