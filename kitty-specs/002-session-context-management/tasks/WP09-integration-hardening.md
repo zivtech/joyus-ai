@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Integration & Hardening
-lane: planned
+lane: "doing"
 dependencies: []
 subtasks:
 - T034
@@ -11,8 +11,8 @@ subtasks:
 - T038
 phase: Phase 3 - Integration & Hardening
 assignee: ''
-agent: ''
-shell_pid: ''
+agent: "claude-opus"
+shell_pid: "22194"
 review_status: ''
 reviewed_by: ''
 history:
@@ -348,3 +348,4 @@ Use language identifiers in code blocks: ````python`, ````bash`
 ## Activity Log
 
 - 2026-02-17T03:14:10Z -- system -- lane=planned -- Prompt created.
+- 2026-02-19T00:27:21Z – claude-opus – shell_pid=22194 – lane=doing – Started implementation via workflow command
