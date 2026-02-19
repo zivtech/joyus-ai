@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: MCP Extended Tools
-lane: "doing"
+lane: "done"
 dependencies:
 - WP04
 base_branch: 002-session-context-management-WP06

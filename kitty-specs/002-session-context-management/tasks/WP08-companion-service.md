@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Companion Service
-lane: "doing"
+lane: "done"
 dependencies:
 - WP01
 base_branch: 002-session-context-management-WP01

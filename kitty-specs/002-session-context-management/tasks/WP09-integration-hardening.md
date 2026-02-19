@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Integration & Hardening
-lane: "doing"
+lane: "done"
 dependencies: []
 subtasks:
 - T034
