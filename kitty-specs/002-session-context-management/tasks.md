@@ -210,7 +210,7 @@
 
 ### Included Subtasks
 - [x] T025 `check_canonical` tool (check mode + declare mode, wraps canonical module from WP04)
-- [ ] T026 [P] `share_state` tool (export + import modes, wraps sharing module from WP05)
+- [x] T026 [P] `share_state` tool (export + import modes, wraps sharing module from WP05)
 - [ ] T027 [P] Tool input validation and error response handling (consistent pattern across all 6 tools)
 - [ ] T028 Claude Desktop/Code MCP configuration (setup instructions, verification steps)
 - [ ] T039 [P] `query_snapshots` tool (list/filter snapshots by date range, event type, or branch; return summaries, not full payloads; wraps T006 store read)
