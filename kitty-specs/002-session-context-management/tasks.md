@@ -240,7 +240,7 @@
 **Prompt**: `tasks/WP08-companion-service.md`
 
 ### Included Subtasks
-- [ ] T029 Service daemon (entry point, lifecycle, PID file, SIGTERM/SIGINT handling)
+- [x] T029 Service daemon (entry point, lifecycle, PID file, SIGTERM/SIGINT handling)
 - [ ] T030 Filesystem watcher (watch `.git/HEAD`, `.git/refs/`, project files; debouncing)
 - [ ] T031 [P] Event handler (classify detected events → EventType, route to snapshot capture)
 - [ ] T032 [P] MCP ↔ Service IPC (localhost HTTP or unix socket, health check, capture request)
