@@ -1,0 +1,12 @@
+/var/log/nginx/access.log /var/log/nginx/error.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 640 www-data adm
+    postrotate
+        systemctl reload nginx > /dev/null 2>&1 || true
+    endscript
+}
