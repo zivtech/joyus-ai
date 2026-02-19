@@ -116,3 +116,12 @@ export {
   CheckCanonicalInputSchema,
   ShareStateInputSchema,
 } from './mcp/tools/utils.js';
+
+// --- Companion service ---
+export { startService, stopService, isServiceRunning } from './service/daemon.js';
+export type { ServiceOptions } from './service/daemon.js';
+export { FileWatcher } from './service/watcher.js';
+export type { WatcherOptions } from './service/watcher.js';
+export { EventHandler } from './service/event-handler.js';
+export { createIpcServer, checkServiceHealth, requestCapture } from './service/ipc.js';
+export type { IpcServer } from './service/ipc.js';
