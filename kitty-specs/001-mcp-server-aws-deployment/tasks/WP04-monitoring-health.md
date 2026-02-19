@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Monitoring & Health Checks
-lane: "doing"
+lane: "for_review"
 dependencies: []
 base_branch: 001-mcp-server-aws-deployment-WP01
 base_commit: 14d387e020a5b4466093c805bc4abd3c927070c0
@@ -334,3 +334,7 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 - **False alerts**: Single transient failure should NOT alert. The 3-consecutive threshold prevents this.
 - **Cron reliability**: If cron daemon stops, no monitoring occurs. Consider systemd timer as alternative.
 - **Disk monitoring**: EBS can be resized, but catching 85% early prevents outage.
+
+## Activity Log
+
+- 2026-02-19T01:59:34Z – unknown – shell_pid=48045 – lane=for_review – Health endpoints, Slack alerts, monitoring cron
