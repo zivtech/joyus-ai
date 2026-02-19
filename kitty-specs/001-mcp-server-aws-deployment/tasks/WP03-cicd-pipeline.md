@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: CI/CD Pipeline
-lane: "doing"
+lane: "for_review"
 dependencies: []
 base_branch: 001-mcp-server-aws-deployment-WP02
 base_commit: 0de5a7aba398cf00ca6499c97791604b0f842fb5
@@ -324,3 +324,7 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 - **GHCR storage**: SHA-tagged images accumulate. Free tier has generous limits but plan for cleanup.
 - **Workflow scope**: `gh auth refresh -h github.com -s workflow` needed for pushing workflow files via HTTPS.
 - **First deploy**: No `.last-good-sha` exists — rollback falls back to cached images.
+
+## Activity Log
+
+- 2026-02-19T01:57:34Z – unknown – shell_pid=40410 – lane=for_review – GitHub Actions workflow, deploy script with rollback, health check script
