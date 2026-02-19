@@ -18,6 +18,10 @@ Three interconnected systems that give organizations the ability to:
 
 These systems encode organizational knowledge as testable, enforceable skills — the core value proposition of the Joyus AI platform (Constitution §2.2).
 
+### Beyond the first use case: Self-service profile building
+
+While the legal advocacy org drives the high-fidelity (Tier 4) requirements, the same profile engine can serve anyone who wants to build a writing profile for their own content. A blogger, a marketing team, or a solo consultant should be able to provide a handful of writing samples and get a usable writing skill — even if it's lower fidelity than a full forensic-grade profile. The platform supports four fidelity tiers (see §5.6), each with different data requirements and capabilities, making the profile engine valuable from casual use through expert-level authorship preservation.
+
 ### First validated use case
 
 A nonprofit legal advocacy organization — the foremost experts on consumer law in the United States — that:
@@ -313,6 +317,62 @@ The same profile infrastructure supports:
 - **Press releases**: "Draft a press release about [event] in the org's editorial voice"
 - **Internal memos**: "Summarize [legal development] for staff in the org's informal register"
 
+### 5.6 Profile Fidelity Tiers
+
+Not every use case requires a 50,000-word corpus and 129-feature analysis. The profile engine supports four fidelity tiers, each representing a qualitative shift in what linguistic features are modeled — not just "more data = better."
+
+**Why this matters:** Frontier LLMs (Claude, GPT-4o, Gemini) plateau at Tier 1-2 fidelity regardless of prompting sophistication (EMNLP 2025, Wang et al.: 40,000+ generations across 400+ authors). The reason is the **explicit/implicit gap**: explicit style features (tone, vocabulary level) can be described in a prompt; implicit features (function-word fingerprints, syntactic patterns, rare-word preferences) can only be measured numerically. Tier 3-4 profiles capture what cannot be said, only measured.
+
+| | Tier 1: Surface Tone | Tier 2: Lexical Profile | Tier 3: Syntactic + Rhetorical | Tier 4: Full Stylometric |
+|---|---|---|---|---|
+| **Data required** | ~300-2,000 words | ~2,000-10,000 words | ~10,000-50,000 words | ~50,000+ words |
+| **Attribution accuracy** | 55-70% | 70-82% | 82-92% | 92-98% |
+| **What it captures** | Tone, vocabulary register, sentiment, basic punctuation | Function word frequencies, type-token ratio, sentence length distribution, preferred connectives | POS n-grams, clause embedding, discourse markers, argument sequencing, entity reference style | 129+ features: character n-grams, rare word signatures, rhythmic cadence, topic-invariant latent style |
+| **Generation approach** | Zero/few-shot prompt | Prompt + frequency constraints | Prompt + syntactic constraints | Full stylometric vector-guided generation |
+| **Topic-invariant?** | No | Partially | Mostly | Yes |
+| **Forensic-grade?** | No | No | Borderline | Yes |
+| **Good enough for** | Social media, short marketing copy, email templates | Blog drafts, newsletters, long-form content | Ghostwritten articles, thought leadership, extended content series | High-fidelity ghostwriting across domains, forensic attribution, automated content pipelines |
+| **Commercial equivalent** | What ChatGPT does with a style prompt | What Writer.com / Jasper do | Nothing commercially available | Nothing commercially available |
+
+#### Tier 1: Surface Tone (~300-2,000 words)
+
+The user provides a few writing samples. The system extracts tone, vocabulary register, sentiment polarity, and basic punctuation habits. This is what any LLM does today with a "write in my style" prompt — the profile makes it consistent and reproducible. Good enough for casual "write my LinkedIn posts roughly in my voice" use cases.
+
+**Limitations:** Collapses under topic change. Cannot distinguish the author from other writers with similar tone. Would fail a Burrows' Delta test.
+
+#### Tier 2: Lexical Profile (~2,000-10,000 words)
+
+The user provides 5-25 documents. The system extracts function word distributions, type-token ratio, sentence length histograms, preferred transitions. This is where Burrows' Delta becomes meaningful. Better than what commercial brand voice tools (Writer, Jasper, Grammarly) offer today, because it's grounded in statistical features rather than LLM-extracted adjectives.
+
+**Limitations:** Topic-dependent — shifts when writing about unfamiliar subjects. Cannot replicate argumentation style.
+
+#### Tier 3: Syntactic + Rhetorical (~10,000-50,000 words)
+
+Requires NLP beyond word frequencies — POS tagging and dependency parsing. Captures parse-tree depth, clause embedding patterns, paragraph structure, discourse markers, hedging language, argumentation sequencing. These features are substantially topic-independent: passive voice ratios stay stable whether you write about cooking or mergers.
+
+**Limitations:** Requires domain-matched training text. Personal anecdote voice and fine-grained humor not captured.
+
+#### Tier 4: Full Stylometric (~50,000+ words)
+
+The full 129-feature treatment. Character n-grams, rare-word preference signatures, rhythmic cadence (sentence-length Markov chains), topic-invariant latent style. This is what the legal advocacy org needs — and what Joyus AI has already validated at 97.9% attribution accuracy on 9 authors.
+
+**Limitations:** Data-hungry. Degrades when author's style evolves over time. Cannot capture truly novel creative ideas (style is the *how*, not the *what*).
+
+#### Honest caveat
+
+Attribution accuracy (97.9%) and generation fidelity are related but distinct metrics. No reliable mapping between them exists in published literature. The strongest defensible claim is "generation with higher stylometric alignment than any prompting-based approach" — not "indistinguishable from the human author." Sophisticated readers familiar with the author can still detect AI-generated content in an estimated 15-30% of cases even at Tier 4 (per EMNLP 2025 findings).
+
+#### What to build vs. leverage
+
+| Component | Build or leverage? | Rationale |
+|---|---|---|
+| Burrows' Delta computation | Leverage (`faststylometry` on PyPI) | Solved math, actively maintained Python library |
+| NLP preprocessing (POS, parsing) | Leverage (spaCy) | Industry standard, production-grade |
+| Multi-feature extraction pipeline (129+ features) | Build | No existing library combines function words, content markers, syntactic features, punctuation, and character-level signals in one production package |
+| Style drift detection | Build | Not available commercially or open-source |
+| Generation + verification closed loop | Build | The core gap: LLMs need external measurement to know if they matched the target style |
+| MCP-native stylometric analysis | Build | Empty niche in the MCP ecosystem as of early 2026 |
+
 ---
 
 ## 6. System 3: Fidelity Monitoring & Repair
@@ -587,6 +647,11 @@ Start with Federal Register monitoring for final rules affecting:
 | Generated content fidelity score | >= 0.80 for person-level, >= 0.75 for dept/org | Averaged across outputs |
 | Access control: zero paywalled content leakage | 0 incidents | Audit + automated provenance checking |
 | Profile rebuild time | < 30 minutes per person (10+ document corpus) | Performance test |
+| Tier 1 profile generation | < 30 seconds from 300+ words input | Performance test |
+| Tier 2 profile generation | < 5 minutes from 2,000+ words input | Performance test |
+| Tier 3 profile generation | < 15 minutes from 10,000+ words input | Performance test |
+| Tier 4 profile generation | < 30 minutes from 50,000+ words input | Performance test |
+| Self-service profile building | User can upload samples and receive a usable writing skill with no manual intervention | End-to-end test |
 
 ---
 
@@ -601,6 +666,11 @@ Start with Federal Register monitoring for final rules affecting:
 | How to handle position conflicts? | Person X may disagree with the org's official position. When generating as Person X, use their position or the org's? Need a precedence model. | High — affects generation accuracy and org policy |
 | Integration point with Drupal for access control? | Standalone service with Drupal auth passthrough? Drupal module? API tokens? Depends on org's infrastructure. | Medium — deployment-specific |
 | Federal Register API reliability? | The FR API is public but has had availability issues. Need fallback/caching strategy. | Low — operational concern |
+| Self-service tier boundaries — should the system auto-detect the achievable tier? | Given N words of input, the system could say "you have enough data for Tier 2; Tier 3 would require ~8,000 more words." Should this be automatic guidance or user-selected? | Medium — affects UX |
+| Should Tier 1-2 profiles use `faststylometry` directly or wrap it? | faststylometry handles Burrows' Delta well. The question is whether to depend on it directly or wrap it for consistent interface across tiers. | Medium — architecture decision |
+| Feature ablation study for the 129-feature set? | The literature shows diminishing returns beyond top 200-500 MFW. Are all 129 features carrying signal, or are some redundant? An ablation study would validate the feature set. | Medium — affects Tier 4 quality claims |
+| How does the closed-loop generation + verification actually work at inference time? | The 129-feature vector could be used as a classifier, a reward signal, or a constraint beam search. The specific mechanism matters enormously for output quality. | High — core architecture |
+| Pricing model for self-service tiers? | Tier 1 could be free/low-cost (attract users), Tier 4 is premium (high value, high compute). How does this map to the platform's pricing? | Medium — business decision |
 
 ---
 
@@ -635,7 +705,14 @@ Start with Federal Register monitoring for final rules affecting:
 - Expert review queue
 - Access control enforcement throughout
 
-### Phase E: Regulatory Change Detection (Weeks 10-12)
+### Phase E: Self-Service Profile Building (Weeks 8-10)
+- Upload-and-profile web interface (provide samples, get a writing skill)
+- Automatic tier detection: "you have enough data for Tier 2; Tier 3 needs ~8,000 more words"
+- Tier 1-2 profiles generated in under 5 minutes
+- Skill file output usable immediately in any Joyus AI deployment
+- Tier progression: users can upgrade their profile by providing more samples over time
+
+### Phase F: Regulatory Change Detection (Weeks 10-12)
 - Federal Register daily monitoring
 - Relevance filtering against topic taxonomy
 - Impact severity classification
@@ -645,5 +722,6 @@ Start with Federal Register monitoring for final rules affecting:
 ---
 
 *Spec created: February 18, 2026*
+*Updated: February 18, 2026 — Added profile fidelity tiers (§5.6), self-service profile building, build-vs-leverage analysis, and honest caveats on attribution accuracy vs. generation fidelity. Research basis: EMNLP 2025 (Wang et al.), Oxford DSH 2025, MDPI 2024 survey, faststylometry ecosystem analysis.*
 *For: Joyus AI Platform — Feature 005*
 *References: NCLC author-identification-research, spec/profile-engine-spec.md, Constitution v1.5*
