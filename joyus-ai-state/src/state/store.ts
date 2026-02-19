@@ -12,6 +12,8 @@ import { createHash } from 'node:crypto';
 import { createId } from '@paralleldrive/cuid2';
 import { SnapshotSchema } from '../core/schema.js';
 import type { Snapshot, EventType } from '../core/types.js';
+import { acquireLock, releaseLock } from './lock.js';
+import { logWarn, logDebug } from '../utils/logger.js';
 
 // --- Types ---
 
@@ -86,20 +88,33 @@ export class StateStore {
   // --- T005: Atomic snapshot write ---
 
   async write(snapshot: Snapshot): Promise<string> {
+    const lockPath = join(this.snapshotsDir, 'write.lock');
+
     try {
-      const validated = SnapshotSchema.parse(snapshot);
       await mkdir(this.snapshotsDir, { recursive: true });
 
-      const filename = await this.generateFilename(validated.timestamp);
-      const filePath = join(this.snapshotsDir, filename);
-      const tmpPath = filePath + '.tmp';
+      const locked = await acquireLock(lockPath, 5000);
+      if (!locked) {
+        logWarn('Could not acquire write lock, skipping snapshot');
+        return snapshot.id;
+      }
 
-      await writeFile(tmpPath, JSON.stringify(validated, null, 2), 'utf-8');
-      await rename(tmpPath, filePath);
+      try {
+        const validated = SnapshotSchema.parse(snapshot);
+        const filename = await this.generateFilename(validated.timestamp);
+        const filePath = join(this.snapshotsDir, filename);
+        const tmpPath = filePath + '.tmp';
 
-      return validated.id;
+        await writeFile(tmpPath, JSON.stringify(validated, null, 2), 'utf-8');
+        await rename(tmpPath, filePath);
+
+        logDebug(`Snapshot written: ${filename}`);
+        return validated.id;
+      } finally {
+        await releaseLock(lockPath);
+      }
     } catch (err) {
-      console.warn('[joyus-ai] Failed to write snapshot:', err instanceof Error ? err.message : err);
+      logWarn(`Failed to write snapshot: ${err instanceof Error ? err.message : err}`);
       return snapshot.id;
     }
   }

@@ -125,3 +125,7 @@ export type { WatcherOptions } from './service/watcher.js';
 export { EventHandler } from './service/event-handler.js';
 export { createIpcServer, checkServiceHealth, requestCapture } from './service/ipc.js';
 export type { IpcServer } from './service/ipc.js';
+
+// --- Utilities ---
+export { LogLevel, setLogLevel, getLogLevel, logError, logWarn, logInfo, logDebug } from './utils/logger.js';
+export { acquireLock, releaseLock } from './state/lock.js';
