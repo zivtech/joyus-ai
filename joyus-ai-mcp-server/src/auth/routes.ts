@@ -221,7 +221,7 @@ authRouter.get('/google/start', async (req: Request, res: Response) => {
     state,
     access_type: 'offline',
     prompt: 'consent',
-    hd: 'zivtech.com' // Restrict to Zivtech domain
+    hd: 'example.com' // Restrict to organization domain — change to your domain
   });
 
   res.redirect(`${OAUTH_CONFIG.google.authUrl}?${params}`);
@@ -267,9 +267,9 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
 
     const { email, name } = userInfoResponse.data;
 
-    // Verify Zivtech domain
-    if (!email.endsWith('@zivtech.com')) {
-      return res.status(403).send('Only Zivtech accounts are allowed');
+    // Verify organization domain — change to your domain
+    if (!email.endsWith('@example.com')) {
+      return res.status(403).send('Only organization accounts are allowed');
     }
 
     // Find or create user

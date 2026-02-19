@@ -65,7 +65,7 @@ migrations:
   - id: 0.10.1_populate_slash_commands
     applied_at: '2026-02-11T21:18:54.025482'
     result: success
-    notes: 'Created: /Users/AlexUA/gitjawns/joyus-ai/.claude/commands; Created: spec-kitty.accept.md;
+    notes: 'Created: .claude/commands; Created: spec-kitty.accept.md;
       Created: spec-kitty.analyze.md; Created: spec-kitty.checklist.md; Created: spec-kitty.clarify.md;
       Created: spec-kitty.constitution.md; Created: spec-kitty.dashboard.md; Created:
       spec-kitty.implement.md; Created: spec-kitty.merge.md; Created: spec-kitty.plan.md;

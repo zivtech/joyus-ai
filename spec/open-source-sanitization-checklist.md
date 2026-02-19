@@ -2,138 +2,151 @@
 
 > Items that must be addressed before the `joyus-ai` repository is made public.
 > Generated from security review on February 18, 2026.
+> Updated: February 19, 2026 — repository separation and sanitization pass completed.
 
 ---
 
 ## HIGH PRIORITY (Must fix before release)
 
-### 1. Personal User Paths
+### 1. Personal User Paths ✅
 
 Remove all `/Users/AlexUA/` references that expose developer machine layout.
 
-| File | What to Fix |
-|------|-------------|
-| `joyus-ai-requirements-brief.md` (lines ~17, 22) | Paths to `.claude/projects/` and `.jsonl` session files |
-| `.kittify/metadata.yaml` (line ~68) | Path to `.claude/commands` |
+| File | Status |
+|------|--------|
+| `joyus-ai-requirements-brief.md` | **Moved** to `_private/joyus-ai-internal/` |
+| `.kittify/metadata.yaml` (line ~68) | **Fixed** — path genericized |
 
-**Fix:** Replace with generic paths like `~/.claude/projects/<project>/` or remove entirely.
+### 2. Private Notion Links ✅
 
-### 2. Private Notion Links
+| File | Status |
+|------|--------|
+| `joyus-ai-plan.md` | **Moved** to `_private/joyus-ai-internal/` |
+| `research/jawn-ai-research.md` | **Moved** to `_private/joyus-ai-internal/` |
 
-Remove all links to private Notion databases — they expose internal workspace structure.
+### 3. NCLC Client References ✅
 
-| File | Links |
-|------|-------|
-| `joyus-ai-plan.md` (lines ~6, 571, 572, 578) | 3 distinct Notion database URLs (Crazy Ideas, Technical Learning, Business & Partnership) |
-| `research/jawn-ai-research.md` (lines ~641, 642) | Same Notion links repeated |
+| File | Status |
+|------|--------|
+| `joyus-ai-requirements-brief.md` | **Moved** to `_private/joyus-ai-internal/` |
+| `joyus-ai-plan.md` | **Moved** to `_private/joyus-ai-internal/` |
+| `spec/profile-engine-spec.md` | **Fixed** — all NCLC refs genericized to "client PoC" |
+| `spec/constitution.md` | **Fixed** — genericized to "client PoC" |
+| `spec/plan.md` | **Fixed** — all NCLC refs genericized |
+| `kitty-specs/*/spec.md` | **Fixed** — "nclclib" → "prior project", "NCLC" → "client PoC" |
+| `joyus-ai-state/tests/` | **Fixed** — test fixture genericized |
 
-**Fix:** Remove links entirely or replace with `[Internal — Notion]` placeholder.
+### 4. Internal Infrastructure References ✅
 
-### 3. NCLC Client References
-
-The NCLC (National Consumer Law Center) is an actual client project. References should be genericized.
-
-| File | What to Fix |
-|------|-------------|
-| `joyus-ai-requirements-brief.md` | Multiple references to `nclclib`, `NCLC-test-files`, NCLC-specific pipeline |
-| `joyus-ai-plan.md` (lines ~77-100) | Full section on NCLC PoC with specific accuracy numbers and author counts |
-| `spec/profile-engine-spec.md` (lines ~40-95) | References to `legal_advocacy.yaml`, `fixtures/nclc/`, `test_nclc_accuracy.py` |
-| `spec/constitution.md` (line ~30) | "methodology proven on NCLC: 94.6%→97.9% attribution accuracy" |
-
-**Fix:** Either:
-- Genericize: "methodology proven on a client PoC" with anonymized accuracy numbers
-- Or move NCLC-specific documentation to a private repo and reference it abstractly
-
-**Note:** The accuracy numbers and methodology description are fine to keep — just remove the client name and specific author counts.
-
-### 4. Internal Infrastructure References
-
-Remove references that expose Zivtech's internal server infrastructure.
-
-| File | What to Fix |
-|------|-------------|
-| `research/tool-inventory-briefing.md` | `ops.zivtech.com` — reveals Docker Compose, Nginx, MariaDB, Jenkins, Open WebUI stack |
-
-**Fix:** Remove or replace with `internal-ops.example.com`.
+| File | Status |
+|------|--------|
+| `research/tool-inventory-briefing.md` | **Moved** to `_private/joyus-ai-internal/` |
 
 ---
 
 ## MEDIUM PRIORITY (Fix for professional release)
 
-### 5. Internal Email Addresses
+### 5. Internal Email Addresses ✅
 
-Replace `@zivtech.com` emails with generic placeholders.
+All `@zivtech.com` emails replaced with `@example.com` placeholders.
 
-| File | Emails |
+| File | Status |
 |------|--------|
-| `zivtech-skills-marketplace-architecture.html` (line ~1044) | `dev@zivtech.com` |
-| `joyus-ai-mcp-server/docs/PLATFORM_ARCHITECTURE.md` (lines ~373, 401-404) | `alex@zivtech.com`, `sarah@zivtech.com`, `mike@zivtech.com` |
-| `joyus-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md` (line ~169) | `alex@zivtech.com` |
-| `joyus-ai-mcp-server/docs/SKILLS_MARKETPLACE_ARCHITECTURE.md` (line ~474) | `dev@zivtech.com` |
-| `joyus-ai-mcp-server/src/scheduler/routes.ts` (lines ~220, 446) | `you@zivtech.com` |
+| `zivtech-skills-marketplace-architecture.html` | **Moved** to `_private/joyus-ai-internal/` |
+| `joyus-ai-mcp-server/docs/PLATFORM_ARCHITECTURE.md` | **Fixed** |
+| `joyus-ai-mcp-server/docs/IMPLEMENTATION_PLAN.md` | **Fixed** |
+| `joyus-ai-mcp-server/docs/SKILLS_MARKETPLACE_ARCHITECTURE.md` | **Fixed** |
+| `joyus-ai-mcp-server/src/scheduler/routes.ts` | **Fixed** |
+| `joyus-ai-mcp-server/src/auth/routes.ts` | **Fixed** |
 
-**Fix:** Replace with `user@example.com`, `admin@example.com`, etc.
+### 6. Internal Domain References ✅
 
-### 6. Internal Domain References
+All `ai.zivtech.com`, `mcp.zivtech.com`, `demos.zivtech.com` replaced with `*.example.com`.
 
-Generalize Zivtech-specific domain names.
+| File | Status |
+|------|--------|
+| `jawn-ai-platform-overview.jsx` | **Moved** to `_private/joyus-ai-internal/` |
+| `joyus-ai-plan.md` | **Moved** to `_private/joyus-ai-internal/` |
+| `hosting-comparison.md` | **Moved** to `_private/joyus-ai-internal/` |
+| `deploy/.env.example` | **Fixed** |
+| `deploy/claude-desktop-config.md` | **Fixed** |
+| `kitty-specs/001-*/` (all files) | **Fixed** |
+| `joyus-ai-mcp-server/` (docs, code) | **Fixed** |
 
-| File | Domains |
-|------|---------|
-| `jawn-ai-platform-overview.jsx` (lines ~58, 150) | `ai.zivtech.com`, `@zivtech.com` |
-| `joyus-ai-plan.md` | `demos.zivtech.com` |
-| `hosting-comparison.md` (line ~183) | `demos.zivtech.com` |
+### 7. Docker Compose Dev Defaults ✅
 
-**Fix:** Replace with `ai.example.com`, `demos.example.com`, or `your-domain.com`.
-
-### 7. Docker Compose Dev Defaults
-
-Add clear warnings about development-only credentials.
-
-| File | What to Fix |
-|------|-------------|
-| `joyus-ai-mcp-server/docker-compose.yml` (lines ~11, 34) | `POSTGRES_PASSWORD: postgres` — add prominent warning comment |
-
-**Fix:** Add `# WARNING: Development defaults only. Change all passwords for production.` at top of file.
+| File | Status |
+|------|--------|
+| `deploy/docker-compose.yml` | **Fixed** — warning comment added |
 
 ---
 
 ## LOW PRIORITY (Nice to have)
 
-### 8. Spec Kitty Metadata
+### 8. Spec Kitty Metadata ✅
 
-| File | What to Fix |
-|------|-------------|
-| `.kittify/metadata.yaml` (line ~68) | Personal developer path |
+| File | Status |
+|------|--------|
+| `.kittify/metadata.yaml` (line ~68) | **Fixed** — path genericized |
 
-**Fix:** Generalize or remove.
+---
+
+## Repository Separation (Added Feb 19)
+
+Files moved to `_private/` staging directories (gitignored):
+
+### `_private/joyus-ai-ops/` (production infrastructure)
+- `deploy/docker-compose.prod.yml`
+- `deploy/nginx/` (full directory)
+- `deploy/scripts/deploy.sh`, `setup-ec2.sh`, `monitor.sh`, `slack-alert.sh`
+
+### `_private/joyus-ai-internal/` (business docs, research, outreach)
+- Planning: `joyus-ai-plan.md`, `joyus-ai-requirements-brief.md`, `project-status-feb10.md`, `ROADMAP-internal.md`
+- Research: all files from `research/`, `ai-platform-naming-research.md`, `hosting-comparison.md`
+- Outreach: `spec/outreach/` (briefs, PDFs, logo)
+- Specs: `internal-ai-portal-spec.md`, `specification.md`, `implementation-summary.md`, `toolkit-diagnosis.md`, `toolkit-refactoring-design.md`
+- Legacy: `jawn-ai-platform-overview.jsx`, `zivtech-skills-marketplace-architecture.html`
+
+### Deleted (no repo)
+- `zivtech-claude-skills-repo` (symlink to local dev path)
+- `.conductor/` (empty directory)
+- `.entire/` (session logs)
+
+---
+
+## Remaining for Professional Release
+
+### 9. "Zivtech AI" Product Branding
+
+Many files still use "Zivtech AI" as the product name in titles, page headings, and ASCII art. These should be renamed to "Joyus AI" in a follow-up pass:
+- `joyus-ai-mcp-server/src/scheduler/routes.ts` — HTML page titles
+- `joyus-ai-mcp-server/docs/*.md` — document titles
+- `joyus-ai-mcp-server/ARCHITECTURE.md` — title
+- `kitty-specs/003-platform-architecture-overview/` — references
+
+### 10. License and Community Files
+
+Before making public:
+- [ ] Choose and apply license (see Constitution §2.8 — AGPL or BSL recommended)
+- [ ] Add `LICENSE` file
+- [ ] Add `CONTRIBUTING.md`
+- [ ] Add `CODE_OF_CONDUCT.md`
+- [ ] Run `gitleaks` / `trufflehog` final scan
+- [ ] Verify repo builds without private dependencies
 
 ---
 
 ## Already Clean
 
 These areas passed review:
-
-- `.gitignore` properly configured (no `.env` files tracked, AI IDE dirs excluded)
-- `.env.example` uses proper placeholders (`xxx`, `change-me-in-production`)
+- `.gitignore` properly configured (staging dirs, secrets, AI IDE dirs excluded)
+- `.env.example` uses proper placeholders
 - No hardcoded API keys or tokens anywhere in the codebase
 - No secrets found in git commit history
 - GitHub references are to public repos only
 
 ---
 
-## Pre-Release Process
-
-1. Create a branch: `sanitize/open-source-prep`
-2. Work through HIGH items first, then MEDIUM
-3. Have a second person review the diff
-4. Run a final automated scan (e.g., `gitleaks`, `trufflehog`) on the sanitized repo
-5. Verify the repo builds and runs without any private dependencies
-6. Choose and apply license (see Constitution §2.8 — AGPL or BSL recommended)
-7. Add standard open source files: `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
-8. Make repo public
-
----
-
 *Created: February 18, 2026*
-*Status: Pre-release — all items pending*
+*Updated: February 19, 2026 — repository separation and bulk sanitization completed*
+*Status: Core sanitization complete. Branding rename and license selection remaining.*

@@ -66,13 +66,13 @@ Verify that all 10 MCP server endpoints and all skill runtime dependencies work 
 1. Test Playwright navigation:
    ```
    Tool: playwright_navigate
-   Input: { "url": "https://zivtech.com" }
+   Input: { "url": "https://example.com" }
    Expected: Page loads successfully, returns page title
    ```
 2. Test Playwright screenshot:
    ```
    Tool: playwright_screenshot
-   Input: { "url": "https://zivtech.com", "fullPage": true }
+   Input: { "url": "https://example.com", "fullPage": true }
    Expected: Returns screenshot image data
    ```
 3. Test Backstop.js reference capture:
@@ -233,7 +233,7 @@ Verify that all 10 MCP server endpoints and all skill runtime dependencies work 
    ```
 2. Run a basic audit:
    ```bash
-   docker exec platform squirrel audit https://zivtech.com --format llm
+   docker exec platform squirrel audit https://example.com --format llm
    ```
 3. Verify the output contains expected audit categories (SEO, performance, security, etc.)
 4. Verify squirrel can resolve DNS and make HTTPS requests from inside the container

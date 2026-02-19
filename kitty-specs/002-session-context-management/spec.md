@@ -23,7 +23,7 @@
 
 A junior developer is mid-task — they've switched to a feature branch, modified three files, and run tests that showed two failures. Their Claude Code session hits a context limit and compacts. They start a new session and say "continue." The system automatically restores their active work state: current branch, modified files, pending task, and last test results. The developer picks up exactly where they left off without manually re-explaining context.
 
-**Why this priority**: This is the single most painful daily problem identified in evidence. The nclclib project showed 8000+ word continuation summaries that still missed key details, wrong-branch commits from lost context, and cherry-pick chains to recover from mistakes caused by state loss.
+**Why this priority**: This is the single most painful daily problem identified in evidence. The prior project showed 8000+ word continuation summaries that still missed key details, wrong-branch commits from lost context, and cherry-pick chains to recover from mistakes caused by state loss.
 
 **Independent Test**: Can be fully tested by starting a session, performing git operations and file edits, triggering a session restart, and verifying that the new session has access to the prior state. Delivers immediate value for any Claude Code user.
 
@@ -40,7 +40,7 @@ A junior developer is mid-task — they've switched to a feature branch, modifie
 
 A team has a tracking document (e.g., accessibility-audit-tracking.csv) that exists in two locations — one git-tracked, one in a working directory. A developer declares which copy is canonical. From that point on, when anyone references "the tracking spreadsheet," the system knows which file to read and warns if a stale copy is accessed.
 
-**Why this priority**: Document divergence causes silent data loss. In the nclclib project, accessibility-fixes-todo.md existed in two locations with different content and dates. The tracking CSV conflicted on every merge because multiple branches modified it independently. Declaring canonical sources prevents this class of error entirely.
+**Why this priority**: Document divergence causes silent data loss. In the prior project, accessibility-fixes-todo.md existed in two locations with different content and dates. The tracking CSV conflicted on every merge because multiple branches modified it independently. Declaring canonical sources prevents this class of error entirely.
 
 **Independent Test**: Can be tested by declaring a canonical path for a document, then attempting to read or modify a non-canonical copy. The system should warn or redirect. Delivers value for any project with shared reference documents.
 
@@ -74,7 +74,7 @@ When a session ends or compacts, the system automatically generates a structured
 
 The system automatically captures state snapshots when meaningful events occur — not continuously, but at moments that matter: git commits, branch switches, test runs, file saves to canonical documents, and session milestones. This ensures that even if a session crashes between events, the most recent snapshot reflects a coherent state.
 
-**Why this priority**: The persistence mechanism must be event-driven to be both reliable and efficient. Continuous writes are wasteful; exit-only writes are lossy. Event-driven snapshots hit the right balance — the nclclib evidence showed that wrong-branch commits happened because state wasn't captured at the moment of branch switching.
+**Why this priority**: The persistence mechanism must be event-driven to be both reliable and efficient. Continuous writes are wasteful; exit-only writes are lossy. Event-driven snapshots hit the right balance — the prior project evidence showed that wrong-branch commits happened because state wasn't captured at the moment of branch switching.
 
 **Independent Test**: Can be tested by performing a sequence of git operations and verifying that a state snapshot is updated after each one. Then simulate a crash and confirm the snapshot reflects the last event.
 
@@ -269,5 +269,5 @@ After landscape analysis of ~50+ existing projects and Claude Enterprise feature
 *Specification captured: February 16, 2026*
 *Revised: February 16, 2026 (architecture reframing, Enterprise overlap)*
 *Discovery conducted with: Alex UA*
-*Evidence source: joyus-ai-requirements-brief.md (nclclib workflow analysis), existing-projects-landscape.md*
+*Evidence source: joyus-ai-requirements-brief.md (prior project workflow analysis), existing-projects-landscape.md*
 *For: joyus-ai — Mediator Layer, Spec 1 of 2*

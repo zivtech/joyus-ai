@@ -65,7 +65,7 @@ session-start | session-end | manual | file-change | compaction | share
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Ticket/task ID (e.g., "NCLCRS-323") |
+| `id` | string | Ticket/task ID (e.g., "PROJ-323") |
 | `title` | string | Task title/summary |
 | `source` | string | Where the task comes from ("jira", "github", "spec-kitty", "manual") |
 | `url` | string \| null | Link to task in external system |
@@ -150,7 +150,7 @@ session-start | session-end | manual | file-change | compaction | share
 {
   "documents": {
     "tracking-spreadsheet": {
-      "default": "NCLC-test-files/accessibility-audit-tracking.csv",
+      "default": "test-files/accessibility-audit-tracking.csv",
       "branches": {
         "feature/a11y-652": "data/tracking.csv"
       }

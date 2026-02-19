@@ -17,7 +17,7 @@
 
 AI coding agents are powerful but permissive. They will commit to the wrong branch, ignore coding standards, skip tests before pushing, lose track of canonical files, and write code without checking for existing upstream solutions. Less-technical users amplify these failure modes because they don't know what to ask for and can't catch mistakes in code they don't understand.
 
-Evidence from the nclclib project workflow analysis documents these specific failure patterns:
+Evidence from the prior project workflow analysis documents these specific failure patterns:
 - Wrong-branch commits requiring cherry-pick chains to recover
 - Code pushed without any automated quality checks (linting, tests, accessibility)
 - Relevant skills (drupal-coding-standards, drupal-security) available but never invoked

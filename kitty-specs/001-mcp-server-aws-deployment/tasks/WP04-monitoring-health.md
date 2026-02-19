@@ -256,10 +256,10 @@ Implement health check endpoints in the MCP server, create monitoring scripts, c
 
    if [ "$STATUS" = "down" ]; then
      COLOR="danger"
-     TEXT=":red_circle: *MCP Server Alert*\nService degraded on ai.zivtech.com\n${DETAILS}"
+     TEXT=":red_circle: *MCP Server Alert*\nService degraded on ai.example.com\n${DETAILS}"
    else
      COLOR="good"
-     TEXT=":green_circle: *MCP Server Recovered*\nAll services healthy on ai.zivtech.com"
+     TEXT=":green_circle: *MCP Server Recovered*\nAll services healthy on ai.example.com"
    fi
 
    curl -s -X POST "$WEBHOOK_URL" \

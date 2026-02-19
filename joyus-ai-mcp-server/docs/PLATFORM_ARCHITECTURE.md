@@ -254,7 +254,7 @@ IMPROVEMENT ACTIONS:
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                                                                               │
-│  1. User visits https://ai.zivtech.com                                        │
+│  1. User visits https://ai.example.com                                        │
 │  2. Signs in with Google (Zivtech domain)                                     │
 │  3. Chat interface appears with conversation history                          │
 │                                                                               │
@@ -315,7 +315,7 @@ IMPROVEMENT ACTIONS:
 │  ┌─────────────────────────────────────────────────────────────────────────────┐│
 │  │ Layer 1: Authentication                                                      ││
 │  │                                                                              ││
-│  │  • Google OAuth (restricted to @zivtech.com)                                 ││
+│  │  • Google OAuth (restricted to @example.com)                                 ││
 │  │  • MCP Bearer tokens (unique per user, revocable)                            ││
 │  │  • Session-based web auth with secure cookies                                ││
 │  └─────────────────────────────────────────────────────────────────────────────┘│
@@ -370,7 +370,7 @@ IMPROVEMENT ACTIONS:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│  ZIVTECH AI ADMIN                                               alex@zivtech.com │
+│  ZIVTECH AI ADMIN                                               admin@example.com │
 ├─────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                  │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐ │
@@ -398,10 +398,10 @@ IMPROVEMENT ACTIONS:
 │                                                                                  │
 │  RECENT ACTIVITY                                                                 │
 │  ┌─────────────────────────────────────────────────────────────────────────────┐│
-│  │  14:32  alex@zivtech.com    jira_get_my_issues           ✓ 234ms            ││
-│  │  14:31  sarah@zivtech.com   playwright_navigate          ✓ 1.2s             ││
-│  │  14:28  mike@zivtech.com    slack_post_message           ✓ 189ms            ││
-│  │  14:25  alex@zivtech.com    github_list_prs              ✗ 401 Unauthorized ││
+│  │  14:32  admin@example.com    jira_get_my_issues           ✓ 234ms            ││
+│  │  14:31  user@example.com   playwright_navigate          ✓ 1.2s             ││
+│  │  14:28  dev@example.com    slack_post_message           ✓ 189ms            ││
+│  │  14:25  admin@example.com    github_list_prs              ✗ 401 Unauthorized ││
 │  └─────────────────────────────────────────────────────────────────────────────┘│
 │                                                                                  │
 └─────────────────────────────────────────────────────────────────────────────────┘

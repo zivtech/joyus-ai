@@ -169,7 +169,7 @@ A team member invokes the PowerPoint MCP server to generate a branded client pre
 ## 7. Assumptions
 
 - AWS account already exists or can be created for Zivtech
-- DNS can be configured for `ai.zivtech.com`
+- DNS can be configured for `ai.example.com`
 - The existing joyus-ai MCP server codebase is deployment-ready (Phase 0 complete)
 - Team members have Claude Desktop installed and configured
 - GitHub Actions runners have access to deploy to EC2

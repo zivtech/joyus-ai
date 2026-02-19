@@ -323,7 +323,7 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 |----------|----------|-------------|
 | Constitution | `spec/constitution.md` | Governing principles — this spec must not contradict |
 | Implementation Plan | `spec/plan.md` | Phased roadmap, decision log, open questions |
-| Requirements Brief | `joyus-ai-requirements-brief.md` | Evidence-based problem descriptions from nclclib workflow |
+| Requirements Brief | `joyus-ai-requirements-brief.md` | Evidence-based problem descriptions from prior project workflow |
 | Session Context Spec | `kitty-specs/002-session-context-management/spec.md` | Domain 1 deep spec (already exists) |
 | MCP Server Deployment | `kitty-specs/001-mcp-server-aws-deployment/spec.md` | Phase 2 infrastructure dependency |
 | Internal Portal Spec | `spec/internal-ai-portal-spec.md` | Earlier portal spec — superseded by this umbrella |

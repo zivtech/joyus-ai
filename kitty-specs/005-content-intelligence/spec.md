@@ -668,7 +668,7 @@ Start with Federal Register monitoring for final rules affecting:
 
 | Metric | Target | Measured by |
 |--------|--------|-------------|
-| Person-level attribution accuracy | >= 97.9% (maintain NCLC 9-author baseline) | Regression suite |
+| Person-level attribution accuracy | >= 97.9% (maintain client PoC 9-author baseline) | Regression suite |
 | Department-level attribution accuracy | >= 90% | Cross-validated on department-grouped corpus |
 | Organization-level attribution accuracy | >= 85% (distinguish org from external text) | Validated against org + non-org samples |
 | Outsider detection rate | >= 95% (flag text not from the org) | Tested with external legal writing |
@@ -702,7 +702,7 @@ Start with Federal Register monitoring for final rules affecting:
 | Should Tier 1-2 profiles use `faststylometry` directly or wrap it? | faststylometry handles Burrows' Delta well. The question is whether to depend on it directly or wrap it for consistent interface across tiers. | Medium — architecture decision |
 | Feature ablation study for the 129-feature set? | The literature shows diminishing returns beyond top 200-500 MFW. Are all 129 features carrying signal, or are some redundant? An ablation study would validate the feature set. | Medium — affects Tier 4 quality claims |
 | How does the closed-loop generation + verification actually work at inference time? | The 129-feature vector could be used as a classifier, a reward signal, or a constraint beam search. The specific mechanism matters enormously for output quality. | High — core architecture |
-| ~~How should multi-audience voices be modeled?~~ | **Resolved (Feb 19):** VoiceContext as first-class entity with 3-layer opt-in. RegisterShift (parameter deltas on voice/tone) is insufficient — NCLC voices differ across all 12 profile sections. VoiceContext provides per-section overrides, per-voice fidelity tiers, and optional access control. See profile-engine-spec §3.1. | ~~High~~ **Resolved** |
+| ~~How should multi-audience voices be modeled?~~ | **Resolved (Feb 19):** VoiceContext as first-class entity with 3-layer opt-in. RegisterShift (parameter deltas on voice/tone) is insufficient — client PoC voices differ across all 12 profile sections. VoiceContext provides per-section overrides, per-voice fidelity tiers, and optional access control. See profile-engine-spec §3.1. | ~~High~~ **Resolved** |
 | Pricing model for self-service tiers? | Tier 1 could be free/low-cost (attract users), Tier 4 is premium (high value, high compute). How does this map to the platform's pricing? | Medium — business decision |
 
 ---
@@ -714,7 +714,7 @@ Start with Federal Register monitoring for final rules affecting:
 - Person-level profiles from corpus analysis
 - Skill file emission (SKILL.md + markers.json + stylometrics.json)
 - Two-tier verification (inline + deep)
-- NCLC regression suite passing
+- Regression suite passing
 
 ### Phase B: Hierarchical Profiles (Weeks 3-5)
 - Department-level composite profile builder
@@ -758,4 +758,4 @@ Start with Federal Register monitoring for final rules affecting:
 *Updated: February 19, 2026 — Added VoiceContext architecture: VoiceDefinition in §3.3 OrganizationProfile, voice resolution step in §5.3 generation workflow, Principle 8 (voice-level access control) in §7.2, voices/ directory in §8.2 skill file structure. Resolved open questions: auth integration (platform-agnostic, JWT first impl), multi-audience voice model (VoiceContext). Based on architecture research report (5 parallel agents + cross-validation).*
 *Updated: February 18, 2026 — Added profile fidelity tiers (§5.6), self-service profile building, build-vs-leverage analysis, and honest caveats on attribution accuracy vs. generation fidelity. Research basis: EMNLP 2025 (Wang et al.), Oxford DSH 2025, MDPI 2024 survey, faststylometry ecosystem analysis.*
 *For: Joyus AI Platform — Feature 005*
-*References: NCLC author-identification-research, spec/profile-engine-spec.md, Constitution v1.5*
+*References: client PoC author-identification-research, spec/profile-engine-spec.md, Constitution v1.5*

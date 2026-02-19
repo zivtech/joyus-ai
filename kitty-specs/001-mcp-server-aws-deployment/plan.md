@@ -7,7 +7,7 @@
 
 ## Summary
 
-Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with Docker Compose. Three consolidated containers (Platform, Playwright, PostgreSQL) serve the Zivtech team via Claude Desktop and a lightweight web chat UI for mobile/AFK access. The Platform container includes the skill runtime with all CLI dependencies (Python, Node, git, composer, drush, squirrel, Office packages). CI/CD via GitHub Actions pushes to GHCR and deploys automatically. Domain: `ai.zivtech.com` with Let's Encrypt TLS.
+Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with Docker Compose. Three consolidated containers (Platform, Playwright, PostgreSQL) serve the Zivtech team via Claude Desktop and a lightweight web chat UI for mobile/AFK access. The Platform container includes the skill runtime with all CLI dependencies (Python, Node, git, composer, drush, squirrel, Office packages). CI/CD via GitHub Actions pushes to GHCR and deploys automatically. Domain: `ai.example.com` with Let's Encrypt TLS.
 
 ## Technical Context
 
@@ -98,7 +98,7 @@ web-chat/
 │                                                          │
 │  ┌─────────────────────────────────────────────────────┐│
 │  │              Nginx Reverse Proxy (:443)              ││
-│  │  ai.zivtech.com → routes to services                ││
+│  │  ai.example.com → routes to services                ││
 │  │  Let's Encrypt auto-renewal                         ││
 │  └──────────┬──────────────┬───────────────────────────┘│
 │             │              │                             │
@@ -143,7 +143,7 @@ web-chat/
 
 **Nginx Reverse Proxy**:
 - Runs on host (not in Docker Compose)
-- Routes `ai.zivtech.com` to appropriate service
+- Routes `ai.example.com` to appropriate service
 - Handles TLS termination (Let's Encrypt / certbot)
 - WebSocket support for streaming
 
@@ -177,7 +177,7 @@ SSH to EC2
 
 ## Security
 
-- **TLS**: Let's Encrypt auto-renewed certificates on `ai.zivtech.com`
+- **TLS**: Let's Encrypt auto-renewed certificates on `ai.example.com`
 - **SSH**: Key-based only, restricted to Zivtech IPs
 - **MCP Auth**: Bearer tokens (existing implementation, revocable)
 - **OAuth Tokens**: AES-256 encrypted in PostgreSQL (existing implementation)
@@ -189,7 +189,7 @@ SSH to EC2
 
 - **Container-per-service split**: When client portal arrives, break Platform container into individual service containers for per-client isolation
 - **ECR migration**: Move from GHCR to AWS ECR when AWS footprint justifies it
-- **Custom domain rebrand**: New brand URL replaces `ai.zivtech.com`
+- **Custom domain rebrand**: New brand URL replaces `ai.example.com`
 - **Auto-scaling**: Single instance sufficient for team use; revisit for client load
 - **Managed PostgreSQL**: RDS when data volume or reliability requirements increase
 

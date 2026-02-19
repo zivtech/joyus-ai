@@ -64,7 +64,7 @@
 ## R7: Nginx Routing
 
 **Decision**: Path-based routing via nginx reverse proxy
-**Rationale**: Single domain (`ai.zivtech.com`) with paths routing to different services.
+**Rationale**: Single domain (`ai.example.com`) with paths routing to different services.
 
 | Path | Target | Service |
 |------|--------|---------|

@@ -11,7 +11,7 @@ A remote MCP (Model Context Protocol) server that enables Claude Desktop to inte
 │                                                                           │
 │     ┌─────────────────────────────────────────────────────────────┐      │
 │     │  Settings → Connectors → Add MCP Server                     │      │
-│     │  URL: https://mcp.zivtech.com/mcp                           │      │
+│     │  URL: https://mcp.example.com/mcp                           │      │
 │     │  Auth: Bearer <your-mcp-token>                              │      │
 │     └─────────────────────────────────────────────────────────────┘      │
 └───────────────────────────────────┬─────────────────────────────────────┘
@@ -119,7 +119,7 @@ docker-compose up
    https://www.googleapis.com/auth/drive.readonly
    https://www.googleapis.com/auth/documents.readonly
    ```
-6. Restrict to your organization's domain (e.g., `zivtech.com`)
+6. Restrict to your organization's domain (e.g., `example.com`)
 
 ### Atlassian Developer Console
 
@@ -306,7 +306,7 @@ databases:
 ```env
 NODE_ENV=production
 PORT=3000
-BASE_URL=https://mcp.zivtech.com
+BASE_URL=https://mcp.example.com
 DATABASE_URL=postgresql://...
 SESSION_SECRET=<random-32-bytes>
 TOKEN_ENCRYPTION_KEY=<random-32-bytes-hex>

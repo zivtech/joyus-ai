@@ -1,6 +1,6 @@
-# Joyus AI — Zivtech AI Agent Platform
+# Joyus AI — Open Source AI Agent Platform
 
-A multi-tenant AI agent platform for Zivtech consulting. Internal use and client deployments with skills-based guardrails, monitoring, and governance.
+A multi-tenant AI agent platform with skills-based guardrails, monitoring, and governance. Founded by [Zivtech](https://zivtech.com).
 
 ## What It Does
 
@@ -51,14 +51,13 @@ joyus-ai/
 │       ├── quickstart.md                  # Setup & verification guide
 │       ├── tasks.md                       # Work package overview (9 WPs, 38 tasks)
 │       └── tasks/WP01-*.md ... WP09-*.md  # Detailed work package prompts
-├── research/                              # Technical research & analysis
-│   ├── existing-projects-landscape.md     # 50+ project landscape analysis
-│   └── joyus-ai-session-context-pitch.md   # Session context feature pitch
 ├── spec/                                  # Project-level specs
-│   ├── constitution.md                    # Project principles (v1.2)
-│   └── ...                                # Phase 3-4 specs
-├── joyus-ai-requirements-brief.md          # Requirements brief (from nclclib analysis)
-└── joyus-ai-plan.md                        # Project plan (v2)
+│   ├── constitution.md                    # Project principles (v1.5)
+│   ├── plan.md                            # Master implementation plan
+│   ├── profile-engine-spec.md             # Profile engine library spec
+│   └── open-source-sanitization-checklist.md
+├── web-chat/                              # Simple chat UI
+└── deploy/                                # Docker Compose, Dockerfiles, scripts
 ```
 
 ## Phased Roadmap

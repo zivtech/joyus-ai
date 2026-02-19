@@ -21,7 +21,7 @@ const VALID_SNAPSHOT = {
     unstaged: ['src/css/nav.css'],
     untracked: ['test-output.log'],
   },
-  task: { id: 'NCLCRS-323', title: 'Fix nav a11y', source: 'jira', url: null },
+  task: { id: 'PROJ-323', title: 'Fix nav a11y', source: 'jira', url: null },
   tests: {
     runner: 'vitest',
     passed: 12,

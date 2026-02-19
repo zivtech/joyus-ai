@@ -166,7 +166,7 @@ joyus-ai-web/
 **Chat Interface**
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Zivtech AI                                              alex@zivtech.com ▼ │
+│  Zivtech AI                                              admin@example.com ▼ │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ┌───────────────┐ ┌─────────────────────────────────────────────────────────┤
 │ │ Conversations │ │                                                         │
@@ -497,7 +497,7 @@ Production-ready deployment with documentation.
 
 #### 6.3 Deployment
 - [ ] DigitalOcean App Platform setup
-- [ ] Domain configuration (ai.zivtech.com)
+- [ ] Domain configuration (ai.example.com)
 - [ ] SSL certificates
 - [ ] Backup strategy
 - [ ] Monitoring (uptime, errors)
@@ -515,7 +515,7 @@ Production-ready deployment with documentation.
 - [ ] Support process defined
 
 ### Success Criteria
-- Platform live at ai.zivtech.com
+- Platform live at ai.example.com
 - All team members can access
 - < 1 minute to first successful tool use
 - Clear path for support/feedback

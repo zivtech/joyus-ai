@@ -39,7 +39,7 @@ Internet
     │
     ▼ :443 (HTTPS)
 ┌─────────┐
-│  Nginx  │──── ai.zivtech.com
+│  Nginx  │──── ai.example.com
 └────┬────┘
      │
      ├── /mcp, /api/* ──────▶ Platform :3000
@@ -68,7 +68,7 @@ Platform ◄────────▶ Playwright :3002 (internal)
 | `CLAUDE_API_KEY` | Platform | Anthropic API key (for web chat) |
 | `MCP_BEARER_TOKEN` | Platform | Token for MCP client authentication |
 | `POSTGRES_PASSWORD` | PostgreSQL | Database password |
-| `DOMAIN` | Nginx | `ai.zivtech.com` |
+| `DOMAIN` | Nginx | `ai.example.com` |
 | `LETSENCRYPT_EMAIL` | Nginx/Certbot | Email for cert notifications |
 
 ### Health Check Endpoints

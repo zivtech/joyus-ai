@@ -55,7 +55,7 @@ Additionally, PMs and non-dev team members need a way to **discover and request 
 │  │    audit-website@   │                              │  OR                 │   │
 │  │    zivtech-skills   │                              │                     │   │
 │  │                     │                              │  Web UI             │   │
-│  │  Skills run locally │                              │  → ai.zivtech.com  │   │
+│  │  Skills run locally │                              │  → ai.example.com  │   │
 │  │  (squirrel CLI on   │                              │  → Skills run on    │   │
 │  │   their machine)    │                              │    server           │   │
 │  └─────────────────────┘                              └─────────────────────┘   │
@@ -471,7 +471,7 @@ When working with Confluence:
   "name": "zivtech-skills",
   "owner": {
     "name": "Zivtech",
-    "email": "dev@zivtech.com"
+    "email": "dev@example.com"
   },
   "metadata": {
     "description": "Curated AI skills for the Zivtech team",

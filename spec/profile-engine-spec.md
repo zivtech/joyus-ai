@@ -37,7 +37,7 @@ joyus-profile-engine/
 │   │
 │   ├── analyze/                      (WS1: feature extraction)
 │   │   ├── __init__.py
-│   │   ├── stylometrics.py           ← 129-feature extraction (from NCLC engine)
+│   │   ├── stylometrics.py           ← 129-feature extraction
 │   │   ├── markers.py                ← Domain-specific term/phrase identification
 │   │   ├── vocabulary.py             ← Preferred/avoided terms, signature phrases
 │   │   ├── structure.py              ← Document org, paragraph patterns, sentence stats
@@ -48,7 +48,7 @@ joyus-profile-engine/
 │   │   ├── generator.py              ← Features → structured profile (12-section template)
 │   │   ├── schema.py                 ← Profile data model (Pydantic)
 │   │   └── templates/                ← Domain-specific section weight configs
-│   │       ├── legal_advocacy.yaml   ← NCLC-derived (proven)
+│   │       ├── example_profile.yaml  ← Legal advocacy (proven)
 │   │       ├── technical.yaml        ← Software/engineering writing
 │   │       ├── marketing.yaml        ← Brand/marketing voice
 │   │       └── general.yaml          ← Fallback for unknown domains
@@ -79,27 +79,27 @@ joyus-profile-engine/
 │   └── compare_profiles.py           ← profile A vs B → similarity analysis
 │
 ├── tests/
-│   ├── conftest.py                   ← Shared fixtures (NCLC corpus samples)
+│   ├── conftest.py                   ← Shared fixtures (corpus samples)
 │   ├── test_ingest/
 │   ├── test_analyze/
 │   ├── test_profile/
 │   ├── test_emit/
 │   ├── test_verify/
 │   ├── regression/
-│   │   └── test_nclc_accuracy.py     ← NCLC accuracy must not regress below baseline
+│   │   └── test_accuracy.py          ← Accuracy must not regress below baseline
 │   └── integration/
 │       └── test_end_to_end.py        ← Full pipeline: corpus → profile → verify
 │
 └── fixtures/                         (test data)
-    ├── nclc/                         ← Anonymized NCLC samples for regression
-    └── zivtech/                      ← Zivtech internal writing for second-domain validation
+    ├── example/                      ← Anonymized samples for regression
+    └── internal/                     ← Internal writing for second-domain validation
 ```
 
 ---
 
 ## 3. Profile Schema
 
-The profile data model standardizes what the platform consumes. Based on the NCLC 12-section template, adapted for multi-domain use.
+The profile data model standardizes what the platform consumes. Based on a proven 12-section template, adapted for multi-domain use.
 
 ```python
 class AuthorProfile(BaseModel):
@@ -186,7 +186,7 @@ class AuthorProfile(BaseModel):
 
 ### 3.1 VoiceContext Architecture (Added Feb 19, 2026)
 
-The `RegisterShift` model (simple parameter deltas on voice/tone) is insufficient for organizations whose authors write in fundamentally different voices for different audiences. NCLC attorneys, for example, write as Litigator (courts), Advocate (legislators), Educator (public), Expert (treatises), and Consumer Advocate "Priest" (teaching lawyers) — these differ across vocabulary, argumentation, citations, structure, and positions, not just tone.
+The `RegisterShift` model (simple parameter deltas on voice/tone) is insufficient for organizations whose authors write in fundamentally different voices for different audiences. Legal advocacy attorneys, for example, write as Litigator (courts), Advocate (legislators), Educator (public), Expert (treatises), and Consumer Advocate (teaching lawyers) — these differ across vocabulary, argumentation, citations, structure, and positions, not just tone.
 
 **Three-layer opt-in design:**
 
@@ -241,7 +241,7 @@ class VoiceAccessLevel(BaseModel):
 class CompositeVoiceConfig(BaseModel):
     """Configuration for composite voices that blend multiple source voices.
 
-    Example: NCLC's "Priest" voice blends Litigator + Advocate + Educator + Expert
+    Example: A composite "Priest" voice blends Litigator + Advocate + Educator + Expert
     voices plus restricted strategic "secrets" corpus.
     """
 
@@ -535,7 +535,7 @@ Generation → Tier 1 check → Deliver → Tier 2 analysis
 | **Minimum viable** | 5 documents | 10,000+ words |
 | **Below threshold** | <5 documents | Warn user, generate partial profile |
 
-Based on NCLC experience: 7-9 documents per author was the minimum for reliable profiles. Authors with 20+ documents achieved highest accuracy.
+Based on client PoC experience: 7-9 documents per author was the minimum for reliable profiles. Authors with 20+ documents achieved highest accuracy.
 
 ### Supported Input Formats
 
@@ -554,24 +554,24 @@ Based on NCLC experience: 7-9 documents per author was the minimum for reliable 
 
 ### WS1: Extract & Generalize (Week 1)
 
-**Goal:** Pull NCLC attribution code into a clean, domain-agnostic library.
+**Goal:** Pull attribution code into a clean, domain-agnostic library.
 
 | Task | Source | Output |
 |------|--------|--------|
-| Extract stylometric engine | `nclc/tiered_attribution_model.py` | `analyze/stylometrics.py` |
-| Extract marker system | `nclc/tiered_attribution_model.py` | `analyze/markers.py` |
-| Build corpus loader | New (adapt from `nclc/extract_author_content.py`) | `ingest/loader.py` + `formats.py` |
+| Extract stylometric engine | `poc/tiered_attribution_model.py` | `analyze/stylometrics.py` |
+| Extract marker system | `poc/tiered_attribution_model.py` | `analyze/markers.py` |
+| Build corpus loader | New (adapt from `poc/extract_author_content.py`) | `ingest/loader.py` + `formats.py` |
 | Build preprocessor | New | `ingest/preprocessor.py` |
-| Extract vocabulary analysis | `nclc/build_thematic_profiles.py` | `analyze/vocabulary.py` |
+| Extract vocabulary analysis | `poc/build_thematic_profiles.py` | `analyze/vocabulary.py` |
 | Build profile generator | New (based on COMPREHENSIVE_PROFILE_TEMPLATE.md) | `profile/generator.py` |
 | Define Pydantic models | New | `models/*.py` |
 | Domain config templates | New | `profile/templates/*.yaml` |
-| NCLC regression tests | Adapt `nclc/validate_tier1_profiles.py` | `tests/regression/test_nclc_accuracy.py` |
+| Regression tests | Adapt `poc/validate_tier1_profiles.py` | `tests/regression/test_accuracy.py` |
 
 **Acceptance criteria:**
-- `joyus_profile.analyze.stylometrics` produces identical features to NCLC engine
-- `joyus_profile.analyze.markers` identifies NCLC author markers correctly
-- NCLC regression test passes (accuracy >= 94.6% on 4-author set)
+- `joyus_profile.analyze.stylometrics` produces identical features to PoC engine
+- `joyus_profile.analyze.markers` identifies author markers correctly
+- Regression test passes (accuracy >= 94.6% on 4-author set)
 
 ### WS2: Skill File Emitter (Week 1-2, overlaps WS1)
 
@@ -586,7 +586,7 @@ Based on NCLC experience: 7-9 documents per author was the minimum for reliable 
 | CLI: `build_profile` | `cli/build_profile.py` |
 
 **Acceptance criteria:**
-- Given an NCLC author corpus, produces valid SKILL.md + markers.json + stylometrics.json
+- Given an author corpus, produces valid SKILL.md + markers.json + stylometrics.json
 - Emitted skill files match the structure defined in §4
 - CLI runs end-to-end: `build-profile --corpus ./docs/ --domain legal_advocacy --output ./skills/author-a/`
 
@@ -612,7 +612,7 @@ Based on NCLC experience: 7-9 documents per author was the minimum for reliable 
 
 ### Validation: Second Domain (Week 3)
 
-**Goal:** Prove the engine works beyond NCLC.
+**Goal:** Prove the engine works beyond the initial domain.
 
 - Build a Zivtech internal writing profile from existing content (proposals, blog posts, documentation)
 - Run verification against known Zivtech-authored text
@@ -643,10 +643,10 @@ Based on NCLC experience: 7-9 documents per author was the minimum for reliable 
 
 | Question | Context | Priority |
 |----------|---------|----------|
-| Profile schema field weights per domain — what makes a legal profile different from a marketing profile? | NCLC template is legal-heavy (positions, argumentation, citations). Marketing profiles need heavier voice/vocabulary/brand. Need empirical tuning. | High — Week 1 |
-| Minimum corpus size validation — is 5 docs really the floor? | NCLC used 7-9 minimum. Need to test with smaller corpora to find actual degradation curve. | Medium — Week 2 |
+| Profile schema field weights per domain — what makes a legal profile different from a marketing profile? | Legal template is heavy on positions, argumentation, citations. Marketing profiles need heavier voice/vocabulary/brand. Need empirical tuning. | High — Week 1 |
+| Minimum corpus size validation — is 5 docs really the floor? | PoC used 7-9 minimum. Need to test with smaller corpora to find actual degradation curve. | Medium — Week 2 |
 | Claude-assisted profile generation — should Claude help fill in profile sections? | Pure statistical analysis misses nuance. Hybrid approach: extract features statistically, have Claude synthesize into natural language sections. Risk: profile quality depends on prompt quality. | High — Week 1 |
-| Tier 1 threshold calibration — what score should trigger regeneration? | NCLC used content markers as primary discriminator. Threshold likely varies by domain and author distinctiveness. Need calibration data. | Medium — Week 2-3 |
+| Tier 1 threshold calibration — what score should trigger regeneration? | PoC used content markers as primary discriminator. Threshold likely varies by domain and author distinctiveness. Need calibration data. | Medium — Week 2-3 |
 | Package distribution — pip install or git submodule? | If Phase 3 platform imports this, how? PyPI private package, git submodule, or monorepo subfolder? | Low — Week 3 |
 | Profile versioning — how to handle profile updates without breaking existing skill files? | Profiles will evolve as authors evolve. Need semantic versioning for profiles and a way to diff profile versions. | Medium — Phase 3 |
 
@@ -656,8 +656,8 @@ Based on NCLC experience: 7-9 documents per author was the minimum for reliable 
 
 | Metric | Target |
 |--------|--------|
-| NCLC regression accuracy (4-author set) | >= 94.6% |
-| NCLC regression accuracy (9-author set) | >= 97.9% |
+| Regression accuracy (4-author set) | >= 94.6% |
+| Regression accuracy (9-author set) | >= 97.9% |
 | Tier 1 verification latency | < 500ms per 1000-word doc |
 | Tier 1 wrong-voice detection rate | > 90% |
 | Skill file generation (end-to-end) | < 5 minutes per author corpus |
@@ -668,4 +668,4 @@ Based on NCLC experience: 7-9 documents per author was the minimum for reliable 
 
 *Spec created: February 17, 2026*
 *For: Joyus AI Platform — Phase 2.5*
-*References: NCLC author-identification-research, Boris Cherny verification loop insight (Decision #17)*
+*References: Author-identification PoC research, Boris Cherny verification loop insight (Decision #17)*

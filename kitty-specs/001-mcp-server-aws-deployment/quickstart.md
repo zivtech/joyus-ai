@@ -8,7 +8,7 @@
 ## Prerequisites
 
 - AWS account with EC2 access
-- Domain DNS access for `ai.zivtech.com`
+- Domain DNS access for `ai.example.com`
 - GitHub org access (`zivtech`)
 - GitHub Actions secrets configured (see below)
 
@@ -25,7 +25,7 @@
 
 ## DNS Configuration
 
-Point `ai.zivtech.com` → EC2 public IP (A record)
+Point `ai.example.com` → EC2 public IP (A record)
 
 ## GitHub Secrets Required
 
@@ -57,7 +57,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ```bash
 # Health check (from anywhere)
-curl https://ai.zivtech.com/health
+curl https://ai.example.com/health
 
 # Expected response:
 # { "status": "ok", "services": { "platform": "ok", "playwright": "ok", "db": "ok" } }
@@ -71,7 +71,7 @@ Add to Claude Desktop MCP config (`claude_desktop_config.json`):
 {
   "mcpServers": {
     "joyus-ai": {
-      "url": "https://ai.zivtech.com/mcp",
+      "url": "https://ai.example.com/mcp",
       "headers": {
         "Authorization": "Bearer <MCP_BEARER_TOKEN>"
       }
@@ -82,7 +82,7 @@ Add to Claude Desktop MCP config (`claude_desktop_config.json`):
 
 ## Web Chat (Mobile/AFK)
 
-Open `https://ai.zivtech.com/chat` in any browser.
+Open `https://ai.example.com/chat` in any browser.
 
 ## Rollback
 

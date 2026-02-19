@@ -29,7 +29,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 - **Dependencies**: WP01 (containers), WP04 (health endpoints for status display)
 - **Users**: Zivtech team — primary use case is Alex checking on projects from his phone
 - **Stack**: Vanilla HTML/CSS/JS — no frameworks, no build tools, keep it minimal
-- **URL**: `https://ai.zivtech.com/chat`
+- **URL**: `https://ai.example.com/chat`
 - **Reference**: See `spec.md` Scenario 2 (Mobile/AFK Access) and `plan.md` Project Structure (web-chat/)
 
 ## Subtasks
@@ -264,7 +264,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
    {
      "mcpServers": {
        "joyus-ai": {
-         "url": "https://ai.zivtech.com/mcp",
+         "url": "https://ai.example.com/mcp",
          "headers": {
            "Authorization": "Bearer <YOUR_MCP_BEARER_TOKEN>"
          }
@@ -282,7 +282,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 
    ## Troubleshooting
 
-   - **Connection refused**: Check that `https://ai.zivtech.com/health` returns 200
+   - **Connection refused**: Check that `https://ai.example.com/health` returns 200
    - **401 Unauthorized**: Verify your bearer token matches MCP_BEARER_TOKEN
    - **Timeout**: MCP server may be restarting — wait 30 seconds and retry
    ```
@@ -301,7 +301,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 
 ## Definition of Done
 
-- [ ] Web chat UI loads at `https://ai.zivtech.com/chat`
+- [ ] Web chat UI loads at `https://ai.example.com/chat`
 - [ ] Can send message and receive Claude response with tool call results
 - [ ] Token authentication prevents unauthorized access
 - [ ] Chat works on iPhone Safari and Chrome Android

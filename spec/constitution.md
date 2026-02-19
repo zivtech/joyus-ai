@@ -50,7 +50,7 @@
 | **Process logic** | Workflow steps, approval chains, quality gates | "Production batches require QA sign-off before distribution" |
 | **Compliance** | Regulatory requirements, audit trails, documentation rules | "Cold chain temperature logs must be retained for 2 years" |
 
-- Skills are **created through automated profile building** — corpus analysis produces structured profiles that the platform loads as skills (methodology proven on a client engagement: 94.6% to 97.9% attribution accuracy across 9 authors)
+- Skills are **created through automated profile building** — corpus analysis produces structured profiles that the platform loads as skills (methodology proven on client PoC: 94.6% to 97.9% attribution accuracy)
 - Skills include anti-patterns (what NOT to do), not just positive examples
 - The skill loading interface is the contract: any organization can build skills against the public API
 - **Skill ecosystem:** Example/starter skills ship with the platform. Community-contributed skill packs (industry archetypes, common integrations) are welcome. Organizations build their own private skills for proprietary knowledge.

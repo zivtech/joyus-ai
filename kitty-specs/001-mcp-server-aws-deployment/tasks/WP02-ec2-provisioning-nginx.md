@@ -28,7 +28,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
 
 - **Dependencies**: WP01 (Docker Compose and containers must exist)
 - **Architecture**: Nginx runs on the host (not in Docker) to manage TLS termination and path-based routing
-- **Domain**: `ai.zivtech.com` (with future rebrand URL)
+- **Domain**: `ai.example.com` (with future rebrand URL)
 - **Reference**: See `plan.md` Container Architecture, Security section, and `data-model.md` Network Topology
 
 ## Subtasks
@@ -106,16 +106,16 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
    ```nginx
    server {
        listen 80;
-       server_name ai.zivtech.com;
+       server_name ai.example.com;
        return 301 https://$host$request_uri;
    }
 
    server {
        listen 443 ssl http2;
-       server_name ai.zivtech.com;
+       server_name ai.example.com;
 
-       ssl_certificate /etc/letsencrypt/live/ai.zivtech.com/fullchain.pem;
-       ssl_certificate_key /etc/letsencrypt/live/ai.zivtech.com/privkey.pem;
+       ssl_certificate /etc/letsencrypt/live/ai.example.com/fullchain.pem;
+       ssl_certificate_key /etc/letsencrypt/live/ai.example.com/privkey.pem;
 
        # MCP endpoint (platform server)
        location /mcp {
@@ -187,12 +187,12 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
 
 ### T008: Set Up Let's Encrypt TLS via Certbot
 
-**Purpose**: Automated TLS certificate provisioning and renewal for `ai.zivtech.com`.
+**Purpose**: Automated TLS certificate provisioning and renewal for `ai.example.com`.
 
 **Steps**:
 1. Add certbot commands to `setup-ec2.sh` (runs after DNS is pointed):
    ```bash
-   certbot --nginx -d ai.zivtech.com --non-interactive --agree-tos -m admin@zivtech.com
+   certbot --nginx -d ai.example.com --non-interactive --agree-tos -m admin@example.com
    ```
 2. Verify auto-renewal timer is enabled:
    ```bash
@@ -212,7 +212,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
 - `deploy/nginx/pre-ssl.conf` (new, ~15 lines — HTTP-only config for initial certbot run)
 
 **Validation**:
-- [ ] `certbot certificates` shows valid certificate for ai.zivtech.com
+- [ ] `certbot certificates` shows valid certificate for ai.example.com
 - [ ] Auto-renewal timer active (`systemctl status certbot.timer`)
 - [ ] Certificate renews without manual intervention (test with `certbot renew --dry-run`)
 - [ ] Nginx reloads after renewal

@@ -23,7 +23,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 - **Dependencies**: ALL previous work packages (WP01-WP06)
 - **This is the go-live work package** — real infrastructure, real DNS, real users
 - **Instance**: t3.small in us-east-1, Ubuntu 24.04 LTS, 30GB gp3 EBS
-- **Domain**: `ai.zivtech.com` (Zivtech DNS managed via existing registrar/DNS provider)
+- **Domain**: `ai.example.com` (DNS managed via existing registrar/DNS provider)
 - **Budget**: $15-35/month target
 - **Reference**: See `quickstart.md` for step-by-step guide, `spec.md` success criteria
 
@@ -76,38 +76,38 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 
 ---
 
-### T034: Configure DNS: ai.zivtech.com → EC2 IP
+### T034: Configure DNS: ai.example.com → EC2 IP
 
 **Purpose**: Point the domain to the EC2 instance so TLS and routing work.
 
 **Steps**:
 1. Add DNS A record:
-   - **Name**: `ai` (subdomain of zivtech.com)
+   - **Name**: `ai` (subdomain of example.com)
    - **Type**: A
    - **Value**: Elastic IP from T033
    - **TTL**: 300 (5 minutes for quick propagation during setup)
 
 2. Verify DNS propagation:
    ```bash
-   dig ai.zivtech.com +short
+   dig ai.example.com +short
    # Should return the Elastic IP
    ```
 
 3. Once DNS resolves, run certbot on EC2:
    ```bash
-   sudo certbot --nginx -d ai.zivtech.com --non-interactive --agree-tos -m admin@zivtech.com
+   sudo certbot --nginx -d ai.example.com --non-interactive --agree-tos -m admin@example.com
    ```
 
 4. Verify HTTPS works:
    ```bash
-   curl -I https://ai.zivtech.com
+   curl -I https://ai.example.com
    # Should return 200 or 301 (nginx is running but containers may not be up yet)
    ```
 
 **Validation**:
-- [ ] `dig ai.zivtech.com` returns correct Elastic IP
+- [ ] `dig ai.example.com` returns correct Elastic IP
 - [ ] Certbot obtains valid TLS certificate
-- [ ] `https://ai.zivtech.com` is reachable (HTTPS works)
+- [ ] `https://ai.example.com` is reachable (HTTPS works)
 - [ ] Certificate auto-renewal timer active
 
 **Edge Cases**:
@@ -178,21 +178,21 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 3. Run smoke test from local machine:
    ```bash
    # Health check
-   curl https://ai.zivtech.com/health
+   curl https://ai.example.com/health
 
    # MCP endpoint (with bearer token)
-   curl -H "Authorization: Bearer <MCP_BEARER_TOKEN>" https://ai.zivtech.com/mcp
+   curl -H "Authorization: Bearer <MCP_BEARER_TOKEN>" https://ai.example.com/mcp
 
    # Web chat
-   curl https://ai.zivtech.com/chat
+   curl https://ai.example.com/chat
 
    # Playwright
-   curl https://ai.zivtech.com/playwright
+   curl https://ai.example.com/playwright
    ```
 
 4. Run the full health check script:
    ```bash
-   ./deploy/scripts/health-check.sh https://ai.zivtech.com
+   ./deploy/scripts/health-check.sh https://ai.example.com
    ```
 
 5. Verify Slack notification received for deploy success
@@ -223,7 +223,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
    {
      "mcpServers": {
        "joyus-ai": {
-         "url": "https://ai.zivtech.com/mcp",
+         "url": "https://ai.example.com/mcp",
          "headers": {
            "Authorization": "Bearer <MCP_BEARER_TOKEN>"
          }
@@ -261,7 +261,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 **Purpose**: Confirm the web chat works from a real mobile phone browser.
 
 **Steps**:
-1. Open `https://ai.zivtech.com/chat` on iPhone Safari
+1. Open `https://ai.example.com/chat` on iPhone Safari
 2. Enter authentication token
 3. Send a test message: "Search Jira for tickets assigned to me"
 4. Verify:
@@ -290,8 +290,8 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 ## Definition of Done
 
 - [ ] EC2 instance running at Elastic IP
-- [ ] `ai.zivtech.com` resolves and serves HTTPS
-- [ ] All health checks green: `curl https://ai.zivtech.com/health` returns `{"status":"ok"}`
+- [ ] `ai.example.com` resolves and serves HTTPS
+- [ ] All health checks green: `curl https://ai.example.com/health` returns `{"status":"ok"}`
 - [ ] CI/CD works: push to main triggers automated deploy
 - [ ] 2+ team members connected via Claude Desktop and executed tool calls
 - [ ] Web chat works from mobile phone browser

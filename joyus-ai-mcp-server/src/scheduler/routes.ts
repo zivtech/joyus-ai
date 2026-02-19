@@ -217,7 +217,7 @@ taskRouter.get('/', async (req: Request, res: Response) => {
 
             <div class="form-group">
               <label>Notify on Error (Email)</label>
-              <input type="email" name="notifyEmail" placeholder="you@zivtech.com">
+              <input type="email" name="notifyEmail" placeholder="you@example.com">
             </div>
 
             <button type="submit" class="btn">Create Task</button>
@@ -443,7 +443,7 @@ taskRouter.get('/:id/edit', async (req: Request, res: Response) => {
 
         <div class="form-group">
           <label>Notify on Error (Email)</label>
-          <input type="email" name="notifyEmail" value="${task.notifyEmail || ''}" placeholder="you@zivtech.com">
+          <input type="email" name="notifyEmail" value="${task.notifyEmail || ''}" placeholder="you@example.com">
         </div>
 
         <button type="submit" class="btn">Save Changes</button>

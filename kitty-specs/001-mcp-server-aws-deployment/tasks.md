@@ -44,7 +44,7 @@
 | T031 | Ensure responsive design for mobile browsers | WP06 | |
 | T032 | Configure Claude Desktop MCP client connection | WP06 | [P] |
 | T033 | Provision EC2 instance (t3.small, Ubuntu 24.04, 30GB EBS) | WP07 | |
-| T034 | Configure DNS: ai.zivtech.com → EC2 IP | WP07 | |
+| T034 | Configure DNS: ai.example.com → EC2 IP | WP07 | |
 | T035 | Set GitHub Actions secrets (EC2_HOST, SSH_KEY, etc.) | WP07 | |
 | T036 | First production deployment and smoke test | WP07 | |
 | T037 | Verify team member Claude Desktop connections (2+ users) | WP07 | |
@@ -90,7 +90,7 @@
 5. Create `deploy/docker-compose.prod.yml` — production overrides (restart policies, resource limits, log drivers)
 
 **Parallel opportunities**: T009 (firewall) independent of T007 (nginx).
-**Success criteria**: Fresh Ubuntu 24.04 instance can be provisioned from scratch by running `setup-ec2.sh`. Nginx routes requests correctly. TLS works on `ai.zivtech.com`.
+**Success criteria**: Fresh Ubuntu 24.04 instance can be provisioned from scratch by running `setup-ec2.sh`. Nginx routes requests correctly. TLS works on `ai.example.com`.
 **Risks**: DNS propagation delay. Certbot requires domain to resolve to EC2 IP first.
 **Prompt file**: [tasks/WP02-ec2-provisioning-nginx.md](tasks/WP02-ec2-provisioning-nginx.md)
 
@@ -152,7 +152,7 @@
 3. Test Memory MCP: create entity, query, verify persistence across container restart
 4. Test Office MCP: create a simple PPT, Excel spreadsheet, and Word doc
 5. Test Python packages: run `python3 -c "import pptx, docx, openpyxl, lxml, pypdf, PIL, imageio, numpy"`
-6. Test squirrel: `squirrel audit https://zivtech.com --format llm` (basic scan)
+6. Test squirrel: `squirrel audit https://example.com --format llm` (basic scan)
 7. Test Drupal tools: `git --version`, `composer --version`, `drush --version`
 
 **Parallel opportunities**: T022-T027 all independent of each other (different services/runtimes).
@@ -193,7 +193,7 @@
 **Implementation sketch**:
 1. Provision t3.small EC2 instance in us-east-1 (or appropriate region), Ubuntu 24.04, 30GB gp3 EBS
 2. Run `setup-ec2.sh` on the instance
-3. Configure DNS A record: `ai.zivtech.com` → EC2 elastic IP
+3. Configure DNS A record: `ai.example.com` → EC2 elastic IP
 4. Set all GitHub Actions secrets
 5. Trigger first deployment via push to main
 6. Run full smoke test — all MCP endpoints, health checks, web chat
@@ -201,7 +201,7 @@
 8. Verify web chat from a mobile device (phone browser)
 
 **Parallel opportunities**: T034 (DNS) can start while T033 (EC2) provisions.
-**Success criteria**: `ai.zivtech.com` serves HTTPS. All health checks green. 2+ team members connected. Web chat works from phone. Monthly cost under $35.
+**Success criteria**: `ai.example.com` serves HTTPS. All health checks green. 2+ team members connected. Web chat works from phone. Monthly cost under $35.
 **Risks**: DNS propagation (up to 48h worst case, usually <1h). May need t3.medium if OOM under load.
 **Prompt file**: [tasks/WP07-production-launch.md](tasks/WP07-production-launch.md)
 

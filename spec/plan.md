@@ -1,6 +1,6 @@
 # Zivtech AI Agent Platform — Implementation Plan
 
-**Project:** Zivtech AI Agent Platform
+**Project:** Joyus AI Platform
 **Date:** January 29, 2026 (Updated February 11, 2026)
 **Status:** Phase 1 Starting — Asset Sharing Pipeline
 
@@ -43,7 +43,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - [ ] Per-project passwords in GitHub Secrets
 - [ ] Directory-based organization (`zivtech.github.io/project-name/`)
 - [ ] First asset deployed and password-protected
-- [ ] Custom domain (`demos.zivtech.com`) when ready
+- [ ] Custom domain (`ai.example.com`) when ready
 
 **Estimated effort:** 1-2 days
 
@@ -67,9 +67,9 @@ See `hosting-comparison.md` for full infrastructure analysis.
 
 **Goal:** Standalone library that turns a client document corpus into structured writing profiles (skill files) and provides two-tier content fidelity verification. This is the platform's moat — the "thick domain" investment per Decision #18.
 
-**Why before Phase 3:** The profile engine is independent of the web portal, MCP gateway, and container infrastructure. Building it standalone means: (1) immediate use for NCLC, (2) validation on a second domain before the platform exists, (3) Phase 3 development gets simpler — the hardest piece is already built. Per Boris Cherny's insight: invest in domain knowledge and verification, keep orchestration thin.
+**Why before Phase 3:** The profile engine is independent of the web portal, MCP gateway, and container infrastructure. Building it standalone means: (1) immediate use for the client PoC, (2) validation on a second domain before the platform exists, (3) Phase 3 development gets simpler — the hardest piece is already built. Per Boris Cherny's insight: invest in domain knowledge and verification, keep orchestration thin.
 
-**What's already built (NCLC proof-of-concept):**
+**What's already built (client PoC):**
 - Tiered hybrid attribution model (Python, 3 confidence tiers)
 - 129-feature stylometric engine (Burrows' Delta)
 - Content marker extraction (topic-specific terminology as primary discriminator)
@@ -81,13 +81,13 @@ See `hosting-comparison.md` for full infrastructure analysis.
 **Detailed spec:** See [`profile-engine-spec.md`](profile-engine-spec.md)
 
 **Implementation:**
-- [ ] Extract NCLC attribution code into domain-agnostic library
-- [ ] Parameterize corpus analyzer (remove NCLC-specific vocabulary)
+- [ ] Extract client PoC attribution code into domain-agnostic library
+- [ ] Parameterize corpus analyzer (remove client-specific vocabulary)
 - [ ] Build skill file emitter (profile → SKILL.md + markers.json + stylometrics.json)
 - [ ] Build Tier 1 inline verification (marker presence + stylometric distance, ~100ms)
 - [ ] Build Tier 2 deep analysis (full Burrows' Delta, cross-document consistency)
 - [ ] CLI tools for profile building and content verification
-- [ ] NCLC regression tests (accuracy must not drop)
+- [ ] Regression tests (accuracy must not drop)
 - [ ] Second-domain validation (Zivtech internal writing profile)
 
 **Estimated effort:** 2-3 weeks
@@ -102,7 +102,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 
 **Implementation:**
 - [ ] Next.js + FastAPI web app
-- [ ] Google OAuth SSO (restricted to @zivtech.com)
+- [ ] Google OAuth SSO (restricted to organization domain)
 - [ ] Chat UI with Claude API integration
 - [ ] MCP server connections (Jira, Slack, Gmail, GitHub)
 - [ ] Per-user token storage with encryption
@@ -385,7 +385,7 @@ joyus-ai-skills/                       (Git repository)
 
 ### Client Profile Building Pipeline
 
-The Skills Layer requires a **method for creating skills** — not just storing them. The Client Profile Building pipeline is that method. Proven on the NCLC project (94.6% accuracy on 4 authors, 97.9% on 9 authors), it transforms a client's document corpus into structured writing profiles that the orchestrator loads as skills.
+The Skills Layer requires a **method for creating skills** — not just storing them. The Client Profile Building pipeline is that method. Proven on the client PoC (94.6% accuracy on 4 authors, 97.9% on 9 authors), it transforms a client's document corpus into structured writing profiles that the orchestrator loads as skills.
 
 ```
 Client Profile Building Pipeline:
@@ -410,7 +410,7 @@ Client Profile Building Pipeline:
 - **Anti-patterns** — what NOT to do (maps to Constitution §2.2: skills include anti-patterns)
 - **Content markers** — machine-readable tokens for attribution verification (see Monitoring §5)
 
-**NCLC proof-of-concept:** 20 of 40 authors profiled, hybrid attribution model operational, web app deployed. See `../claude-files/nclc/author-identification-research/`.
+**Client PoC:** 20 of 40 authors profiled, hybrid attribution model operational, web app deployed. See `../poc/author-identification-research/`.
 
 ### Skill Loading Pattern
 
@@ -873,7 +873,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 - **Web App** — Next.js + FastAPI, Google SSO, chat UI
 - **Orchestration layer** — Thin server orchestrator (FastAPI + Agent SDK): authenticate → load skills → inject verification → call Agent SDK → log. Not a smart engine — the model does the thinking. (Decision #16)
 - **MCP Gateway** — Expose platform as MCP server; include browser abstraction layer (high-level navigate/click/extract actions over raw Playwright, per-user browser contexts)
-- **Client Profile Building** — Automated pipeline: ingest client corpus → extract stylometric features + content markers → generate structured writing profiles → output as platform-consumable skill files. Generalizes NCLC methodology (94.6%→97.9% accuracy) into multi-domain service
+- **Client Profile Building** — Automated pipeline: ingest client corpus → extract stylometric features + content markers → generate structured writing profiles → output as platform-consumable skill files. Generalizes client PoC methodology (94.6%→97.9% accuracy) into multi-domain service
 - **Author Verification / Content Fidelity** — Post-generation validator: run attribution model on AI output, compare intended vs. detected voice, flag mismatches before delivery, feed corrections back into skill updates (Constitution §2.5)
 - **Client onboarding** — Workflow for creating client skills (including profile intake)
 - **Code execution sandbox** — Container-based (Docker/gVisor) multi-language execution with per-user isolation, resource limits, network restrictions. Prerequisite for Phase 4 Analysis Tools and Spec Kitty as Service
@@ -888,7 +888,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
   - Leverages Phase 3 code execution sandbox for data processing and scripting
 - **Author Attribution Service** — Standalone client-facing tool for document authorship analysis
   - Web app (FastAPI + React) with real-time attribution, expert question routing, batch processing
-  - Generalizes NCLC webapp (`../claude-files/nclc/author-identification-research/webapp/`) into multi-client platform tool
+  - Generalizes client PoC webapp (`../poc/author-identification-research/webapp/`) into multi-client platform tool
   - Exposed as MCP tools: `attribute_document`, `route_to_expert`
 - **Spec Kitty as Service** — Spec-driven development for clients who can't run Claude Code locally
   - Constitution → Specification → Plan → Research → Tasks workflow
@@ -922,15 +922,15 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 11 | Phase ordering | Toolkit first / Sharing first / Infra first | **Sharing → Deploy → Platform → Tools** | Everything we build needs somewhere to go; MCP server already built | Feb 11 |
 | 12 | Git hosting | GitHub (SaaS) / GitLab (self-hosted) / Gitea (self-hosted) | **Under evaluation** | Need better disk/artifact management at scale; LFS bandwidth limits on GitHub; self-hosted gives S3 offload and custom runners | Feb 12 |
 | 13 | Manus-MCP pattern | Emulate manus-mcp / Extract capabilities / Skip | **Extract capabilities, better architecture** | Adopt code sandbox, job mgmt, browser abstraction, research tool — but with container isolation, per-user contexts, proper search API instead of manus-mcp's weak directory sandbox and Google scraping | Feb 13 |
-| 14 | Client Profile Building | Manual skill creation / Automated pipeline / Hybrid | **Automated pipeline (proven)** | NCLC project validates methodology: corpus analysis → content markers + stylometrics → structured profiles. 94.6% accuracy (4 authors), 97.9% (9 authors). Generalizable to arbitrary client domains. Pipeline outputs platform-consumable skill files. | Feb 15 |
+| 14 | Client Profile Building | Manual skill creation / Automated pipeline / Hybrid | **Automated pipeline (proven)** | Client PoC validates methodology: corpus analysis → content markers + stylometrics → structured profiles. 94.6% accuracy (4 authors), 97.9% (9 authors). Generalizable to arbitrary client domains. Pipeline outputs platform-consumable skill files. | Feb 15 |
 | 15 | Author Verification placement | Phase 4 tool only / Phase 3 monitoring only / Both | **Both: Phase 3 monitor + Phase 4 tool** | Internal use as Content Fidelity check (Phase 3 Monitoring Layer 2) + external use as standalone Attribution Service (Phase 4). Same core engine, different interfaces. | Feb 15 |
 | 16 | Orchestration (Phase 3) — revised | OMC / Thin server + native CC / Hybrid | **Thin server + native Claude Code** | Boris Cherny analysis: OMC solves wrong problem (power users don't need framework; web portal can't use CLI plugin); scaffolding gets subsumed by model upgrades; invest in skills + verification instead. Thin FastAPI + Agent SDK for portal, native Claude Code for internal CLI users. Supersedes Decision #4. | Feb 17 |
 | 17 | Attribution verification timing | Inline only / Async only / Two-tier | **Two-tier (inline + async)** | Boris Cherny's #1 insight: verification loops multiply quality 2-3x, but only if the model sees the failure and self-corrects. Tier 1: fast inline checks (~2-5s) as quality gate before delivery. Tier 2: deep async analysis for monitoring, drift detection, and skill improvement. | Feb 17 |
 | 18 | Layer investment principle | Equal / Model-dependent | **Thick domain, thin orchestration** | Boris Cherny's "scaffolding gets subsumed" principle: orchestration code gets deleted with model upgrades, but domain knowledge (skills, profiles, verification) is durable. Build skills and verification thick; keep orchestration as a thin router. | Feb 17 |
-| 19 | Profile engine timing | Phase 3 / Phase 2.5 standalone / Phase 4 | **Phase 2.5 standalone library** | Profile engine + content fidelity are independent of platform infrastructure (no web portal, MCP gateway, or containers needed). Building standalone means: immediate NCLC use, second-domain validation before platform exists, Phase 3 imports a tested library. This is the "thick domain" investment per Decision #18. | Feb 17 |
+| 19 | Profile engine timing | Phase 3 / Phase 2.5 standalone / Phase 4 | **Phase 2.5 standalone library** | Profile engine + content fidelity are independent of platform infrastructure (no web portal, MCP gateway, or containers needed). Building standalone means: immediate client PoC use, second-domain validation before platform exists, Phase 3 imports a tested library. This is the "thick domain" investment per Decision #18. | Feb 17 |
 | 20 | Auth integration model | Drupal module / Auth passthrough / JWT token exchange / Platform-agnostic interface | **Platform-agnostic auth provider interface (JWT first impl)** | Platform defines `resolve_access_level(token) → AccessContext` interface. First implementation: Drupal issues scoped JWT on login, platform validates stateless. Interface supports any IdP (OAuth2, SAML, API keys). Drupal is the primary deployment target but not the only one — hospital, university, museum deployments may use different auth backends. Avoids coupling to any single CMS or IdP. | Feb 19 |
-| 21 | Multi-audience voice model | RegisterShift (parameter deltas) / VoiceContext (section overrides) / Separate profiles per voice | **VoiceContext with 3-layer opt-in** | RegisterShift insufficient — NCLC voices differ across all 12 profile sections, not just tone. VoiceContext provides per-section overrides with backwards-compatible layering: Layer 0 (single voice, no change), Layer 1 (multi-audience), Layer 2 (restricted voices with access control). Per-voice fidelity tiers. See profile-engine-spec §3.1. | Feb 19 |
-| 22 | Content infrastructure placement | Extend 005 / New feature 006 / Defer | **New feature 006 (Content Infrastructure)** | Knowledge infrastructure gap too large for 005 amendment. 006 covers: corpus connectors, search abstraction, content state model, access mapping, MCP search tool, subscription gating, generate-then-verify chat, bot mediation API. Platform-level feature, not NCLC-specific. | Feb 19 |
+| 21 | Multi-audience voice model | RegisterShift (parameter deltas) / VoiceContext (section overrides) / Separate profiles per voice | **VoiceContext with 3-layer opt-in** | RegisterShift insufficient — client PoC voices differ across all 12 profile sections, not just tone. VoiceContext provides per-section overrides with backwards-compatible layering: Layer 0 (single voice, no change), Layer 1 (multi-audience), Layer 2 (restricted voices with access control). Per-voice fidelity tiers. See profile-engine-spec §3.1. | Feb 19 |
+| 22 | Content infrastructure placement | Extend 005 / New feature 006 / Defer | **New feature 006 (Content Infrastructure)** | Knowledge infrastructure gap too large for 005 amendment. 006 covers: corpus connectors, search abstraction, content state model, access mapping, MCP search tool, subscription gating, generate-then-verify chat, bot mediation API. Platform-level feature, not client-specific. | Feb 19 |
 
 ---
 
@@ -957,12 +957,12 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | Feedback loop mechanics | Alex + Claude | Phase 3 | Open — how user corrections flow into skill updates; who approves changes; update cadence; Constitution S2.5 declares first-class but mechanism unspecified |
 | Client onboarding workflow | Alex | Phase 3 | Open — what goes into a single-entry-point package; integration with existing client tools; skill creation process; brand asset intake |
 | **Client Profile Building pipeline** | Alex + Claude | Phase 3 | Open |
-| ├─ Profile schema: what fields are required vs. optional? | | | NCLC schema covers legal advocacy — need to validate for other domains (marketing, technical, corporate) |
-| ├─ Minimum corpus size for reliable profiles? | | | NCLC used 7-9 docs per author; what's the floor for new clients? |
+| ├─ Profile schema: what fields are required vs. optional? | | | Client PoC schema covers legal advocacy — need to validate for other domains (marketing, technical, corporate) |
+| ├─ Minimum corpus size for reliable profiles? | | | Client PoC used 7-9 docs per author; what's the floor for new clients? |
 | ├─ Self-service onboarding vs. Zivtech-assisted profile creation? | | | Cost/quality tradeoff; manual curation produced 94.6%+ accuracy |
 | └─ Profile update cadence: how often do profiles need refreshing? | | | Authors evolve; need versioning + staleness detection |
 | **Author Verification / Content Fidelity** | Alex + Claude | Phase 3 | Open |
-| ├─ Confidence threshold: what score triggers a mismatch flag? | | | NCLC used content markers as primary discriminator; need calibration per client |
+| ├─ Confidence threshold: what score triggers a mismatch flag? | | | Client PoC used content markers as primary discriminator; need calibration per client |
 | ├─ Feedback loop mechanics: how do flagged mismatches flow into skill updates? | | | Constitution §2.5 declares first-class but mechanism unspecified |
 | └─ ~~Performance: can attribution run in-line or must it be async post-generation?~~ | | | **Resolved (Feb 17)** — Both. Two-tier: fast inline checks (~2-5s) as quality gate + deep async analysis for monitoring. See Decision #17. |
 | **Code execution sandbox** | Alex + Claude | Phase 3 | Open — container tech (Docker vs gVisor vs Firecracker); resource limit defaults; supported languages; network policy |
@@ -980,7 +980,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | **Content Infrastructure (Feature 006)** | Alex + Claude | Phase 2.7 | Open |
 | ├─ Search backend: Solr, Elasticsearch, Drupal Search API, or abstraction layer? | | | Recommendation: platform defines search interface, deployment wires backend |
 | ├─ Content ingestion: what source types must be supported at launch? | | | XML treatises, Drupal CMS, web scraping — listservs and file shares deferred |
-| ├─ Content state model: draft → staged → published → superseded? | | | Needs validation against NCLC's existing XML version control |
+| ├─ Content state model: draft → staged → published → superseded? | | | Needs validation against the client's existing XML version control |
 | ├─ Bot mediation API: llms.txt standard or custom endpoint? | | | Research llms.txt adoption before deciding |
 | └─ Generate-then-verify: separate from standard RAG or unified interface? | | | Recommendation: unified interface with retrieval_strategy parameter |
 

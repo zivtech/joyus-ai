@@ -1,4 +1,5 @@
 # Joyus AI — Docker Compose (base configuration)
+# WARNING: Development defaults only. Change all passwords for production.
 # Production overrides: docker-compose.prod.yml
 
 services:

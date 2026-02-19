@@ -21,7 +21,7 @@
 
 | Account | Primary Use |
 |---------|-------------|
-| **Teams (Claude Code)** | Technical execution, coding, NCLC work |
+| **Teams (Claude Code)** | Technical execution, coding |
 | **Personal (Cowork)** | Business planning, strategy, Milk Jawn, proposals |
 
 ## Working Style

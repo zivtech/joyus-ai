@@ -214,8 +214,8 @@ Create all Docker configuration files for the 3-container architecture: Platform
    GOOGLE_CLIENT_SECRET=
 
    # Domain
-   DOMAIN=ai.zivtech.com
-   LETSENCRYPT_EMAIL=admin@zivtech.com
+   DOMAIN=ai.example.com
+   LETSENCRYPT_EMAIL=admin@example.com
    ```
 2. Add `deploy/.env` to `.gitignore` (the actual env file must never be committed)
 

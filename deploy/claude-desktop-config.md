@@ -13,7 +13,7 @@ Add this to your Claude Desktop MCP config:
 {
   "mcpServers": {
     "joyus-ai": {
-      "url": "https://ai.zivtech.com/mcp",
+      "url": "https://ai.example.com/mcp",
       "headers": {
         "Authorization": "Bearer <YOUR_MCP_BEARER_TOKEN>"
       }
@@ -46,7 +46,7 @@ Once connected, Claude Desktop has access to:
 
 | Issue | Solution |
 |-------|----------|
-| Connection refused | Check that `https://ai.zivtech.com/health` returns 200 |
+| Connection refused | Check that `https://ai.example.com/health` returns 200 |
 | 401 Unauthorized | Verify your bearer token matches `MCP_BEARER_TOKEN` in server config |
 | Timeout | MCP server may be restarting — wait 30 seconds and retry |
 | Tools not showing | Restart Claude Desktop completely (quit and reopen) |
@@ -57,7 +57,7 @@ Once connected, Claude Desktop has access to:
 For mobile or away-from-keyboard access, open:
 
 ```
-https://ai.zivtech.com/chat
+https://ai.example.com/chat
 ```
 
 Enter your web chat token when prompted. The web chat provides the same tool access as Claude Desktop.

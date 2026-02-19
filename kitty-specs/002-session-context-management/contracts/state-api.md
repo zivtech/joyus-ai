@@ -57,7 +57,7 @@ Get the current session context (latest snapshot enriched with live git state). 
     { "id": "d1", "question": "Should mobile nav use accordion or dropdown?", "context": "WCAG 2.1 AA requires...", "options": ["accordion", "dropdown"], "answer": null, "resolved": false, "timestamp": "2026-02-16T14:00:00Z", "resolvedAt": null }
   ],
   "canonical": [
-    { "name": "tracking-spreadsheet", "path": "NCLC-test-files/accessibility-audit-tracking.csv", "exists": true, "lastModified": "2026-02-16T12:30:00Z" }
+    { "name": "tracking-spreadsheet", "path": "test-files/accessibility-audit-tracking.csv", "exists": true, "lastModified": "2026-02-16T12:30:00Z" }
   ],
   "_divergence": null
 }
@@ -162,7 +162,7 @@ Check if a file path is canonical or if a canonical source exists. Also supports
 ```json
 {
   "action": "check",
-  "path": "NCLC-test-files/accessibility-fixes-todo.md"
+  "path": "test-files/accessibility-fixes-todo.md"
 }
 ```
 
@@ -314,7 +314,7 @@ Pending decisions:
   - [OPEN] Should mobile nav use accordion or dropdown? (context: WCAG 2.1 AA requires...)
 
 Canonical documents:
-  - tracking-spreadsheet: NCLC-test-files/accessibility-audit-tracking.csv (modified 2h ago)
+  - tracking-spreadsheet: test-files/accessibility-audit-tracking.csv (modified 2h ago)
 
 ===
 ```

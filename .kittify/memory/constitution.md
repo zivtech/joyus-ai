@@ -27,7 +27,7 @@
 
 - Skills are **constraint systems**, not just capability enhancers
 - Every client gets mediated AI — outputs are guided by their skills
-- Skills are **created through automated profile building** — corpus analysis produces structured writing profiles that the platform loads as skills (methodology proven on NCLC: 94.6%→97.9% attribution accuracy)
+- Skills are **created through automated profile building** — corpus analysis produces structured writing profiles that the platform loads as skills (methodology proven on client PoC: 94.6%→97.9% attribution accuracy)
 - Skills define:
   - Acceptable output formats
   - Brand/voice guidelines
@@ -210,5 +210,5 @@ This constitution can be amended by:
 *Established: January 29, 2026*
 *Last Updated: February 18, 2026*
 *Changes v1.3: Added Principle 2.7 (Automated Pipelines as First-Class Citizens) from CTO discussion; added Jonathan DeLaigle as CTO stakeholder*
-*Changes v1.2: Added client profile building as skill creation methodology, author/voice verification as content fidelity check, content markers for post-generation verification (NCLC proof-of-concept)*
+*Changes v1.2: Added client profile building as skill creation methodology, author/voice verification as content fidelity check, content markers for post-generation verification (client proof-of-concept)*
 *Changes v1.1: Updated phase ordering (Asset Sharing → MCP Deploy → Platform → Tools), added infrastructure decisions, added session tracking*

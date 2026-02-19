@@ -112,8 +112,8 @@ We chose **MCP Server** because:
 ### User Onboarding
 
 ```
-1. User visits https://mcp.zivtech.com/auth
-2. Signs in with Google (restricted to @zivtech.com)
+1. User visits https://mcp.example.com/auth
+2. Signs in with Google (restricted to organization domain)
 3. Clicks "Connect Jira" → OAuth flow → Tokens stored (encrypted)
 4. Clicks "Connect Slack" → OAuth flow → Tokens stored (encrypted)
 5. Clicks "Connect GitHub" → OAuth flow → Tokens stored (encrypted)

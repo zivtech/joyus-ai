@@ -1,12 +1,11 @@
 # OS
 .DS_Store
 
-# Cloned repos (managed separately)
-zivtech-claude-skills/
-zivtech-skills-copy/
-zivtech-claude-skills-repo
-claude-presentation-toolkit/
-drupal-brand-skill/
+# Private staging directories (repo separation)
+_private/
+.entire/
+.conductor/
+.mcp.json
 
 # AI Agent directories (added by Spec Kitty CLI)
 # These contain auth tokens and should NEVER be committed
