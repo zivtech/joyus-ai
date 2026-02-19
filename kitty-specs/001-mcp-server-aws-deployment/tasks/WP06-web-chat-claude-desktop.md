@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: Web Chat UI & Claude Desktop Config
-lane: "doing"
+lane: "for_review"
 dependencies: []
 base_branch: 001-mcp-server-aws-deployment-WP04
 base_commit: 89d90a6e924f9ad2b1048b7eed7f5ab25b55fbeb
@@ -312,3 +312,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 - **Mobile keyboard**: iOS and Android handle virtual keyboards differently. The viewport meta and CSS safe-area-inset approach should handle most cases.
 - **Token security**: Bearer token in localStorage is acceptable for internal tool. Not suitable for public-facing deployment (Phase 3 would need proper auth).
 - **Claude API costs**: Each web chat message consumes API credits. Consider adding a simple usage counter/warning.
+
+## Activity Log
+
+- 2026-02-19T02:01:34Z – unknown – shell_pid=55304 – lane=for_review – Web chat UI, Claude Desktop config
