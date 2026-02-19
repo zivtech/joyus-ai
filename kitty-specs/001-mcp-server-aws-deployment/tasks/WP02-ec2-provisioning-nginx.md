@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: EC2 Provisioning & Nginx
-lane: "doing"
+lane: "for_review"
 dependencies: []
 base_branch: 001-mcp-server-aws-deployment-WP01
 base_commit: 14d387e020a5b4466093c805bc4abd3c927070c0
@@ -339,3 +339,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
 - **Docker/UFW conflict**: Docker modifies iptables directly, potentially bypassing UFW. May need daemon.json configuration.
 - **Memory pressure**: t3.small has 2GB RAM. With swap, should handle all 3 containers, but may need t3.medium if OOM occurs under load.
 - **Nginx on host vs container**: Running nginx on host simplifies TLS management but means it's not in Docker Compose. Document this architecture decision.
+
+## Activity Log
+
+- 2026-02-19T01:54:43Z – unknown – shell_pid=13503 – lane=for_review – EC2 setup, nginx, TLS, firewall
