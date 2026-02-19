@@ -149,10 +149,8 @@ class DepartmentProfile(AuthorProfile):
     domain_specialization: str
     typical_document_types: list[str]
 
-class PersonProfile(AuthorProfile):
-    """The person-level profile from the profile-engine-spec."""
-    # Already defined in spec/profile-engine-spec.md §3
-    department_ids: list[str]
+    # Note: Person-level profiles use AuthorProfile directly (with department_ids).
+    # AuthorProfile is the canonical entity name across data-model.md, contracts, and tasks.
 ```
 
 ---

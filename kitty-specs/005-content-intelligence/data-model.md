@@ -82,6 +82,57 @@ Configuration for blended voices (e.g., composite "Priest" voice).
 
 ---
 
+## Feature Catalog (129 Features)
+
+The stylometric feature vector extracted by the 6 analyzers in WP03. Features are grouped by analyzer source.
+
+### StylometricAnalyzer (faststylometry — ~50 features)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 1-50 | Top-50 MFW frequencies | Most frequent word relative frequencies (Burrows' Delta basis) |
+
+### Custom Feature Extraction (~30 features)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 51-70 | Top-20 function word ratios | Closed-class word frequencies (the, of, and, to, a, in, ...) |
+| 71-75 | Sentence length stats | mean, median, std, min, max |
+| 76-80 | Punctuation density | comma_rate, semicolon_rate, colon_rate, dash_rate, exclamation_rate |
+| 81-90 | Character trigram frequencies | Top-10 discriminative character n-grams |
+| 91-95 | Vocabulary richness | type_token_ratio, hapax_legomena_ratio, yule_k, simpson_d, brunet_w |
+
+### MarkerAnalyzer (~10 features)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 96-100 | Domain marker density | high_signal_count, medium_signal_count, marker_diversity, marker_consistency, negative_marker_count |
+| 101-105 | Signature phrase metrics | phrase_count, phrase_uniqueness, phrase_frequency_mean, phrase_frequency_std, phrase_coverage |
+
+### VocabularyAnalyzer (~10 features)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 106-110 | Term preference | preferred_term_ratio, avoided_term_ratio, technical_density, jargon_ratio, formality_score |
+| 111-115 | Lexical patterns | avg_word_length, long_word_ratio, rare_word_ratio, latin_root_ratio, compound_term_ratio |
+
+### StructureAnalyzer (~10 features)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 116-120 | Paragraph patterns | avg_paragraph_length, paragraph_length_std, list_usage_rate, heading_depth, section_count |
+| 121-125 | Syntactic patterns | avg_parse_depth, subordinate_clause_ratio, passive_voice_ratio, question_ratio, quotation_density |
+
+### AudienceAnalyzer (~4 features)
+
+| # | Feature | Description |
+|---|---------|-------------|
+| 126-129 | Register indicators | formality_index, hedging_ratio, directness_score, audience_specificity |
+
+**Note**: Exact feature count may vary during implementation. The "129" target is approximate — WP03 implementers should document the final feature set and update this catalog. Features 1-50 come from faststylometry's MFW analysis; features 51-129 are custom-extracted via spaCy and NLP.
+
+---
+
 ## Hierarchy Entities (Phase B)
 
 ### DepartmentProfile

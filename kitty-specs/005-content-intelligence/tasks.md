@@ -375,6 +375,20 @@ WP01 ─── WP02 ─── WP03 ─── WP04 ─┬── WP05 ─── WP
 
 **MVP scope**: WP01-WP05 (person-level profiles with verification + CLI) — a usable profile engine without MCP or hierarchy.
 
+### Phase Boundary: What's Deferred
+
+The following spec sections are intentionally **not covered** in Phases A-C tasks:
+
+| Spec Section | Why Deferred |
+|-------------|-------------|
+| §5 System 2: Writing Generation | Requires LLM integration (Phase D) |
+| §7 Access Control / Content Provenance | SourceRef, GeneratedContent provenance needs generation pipeline (Phase D) |
+| §9 Regulatory Change Detection | External API integrations — Federal Register, Congress.gov (Phase F) |
+| §1.1 Self-Service Profile Building | Web interface, automatic tier detection (Phase E) |
+| CompositeVoiceConfig (data-model.md) | Blended voice merging needs generation to validate (Phase D) |
+
+These are tracked in `plan.md` § Deferred Scope. The monitoring infrastructure (Phase C) is designed to be generation-ready — WP12's pipeline accepts any text, not just System 2 output.
+
 ---
 
 ## Summary
