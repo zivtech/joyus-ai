@@ -1,9 +1,12 @@
 ---
 work_package_id: WP08
 title: Companion Service
-lane: planned
+lane: "doing"
 dependencies:
 - WP01
+base_branch: 002-session-context-management-WP01
+base_commit: 94115df32060d4fd7b5120bf3ec3a1762344b93c
+created_at: '2026-02-19T00:03:28.147675+00:00'
 subtasks:
 - T029
 - T030
@@ -13,7 +16,7 @@ subtasks:
 phase: Phase 2 - Primary Interface
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "76724"
 review_status: ''
 reviewed_by: ''
 history:
