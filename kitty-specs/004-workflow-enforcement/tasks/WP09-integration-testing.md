@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Integration Testing & Hardening
-lane: "done"
+lane: "for_review"
 dependencies:
 - WP06
 - WP07
@@ -196,3 +196,4 @@ history:
 - 2026-02-18T20:04:54Z – unknown – shell_pid=35397 – lane=for_review – Ready for review: 6 integration test files (51 tests) covering gate execution, skill loading, audit roundtrip, tier behavior matrix, error handling, and config validation
 - 2026-02-18T20:05:27Z – claude-opus – shell_pid=56988 – lane=doing – Started review via workflow command
 - 2026-02-18T20:06:58Z – claude-opus – shell_pid=56988 – lane=done – Review passed: 51 integration tests across 6 files, all passing. Full tier matrix, audit roundtrip, error handling, and config validation coverage.
+- 2026-02-19T00:34:34Z – claude-opus – shell_pid=56988 – lane=for_review – Locking, logging, E2E tests, error handling audit — 433 tests
