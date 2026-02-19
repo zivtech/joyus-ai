@@ -6,9 +6,11 @@
 
 ## 1. Project Identity
 
-**Name:** Zivtech AI Agent Platform
+**Name:** Joyus AI (Zivtech AI Agent Platform)
 
-**Purpose:** A multi-tenant AI agent platform that enables Zivtech to deliver AI-powered consulting services — both for internal productivity and as a managed service for clients who cannot have Claude Code-level access.
+**Mission:** The only way we find a joyous future with AI is by ensuring it works for the joy of all of us. We can build the best-case scenario, but only if we do it together.
+
+**Purpose:** A multi-tenant AI agent platform that enables Zivtech to deliver AI-powered consulting services — both for internal productivity and as a managed service for clients who cannot have Claude Code-level access. Open source at its core, because shared infrastructure for the mediation between AI and people should belong to everyone.
 
 **Starting Point:** The asset sharing pipeline — a foundational layer so everything we build has somewhere to go — followed by deploying the existing MCP server, then building the platform framework.
 
@@ -76,6 +78,44 @@ Monitoring is not optional — it's how we learn and improve.
 - Automated pipelines (e.g., bug triage triggered by Jira ticket creation) use the same skills, quality gates, and audit trail as human sessions
 - The enforcement model is agent-agnostic: whether a human or an automated pipeline initiates an action, the same guardrails apply
 - Pipelines that modify code or client-facing content must produce reviewable artifacts (PRs, ticket updates) — never silent changes
+
+### 2.8 Open Source by Default
+
+- The platform core — orchestration, mediation layer, monitoring framework, session management, skill loading, quality gates, and multi-tenant architecture — is **open source**
+- We build in the open because:
+  - The mediation layer between AI and organizations is infrastructure that should be shared, not hoarded
+  - Anything in the platform can realistically be rebuilt in hours by a competent team with AI — secrecy provides no durable moat
+  - Community adoption, contributions, and trust are more valuable than closed-source protection
+  - Open source aligns with the mission: AI that works **for and with** people, not controlled by gatekeepers
+- **What stays outside the open source repo:**
+  - Client-specific skills, profiles, and corpus data (governed by Data Governance §3)
+  - Zivtech's proprietary consulting skill sets (competitive differentiation through expertise, not code secrecy)
+  - Security-sensitive configurations (API keys, auth secrets, deployment-specific hardening)
+- The boundary is **security and client data**, not platform capability — we don't withhold platform features to create artificial scarcity
+- **Zivtech's competitive advantage** is consulting expertise, client relationships, and operational know-how — not the source code
+- License selection will balance community freedom with protection against hostile closed-source forks (e.g., AGPL, BSL, or similar copyleft license)
+- **Repository separation model:**
+
+| Repository | Visibility | Contains |
+|------------|-----------|----------|
+| `joyus-ai` | **Public** | Platform core: orchestration, mediation, monitoring, session management, skill loading framework, quality gates, multi-tenant architecture, example/starter skills |
+| `zivtech-skills` | **Private** | Zivtech's proprietary consulting skills: writing styles, audit methodologies, domain expertise profiles, proven prompt engineering |
+| `client-<name>-skills` | **Private** | Per-client skill sets, corpus data, writing profiles, brand assets, deployment configs |
+| `joyus-ai-deploy` | **Private** | Production deployment configs, infrastructure secrets, Zivtech-specific ops (optional — may just be a branch or directory in private repos) |
+
+- The open source repo must **never import or depend on** private repos — the dependency flows one direction only: private repos consume the public platform as a dependency
+- Example and starter skills ship with the open source repo to demonstrate the skill authoring API — these are functional but generic (e.g., `example-writing-style`, `example-code-review`)
+- The skill loading interface is the contract: any organization can build their own skills against the public API without needing Zivtech's proprietary ones
+- This separation ensures the open source repo is self-contained, runnable, and valuable on its own — it is a complete product, not a crippled demo
+
+### 2.9 Assumption Awareness
+
+- AI capabilities, organizational needs, and market conditions change faster than traditional software cycles
+- The platform must **track the assumptions** that informed its design decisions, skills, and guardrails
+- Assumptions are named, dated, and linked to the skills or guardrails they informed
+- When external signals indicate an assumption may be stale (model capability changes, client strategy shifts, market events, feedback patterns), the platform surfaces this for review
+- The feedback loop (§2.5) captures reactive corrections; assumption awareness adds **proactive review** — the platform doesn't just fix what broke, it flags what might be about to break
+- This is how we help organizations navigate change rather than be blindsided by it
 
 ---
 
@@ -189,10 +229,11 @@ Monitoring is not optional — it's how we learn and improve.
 ## 8. What This Project Is NOT
 
 - ❌ A presentation-only tool (it's a platform with many tools)
-- ❌ A consumer product (it's for Zivtech internal + managed client use)
 - ❌ A replacement for human judgment (outputs are always reviewable)
 - ❌ A way to bypass client approval (clients retain authority)
 - ❌ A data collection play (client data is never used for training)
+- ❌ A closed platform — the core is open source; proprietary value lives in skills and consulting expertise, not code secrecy
+- ❌ A crippled open-source-core with paid features bolted on — the open source repo is a complete, functional product; Zivtech's private skills are consulting IP, not missing features
 
 ---
 
@@ -206,9 +247,10 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.3*
+*Constitution Version: 1.4*
 *Established: January 29, 2026*
 *Last Updated: February 18, 2026*
+*Changes v1.4: Added Principle 2.8 (Open Source by Default) with repository separation model; added Principle 2.9 (Assumption Awareness) for proactive tracking of design assumptions; updated Section 8 to reflect open source posture; removed "consumer product" constraint (open source inherently broadens audience)*
 *Changes v1.3: Added Principle 2.7 (Automated Pipelines as First-Class Citizens) from CTO discussion; added Jonathan DeLaigle as CTO stakeholder*
 *Changes v1.2: Added client profile building as skill creation methodology, author/voice verification as content fidelity check, content markers for post-generation verification (NCLC proof-of-concept)*
 *Changes v1.1: Updated phase ordering (Asset Sharing → MCP Deploy → Platform → Tools), added infrastructure decisions, added session tracking*
