@@ -1,9 +1,11 @@
 ---
 work_package_id: "WP01"
 title: "Package Foundation + Data Models"
-lane: "planned"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
+agent: "claude"
+shell_pid: "54869"
 history:
   - date: "2026-02-19"
     action: "created"
@@ -359,3 +361,7 @@ Key models to implement:
 - **Pydantic model design is foundational**: Changes to AuthorProfile cascade to every WP. Review the data-model.md carefully before implementing.
 - **CUID2 dependency**: If `cuid2` package has compatibility issues, fall back to `uuid4` with `str(uuid4())[:24]` prefix.
 - **spaCy install size**: The full package with `en_core_web_md` is ~200MB. Ensure test CI can handle this.
+
+## Activity Log
+
+- 2026-02-19T23:50:19Z – claude – shell_pid=54869 – lane=doing – Started implementation via workflow command
