@@ -1,9 +1,13 @@
 ---
 work_package_id: WP03
 title: CI/CD Pipeline
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: 001-mcp-server-aws-deployment-WP02
+base_commit: 0de5a7aba398cf00ca6499c97791604b0f842fb5
+created_at: '2026-02-19T01:55:07.685866+00:00'
 subtasks: [T011, T012, T013, T014, T015]
+shell_pid: "40410"
 history:
 - date: '2026-02-12'
   event: Created
