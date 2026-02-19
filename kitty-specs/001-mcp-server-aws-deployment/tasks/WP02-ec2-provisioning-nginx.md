@@ -1,9 +1,13 @@
 ---
 work_package_id: WP02
 title: EC2 Provisioning & Nginx
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: 001-mcp-server-aws-deployment-WP01
+base_commit: 14d387e020a5b4466093c805bc4abd3c927070c0
+created_at: '2026-02-19T01:16:19.375991+00:00'
 subtasks: [T006, T007, T008, T009, T010]
+shell_pid: "13503"
 history:
 - date: '2026-02-12'
   event: Created
