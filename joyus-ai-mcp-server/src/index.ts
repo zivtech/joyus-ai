@@ -17,6 +17,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
 
+import { sql } from 'drizzle-orm';
+
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
 import { db, auditLogs } from './db/client.js';
@@ -51,9 +53,104 @@ app.use(session({
   }
 }));
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', version: '0.1.0' });
+// --- Health check endpoints ---
+
+const startTime = Date.now();
+
+// Platform self-check
+app.get('/health/platform', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'platform',
+    uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
+    version: '0.1.0',
+  });
+});
+
+// Database check
+app.get('/health/db', async (req, res) => {
+  try {
+    const result = await db.execute(sql`SELECT 1 AS ok`);
+    res.json({
+      status: 'ok',
+      service: 'database',
+      connections_active: result ? 1 : 0,
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: 'degraded',
+      service: 'database',
+      error: err instanceof Error ? err.message : 'Connection failed',
+    });
+  }
+});
+
+// Playwright container check
+app.get('/health/playwright', async (req, res) => {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch('http://playwright:3002/health', {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (response.ok) {
+      const data = await response.json();
+      res.json({ status: 'ok', service: 'playwright', ...data });
+    } else {
+      res.status(503).json({ status: 'degraded', service: 'playwright', error: `HTTP ${response.status}` });
+    }
+  } catch (err) {
+    res.status(503).json({
+      status: 'degraded',
+      service: 'playwright',
+      error: err instanceof Error ? err.message : 'Unreachable',
+    });
+  }
+});
+
+// Aggregated health (returns 200 if all healthy, 503 if any degraded)
+app.get('/health', async (req, res) => {
+  const services: Record<string, { status: string; [key: string]: unknown }> = {};
+  let allHealthy = true;
+
+  // Platform
+  services.platform = {
+    status: 'ok',
+    uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
+  };
+
+  // Database
+  try {
+    await db.execute(sql`SELECT 1`);
+    services.database = { status: 'ok' };
+  } catch {
+    services.database = { status: 'degraded' };
+    allHealthy = false;
+  }
+
+  // Playwright
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch('http://playwright:3002/health', {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    services.playwright = { status: response.ok ? 'ok' : 'degraded' };
+    if (!response.ok) allHealthy = false;
+  } catch {
+    services.playwright = { status: 'degraded' };
+    allHealthy = false;
+  }
+
+  const statusCode = allHealthy ? 200 : 503;
+  res.status(statusCode).json({
+    status: allHealthy ? 'ok' : 'degraded',
+    timestamp: new Date().toISOString(),
+    version: '0.1.0',
+    services,
+  });
 });
 
 // Auth routes (OAuth callbacks, token management)
