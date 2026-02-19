@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { startMcpServer } from '../dist/mcp/server.js';
 
-const projectRoot = process.cwd();
+const projectRoot = process.env.PROJECT_ROOT || process.cwd();
 startMcpServer(projectRoot).catch((error) => {
   console.error('Failed to start MCP server:', error);
   process.exit(1);

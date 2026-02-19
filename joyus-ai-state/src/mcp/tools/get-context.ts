@@ -5,6 +5,7 @@
  */
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { validateInput, createSuccessResponse, createErrorResponse, GetContextInputSchema } from './utils.js';
 import { StateStore, getSnapshotsDir } from '../../state/store.js';
 import { collectGitState } from '../../collectors/git.js';
 import { collectFileState } from '../../collectors/files.js';
@@ -21,48 +22,52 @@ export const getContextToolDef = {
 };
 
 export async function handleGetContext(
-  _args: Record<string, unknown>,
+  args: Record<string, unknown>,
   projectRoot: string,
 ): Promise<CallToolResult> {
-  const snapshotsDir = getSnapshotsDir(projectRoot);
-  const store = new StateStore(snapshotsDir);
+  try {
+    validateInput(GetContextInputSchema, args);
 
-  const [latest, liveGit, liveFiles] = await Promise.all([
-    store.readLatest(),
-    collectGitState(projectRoot),
-    collectFileState(projectRoot),
-  ]);
+    const snapshotsDir = getSnapshotsDir(projectRoot);
+    const store = new StateStore(snapshotsDir);
 
-  let result: Record<string, unknown>;
+    const [latest, liveGit, liveFiles] = await Promise.all([
+      store.readLatest(),
+      collectGitState(projectRoot),
+      collectFileState(projectRoot),
+    ]);
 
-  if (latest) {
-    const divergence = detectDivergence(latest, liveGit, liveFiles);
-    result = {
-      ...latest,
-      git: liveGit,
-      files: liveFiles,
-    };
-    if (divergence.changes.length > 0) {
-      result._divergence = divergence;
+    let result: Record<string, unknown>;
+
+    if (latest) {
+      const divergence = detectDivergence(latest, liveGit, liveFiles);
+      result = {
+        ...latest,
+        git: liveGit,
+        files: liveFiles,
+      };
+      if (divergence.changes.length > 0) {
+        result._divergence = divergence;
+      }
+    } else {
+      result = {
+        id: null,
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        event: 'session-start',
+        project: { rootPath: projectRoot, hash: '', name: '' },
+        git: liveGit,
+        files: liveFiles,
+        task: null,
+        tests: null,
+        decisions: [],
+        canonical: [],
+        sharer: null,
+      };
     }
-  } else {
-    result = {
-      id: null,
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-      event: 'session-start',
-      project: { rootPath: projectRoot, hash: '', name: '' },
-      git: liveGit,
-      files: liveFiles,
-      task: null,
-      tests: null,
-      decisions: [],
-      canonical: [],
-      sharer: null,
-    };
-  }
 
-  return {
-    content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-  };
+    return createSuccessResponse(result);
+  } catch (err) {
+    return createErrorResponse((err as Error).message);
+  }
 }

@@ -102,3 +102,17 @@ export { createMcpServer, startMcpServer } from './mcp/server.js';
 export { getContextToolDef, handleGetContext } from './mcp/tools/get-context.js';
 export { saveStateToolDef, handleSaveState } from './mcp/tools/save-state.js';
 export { verifyActionToolDef, handleVerifyAction } from './mcp/tools/verify-action.js';
+export { checkCanonicalToolDef, handleCheckCanonical } from './mcp/tools/check-canonical.js';
+export { shareStateToolDef, handleShareState } from './mcp/tools/share-state.js';
+
+// --- MCP tool utilities ---
+export {
+  validateInput,
+  createErrorResponse,
+  createSuccessResponse,
+  GetContextInputSchema,
+  SaveStateInputSchema,
+  VerifyActionInputSchema,
+  CheckCanonicalInputSchema,
+  ShareStateInputSchema,
+} from './mcp/tools/utils.js';
