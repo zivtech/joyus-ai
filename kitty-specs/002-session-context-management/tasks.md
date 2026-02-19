@@ -278,7 +278,7 @@
 - [x] T035 [P] Companion service integration tests (event detection → snapshot capture cycle)
 - [x] T036 Concurrent session handling (file locking with lockfile, stale lock detection, 5s timeout)
 - [x] T037 [P] Error handling audit (corrupted snapshots, missing git, disk full, permission denied)
-- [ ] T038 [P] Logging utility (stderr logger with warn/debug/error levels, verbose mode)
+- [x] T038 [P] Logging utility (stderr logger with warn/debug/error levels, verbose mode)
 
 ### Implementation Notes
 - Integration tests use temp directories with fresh git repos.
