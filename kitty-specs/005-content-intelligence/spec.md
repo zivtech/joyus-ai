@@ -127,6 +127,20 @@ class OrganizationProfile(AuthorProfile):
     prohibited_framings: list[ProhibitedFraming]
     department_overrides: dict[str, OverrideSet]  # dept-specific org rules
 
+    # Voice catalog: defines the audience voices available org-wide
+    voice_definitions: dict[str, VoiceDefinition]  # audience_key → definition
+
+class VoiceDefinition(BaseModel):
+    """Org-level voice definition — declares an audience voice available to all authors."""
+
+    audience_key: str              # e.g., "litigator", "advocate", "educator"
+    audience_label: str            # Human-readable label
+    description: str               # When and how this voice is used
+    target_audience: str           # Who is being addressed
+    access_level: Optional[ContentAccessLevel]  # None = unrestricted
+    #   Org declares which voices exist; individual AuthorProfiles
+    #   populate VoiceContext overrides per voice via profile-engine-spec §3.1
+
 class DepartmentProfile(AuthorProfile):
     """Extends AuthorProfile with department-level fields."""
 
@@ -226,11 +240,19 @@ Load target profile (person, department, or org level)
 Load applicable parent profiles (dept inherits org rules, person inherits dept+org rules)
     │
     ▼
+Resolve voice context (if audience specified):
+  - Look up VoiceContext for the requested audience in target profile
+  - If found: apply section overrides (voice, vocabulary, argumentation, etc.)
+  - If not found: use base profile (Layer 0 behavior)
+  - Check VoiceAccessLevel: does the requesting user have access to this voice?
+  - Use voice-specific fidelity_tier for quality thresholds
+    │
+    ▼
 Construct skill context:
-  - Voice & tone from target profile
+  - Voice & tone from resolved profile (base or voice-overridden)
   - Vocabulary (preferred/avoided) merged from all applicable levels
   - Positions merged (person overrides dept overrides org, unless org position is marked "authoritative")
-  - Anti-patterns merged from all levels
+  - Anti-patterns merged from all levels (including voice-specific anti-patterns)
   - Prohibited framings from org level (always enforced)
     │
     ▼
@@ -492,6 +514,8 @@ The organization's treatises are their primary revenue source (subscriber-only c
 
 7. **Audit trail tracks source provenance.** Every output records which source documents influenced it, enabling access control verification and ensuring the organization can audit for accidental content leakage.
 
+8. **Voice profiles carry independent access levels.** Statistical patterns (markers, stylometrics) within any voice profile remain unrestricted — they are derived knowledge. However, positions, analytical frameworks, strategic approaches, and example outputs within restricted voice profiles inherit the voice's access level. This enables Layer 2 voices (e.g., the "Priest" voice containing privileged legal strategies) to be access-gated without restricting the underlying stylometric infrastructure. See `profile-engine-spec.md §3.1` for the `VoiceAccessLevel` model.
+
 ### 7.3 Access Control Integration
 
 ```python
@@ -548,7 +572,8 @@ skills/
 ├── org/
 │   ├── SKILL.md                    # Organizational voice, positions, prohibited framings
 │   ├── markers.json                # Org-level content markers
-│   └── stylometrics.json           # Org-level stylometric baseline
+│   ├── stylometrics.json           # Org-level stylometric baseline
+│   └── voices.json                 # Voice catalog (VoiceDefinitions — audience keys + access levels)
 ├── departments/
 │   ├── credit-reporting/
 │   │   ├── SKILL.md
@@ -560,13 +585,20 @@ skills/
 │       └── stylometrics.json
 └── people/
     ├── author-001/
-    │   ├── SKILL.md
+    │   ├── SKILL.md                # Base voice (Layer 0)
     │   ├── markers.json
-    │   └── stylometrics.json
+    │   ├── stylometrics.json
+    │   └── voices/                 # Per-audience voice contexts (Layer 1-2)
+    │       ├── litigator.json      # VoiceContext overrides for courts audience
+    │       ├── advocate.json       # VoiceContext overrides for legislators
+    │       ├── educator.json       # VoiceContext overrides for public
+    │       └── expert.json         # VoiceContext overrides for peers/academics
     └── author-002/
         ├── SKILL.md
         ├── markers.json
-        └── stylometrics.json
+        ├── stylometrics.json
+        └── voices/                 # Only populated if author has multi-audience voices
+            └── ...
 ```
 
 ### 8.3 What's Platform vs. What's Org-Specific
@@ -664,12 +696,13 @@ Start with Federal Register monitoring for final rules affecting:
 | Should the org profile include an editorial "house style" layer separate from the statistical composite? | Statistical composite of all authors gives the average voice. But the org's editorial voice (press releases, official statements) may be distinct from any individual's voice. | High — affects org profile construction |
 | How to handle co-authored documents? | Current attribution assigns to the dominant voice. For profile building, co-authored works could be assigned to both authors (diluting individual signal) or excluded. | Medium |
 | How to handle position conflicts? | Person X may disagree with the org's official position. When generating as Person X, use their position or the org's? Need a precedence model. | High — affects generation accuracy and org policy |
-| Integration point with Drupal for access control? | Standalone service with Drupal auth passthrough? Drupal module? API tokens? Depends on org's infrastructure. | Medium — deployment-specific |
+| ~~Integration point with Drupal for access control?~~ | **Resolved (Feb 19):** Platform-agnostic auth provider interface. First implementation: JWT token exchange (Drupal issues scoped JWT on login, platform validates stateless). Interface supports any IdP (OAuth2, SAML, API keys) — Drupal is not the only deployment target. See spec/plan.md Decision #20. | ~~Medium~~ **Resolved** |
 | Federal Register API reliability? | The FR API is public but has had availability issues. Need fallback/caching strategy. | Low — operational concern |
 | Self-service tier boundaries — should the system auto-detect the achievable tier? | Given N words of input, the system could say "you have enough data for Tier 2; Tier 3 would require ~8,000 more words." Should this be automatic guidance or user-selected? | Medium — affects UX |
 | Should Tier 1-2 profiles use `faststylometry` directly or wrap it? | faststylometry handles Burrows' Delta well. The question is whether to depend on it directly or wrap it for consistent interface across tiers. | Medium — architecture decision |
 | Feature ablation study for the 129-feature set? | The literature shows diminishing returns beyond top 200-500 MFW. Are all 129 features carrying signal, or are some redundant? An ablation study would validate the feature set. | Medium — affects Tier 4 quality claims |
 | How does the closed-loop generation + verification actually work at inference time? | The 129-feature vector could be used as a classifier, a reward signal, or a constraint beam search. The specific mechanism matters enormously for output quality. | High — core architecture |
+| ~~How should multi-audience voices be modeled?~~ | **Resolved (Feb 19):** VoiceContext as first-class entity with 3-layer opt-in. RegisterShift (parameter deltas on voice/tone) is insufficient — NCLC voices differ across all 12 profile sections. VoiceContext provides per-section overrides, per-voice fidelity tiers, and optional access control. See profile-engine-spec §3.1. | ~~High~~ **Resolved** |
 | Pricing model for self-service tiers? | Tier 1 could be free/low-cost (attract users), Tier 4 is premium (high value, high compute). How does this map to the platform's pricing? | Medium — business decision |
 
 ---
@@ -722,6 +755,7 @@ Start with Federal Register monitoring for final rules affecting:
 ---
 
 *Spec created: February 18, 2026*
+*Updated: February 19, 2026 — Added VoiceContext architecture: VoiceDefinition in §3.3 OrganizationProfile, voice resolution step in §5.3 generation workflow, Principle 8 (voice-level access control) in §7.2, voices/ directory in §8.2 skill file structure. Resolved open questions: auth integration (platform-agnostic, JWT first impl), multi-audience voice model (VoiceContext). Based on architecture research report (5 parallel agents + cross-validation).*
 *Updated: February 18, 2026 — Added profile fidelity tiers (§5.6), self-service profile building, build-vs-leverage analysis, and honest caveats on attribution accuracy vs. generation fidelity. Research basis: EMNLP 2025 (Wang et al.), Oxford DSH 2025, MDPI 2024 survey, faststylometry ecosystem analysis.*
 *For: Joyus AI Platform — Feature 005*
 *References: NCLC author-identification-research, spec/profile-engine-spec.md, Constitution v1.5*

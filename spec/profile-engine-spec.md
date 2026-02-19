@@ -129,7 +129,12 @@ class AuthorProfile(BaseModel):
     #   emotion: float                       # analytical ↔ passionate
     #   directness: float                    # hedged ↔ assertive
     #   complexity: float                    # accessible ↔ technical
-    #   audience_registers: dict[str, RegisterShift]
+    #   audience_registers: dict[str, RegisterShift]  # Layer 0 — simple register shifts
+
+    # Voice Contexts (Layer 1-2: multi-audience voices)
+    voice_contexts: dict[str, VoiceContext]   # audience_key → full voice context
+    #   Empty dict = Layer 0 (single voice, backwards-compatible)
+    #   Populated = Layer 1+ (multi-audience or restricted voices)
 
     # Section 5: Structural patterns
     structure: StructuralPatterns
@@ -178,6 +183,86 @@ class AuthorProfile(BaseModel):
     #   required_markers_per_document: int
     #   minimum_fidelity_score: float
 ```
+
+### 3.1 VoiceContext Architecture (Added Feb 19, 2026)
+
+The `RegisterShift` model (simple parameter deltas on voice/tone) is insufficient for organizations whose authors write in fundamentally different voices for different audiences. NCLC attorneys, for example, write as Litigator (courts), Advocate (legislators), Educator (public), Expert (treatises), and Consumer Advocate "Priest" (teaching lawyers) — these differ across vocabulary, argumentation, citations, structure, and positions, not just tone.
+
+**Three-layer opt-in design:**
+
+| Layer | Who needs it | What it adds | Backwards impact |
+|-------|-------------|-------------|-----------------|
+| **Layer 0** | All clients | Single AuthorProfile, one voice. `voice_contexts` is empty dict. | None — existing behavior unchanged |
+| **Layer 1** | Multi-audience orgs | `VoiceContext` objects override specific profile sections per audience | Additive — base profile still works for default voice |
+| **Layer 2** | Restricted voice orgs | `VoiceAccessLevel` on VoiceContext. Voice profiles are access-gated assets | Additive — requires auth integration |
+
+```python
+class VoiceContext(BaseModel):
+    """A complete voice configuration for a specific audience.
+
+    Overrides specific sections of the base AuthorProfile when this
+    voice is active. Sections not overridden inherit from the base profile.
+    """
+
+    voice_id: str                                # Unique identifier
+    audience_key: str                            # e.g., "litigator", "advocate", "educator"
+    audience_label: str                          # Human-readable: "Litigator (Courts)"
+    description: str                             # When to use this voice
+
+    # Fidelity tier for THIS voice (may differ from base profile)
+    fidelity_tier: Literal[1, 2, 3, 4]          # Per-voice, not per-author
+    corpus_size_for_voice: int                   # Words analyzed for this specific voice
+
+    # Section overrides — only populated sections replace the base profile
+    voice_override: Optional[VoiceProfile]       # §4 — tone, formality, etc.
+    vocabulary_override: Optional[VocabularyProfile]  # §6 — different terms per audience
+    argumentation_override: Optional[ArgumentationProfile]  # §7
+    citations_override: Optional[CitationProfile]      # §8
+    structure_override: Optional[StructuralPatterns]    # §5
+    positions_override: Optional[list[Position]]        # §3 — may hold different positions per audience
+    examples_override: Optional[ExampleOutputs]         # §10 — audience-specific examples
+    anti_patterns_override: Optional[AntiPatterns]      # §9 — audience-specific anti-patterns
+
+    # Layer 2: Access control (optional — empty for Layer 1)
+    access_level: Optional[VoiceAccessLevel]     # None = unrestricted (Layer 1)
+
+class VoiceAccessLevel(BaseModel):
+    """Access control for a voice profile itself (Layer 2).
+
+    The voice profile — not just the content it produces — is an access-gated asset.
+    Statistical patterns (markers, stylometrics) remain unrestricted.
+    Positions, analytical frameworks, and example outputs inherit this access level.
+    """
+
+    level: ContentAccessLevel                    # PUBLIC | SUBSCRIBER | GROUP | INTERNAL
+    restricted_sections: list[str]               # Which override sections are gated
+    #   e.g., ["positions_override", "examples_override"] — patterns stay open
+
+class CompositeVoiceConfig(BaseModel):
+    """Configuration for composite voices that blend multiple source voices.
+
+    Example: NCLC's "Priest" voice blends Litigator + Advocate + Educator + Expert
+    voices plus restricted strategic "secrets" corpus.
+    """
+
+    source_voices: list[str]                     # voice_ids to blend
+    source_weights: dict[str, float]             # voice_id → weight (sum to 1.0)
+    additional_corpus_ref: Optional[str]         # Reference to restricted corpus
+    blending_strategy: Literal["weighted_merge", "section_specific", "conditional"]
+    #   weighted_merge: blend all sources proportionally
+    #   section_specific: take §4 from voice A, §7 from voice B, etc.
+    #   conditional: switch source voice based on content topic
+```
+
+**Per-voice fidelity:** An author may be Tier 4 for Expert voice (50K+ words of treatise writing) but Tier 2 for Advocate voice (5K words of congressional testimony). The `fidelity_tier` field lives on `VoiceContext`, not on `AuthorProfile`, enabling honest representation of what's achievable per audience.
+
+**Resolution at generation time:**
+1. Request specifies target author + audience (e.g., "Write as Lauren Saunders, Advocate voice")
+2. Load base `AuthorProfile` for Lauren Saunders
+3. Look up `voice_contexts["advocate"]`
+4. For each profile section: use override if present, otherwise inherit from base
+5. Apply merged profile to generation
+6. Fidelity check uses the voice-specific fidelity tier and corpus
 
 ### Required vs. Optional by Domain
 

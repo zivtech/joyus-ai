@@ -15,7 +15,8 @@
 | **1** | Asset Sharing Pipeline | **Starting** | GitHub Pages + StatiCrypt for sharing PoCs behind passwords |
 | **2** | MCP Server Deployment | Planned | Deploy existing MCP server to AWS EC2 |
 | **2.5** | Profile Engine + Content Fidelity | **Priority** | Standalone library: corpus → profiles → skill files + two-tier verification. Platform's moat. |
-| **3** | Platform Framework | Planned | Internal AI portal — web app, multi-tenant, skills system (imports profile engine) |
+| **2.7** | Content Infrastructure | **Planned** | Corpus connectors, search abstraction, access enforcement, bot mediation, generate-then-verify chat (Feature 006) |
+| **3** | Platform Framework | Planned | Internal AI portal — web app, multi-tenant, skills system (imports profile engine + content infrastructure) |
 | **4** | Additional Tools | Future | Presentation toolkit, document generator, analysis tools |
 
 ### Key Decisions (Feb 11, 2026)
@@ -927,6 +928,9 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | 17 | Attribution verification timing | Inline only / Async only / Two-tier | **Two-tier (inline + async)** | Boris Cherny's #1 insight: verification loops multiply quality 2-3x, but only if the model sees the failure and self-corrects. Tier 1: fast inline checks (~2-5s) as quality gate before delivery. Tier 2: deep async analysis for monitoring, drift detection, and skill improvement. | Feb 17 |
 | 18 | Layer investment principle | Equal / Model-dependent | **Thick domain, thin orchestration** | Boris Cherny's "scaffolding gets subsumed" principle: orchestration code gets deleted with model upgrades, but domain knowledge (skills, profiles, verification) is durable. Build skills and verification thick; keep orchestration as a thin router. | Feb 17 |
 | 19 | Profile engine timing | Phase 3 / Phase 2.5 standalone / Phase 4 | **Phase 2.5 standalone library** | Profile engine + content fidelity are independent of platform infrastructure (no web portal, MCP gateway, or containers needed). Building standalone means: immediate NCLC use, second-domain validation before platform exists, Phase 3 imports a tested library. This is the "thick domain" investment per Decision #18. | Feb 17 |
+| 20 | Auth integration model | Drupal module / Auth passthrough / JWT token exchange / Platform-agnostic interface | **Platform-agnostic auth provider interface (JWT first impl)** | Platform defines `resolve_access_level(token) → AccessContext` interface. First implementation: Drupal issues scoped JWT on login, platform validates stateless. Interface supports any IdP (OAuth2, SAML, API keys). Drupal is the primary deployment target but not the only one — hospital, university, museum deployments may use different auth backends. Avoids coupling to any single CMS or IdP. | Feb 19 |
+| 21 | Multi-audience voice model | RegisterShift (parameter deltas) / VoiceContext (section overrides) / Separate profiles per voice | **VoiceContext with 3-layer opt-in** | RegisterShift insufficient — NCLC voices differ across all 12 profile sections, not just tone. VoiceContext provides per-section overrides with backwards-compatible layering: Layer 0 (single voice, no change), Layer 1 (multi-audience), Layer 2 (restricted voices with access control). Per-voice fidelity tiers. See profile-engine-spec §3.1. | Feb 19 |
+| 22 | Content infrastructure placement | Extend 005 / New feature 006 / Defer | **New feature 006 (Content Infrastructure)** | Knowledge infrastructure gap too large for 005 amendment. 006 covers: corpus connectors, search abstraction, content state model, access mapping, MCP search tool, subscription gating, generate-then-verify chat, bot mediation API. Platform-level feature, not NCLC-specific. | Feb 19 |
 
 ---
 
@@ -973,9 +977,16 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | ├─ PR detection: GitHub webhooks, manual trigger, or CI integration? | | | |
 | ├─ Branch change detection: how to know when to prompt for baseline update? | | | |
 | └─ Execution environment: platform EC2, client infra, or ephemeral containers? | | | |
+| **Content Infrastructure (Feature 006)** | Alex + Claude | Phase 2.7 | Open |
+| ├─ Search backend: Solr, Elasticsearch, Drupal Search API, or abstraction layer? | | | Recommendation: platform defines search interface, deployment wires backend |
+| ├─ Content ingestion: what source types must be supported at launch? | | | XML treatises, Drupal CMS, web scraping — listservs and file shares deferred |
+| ├─ Content state model: draft → staged → published → superseded? | | | Needs validation against NCLC's existing XML version control |
+| ├─ Bot mediation API: llms.txt standard or custom endpoint? | | | Research llms.txt adoption before deciding |
+| └─ Generate-then-verify: separate from standard RAG or unified interface? | | | Recommendation: unified interface with retrieval_strategy parameter |
 
 ---
 
 *Plan created: January 29, 2026*
+*Updated: February 19, 2026 — Added Phase 2.7 (Content Infrastructure, Feature 006) as new phase between Profile Engine and Platform Framework (Decision #22). Added platform-agnostic auth provider interface with JWT first implementation (Decision #20). Added VoiceContext 3-layer voice architecture (Decision #21). Added Content Infrastructure open questions. Based on architecture research report (5 parallel agents + cross-validation, 22 systems mapped).*
 *Updated: February 17, 2026 — Added Phase 2.5 (Profile Engine + Content Fidelity) as priority standalone library (Decision #19). Boris Cherny (Claude Code creator) analysis: replaced OMC with thin server orchestrator + native Claude Code (Decision #16), added two-tier content fidelity verification (Decision #17), added "thick domain, thin orchestration" architectural principle (Decision #18), resolved attribution timing and OMC open questions. Prior: Feb 15 — Client Profile Building pipeline, author verification, Attribution Service, decisions #14-15. Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
 *For: Zivtech AI Agent Platform*
