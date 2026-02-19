@@ -1,0 +1,25 @@
+# Joyus AI Playwright Container
+# Browser automation + Backstop.js visual regression testing
+
+FROM mcr.microsoft.com/playwright:v1.50.0-noble
+
+WORKDIR /app
+
+# Install MCP SDK, Playwright tools, and Backstop.js
+RUN npm init -y && npm install --no-save \
+    @modelcontextprotocol/sdk \
+    playwright \
+    backstopjs
+
+# Copy the MCP server wrapper
+COPY deploy/playwright-server/ ./
+
+ENV NODE_ENV=production
+ENV PORT=3002
+
+EXPOSE 3002
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3002/health || exit 1
+
+CMD ["node", "server.js"]
