@@ -1,9 +1,11 @@
 ---
 work_package_id: "WP01"
 title: "Docker Compose & Container Images"
-lane: "planned"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005"]
+agent: "claude-opus"
+shell_pid: "95872"
 history:
   - date: "2026-02-12"
     event: "Created"
@@ -238,3 +240,7 @@ Create all Docker configuration files for the 3-container architecture: Platform
 - **Image size**: Platform container may exceed 2GB. Acceptable for now; optimize later with multi-stage builds that copy only artifacts.
 - **Build time**: Full build may take 5-10 minutes. Use Docker layer caching.
 - **Playwright version**: Pin to specific version to avoid breaking changes in browser binaries.
+
+## Activity Log
+
+- 2026-02-19T01:07:44Z – claude-opus – shell_pid=95872 – lane=doing – Started implementation via workflow command
