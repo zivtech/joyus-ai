@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP01"
 title: "Docker Compose & Container Images"
-lane: "doing"
+lane: "for_review"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005"]
 agent: "claude-opus"
@@ -244,3 +244,4 @@ Create all Docker configuration files for the 3-container architecture: Platform
 ## Activity Log
 
 - 2026-02-19T01:07:44Z – claude-opus – shell_pid=95872 – lane=doing – Started implementation via workflow command
+- 2026-02-19T01:15:52Z – claude-opus – shell_pid=95872 – lane=for_review – Docker Compose, Platform/Playwright/PostgreSQL Dockerfiles, env template, prod overrides — all validated
