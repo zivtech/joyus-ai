@@ -1,9 +1,13 @@
 ---
 work_package_id: WP06
 title: Web Chat UI & Claude Desktop Config
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: 001-mcp-server-aws-deployment-WP04
+base_commit: 89d90a6e924f9ad2b1048b7eed7f5ab25b55fbeb
+created_at: '2026-02-19T01:59:58.060040+00:00'
 subtasks: [T028, T029, T030, T031, T032]
+shell_pid: "55304"
 history:
 - date: '2026-02-12'
   event: Created
