@@ -5,6 +5,7 @@
  */
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { validateInput, createSuccessResponse, createErrorResponse, SaveStateInputSchema } from './utils.js';
 import { createId } from '@paralleldrive/cuid2';
 import { StateStore, getSnapshotsDir, getProjectHash } from '../../state/store.js';
 import { collectGitState } from '../../collectors/git.js';
@@ -48,65 +49,63 @@ export async function handleSaveState(
   args: Record<string, unknown>,
   projectRoot: string,
 ): Promise<CallToolResult> {
-  const event = (typeof args.event === 'string' && VALID_EVENTS.includes(args.event as EventType))
-    ? (args.event as EventType)
-    : 'manual';
-  const decision = typeof args.decision === 'string' ? args.decision : undefined;
+  try {
+    const input = validateInput(SaveStateInputSchema, args);
+    const event: EventType = input.event ?? 'manual';
+    const decision = input.decision;
 
-  const snapshotsDir = getSnapshotsDir(projectRoot);
-  const store = new StateStore(snapshotsDir);
+    const snapshotsDir = getSnapshotsDir(projectRoot);
+    const store = new StateStore(snapshotsDir);
 
-  // Collect live state and previous data in parallel
-  const [liveGit, liveFiles, previousSnapshot, canonicalDecl] = await Promise.all([
-    collectGitState(projectRoot),
-    collectFileState(projectRoot),
-    store.readLatest(),
-    loadCanonical(projectRoot),
-  ]);
+    // Collect live state and previous data in parallel
+    const [liveGit, liveFiles, previousSnapshot, canonicalDecl] = await Promise.all([
+      collectGitState(projectRoot),
+      collectFileState(projectRoot),
+      store.readLatest(),
+      loadCanonical(projectRoot),
+    ]);
 
-  // Carry forward decisions
-  const previousDecisions = previousSnapshot?.decisions ?? [];
-  const decisions = carryForwardDecisions(previousDecisions, decision);
+    // Carry forward decisions
+    const previousDecisions = previousSnapshot?.decisions ?? [];
+    const decisions = carryForwardDecisions(previousDecisions, decision);
 
-  // Canonical statuses
-  const canonical = await getCanonicalStatuses(projectRoot, canonicalDecl, liveGit.branch);
+    // Canonical statuses
+    const canonical = await getCanonicalStatuses(projectRoot, canonicalDecl, liveGit.branch);
 
-  const snapshot: Snapshot = {
-    id: createId(),
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    event,
-    project: {
-      rootPath: projectRoot,
-      hash: getProjectHash(projectRoot),
-      name: path.basename(projectRoot),
-    },
-    git: liveGit,
-    files: liveFiles,
-    task: previousSnapshot?.task ?? null,
-    tests: previousSnapshot?.tests ?? null,
-    decisions,
-    canonical,
-    sharer: null,
-  };
+    const snapshot: Snapshot = {
+      id: createId(),
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      event,
+      project: {
+        rootPath: projectRoot,
+        hash: getProjectHash(projectRoot),
+        name: path.basename(projectRoot),
+      },
+      git: liveGit,
+      files: liveFiles,
+      task: previousSnapshot?.task ?? null,
+      tests: previousSnapshot?.tests ?? null,
+      decisions,
+      canonical,
+      sharer: null,
+    };
 
-  // Validate
-  SnapshotSchema.parse(snapshot);
+    // Validate
+    SnapshotSchema.parse(snapshot);
 
-  // Write
-  const filePath = await store.write(snapshot);
+    // Write
+    const filePath = await store.write(snapshot);
 
-  return {
-    content: [{
-      type: 'text',
-      text: JSON.stringify({
-        saved: true,
-        id: snapshot.id,
-        event,
-        timestamp: snapshot.timestamp,
-        file: filePath,
-        branch: liveGit.branch,
-      }, null, 2),
-    }],
-  };
+    return createSuccessResponse({
+      saved: true,
+      id: snapshot.id,
+      event,
+      timestamp: snapshot.timestamp,
+      file: filePath,
+      branch: liveGit.branch,
+    });
+  } catch (err) {
+    return createErrorResponse((err as Error).message);
+  }
 }

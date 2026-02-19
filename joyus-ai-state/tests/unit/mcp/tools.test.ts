@@ -2,8 +2,20 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { handleGetContext } from '../../../src/mcp/tools/get-context.js';
 import { handleSaveState } from '../../../src/mcp/tools/save-state.js';
 import { handleVerifyAction } from '../../../src/mcp/tools/verify-action.js';
+import { handleCheckCanonical } from '../../../src/mcp/tools/check-canonical.js';
+import { handleShareState } from '../../../src/mcp/tools/share-state.js';
+import {
+  validateInput,
+  createErrorResponse,
+  createSuccessResponse,
+  SaveStateInputSchema,
+  CheckCanonicalInputSchema,
+  ShareStateInputSchema,
+} from '../../../src/mcp/tools/utils.js';
 import { StateStore, getSnapshotsDir, initStateDirectory } from '../../../src/state/store.js';
+import { saveCanonical, addDeclaration } from '../../../src/state/canonical.js';
 import type { Snapshot } from '../../../src/core/types.js';
+import type { CanonicalDeclarations } from '../../../src/state/canonical.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -44,17 +56,63 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true });
 });
 
+// --- Utils (T027) ---
+
+describe('utils', () => {
+  describe('validateInput', () => {
+    it('returns parsed data on valid input', () => {
+      const result = validateInput(SaveStateInputSchema, { event: 'manual' });
+      expect(result.event).toBe('manual');
+    });
+
+    it('throws on invalid input', () => {
+      expect(() => validateInput(CheckCanonicalInputSchema, { action: 'check' })).toThrow('Invalid input');
+    });
+
+    it('includes field names in error message', () => {
+      try {
+        validateInput(CheckCanonicalInputSchema, { action: 'check' });
+      } catch (err) {
+        expect((err as Error).message).toContain('path');
+      }
+    });
+  });
+
+  describe('createErrorResponse', () => {
+    it('returns MCP error format', () => {
+      const result = createErrorResponse('something failed');
+      expect(result.isError).toBe(true);
+      const data = JSON.parse((result.content[0] as { text: string }).text);
+      expect(data.error).toBe('something failed');
+    });
+  });
+
+  describe('createSuccessResponse', () => {
+    it('returns MCP success format', () => {
+      const result = createSuccessResponse({ foo: 'bar' });
+      expect(result.isError).toBeUndefined();
+      const data = JSON.parse((result.content[0] as { text: string }).text);
+      expect(data.foo).toBe('bar');
+    });
+
+    it('pretty-prints JSON', () => {
+      const result = createSuccessResponse({ a: 1 });
+      const text = (result.content[0] as { text: string }).text;
+      expect(text).toContain('\n');
+    });
+  });
+});
+
+// --- get_context (T021) ---
+
 describe('get_context', () => {
   it('returns fresh state when no snapshots exist', async () => {
-    // Use tmpDir — no snapshots and not a git repo
-    const snapshotsDir = getSnapshotsDir(tmpDir);
-    // Don't create snapshots dir — simulates first run
     const result = await handleGetContext({}, tmpDir);
     expect(result.content).toHaveLength(1);
     const data = JSON.parse((result.content[0] as { text: string }).text);
     expect(data.git).toBeDefined();
     expect(data.files).toBeDefined();
-    expect(data.id).toBeNull(); // no snapshot
+    expect(data.id).toBeNull();
   });
 
   it('enriches existing snapshot with live state', async () => {
@@ -69,14 +127,14 @@ describe('get_context', () => {
     const result = await handleGetContext({}, tmpDir);
     const data = JSON.parse((result.content[0] as { text: string }).text);
     expect(data.id).toBe('snap-test-001');
-    // Git state should be populated (returns defaults for non-git dir)
     expect(data.git).toBeDefined();
   });
 });
 
+// --- save_state (T022) ---
+
 describe('save_state', () => {
   it('saves a snapshot and returns confirmation', async () => {
-    // Use tmpDir as project root to avoid shared state
     const snapshotsDir = getSnapshotsDir(tmpDir);
     fs.mkdirSync(snapshotsDir, { recursive: true });
 
@@ -87,7 +145,6 @@ describe('save_state', () => {
     expect(data.event).toBe('manual');
     expect(data.file).toBeTruthy();
 
-    // Verify snapshot can be read back
     const store = new StateStore(snapshotsDir);
     const latest = await store.readLatest();
     expect(latest).not.toBeNull();
@@ -117,6 +174,8 @@ describe('save_state', () => {
   });
 });
 
+// --- verify_action (T023) ---
+
 describe('verify_action', () => {
   it('returns allowed when no issues found', async () => {
     const result = await handleVerifyAction({ action: 'push' }, tmpDir);
@@ -134,11 +193,9 @@ describe('verify_action', () => {
   });
 
   it('detects branch mismatch', async () => {
-    // Use tmpDir — git collector will return 'unknown' branch (not a git repo)
     const snapshotsDir = getSnapshotsDir(tmpDir);
     fs.mkdirSync(snapshotsDir, { recursive: true });
 
-    // Write a snapshot claiming a different branch than what live git returns
     const store = new StateStore(snapshotsDir);
     await store.write(makeSnapshot({
       git: {
@@ -153,12 +210,122 @@ describe('verify_action', () => {
       project: { rootPath: tmpDir, hash: 'test', name: 'test' },
     }));
 
-    // tmpDir is not a git repo, so collectGitState returns branch='unknown' → mismatch
     const result = await handleVerifyAction({ action: 'commit' }, tmpDir);
     const data = JSON.parse((result.content[0] as { text: string }).text);
     const branchCheck = data.checks.find((c: Check) => c.name === 'branch-match');
     expect(branchCheck.passed).toBe(false);
     expect(data.warnings.some((w: string) => w.includes('Branch mismatch'))).toBe(true);
+  });
+
+  it('returns error for invalid action', async () => {
+    const result = await handleVerifyAction({ action: 'invalid' }, tmpDir);
+    expect(result.isError).toBe(true);
+  });
+});
+
+// --- check_canonical (T025) ---
+
+describe('check_canonical', () => {
+  it('check mode returns not-canonical for unknown path', async () => {
+    const result = await handleCheckCanonical({ action: 'check', path: 'src/foo.ts' }, tmpDir);
+    const data = JSON.parse((result.content[0] as { text: string }).text);
+    expect(data.isCanonical).toBe(false);
+    expect(data.canonicalName).toBeNull();
+  });
+
+  it('declare mode persists a canonical declaration', async () => {
+    const result = await handleCheckCanonical(
+      { action: 'declare', path: 'docs/spec.md', name: 'Feature Spec' },
+      tmpDir,
+    );
+    const data = JSON.parse((result.content[0] as { text: string }).text);
+    expect(data.declared).toBe(true);
+    expect(data.name).toBe('Feature Spec');
+    expect(data.path).toBe('docs/spec.md');
+
+    // Verify it can now be checked
+    const checkResult = await handleCheckCanonical(
+      { action: 'check', path: 'docs/spec.md' },
+      tmpDir,
+    );
+    const checkData = JSON.parse((checkResult.content[0] as { text: string }).text);
+    expect(checkData.isCanonical).toBe(true);
+    expect(checkData.canonicalName).toBe('Feature Spec');
+  });
+
+  it('declare mode supports branch override', async () => {
+    const result = await handleCheckCanonical(
+      { action: 'declare', path: 'docs/spec.md', name: 'Feature Spec', branch: 'feature/x' },
+      tmpDir,
+    );
+    const data = JSON.parse((result.content[0] as { text: string }).text);
+    expect(data.declared).toBe(true);
+    expect(data.branch).toBe('feature/x');
+  });
+
+  it('returns error for declare without name', async () => {
+    const result = await handleCheckCanonical(
+      { action: 'declare', path: 'docs/spec.md' },
+      tmpDir,
+    );
+    expect(result.isError).toBe(true);
+  });
+
+  it('returns error for invalid action', async () => {
+    const result = await handleCheckCanonical(
+      { action: 'invalid', path: 'foo' },
+      tmpDir,
+    );
+    expect(result.isError).toBe(true);
+  });
+});
+
+// --- share_state (T026) ---
+
+describe('share_state', () => {
+  it('export mode creates a shared state file', async () => {
+    // Need a snapshot to export
+    const snapshotsDir = getSnapshotsDir(tmpDir);
+    fs.mkdirSync(snapshotsDir, { recursive: true });
+    await handleSaveState({ event: 'manual' }, tmpDir);
+
+    const result = await handleShareState({ action: 'export', note: 'Working on auth' }, tmpDir);
+    expect(result.isError).toBeUndefined();
+    const data = JSON.parse((result.content[0] as { text: string }).text);
+    expect(data.sharedFile).toBeTruthy();
+    expect(data.note).toBe('Working on auth');
+  });
+
+  it('import mode loads a shared state file', async () => {
+    // First export to create a shared file
+    const snapshotsDir = getSnapshotsDir(tmpDir);
+    fs.mkdirSync(snapshotsDir, { recursive: true });
+    await handleSaveState({ event: 'manual' }, tmpDir);
+
+    const exportResult = await handleShareState({ action: 'export', note: 'test handoff' }, tmpDir);
+    const exportData = JSON.parse((exportResult.content[0] as { text: string }).text);
+
+    // Now import it
+    const importResult = await handleShareState({ action: 'import', path: exportData.sharedFile }, tmpDir);
+    expect(importResult.isError).toBeUndefined();
+    const importData = JSON.parse((importResult.content[0] as { text: string }).text);
+    expect(importData.snapshot).toBeDefined();
+    expect(importData.sharerNote.note).toBe('test handoff');
+  });
+
+  it('returns error for export without note', async () => {
+    const result = await handleShareState({ action: 'export' }, tmpDir);
+    expect(result.isError).toBe(true);
+  });
+
+  it('returns error for import without path', async () => {
+    const result = await handleShareState({ action: 'import' }, tmpDir);
+    expect(result.isError).toBe(true);
+  });
+
+  it('returns error for invalid action', async () => {
+    const result = await handleShareState({ action: 'invalid' }, tmpDir);
+    expect(result.isError).toBe(true);
   });
 });
 
