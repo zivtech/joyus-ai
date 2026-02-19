@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: MCP Tools -- Skills, Upstream, Audit & Corrections
-lane: "done"
+lane: "for_review"
 dependencies:
 - WP02
 - WP04
@@ -152,3 +152,4 @@ history:
 - 2026-02-18T19:08:19Z – unknown – shell_pid=63854 – lane=for_review – Ready for review: 4 MCP tools (get_skills, check_upstream, query_audit, record_correction) with 19 passing tests
 - 2026-02-18T19:08:28Z – claude-opus – shell_pid=2803 – lane=doing – Started review via workflow command
 - 2026-02-18T19:38:36Z – claude-opus – shell_pid=2803 – lane=done – Review passed: All 4 MCP tools match contracts, precedence resolution correct, missing manifests handled gracefully, SQLite sync before query confirmed, correction validation via CorrectionSchema.parse. 19 tests passing.
+- 2026-02-19T00:02:08Z – claude-opus – shell_pid=2803 – lane=for_review – All 5 MCP tools working with consistent validation
