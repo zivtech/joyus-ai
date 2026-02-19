@@ -242,7 +242,7 @@
 ### Included Subtasks
 - [x] T029 Service daemon (entry point, lifecycle, PID file, SIGTERM/SIGINT handling)
 - [x] T030 Filesystem watcher (watch `.git/HEAD`, `.git/refs/`, project files; debouncing)
-- [ ] T031 [P] Event handler (classify detected events → EventType, route to snapshot capture)
+- [x] T031 [P] Event handler (classify detected events → EventType, route to snapshot capture)
 - [ ] T032 [P] MCP ↔ Service IPC (localhost HTTP or unix socket, health check, capture request)
 - [ ] T033 Service entry point (`bin/joyus-ai-service`, CLI flags, foreground mode)
 - [ ] T040 [P] Custom event trigger support — load user-defined triggers from config (glob pattern + label, e.g., {"pattern": "**/Dockerfile", "event": "docker-build"}); watcher evaluates custom triggers alongside built-in events; fires standard snapshot capture
