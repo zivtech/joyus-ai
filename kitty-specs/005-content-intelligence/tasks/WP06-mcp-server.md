@@ -1,13 +1,15 @@
 ---
 work_package_id: WP06
 title: MCP Server (Profile + Verify Tools)
-lane: "for_review"
+lane: "done"
 dependencies: [WP05]
 base_branch: 005-content-intelligence-WP05
 base_commit: 5290b28860ae08e4c8b7c79084142e4398d368e3
 created_at: '2026-02-20T04:34:47.885883+00:00'
 subtasks: [T032, T033, T034, T035]
 shell_pid: "801"
+reviewed_by: "Alex Urevick-Ackelsberg"
+review_status: "approved"
 history:
 - date: '2026-02-19'
   action: created
@@ -184,3 +186,4 @@ spec-kitty implement WP06 --base WP05
 ## Activity Log
 
 - 2026-02-20T04:45:32Z – unknown – shell_pid=801 – lane=for_review – Ready for review: MCP server with 5 tools (build_profile, get_profile, compare_profiles, verify_content, check_fidelity), stdio transport, 15 integration tests, 196 total passing, ruff clean.
+- 2026-02-20T11:25:27Z – unknown – shell_pid=801 – lane=done – Phase A: previously reviewed and merged
