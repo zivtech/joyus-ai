@@ -1,9 +1,13 @@
 ---
 work_package_id: WP06
 title: MCP Server (Profile + Verify Tools)
-lane: planned
+lane: "doing"
 dependencies: [WP05]
+base_branch: 005-content-intelligence-WP05
+base_commit: 5290b28860ae08e4c8b7c79084142e4398d368e3
+created_at: '2026-02-20T04:34:47.885883+00:00'
 subtasks: [T032, T033, T034, T035]
+shell_pid: "801"
 history:
 - date: '2026-02-19'
   action: created
