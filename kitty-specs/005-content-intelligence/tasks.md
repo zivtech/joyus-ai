@@ -124,10 +124,10 @@ Initialize the `joyus-profile-engine/` Python package with all Pydantic data mod
 
 Build the document ingestion pipeline: load from multiple sources and formats, preprocess into normalized chunks ready for feature extraction.
 
-- [ ] T008: Implement CorpusLoader
-- [ ] T009: Implement format extractors (PDF, DOCX, HTML, MD, TXT)
-- [ ] T010: Implement Preprocessor
-- [ ] T011: Unit tests for ingestion pipeline
+- [x] T008: Implement CorpusLoader
+- [x] T009: Implement format extractors (PDF, DOCX, HTML, MD, TXT)
+- [x] T010: Implement Preprocessor
+- [x] T011: Unit tests for ingestion pipeline
 
 **Parallel**: Format extractors (T009) can be developed in parallel per format.
 **Risk**: PDF extraction quality varies — PyMuPDF handles most cases but scanned PDFs need OCR (out of scope).
