@@ -286,12 +286,12 @@ Multi-level attribution engine: person → department → organization → outsi
 
 VoiceContext resolution (3-layer opt-in), access control, and comprehensive Phase B integration testing including hierarchy build and attribution accuracy.
 
-- [ ] T051: Implement VoiceResolver.resolve()
-- [ ] T052: Implement AccessChecker
-- [ ] T053: Test Layer 0/1/2 voice behavior
-- [ ] T054: Unit tests for composites, inheritance, cascade
-- [ ] T055: Integration: full hierarchy + attribution cascade
-- [ ] T056: Accuracy tests (dept >=90%, org >=85%, outsider >=95%)
+- [x] T051: Implement VoiceResolver.resolve()
+- [x] T052: Implement AccessChecker
+- [x] T053: Test Layer 0/1/2 voice behavior
+- [x] T054: Unit tests for composites, inheritance, cascade
+- [x] T055: Integration: full hierarchy + attribution cascade
+- [x] T056: Accuracy tests (dept >=90%, org >=85%, outsider >=95%)
 
 **Parallel**: T051-T053 (voice) and T054 (unit tests) can proceed in parallel.
 
