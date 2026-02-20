@@ -1,5 +1,7 @@
 # Joyus AI — Open Source AI Agent Platform
 
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 A multi-tenant AI agent platform with skills-based guardrails, monitoring, and governance. Founded by [Zivtech](https://zivtech.com).
 
 ## What It Does
@@ -122,6 +124,14 @@ The session state system is specified in `kitty-specs/002-session-context-manage
 ### Remote MCP Server (joyus-ai-mcp-server)
 
 The remote MCP server lives in `joyus-ai-mcp-server/`. See its [README](joyus-ai-mcp-server/README.md) for setup and configuration.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
+
+## License
+
+This project is licensed under the Apache License 2.0 — see [LICENSE](LICENSE) for details.
 
 ## Related Repos
 
