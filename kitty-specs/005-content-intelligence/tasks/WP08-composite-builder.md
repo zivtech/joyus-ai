@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Composite Profile Builder
-lane: "doing"
+lane: "for_review"
 dependencies: [WP04]
 base_branch: 005-content-intelligence-WP04
 base_commit: 26db9dfd4b0edfa5473ed0dd6668f097545e847a
@@ -204,3 +204,7 @@ spec-kitty implement WP08 --base WP04
 
 - **Weighted mean calibration**: Synthetic test data may not reflect real-world department dynamics. Use diverse fixture data.
 - **Topic-based weighting**: Proportional contribution per department requires corpus annotation (which docs belong to which topic). May need manual tagging initially.
+
+## Activity Log
+
+- 2026-02-20T10:45:53Z – unknown – shell_pid=49638 – lane=for_review – Ready for review: CompositeBuilder with department/org aggregation, hierarchy validation, incremental updates, 27 tests passing
