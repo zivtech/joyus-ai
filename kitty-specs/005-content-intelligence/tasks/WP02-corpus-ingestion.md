@@ -1,13 +1,15 @@
 ---
 work_package_id: WP02
 title: Corpus Ingestion
-lane: "for_review"
+lane: "done"
 dependencies: [WP01]
 base_branch: 005-content-intelligence-WP01
 base_commit: 6d8daa83cf3ef8de71290950c52b38f430793558
 created_at: '2026-02-20T03:37:08.374817+00:00'
 subtasks: [T008, T009, T010, T011]
 shell_pid: "27946"
+reviewed_by: "Alex Urevick-Ackelsberg"
+review_status: "approved"
 history:
 - date: '2026-02-19'
   action: created
@@ -211,3 +213,4 @@ spec-kitty implement WP02 --base WP01
 ## Activity Log
 
 - 2026-02-20T03:41:22Z – unknown – shell_pid=27946 – lane=for_review – Ready for review: corpus ingestion pipeline — CorpusLoader, 5 format extractors, Preprocessor, exceptions, 43 unit tests, all 88 tests passing
+- 2026-02-20T11:25:03Z – unknown – shell_pid=27946 – lane=done – Phase A: previously reviewed and merged
