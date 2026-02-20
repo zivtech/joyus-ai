@@ -1,9 +1,13 @@
 ---
 work_package_id: WP03
 title: Feature Extraction (129 Features)
-lane: planned
+lane: "doing"
 dependencies: [WP02]
+base_branch: 005-content-intelligence-WP02
+base_commit: 68349569f1d57f3cf77c6a9c8d4d4675c27d4626
+created_at: '2026-02-20T03:42:03.086815+00:00'
 subtasks: [T012, T013, T014, T015, T016, T017, T018]
+shell_pid: "40891"
 history:
 - date: '2026-02-19'
   action: created
