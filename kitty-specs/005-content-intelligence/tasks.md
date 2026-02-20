@@ -141,13 +141,13 @@ Build the document ingestion pipeline: load from multiple sources and formats, p
 
 Implement all six analyzers that extract the 129-feature stylometric vector from processed corpora. The StylometricAnalyzer wraps faststylometry; others use spaCy and custom NLP.
 
-- [ ] T012: Implement StylometricAnalyzer (faststylometry wrapper)
-- [ ] T013: Implement custom feature extraction
-- [ ] T014: Implement MarkerAnalyzer
-- [ ] T015: Implement VocabularyAnalyzer
-- [ ] T016: Implement StructureAnalyzer
-- [ ] T017: Implement AudienceAnalyzer
-- [ ] T018: Regression tests for feature extraction
+- [x] T012: Implement StylometricAnalyzer (faststylometry wrapper)
+- [x] T013: Implement custom feature extraction
+- [x] T014: Implement MarkerAnalyzer
+- [x] T015: Implement VocabularyAnalyzer
+- [x] T016: Implement StructureAnalyzer
+- [x] T017: Implement AudienceAnalyzer
+- [x] T018: Regression tests for feature extraction
 
 **Parallel**: T014-T017 are independent analyzers — all can be developed in parallel.
 **Risk**: faststylometry Corpus not thread-safe; spaCy requires Python <=3.12.
