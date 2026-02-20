@@ -200,10 +200,10 @@ Implement the two-tier verification system (Tier 1 inline <500ms, Tier 2 deep an
 
 Expose the profile engine as MCP tools using the official Python `mcp` SDK. Implements build_profile, get_profile, compare_profiles, verify_content, and check_fidelity.
 
-- [ ] T032: Implement MCP server entry point
-- [ ] T033: Implement profile MCP tools
-- [ ] T034: Implement verify MCP tools
-- [ ] T035: Integration tests for MCP tools
+- [x] T032: Implement MCP server entry point
+- [x] T033: Implement profile MCP tools
+- [x] T034: Implement verify MCP tools
+- [x] T035: Integration tests for MCP tools
 
 **Parallel**: T033 and T034 are independent tool groups.
 **Risk**: stdio transport requires all output on stderr; faststylometry calls need `asyncio.to_thread()`.
