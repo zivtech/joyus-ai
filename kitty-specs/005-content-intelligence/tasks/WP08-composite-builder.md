@@ -1,9 +1,13 @@
 ---
 work_package_id: WP08
 title: Composite Profile Builder
-lane: planned
+lane: "doing"
 dependencies: [WP04]
+base_branch: 005-content-intelligence-WP04
+base_commit: 26db9dfd4b0edfa5473ed0dd6668f097545e847a
+created_at: '2026-02-20T10:39:27.480499+00:00'
 subtasks: [T039, T040, T041, T042]
+shell_pid: "49638"
 history:
 - date: '2026-02-19'
   action: created
