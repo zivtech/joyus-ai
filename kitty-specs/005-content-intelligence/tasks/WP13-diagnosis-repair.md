@@ -1,7 +1,7 @@
 ---
 work_package_id: WP13
 title: Drift Diagnosis + Repair Framework
-lane: "doing"
+lane: "for_review"
 dependencies: [WP12]
 subtasks: [T063, T064, T065, T066, T067, T068]
 history:
@@ -510,3 +510,4 @@ Drift detected → Diagnose → Propose repair → Human approves
 ## Activity Log
 
 - 2026-02-20T13:48:41Z – unknown – lane=doing – Implementation started by claude-lead
+- 2026-02-20T13:58:05Z – unknown – lane=for_review – 162 tests passing, all subtasks done
