@@ -1,7 +1,7 @@
 ---
 work_package_id: WP14
 title: Monitoring MCP Tools + Testing
-lane: planned
+lane: "doing"
 dependencies: [WP13]
 subtasks: [T069, T070, T071, T072, T073]
 history:
@@ -448,3 +448,7 @@ spec-kitty implement WP14 --base WP13
 - **Langfuse dependency**: Langfuse is optional but the integration code must not break when the package isn't installed. Use conditional imports.
 - **Simulated drift realism**: Synthetic drift scenarios may not cover all real-world patterns. Document known limitations and plan for empirical testing with real data.
 - **Repair handler stubs**: Some handlers (rebuild_profile, update_corpus) depend on the full profile building pipeline. They may need to be integration-tested separately once Phase A is fully wired up.
+
+## Activity Log
+
+- 2026-02-20T13:53:47Z – unknown – lane=doing – Worktree prepared, waiting for WP13 completion
