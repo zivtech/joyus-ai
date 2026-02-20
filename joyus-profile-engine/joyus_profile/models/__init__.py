@@ -25,9 +25,11 @@ from .features import (
 )
 from .hierarchy import (
     DepartmentProfile,
+    HierarchyDiff,
     OfficialPosition,
     OrganizationProfile,
     OverrideSet,
+    ProfileDiff,
     ProfileHierarchy,
     ProhibitedFraming,
     RegisterInfo,
@@ -101,9 +103,11 @@ __all__ = [
     "VoiceProfile",
     # Hierarchy
     "DepartmentProfile",
+    "HierarchyDiff",
     "OfficialPosition",
     "OrganizationProfile",
     "OverrideSet",
+    "ProfileDiff",
     "ProfileHierarchy",
     "ProhibitedFraming",
     "RegisterInfo",

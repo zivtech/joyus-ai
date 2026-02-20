@@ -167,6 +167,26 @@ class ProfileHierarchy(BaseModel):
         return self
 
 
+class ProfileDiff(BaseModel):
+    """Describes changes in a single profile between two hierarchy versions."""
+
+    profile_id: str
+    changed_sections: list[str] = Field(default_factory=list)
+    summary: str = ""
+
+
+class HierarchyDiff(BaseModel):
+    """Full diff between two ProfileHierarchy instances."""
+
+    added_people: list[str] = Field(default_factory=list)
+    removed_people: list[str] = Field(default_factory=list)
+    modified_people: list[ProfileDiff] = Field(default_factory=list)
+    added_departments: list[str] = Field(default_factory=list)
+    removed_departments: list[str] = Field(default_factory=list)
+    modified_departments: list[ProfileDiff] = Field(default_factory=list)
+    org_changes: ProfileDiff | None = None
+
+
 # Deferred import to avoid circular dependency
 from .profile import AuthorProfile  # noqa: E402
 
