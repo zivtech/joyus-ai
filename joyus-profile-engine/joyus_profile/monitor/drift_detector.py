@@ -179,23 +179,27 @@ class DriftDetector:
         if not self.config.negative_zero_tolerance:
             return []
 
-        for s in scores:
-            neg_val = s.feature_breakdown.get("negative_markers", 0.0)
-            if neg_val > 0:
-                return [
-                    DriftSignal(
-                        signal_id=_cuid(),
-                        profile_id=profile_id,
-                        signal_type="negative_increase",
-                        severity="critical",
-                        current_value=round(neg_val, 4),
-                        baseline_value=0.0,
-                        deviation=round(neg_val, 4),
-                        window_start=scores[0].timestamp,
-                        window_end=scores[-1].timestamp,
-                        sample_count=len(scores),
-                    )
-                ]
+        hits = [
+            s.feature_breakdown.get("negative_markers", 0.0)
+            for s in scores
+            if s.feature_breakdown.get("negative_markers", 0.0) > 0
+        ]
+        if hits:
+            worst = max(hits)
+            return [
+                DriftSignal(
+                    signal_id=_cuid(),
+                    profile_id=profile_id,
+                    signal_type="negative_increase",
+                    severity="critical",
+                    current_value=round(worst, 4),
+                    baseline_value=0.0,
+                    deviation=round(worst, 4),
+                    window_start=scores[0].timestamp,
+                    window_end=scores[-1].timestamp,
+                    sample_count=len(scores),
+                )
+            ]
         return []
 
     # ------------------------------------------------------------------

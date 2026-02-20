@@ -70,7 +70,10 @@ class ScoreStore:
     # ------------------------------------------------------------------
 
     def _score_file(self, profile_id: str) -> Path:
-        return self.data_dir / profile_id / "scores.json"
+        resolved = (self.data_dir / profile_id).resolve()
+        if not resolved.is_relative_to(self.data_dir.resolve()):
+            raise ValueError(f"Invalid profile_id: {profile_id!r}")
+        return resolved / "scores.json"
 
     def _read_raw(self, profile_id: str) -> list[dict]:
         path = self._score_file(profile_id)

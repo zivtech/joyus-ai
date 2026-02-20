@@ -14,7 +14,11 @@ def load_config(data_dir: str, profile_id: str) -> DriftConfig:
     Looks for ``monitoring/{profile_id}/config.json``.  If the file does not
     exist or cannot be parsed, returns the default ``DriftConfig``.
     """
-    config_path = Path(data_dir) / profile_id / "config.json"
+    base = Path(data_dir).resolve()
+    config_path = (base / profile_id / "config.json")
+    if not config_path.resolve().is_relative_to(base):
+        raise ValueError(f"Invalid profile_id: {profile_id!r}")
+    config_path = config_path.resolve()
     if not config_path.exists():
         return DriftConfig()
 
@@ -27,7 +31,10 @@ def load_config(data_dir: str, profile_id: str) -> DriftConfig:
 
 def save_config(data_dir: str, profile_id: str, config: DriftConfig) -> None:
     """Persist a drift config for a profile."""
-    config_dir = Path(data_dir) / profile_id
+    base = Path(data_dir).resolve()
+    config_dir = (base / profile_id).resolve()
+    if not config_dir.is_relative_to(base):
+        raise ValueError(f"Invalid profile_id: {profile_id!r}")
     config_dir.mkdir(parents=True, exist_ok=True)
     path = config_dir / "config.json"
     tmp = path.with_suffix(".tmp")

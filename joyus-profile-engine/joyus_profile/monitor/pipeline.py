@@ -29,12 +29,12 @@ class MonitoringPipeline:
         drift_detector: DriftDetector,
         alert_generator: AlertGenerator | None = None,
         *,
-        scorer: _FidelityScorer | None = None,
+        scorer: _NullFidelityScorer | None = None,
     ) -> None:
         self.score_store = score_store
         self.drift_detector = drift_detector
         self.alert_generator = alert_generator
-        self._scorer = scorer or _FidelityScorer()
+        self._scorer = scorer or _NullFidelityScorer()
         self._queue: deque[MonitoringJob] = deque()
 
     # ------------------------------------------------------------------
@@ -110,13 +110,16 @@ class MonitoringPipeline:
 # ------------------------------------------------------------------
 
 
-class _FidelityScorer:
-    """Minimal Tier 2 scorer.
+class _NullFidelityScorer:
+    """Placeholder Tier 2 scorer (does NOT perform real analysis).
 
     The real scorer would run Burrows' Delta, marker extraction, etc.
     This default implementation produces a neutral passing score so the
     pipeline can operate end-to-end without requiring the full analysis
-    stack.  Callers can inject a real scorer via the *scorer* parameter.
+    stack.  Callers should inject a real scorer via the *scorer* parameter.
+
+    WARNING: marker_score and style_score are always 0.0, so drift signals
+    that depend on these fields (e.g. marker_shift) will not fire.
     """
 
     def score(self, content: str) -> FidelityScore:

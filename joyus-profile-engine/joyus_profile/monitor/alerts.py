@@ -87,13 +87,23 @@ class AlertGenerator:
     # Severity
     # ------------------------------------------------------------------
 
-    def _compute_severity(self, signals: list[DriftSignal]) -> str:
-        """Aggregate severity: max of individual severities, escalate if 3+ signals."""
+    def _compute_severity(
+        self, signals: list[DriftSignal], severity_rules: list | None = None
+    ) -> str:
+        """Aggregate severity: max of individual severities, escalate by rules."""
         max_sev = max(_SEVERITY_ORDER.get(s.severity, 0) for s in signals)
 
-        # Escalate: 3+ signals -> at least "high"
-        if len(signals) >= 3 and max_sev < _SEVERITY_ORDER["high"]:
-            max_sev = _SEVERITY_ORDER["high"]
+        # Apply severity escalation rules (from DriftConfig.severity_rules)
+        if severity_rules:
+            for rule in severity_rules:
+                if len(signals) >= rule.signal_count:
+                    rule_sev = _SEVERITY_ORDER.get(rule.min_severity, 0)
+                    if rule_sev > max_sev:
+                        max_sev = rule_sev
+        else:
+            # Default escalation: 3+ signals -> at least "high"
+            if len(signals) >= 3 and max_sev < _SEVERITY_ORDER["high"]:
+                max_sev = _SEVERITY_ORDER["high"]
 
         return _SEVERITY_REVERSE[max_sev]
 
