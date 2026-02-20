@@ -161,13 +161,13 @@ Implement all six analyzers that extract the 129-feature stylometric vector from
 
 Transform extracted features into structured 12-section AuthorProfiles and emit platform-consumable skill files (SKILL.md + markers.json + stylometrics.json).
 
-- [ ] T019: Implement ProfileGenerator.build()
-- [ ] T020: Domain-aware section weighting
-- [ ] T021: VoiceContext population (Layer 0)
-- [ ] T022: Confidence scoring
-- [ ] T023: Implement SkillEmitter.emit()
-- [ ] T024: Implement skill_md.py
-- [ ] T025: Implement validators.py
+- [x] T019: Implement ProfileGenerator.build()
+- [x] T020: Domain-aware section weighting
+- [x] T021: VoiceContext population (Layer 0)
+- [x] T022: Confidence scoring
+- [x] T023: Implement SkillEmitter.emit()
+- [x] T024: Implement skill_md.py
+- [x] T025: Implement validators.py
 
 **Parallel**: T023-T025 (emission) can proceed once T019 interface is stable.
 **Risk**: Profile section weighting needs empirical tuning — initial values are estimates.
