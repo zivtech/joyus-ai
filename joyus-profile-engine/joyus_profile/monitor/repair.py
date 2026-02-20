@@ -119,6 +119,27 @@ class RepairFramework:
     def __init__(self, data_dir: str) -> None:
         self.repairs_dir = Path(data_dir) / "repairs"
         self.repairs_dir.mkdir(parents=True, exist_ok=True)
+        self.diagnoses_dir = Path(data_dir) / "diagnoses"
+        self.diagnoses_dir.mkdir(parents=True, exist_ok=True)
+
+    # ------------------------------------------------------------------
+    # Diagnosis persistence
+    # ------------------------------------------------------------------
+
+    def save_diagnosis(self, diagnosis: DriftDiagnosis) -> None:
+        """Persist a DriftDiagnosis so it can be retrieved by ID later."""
+        path = self._diagnosis_path(diagnosis.diagnosis_id)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(diagnosis.model_dump(mode="json"), indent=2))
+        tmp.rename(path)
+
+    def load_diagnosis(self, diagnosis_id: str) -> DriftDiagnosis:
+        """Load a previously saved DriftDiagnosis by ID."""
+        path = self._diagnosis_path(diagnosis_id)
+        if not path.exists():
+            raise FileNotFoundError(f"Diagnosis not found: {diagnosis_id!r}")
+        raw = json.loads(path.read_text())
+        return DriftDiagnosis.model_validate(raw)
 
     # ------------------------------------------------------------------
     # Public lifecycle methods
@@ -238,6 +259,12 @@ class RepairFramework:
         if action_type not in _HANDLERS:
             raise ValueError(f"Unknown action type: {action_type!r}")
         return _HANDLERS[action_type]
+
+    def _diagnosis_path(self, diagnosis_id: str) -> Path:
+        path = (self.diagnoses_dir / f"{diagnosis_id}.json").resolve()
+        if not path.is_relative_to(self.diagnoses_dir.resolve()):
+            raise ValueError(f"Invalid diagnosis_id: {diagnosis_id!r}")
+        return path
 
     def _action_path(self, action_id: str) -> Path:
         path = (self.repairs_dir / f"{action_id}.json").resolve()
