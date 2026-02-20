@@ -1,9 +1,13 @@
 ---
 work_package_id: WP09
 title: Hierarchy Management + Emission
-lane: planned
+lane: "doing"
 dependencies: [WP08]
+base_branch: 005-content-intelligence-WP08
+base_commit: 05ec16b4eb97098515b802820dea12cce9d9863d
+created_at: '2026-02-20T10:48:35.964207+00:00'
 subtasks: [T043, T044, T045, T046]
+shell_pid: "71035"
 history:
 - date: '2026-02-19'
   action: created
