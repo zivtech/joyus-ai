@@ -66,10 +66,10 @@ pride_dependencies:
 Each repo declares its identity in `.kittify/pride.yaml`:
 
 ```yaml
-pride: joyus-ai-pride
+pride: joyus
 repo_id: joyus-ai
-classification: public-core
-description: "Open source platform core"
+visibility: public
+feature_range: "001-099"
 ```
 
 ### 4.2 Local Registry
@@ -77,20 +77,29 @@ description: "Open source platform core"
 A local registry at `~/.config/kitty-pride/<pride-name>.yaml` maps `repo_id` to disk paths:
 
 ```yaml
-pride: joyus-ai-pride
-members:
-  joyus-ai: ~/claude/joyus-ai
-  joyus-ai-ops: ~/claude/joyus-ai-ops
-  joyus-ai-internal: ~/claude/joyus-ai-internal
+pride: joyus
+repos:
+  joyus-ai:
+    path: ~/claude/joyus-ai
+    visibility: public
+  joyus-ai-ops:
+    path: ~/claude/joyus-ai-ops
+    visibility: private
+  joyus-ai-internal:
+    path: ~/claude/joyus-ai-internal
+    visibility: private
 ```
 
 This file is machine-local and not committed to any repo.
 
 ### 4.3 The `pride-status` Script
 
-The `pride-status` script reads `.kittify/pride.yaml` in each registered repo and runs `spec-kitty status` to produce a unified cross-repo view. It also validates that `pride_dependencies` reference features that exist and are in an accepted state.
+The `pride-status` script (`scripts/pride-status.py`) reads the local registry, walks each registered repo's `kitty-specs/` directory, and produces a unified cross-repo feature status table. It also surfaces `pride_dependencies` declared in spec frontmatter.
 
-Until this script is implemented, cross-repo status is checked manually per repo.
+```bash
+python scripts/pride-status.py
+python scripts/pride-status.py --registry ~/.config/kitty-pride/joyus.yaml
+```
 
 ---
 
