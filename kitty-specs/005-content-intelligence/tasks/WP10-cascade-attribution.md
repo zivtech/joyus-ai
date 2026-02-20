@@ -1,7 +1,7 @@
 ---
 work_package_id: WP10
 title: Cascade Attribution
-lane: "doing"
+lane: "for_review"
 dependencies: [WP09]
 base_branch: 005-content-intelligence-WP08
 base_commit: 05ec16b4eb97098515b802820dea12cce9d9863d
@@ -200,3 +200,7 @@ spec-kitty implement WP10 --base WP09
 
 - **Scoring speed**: Checking against ALL profiles may be slow for 30+ authors. Consider pre-filtering by marker overlap before running full stylometric comparison.
 - **Threshold tuning**: 0.85/0.80/0.70 thresholds are from the spec — may need empirical calibration.
+
+## Activity Log
+
+- 2026-02-20T10:58:53Z – unknown – shell_pid=71842 – lane=for_review – Ready for review: Cascade attribution (person/dept/org/outsider), AuthorIdentifier, OutsiderDetector, MCP tool handlers. 32 tests.
