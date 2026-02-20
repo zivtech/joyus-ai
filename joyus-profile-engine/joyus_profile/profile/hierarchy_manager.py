@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import re
+import logging
 
 from cuid2 import cuid_wrapper
 
@@ -18,18 +18,11 @@ from joyus_profile.models.hierarchy import (
     StylometricBaseline,
 )
 from joyus_profile.models.profile import AuthorProfile
+from joyus_profile.models.profile import Position as PersonPosition
 from joyus_profile.profile.composite import CompositeBuilder
 
 _cuid = cuid_wrapper()
-
-
-def _slugify(name: str) -> str:
-    """Convert a name to a URL-safe slug."""
-    slug = name.lower().strip()
-    slug = re.sub(r"[^\w\s-]", "", slug)
-    slug = re.sub(r"[\s_-]+", "-", slug)
-    slug = slug.strip("-")
-    return slug or "unnamed"
+_logger = logging.getLogger(__name__)
 
 
 class HierarchyManager:
@@ -75,6 +68,13 @@ class HierarchyManager:
             domain = dept_cfg.get("domain_specialization", "general")
             member_ids: list[str] = dept_cfg.get("member_ids", [])
 
+            unresolved = [pid for pid in member_ids if pid not in people_map]
+            if unresolved:
+                _logger.warning(
+                    "Department '%s': unresolved member IDs ignored: %s",
+                    dept_name,
+                    unresolved,
+                )
             members = [people_map[pid] for pid in member_ids if pid in people_map]
             if len(members) < 2:
                 raise ProfileBuildError(
@@ -133,7 +133,9 @@ class HierarchyManager:
         department_members = {k: list(v) for k, v in hierarchy.department_members.items()}
         person_departments = {k: list(v) for k, v in hierarchy.person_departments.items()}
 
-        person_departments[profile.profile_id] = list(dept_ids)
+        existing = person_departments.get(profile.profile_id, [])
+        merged = list(dict.fromkeys(existing + list(dept_ids)))  # preserves order, deduplicates
+        person_departments[profile.profile_id] = merged
         for did in dept_ids:
             members = department_members.setdefault(did, [])
             if profile.profile_id not in members:
@@ -348,8 +350,6 @@ class HierarchyManager:
 
         people = dict(hierarchy.people)
         if position.authoritative:
-            from joyus_profile.models.profile import Position as PersonPosition
-
             updated_people: dict[str, AuthorProfile] = {}
             for pid, person in people.items():
                 # Remove any existing position with same topic, then add org's stance
@@ -438,8 +438,8 @@ class HierarchyManager:
             changed.append("vocabulary")
 
         # positions
-        old_pos = {p.topic: p.stance for p in old.positions}
-        new_pos = {p.topic: p.stance for p in new.positions}
+        old_pos = {(p.topic, p.stance, getattr(p, "strength", None)) for p in old.positions}
+        new_pos = {(p.topic, p.stance, getattr(p, "strength", None)) for p in new.positions}
         if old_pos != new_pos:
             changed.append("positions")
 

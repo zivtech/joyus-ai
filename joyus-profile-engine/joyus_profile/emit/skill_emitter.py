@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -15,15 +14,7 @@ from joyus_profile.models.hierarchy import (
     StylometricBaseline,
 )
 from joyus_profile.models.profile import AuthorProfile
-
-
-def _slugify(name: str) -> str:
-    """Convert a name to a filesystem-safe slug."""
-    slug = name.lower().strip()
-    slug = re.sub(r"[^\w\s-]", "", slug)
-    slug = re.sub(r"[\s_-]+", "-", slug)
-    slug = slug.strip("-")
-    return slug or "unnamed"
+from joyus_profile.utils import _slugify
 
 
 class SkillFileSet(BaseModel):
@@ -32,6 +23,7 @@ class SkillFileSet(BaseModel):
     skill_md: str
     markers_json: str
     stylometrics_json: str
+    profile_json: str | None = None
     voice_files: list[str] = Field(default_factory=list)
 
 
@@ -153,7 +145,8 @@ class SkillEmitter:
 
         return SkillFileSet(
             skill_md=str(skill_md_path),
-            markers_json=str(profile_path),
+            markers_json="",  # Composite nodes have no markers
+            profile_json=str(profile_path),
             stylometrics_json=str(stylo_path),
         )
 
@@ -174,9 +167,4 @@ class SkillEmitter:
         }
         voices_path.write_text(json.dumps(voices_data, indent=2))
 
-        return SkillFileSet(
-            skill_md=file_set.skill_md,
-            markers_json=file_set.markers_json,
-            stylometrics_json=file_set.stylometrics_json,
-            voice_files=[str(voices_path)],
-        )
+        return file_set.model_copy(update={"voice_files": [str(voices_path)]})
