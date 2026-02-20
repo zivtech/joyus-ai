@@ -1,7 +1,7 @@
 ---
 work_package_id: WP11
 title: Voice Context + Phase B Testing
-lane: "doing"
+lane: "for_review"
 dependencies: [WP10]
 base_branch: 005-content-intelligence-WP10
 base_commit: a381b339987c84d6d8db7030c73c3bde1fc016de
@@ -259,3 +259,7 @@ spec-kitty implement WP11 --base WP10
 
 - **Accuracy on fixture data**: Anonymized fixtures may not reach accuracy targets. Document known limitations.
 - **Voice resolution complexity**: Merging overrides from multiple levels (person + dept + org) requires careful precedence logic.
+
+## Activity Log
+
+- 2026-02-20T13:35:40Z – unknown – shell_pid=94608 – lane=for_review – Ready for review: VoiceResolver, AccessChecker, 143 tests passing, ruff clean
