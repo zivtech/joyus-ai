@@ -102,7 +102,7 @@ Initialize the `joyus-profile-engine/` Python package with all Pydantic data mod
 
 - [x] T001: Initialize pyproject.toml with dependencies and dev tooling
 - [x] T002: Define Pydantic models for corpus types
-- [ ] T003: Define Pydantic models for feature types
+- [x] T003: Define Pydantic models for feature types
 - [ ] T004: Define Pydantic models for profile types
 - [ ] T005: Define Pydantic models for verification types
 - [ ] T006: Create domain template YAML schema and 4 templates
