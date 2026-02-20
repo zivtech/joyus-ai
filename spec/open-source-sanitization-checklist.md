@@ -135,10 +135,10 @@ All "Zivtech AI" product branding replaced with "Joyus AI" across all files:
 ### 10. License and Community Files
 
 Before making public:
-- [ ] Choose and apply license (see Constitution §2.8 — AGPL or BSL recommended)
-- [ ] Add `LICENSE` file
-- [ ] Add `CONTRIBUTING.md`
-- [ ] Add `CODE_OF_CONDUCT.md`
+- [x] Choose and apply license — Apache 2.0 (LICENSE file present)
+- [x] Add `LICENSE` file
+- [x] Add `CONTRIBUTING.md`
+- [x] Add `CODE_OF_CONDUCT.md`
 - [ ] Run `gitleaks` / `trufflehog` final scan
 - [ ] Verify repo builds without private dependencies
 
@@ -156,5 +156,5 @@ These areas passed review:
 ---
 
 *Created: February 18, 2026*
-*Updated: February 20, 2026 — full sanitization pass (branding, client terms, person names, domains)*
-*Status: All sanitization complete. License selection remaining before public release.*
+*Updated: February 20, 2026 — full sanitization pass (branding, client terms, person names, domains); license and community files confirmed present*
+*Status: All sanitization complete. gitleaks scan and build verification remaining before public release.*

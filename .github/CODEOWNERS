@@ -1,0 +1,16 @@
+# CODEOWNERS
+# Each line defines a pattern and the owners responsible for reviewing changes.
+# Order matters: the last matching pattern takes precedence.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: all files not matched by a more specific rule
+* @zivtech/joyus-core
+
+# Profile engine library
+/joyus-profile-engine/ @zivtech/joyus-core
+
+# Specifications and design documents
+/spec/ @zivtech/joyus-core
+
+# Deployment infrastructure
+/deploy/ @zivtech/joyus-ops

@@ -1,141 +1,158 @@
-# Joyus AI — Open Source AI Agent Platform
+# Joyus AI — Open-Source Multi-Tenant AI Agent Platform
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-A multi-tenant AI agent platform with skills-based guardrails, monitoring, and governance. Founded by [Zivtech](https://zivtech.com).
+Joyus AI is an open-source platform for deploying AI agents with skills-based mediation, content intelligence, and multi-tenant governance. Founded by [Zivtech](https://zivtech.com).
 
-## What It Does
+## Overview
 
-- **Session & context management** — AI agents maintain awareness across sessions, compactions, and crashes
-- **Business task automation** — presentations, financial planning, marketing, analysis, support
-- **Client-specific mediation** — skills and styles that constrain AI outputs per customer
-- **Monitoring & governance** — usage tracking, content fidelity checks, guardrails
-- **Flexible deployment** — full access internally, sandboxed for clients
+Most AI deployments are undifferentiated: the same model, the same defaults, the same outputs for every user and every organization. Joyus AI inverts that by making organizational knowledge a first-class platform primitive.
 
-## Active Development: Session & Context Management
+**Core ideas:**
 
-The current focus is **Spec 1 of 2**: an invisible mediator layer that lets Claude maintain working state across sessions. The user never interacts with joyus-ai directly — Claude is the UI.
+- **Skills as encoded knowledge** — organizational standards, voice guidelines, domain rules, and workflow constraints are packaged as skills that constrain and guide AI outputs
+- **Content intelligence** — writing profiles built from real corpora enable attribution, fidelity monitoring, and voice-consistent generation
+- **Open core, private skills** — the platform is open source; client- and org-specific skills live in private repos and are loaded at runtime
+- **MCP-native** — all agent capabilities are exposed via the [Model Context Protocol](https://modelcontextprotocol.io), making them composable with Claude and other MCP-aware tools
 
-**Architecture**: MCP server (primary interface) + companion service (background state capture). User setup: add the MCP server to Claude Desktop/Code and run the companion service. That's it.
+## Architecture
 
-**MCP Tools** (what Claude calls on behalf of users):
+```
+┌─────────────────────────────────────────────────┐
+│                  Claude / AI Client              │
+└────────────────────────┬────────────────────────┘
+                         │ MCP
+          ┌──────────────┼──────────────┐
+          │              │              │
+  ┌───────▼──────┐ ┌─────▼──────┐ ┌───▼────────────────┐
+  │  MCP Server  │ │   State    │ │  Profile Engine     │
+  │  (Express)   │ │  Package   │ │  (Python)           │
+  └───────┬──────┘ └─────┬──────┘ └───┬────────────────┘
+          │              │             │
+  ┌───────▼──────────────▼─────────────▼───────────┐
+  │          Skills · Profiles · Session State      │
+  └─────────────────────────────────────────────────┘
+```
+
+- The MCP server is the primary interface between AI clients and platform capabilities.
+- The state package maintains session continuity across Claude sessions and compactions.
+- The profile engine ingests author corpora, extracts stylometric features, and builds structured writing profiles used for generation, attribution, and fidelity checking.
+- Skills are modular prompt fragments loaded at runtime; org-specific skills live outside this repo.
+
+## Packages
+
+### `joyus-ai-mcp-server/` — Remote MCP Server
+
+Express-based MCP server hosting platform tools and operator-defined skills. Connects to external services (issue trackers, version control, messaging) and exposes them as MCP tools.
+
+- TypeScript / Node.js / Express
+- Drizzle ORM + PostgreSQL for persistent state
+- Deployable via Docker Compose on any cloud VM
+
+### `joyus-ai-state/` — Session State
+
+Maintains working state across Claude sessions. Captures git context, open files, decisions, and test status so Claude can restore context at session start without manual re-orientation.
+
+MCP tools exposed:
 - `get_context` — restore working state at session start
-- `save_state` — capture snapshot after significant actions
-- `verify_action` — pre-commit guardrails (branch verification, canonical conflicts)
-- `check_canonical` — route to authoritative file copies, prevent document divergence
-- `share_state` — share context with teammates for troubleshooting
+- `save_state` — snapshot after significant actions
+- `verify_action` — pre-commit guardrails
+- `check_canonical` — route to authoritative document copies
+- `share_state` — share context with teammates
 
-**Status**: Fully specified and planned. 38 subtasks across 9 work packages, ready for implementation. See `kitty-specs/002-session-context-management/` for full spec, plan, and task breakdown.
+### `joyus-profile-engine/` — Writing Profile Engine (Python)
 
-## Repository Structure
+Analyzes author corpora to produce structured writing profiles. Profiles power consistent voice generation, authorship attribution, and fidelity monitoring.
 
+Capabilities:
+- Corpus ingestion and preprocessing (Python 3.11–3.12, spaCy, faststylometry)
+- Stylometric analysis — function word distributions, sentence statistics, vocabulary richness, structural patterns
+- Marker extraction — vocabulary, audience markers, structural markers
+- Profile generation and skill emission (Pydantic v2 schemas)
+- Inline and deep fidelity verification with scored feedback
+- Hierarchical profiles — composite builder, hierarchy management, cascade attribution
+- Voice context resolution — per-audience profile layering (Formal, Accessible, Technical, Persuasive)
+- Drift monitoring — pipeline, 5-signal drift detection, rollups, diagnosis, and repair
+
+MCP tools exposed (via `joyus-profile-engine serve`):
+- `build_profile` — ingest corpus and build a writing profile
+- `get_profile` — retrieve a stored profile
+- `compare_profiles` — diff two profiles for similarity or divergence
+- `verify_content` — check a piece of writing against a profile
+- `check_fidelity` — score fidelity and return actionable repair suggestions
+- Monitoring tools — drift detection, rollup queries, repair recommendations
+
+### `web-chat/` — Chat UI
+
+Minimal browser-based chat interface for local development and demonstration. Not intended for production use.
+
+## Getting Started
+
+**Prerequisites:** Node.js 20+, Python 3.11–3.12, Docker (optional), uv (for Python)
+
+### MCP Server
+
+```bash
+cd joyus-ai-mcp-server
+npm install
+cp .env.example .env   # configure database and service credentials
+npm run build
+npm start
 ```
-joyus-ai/
-├── joyus-ai-mcp-server/                    # Remote MCP server (Jira, Slack, GitHub, Google)
-├── joyus-ai-state/                         # Session state package (in development)
-│   ├── src/
-│   │   ├── core/                          # Types, schemas, config
-│   │   ├── state/                         # Store, canonical, sharing, divergence
-│   │   ├── collectors/                    # Git, files, tests, decisions
-│   │   ├── mcp/                           # MCP server + 5 tools (primary interface)
-│   │   └── service/                       # Companion service (background capture)
-│   ├── bin/
-│   │   ├── joyus-ai-mcp                    # MCP server entry point
-│   │   └── joyus-ai-service                # Companion service entry point
-│   └── tests/
-├── kitty-specs/                           # Feature specifications (Spec Kitty)
-│   ├── 001-mcp-server-aws-deployment/     # Phase 2 — remote MCP server hosting
-│   └── 002-session-context-management/    # Spec 1 — session state (active)
-│       ├── spec.md                        # Requirements & user stories
-│       ├── plan.md                        # Architecture & phasing
-│       ├── data-model.md                  # Entity definitions
-│       ├── contracts/state-api.md         # MCP tool API contracts
-│       ├── quickstart.md                  # Setup & verification guide
-│       ├── tasks.md                       # Work package overview (9 WPs, 38 tasks)
-│       └── tasks/WP01-*.md ... WP09-*.md  # Detailed work package prompts
-├── spec/                                  # Project-level specs
-│   ├── constitution.md                    # Project principles (v1.5)
-│   ├── plan.md                            # Master implementation plan
-│   ├── profile-engine-spec.md             # Profile engine library spec
-│   └── open-source-sanitization-checklist.md
-├── web-chat/                              # Simple chat UI
-└── deploy/                                # Docker Compose, Dockerfiles, scripts
+
+### State Package
+
+```bash
+cd joyus-ai-state
+npm install
+npm run build
+# Add joyus-ai-mcp (MCP server binary) to your Claude Desktop / Code MCP config
 ```
 
-## Phased Roadmap
+### Profile Engine
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **0** | Foundation — MCP server with Jira, Slack, GitHub, Google tools | **Complete** |
-| **1** | Asset Sharing Pipeline — GitHub Pages + StatiCrypt for PoC distribution | **In Progress** |
-| **S1** | Session & Context Management — MCP-first state persistence for Claude | **Specified** (9 WPs ready) |
-| **2** | MCP Server Deployment — Full MCP suite + skill runtime on AWS EC2 | Specified |
-| **2.5** | Activepieces Integration — Visual workflow automation, 200+ integrations, webhook triggers | Planned |
-| **S2** | Workflow Enforcement — Quality gates, skill routing, branch verification | Planned |
-| **3** | Platform Framework — Next.js web app, multi-tenant, Skills/Styles, MCP Gateway, code sandbox, job management | Planned |
-| **4** | Additional Tools — Presentation Toolkit, Document Generator, Analysis Tools, Visual Regression Testing, Spec Kitty as Service | Planned |
+```bash
+cd joyus-profile-engine
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+python -m spacy download en_core_web_md
 
-## Key Architecture Decisions
+# Run tests
+pytest tests/
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Session State Interface | MCP server (primary) | Users never run CLI commands; Claude calls MCP tools |
-| Session State Capture | Companion service (daemon) | Background fs watching for git events; MCP can't do long-running processes |
-| State Storage | JSON files at `~/.joyus-ai/` | Per-developer, offline, no external DB, 2-10KB per snapshot |
-| MCP Server Hosting | AWS EC2 + Docker Compose (t3.medium, ~$33/mo) | Mature MCP ecosystem, Claude can manage infra |
-| Static PoC Hosting | GitHub Pages + StatiCrypt (free) | Git-native, AES-256, directory structure carries forward |
-| Enterprise Features | Claude Enterprise (not duplicated) | Audit logging, cost tracking, compliance handled by Enterprise |
+# Start MCP server
+python -m joyus_profile serve
+```
 
-## Claude Tooling Ecosystem
+### Full Stack (Docker)
 
-**Skills** — Prompt-based behavior modules loaded into Claude's context (Drupal standards, brand voice, ticket writing, Spec Kitty planning, etc.)
+```bash
+cd deploy
+docker compose up
+```
 
-**MCP Servers** — Tool providers via Model Context Protocol (Jira, Slack, GitHub, Google, joyus-ai-state, Activepieces (~400 tools), Playwright+Backstop.js, Memory, Office)
+See `deploy/` for environment variable documentation and health-check scripts.
 
-**CLI Tools** — System executables Claude invokes through the shell (python-pptx, StatiCrypt, gh CLI, Docker, Vite, SquirrelScan)
+## Specs and Development
 
-## Tech Stack
+This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`:
 
-| Component | Technology |
-|-----------|------------|
-| Session State | TypeScript 5.3+ / Node.js 20+ / `@modelcontextprotocol/sdk` / Zod |
-| Remote MCP Server | Node.js / TypeScript / Express / Drizzle ORM / PostgreSQL |
-| Orchestrator | Claude Agent SDK |
-| Web App | Next.js (Phase 3) |
-| PoC Sharing | GitHub Pages + StatiCrypt |
-| Workflow Automation | Activepieces (self-hosted, MIT) |
-| Infrastructure | AWS EC2 + Docker Compose |
-| Development Framework | Spec Kitty |
+| Spec | Description | Status |
+|------|-------------|--------|
+| `001` | MCP Server AWS Deployment | Complete |
+| `002` | Session Context Management | Complete |
+| `004` | Workflow Enforcement | Complete |
+| `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
 
-## Development
-
-This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specs live in `kitty-specs/`.
-
-### Session State Package (joyus-ai-state)
-
-The session state system is specified in `kitty-specs/002-session-context-management/`. Implementation is organized as 9 work packages across 3 phases:
-
-- **Phase 1 — Foundation**: Core types, state store, collectors, canonical docs, sharing (WP01-WP05)
-- **Phase 2 — Primary Interface**: MCP server + tools, companion service (WP06-WP08, parallel)
-- **Phase 3 — Integration**: E2E tests, concurrency, error hardening, logging (WP09)
-
-**MVP**: WP01 + WP02 + WP03 + WP06 = foundation + MCP server with `get_context`, `save_state`, `verify_action`.
-
-### Remote MCP Server (joyus-ai-mcp-server)
-
-The remote MCP server lives in `joyus-ai-mcp-server/`. See its [README](joyus-ai-mcp-server/README.md) for setup and configuration.
+Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, branch conventions, and contribution guidelines.
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## License
 
-This project is licensed under the Apache License 2.0 — see [LICENSE](LICENSE) for details.
-
-## Related Repos
-
-- Demo hosting repository — Password-protected demo hosting (GitHub Pages + StatiCrypt)
-- Presentation toolkit repository — Presentation generation skill
-- Drupal brand skill repository — Drupal-specific brand design skill
-- Shared skills repository — Shared Claude skills library
+Apache License 2.0 — see [LICENSE](LICENSE) for details.
