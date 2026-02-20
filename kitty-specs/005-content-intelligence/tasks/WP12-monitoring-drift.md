@@ -1,7 +1,7 @@
 ---
 work_package_id: WP12
 title: Monitoring Pipeline + Drift Detection
-lane: planned
+lane: "doing"
 dependencies: [WP07, WP11]
 subtasks: [T057, T058, T059, T060, T061, T062]
 history:
@@ -441,3 +441,7 @@ spec-kitty implement WP12 --base WP07
 - **Score file growth**: JSON files grow unbounded. Consider rotation or archival for profiles with high output volume.
 - **Threshold calibration**: Default thresholds (5%, 20%, 1.5x, etc.) come from the spec but may need empirical tuning.
 - **Concurrent access**: Atomic writes help but aren't true file locking. Sufficient for single-process use; needs locking for multi-process.
+
+## Activity Log
+
+- 2026-02-20T13:40:56Z – unknown – lane=doing – Implementation started by claude-lead
