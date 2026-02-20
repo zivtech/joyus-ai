@@ -1,9 +1,13 @@
 ---
 work_package_id: WP05
 title: Two-Tier Verification + CLI
-lane: planned
+lane: "doing"
 dependencies: [WP04]
+base_branch: 005-content-intelligence-WP04
+base_commit: 26db9dfd4b0edfa5473ed0dd6668f097545e847a
+created_at: '2026-02-20T04:24:24.079096+00:00'
 subtasks: [T026, T027, T028, T029, T030, T031]
+shell_pid: "84820"
 history:
 - date: '2026-02-19'
   action: created
