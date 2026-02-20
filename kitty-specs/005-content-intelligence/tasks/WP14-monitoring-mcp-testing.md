@@ -1,7 +1,7 @@
 ---
 work_package_id: WP14
 title: Monitoring MCP Tools + Testing
-lane: "doing"
+lane: "for_review"
 dependencies: [WP13]
 subtasks: [T069, T070, T071, T072, T073]
 history:
@@ -452,3 +452,4 @@ spec-kitty implement WP14 --base WP13
 ## Activity Log
 
 - 2026-02-20T13:53:47Z – unknown – lane=doing – Worktree prepared, waiting for WP13 completion
+- 2026-02-20T14:10:56Z – unknown – lane=for_review – Ready for review: 3 MCP tools, observability hooks, 179 tests passing
