@@ -326,12 +326,12 @@ Continuous monitoring pipeline with Tier 2 analysis queue, JSON-based score stor
 
 Diagnosis engine that identifies what drifted and why, plus repair action framework with 6 repair types, verification, and revert capability.
 
-- [ ] T063: Implement diagnosis engine
-- [ ] T064: Feature-level attribution
-- [ ] T065: Human-readable diagnostic reports
-- [ ] T066: Implement repair action framework
-- [ ] T067: Repair verification
-- [ ] T068: Revert mechanism
+- [x] T063: Implement diagnosis engine
+- [x] T064: Feature-level attribution
+- [x] T065: Human-readable diagnostic reports
+- [x] T066: Implement repair action framework
+- [x] T067: Repair verification
+- [x] T068: Revert mechanism
 
 **Parallel**: T064-T065 (diagnosis detail) and T066 (repair framework) can proceed after T063.
 
