@@ -101,9 +101,14 @@ class AlertGenerator:
                     if rule_sev > max_sev:
                         max_sev = rule_sev
         else:
-            # Default escalation: 3+ signals -> at least "high"
-            if len(signals) >= 3 and max_sev < _SEVERITY_ORDER["high"]:
+            # Default escalation matching DriftConfig.severity_rules defaults:
+            # 4+ → critical, 3+ → high, 2+ → medium
+            if len(signals) >= 4 and max_sev < _SEVERITY_ORDER["critical"]:
+                max_sev = _SEVERITY_ORDER["critical"]
+            elif len(signals) >= 3 and max_sev < _SEVERITY_ORDER["high"]:
                 max_sev = _SEVERITY_ORDER["high"]
+            elif len(signals) >= 2 and max_sev < _SEVERITY_ORDER["medium"]:
+                max_sev = _SEVERITY_ORDER["medium"]
 
         return _SEVERITY_REVERSE[max_sev]
 

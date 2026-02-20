@@ -59,6 +59,7 @@ class RepairAction(BaseModel):
     description: str = ""
     automated: bool = False
     status: str = "proposed"
+    rejection_reason: str = ""
     proposed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     applied_at: datetime | None = None
     verified_at: datetime | None = None
