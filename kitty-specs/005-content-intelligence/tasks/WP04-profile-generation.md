@@ -1,13 +1,15 @@
 ---
 work_package_id: WP04
 title: Profile Generation + Skill Emission
-lane: "for_review"
+lane: "done"
 dependencies: [WP03]
 base_branch: 005-content-intelligence-WP03
 base_commit: 11e2ef0032b1bf1d234a12d690c2d97af9b31ca0
 created_at: '2026-02-20T04:14:38.062463+00:00'
 subtasks: [T019, T020, T021, T022, T023, T024, T025]
 shell_pid: "68230"
+reviewed_by: "Alex Urevick-Ackelsberg"
+review_status: "approved"
 history:
 - date: '2026-02-19'
   action: created
@@ -309,3 +311,4 @@ spec-kitty implement WP04 --base WP03
 ## Activity Log
 
 - 2026-02-20T04:21:10Z – unknown – shell_pid=68230 – lane=for_review – Ready for review: ProfileGenerator (12-section, domain weighting, confidence scoring, Layer 0 VoiceContext), SkillEmitter (SKILL.md + JSON), validators. 34 new tests, 157 total passing.
+- 2026-02-20T11:25:16Z – unknown – shell_pid=68230 – lane=done – Phase A: previously reviewed and merged
