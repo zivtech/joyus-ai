@@ -308,12 +308,12 @@ VoiceContext resolution (3-layer opt-in), access control, and comprehensive Phas
 
 Continuous monitoring pipeline with Tier 2 analysis queue, JSON-based score storage, trend aggregation, and five drift detection signals.
 
-- [ ] T057: Implement monitoring pipeline
-- [ ] T058: Score storage
-- [ ] T059: Daily/weekly rollups
-- [ ] T060: Implement five drift signals
-- [ ] T061: Configurable thresholds per profile
-- [ ] T062: Alert generation with severity
+- [x] T057: Implement monitoring pipeline
+- [x] T058: Score storage
+- [x] T059: Daily/weekly rollups
+- [x] T060: Implement five drift signals
+- [x] T061: Configurable thresholds per profile
+- [x] T062: Alert generation with severity
 
 **Parallel**: T059 (rollups) and T060 (drift signals) can proceed once T058 is done.
 
