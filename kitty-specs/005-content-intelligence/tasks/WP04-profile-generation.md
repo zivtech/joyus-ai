@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Profile Generation + Skill Emission
-lane: "doing"
+lane: "for_review"
 dependencies: [WP03]
 base_branch: 005-content-intelligence-WP03
 base_commit: 11e2ef0032b1bf1d234a12d690c2d97af9b31ca0
@@ -305,3 +305,7 @@ spec-kitty implement WP04 --base WP03
 
 - **Profile section mapping**: The mapping from analyzer outputs to 12 profile sections requires careful design. Some sections (argumentation, citations) need cross-analyzer data.
 - **SKILL.md readability**: The Markdown must work both for human review and as Claude skill context. Test with a real Claude prompt to verify.
+
+## Activity Log
+
+- 2026-02-20T04:21:10Z – unknown – shell_pid=68230 – lane=for_review – Ready for review: ProfileGenerator (12-section, domain weighting, confidence scoring, Layer 0 VoiceContext), SkillEmitter (SKILL.md + JSON), validators. 34 new tests, 157 total passing.
