@@ -1,9 +1,13 @@
 ---
 work_package_id: WP07
 title: Phase A Integration + Regression Testing
-lane: planned
+lane: "doing"
 dependencies: [WP06]
+base_branch: 005-content-intelligence-WP06
+base_commit: a2df474e7bb2a568c0c63df0914190f18bfe7a14
+created_at: '2026-02-20T04:46:19.818929+00:00'
 subtasks: [T036, T037, T038]
+shell_pid: "19485"
 history:
 - date: '2026-02-19'
   action: created
