@@ -1,0 +1,5 @@
+The regulatory framework for emerging technologies rests on a foundational principle: innovation must not come at the expense of established rights and protections. This principle applies with equal force to traditional industries and to the rapidly evolving landscape of digital services.
+
+Recent investigations highlight the gap between regulatory expectations and industry practice. Companies that collect and process personal information have obligations that extend beyond technical compliance measures. They must ensure that their practices do not facilitate discrimination, that individuals have meaningful access to their own records, and that automated systems are transparent and auditable.
+
+We believe that the agency's proposed interpretive guidance correctly identifies these obligations. However, the guidance should be strengthened to include explicit requirements for algorithmic transparency and to establish clear remedies for individuals harmed by opaque automated decision-making processes.

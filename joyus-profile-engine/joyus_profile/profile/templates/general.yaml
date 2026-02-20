@@ -1,0 +1,16 @@
+domain: general
+display_name: "General"
+section_weights:
+  voice: 0.6
+  vocabulary: 0.6
+  structure: 0.6
+  positions: 0.6
+  argumentation: 0.6
+  citations: 0.6
+  anti_patterns: 0.6
+  examples: 0.6
+terminology:
+  domain_terms: []
+  register_hints:
+    - "neutral"
+    - "balanced"

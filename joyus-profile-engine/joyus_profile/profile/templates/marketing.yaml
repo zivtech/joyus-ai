@@ -1,0 +1,25 @@
+domain: marketing
+display_name: "Marketing & Communications"
+section_weights:
+  voice: 0.9
+  vocabulary: 0.8
+  structure: 0.6
+  positions: 0.5
+  argumentation: 0.4
+  citations: 0.3
+  anti_patterns: 0.8
+  examples: 0.8
+terminology:
+  domain_terms:
+    - "brand"
+    - "engagement"
+    - "conversion"
+    - "audience"
+    - "campaign"
+    - "messaging"
+    - "persona"
+    - "touchpoint"
+  register_hints:
+    - "persuasive"
+    - "conversational"
+    - "audience-aware"
