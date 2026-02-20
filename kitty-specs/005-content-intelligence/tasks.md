@@ -237,10 +237,10 @@ Validate Phase A end-to-end: port PoC accuracy tests, run full corpus-to-verific
 
 Build department-level and org-level composite profiles from member profiles using corpus-size weighted mean aggregation.
 
-- [ ] T039: Implement CompositeBuilder.build_department()
-- [ ] T040: Implement CompositeBuilder.build_organization()
-- [ ] T041: Define hierarchy Pydantic models
-- [ ] T042: Topic-based department model
+- [x] T039: Implement CompositeBuilder.build_department()
+- [x] T040: Implement CompositeBuilder.build_organization()
+- [x] T041: Define hierarchy Pydantic models
+- [x] T042: Topic-based department model
 
 **Parallel**: WP08 can run in parallel with WP05-WP07 (Phase A completion).
 **Risk**: Weighted mean algorithm needs real-world calibration.
