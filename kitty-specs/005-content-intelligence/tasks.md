@@ -254,10 +254,10 @@ Build department-level and org-level composite profiles from member profiles usi
 
 CRUD operations for the full profile hierarchy, cascade propagation, diffing, and multi-level skill file emission.
 
-- [ ] T043: Implement HierarchyManager CRUD
-- [ ] T044: Cascade org-level changes
-- [ ] T045: Profile diffing
-- [ ] T046: Skill file emission for full hierarchy
+- [x] T043: Implement HierarchyManager CRUD
+- [x] T044: Cascade org-level changes
+- [x] T045: Profile diffing
+- [x] T046: Skill file emission for full hierarchy
 
 **Parallel**: T045 (diffing) is independent of T043-T044.
 
