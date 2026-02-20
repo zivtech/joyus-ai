@@ -1,7 +1,7 @@
 ---
 work_package_id: WP13
 title: Drift Diagnosis + Repair Framework
-lane: planned
+lane: "doing"
 dependencies: [WP12]
 subtasks: [T063, T064, T065, T066, T067, T068]
 history:
@@ -506,3 +506,7 @@ Drift detected → Diagnose → Propose repair → Human approves
 - **Cause determination accuracy**: Heuristic mapping from signals to causes may misdiagnose. Document known ambiguities and fallback to "unknown" when uncertain.
 - **Repair handler completeness**: Full repair execution (e.g., rebuilding profiles) requires Phase A infrastructure. Handlers may need to be stubs initially, with TODOs for full implementation once integrated with the profile builder.
 - **Cross-profile verification**: Checking all profiles after every repair can be slow for large hierarchies. Consider sampling strategy.
+
+## Activity Log
+
+- 2026-02-20T13:48:41Z – unknown – lane=doing – Implementation started by claude-lead
