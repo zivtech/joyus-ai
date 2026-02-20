@@ -1,14 +1,22 @@
-"""Attribution MCP tool handlers (handler logic only, not MCP registration)."""
+"""Attribution MCP tool handlers.
+
+Note: These handlers are not yet registered in the MCP server's tool registry.
+Registration is blocked on WP09 (hierarchy loading from disk). The handlers
+are ready for integration once ProfileHierarchy persistence is available.
+
+TODO: Wire into mcp_server/__init__.py tool registry and wrap sync calls
+with asyncio.to_thread() per spec T050.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
-
-from joyus_profile.models.hierarchy import ProfileHierarchy
+from typing import Any
 
 from joyus_profile.attribute.cascade import AttributionEngine
 from joyus_profile.attribute.identifier import AuthorIdentifier
 from joyus_profile.attribute.outsider import OutsiderDetector
+from joyus_profile.models.hierarchy import ProfileHierarchy
 
 
 def load_hierarchy_from_dir(path: str | Path) -> ProfileHierarchy:
@@ -31,7 +39,7 @@ def handle_identify_author(
     text: str,
     hierarchy_dir: str,
     explanation_tier: str = "pattern",
-) -> dict:
+) -> dict[str, Any]:
     """Identify the most likely author(s) of *text* from the hierarchy.
 
     Args:
@@ -54,7 +62,7 @@ def handle_validate_attribution(
     target_id: str,
     target_type: str,
     hierarchy_dir: str,
-) -> dict:
+) -> dict[str, Any]:
     """Validate *text* against a specific target profile.
 
     Args:
@@ -91,7 +99,7 @@ def handle_validate_attribution(
 def handle_detect_outsider(
     text: str,
     hierarchy_dir: str,
-) -> dict:
+) -> dict[str, Any]:
     """Detect whether *text* was authored by someone outside the hierarchy.
 
     Args:

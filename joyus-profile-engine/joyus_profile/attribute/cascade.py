@@ -75,7 +75,8 @@ def _score_vocabulary(text: str, vocab: VocabularyProfile) -> float:
         if term.lower() in text_lower:
             hits += 1
 
-    # Penalise avoided terms
+    # Penalty: each avoided term subtracts 1/total (aggressive relative to marker penalty).
+    # Clamped to [0.0, 1.0] at the end.
     for term in vocab.avoided_terms:
         if term.lower() in text_lower:
             hits -= 1
@@ -146,7 +147,7 @@ def _score_person_profile(text: str, profile: AuthorProfile) -> CandidateMatch:
     vocab_score = _score_vocabulary(text, profile.vocabulary)
     stylo_score = _score_stylometric(text, profile.stylometric_features)
 
-    has_markers = profile.markers is not None and (
+    has_markers = profile.markers is not None and bool(
         profile.markers.high_signal or profile.markers.medium_signal
     )
     has_vocab = bool(
@@ -208,7 +209,7 @@ def _score_dept_profile(text: str, dept: DepartmentProfile) -> CandidateMatch:
         profile_type="department",
         score=round(combined, 4),
         feature_breakdown={
-            "markers": round(vocab_score, 4),
+            "markers": 0.0,
             "vocabulary": round(vocab_score, 4),
             "stylometric": round(stylo_score, 4),
         },

@@ -2,20 +2,14 @@
 
 from __future__ import annotations
 
-import hashlib
-
 from cuid2 import cuid_wrapper
 
 from joyus_profile.models.attribution import AttributionResult
 from joyus_profile.models.hierarchy import ProfileHierarchy
 
-from .cascade import _PERSON_THRESHOLD, _score_person_profile
+from .cascade import _PERSON_THRESHOLD, _hash_text, _score_person_profile
 
 _cuid = cuid_wrapper()
-
-
-def _hash_text(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
 class AuthorIdentifier:
