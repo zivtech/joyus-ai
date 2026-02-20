@@ -38,11 +38,20 @@ from .hierarchy import (
     VoiceDefinition,
 )
 from .monitoring import (
+    Alert,
+    DailyRollup,
+    DriftConfig,
     DriftDiagnosis,
     DriftedFeature,
     DriftSignal,
+    MonitoringJob,
+    MonitoringResult,
     RepairAction,
     RepairVerification,
+    Severity,
+    SeverityRule,
+    TrendData,
+    WeeklyRollup,
 )
 from .profile import (
     AntiPatterns,
@@ -126,9 +135,18 @@ __all__ = [
     "AttributionResult",
     "CandidateMatch",
     # Monitoring
+    "Alert",
+    "DailyRollup",
+    "DriftConfig",
     "DriftDiagnosis",
     "DriftedFeature",
     "DriftSignal",
+    "MonitoringJob",
+    "MonitoringResult",
     "RepairAction",
     "RepairVerification",
+    "Severity",
+    "SeverityRule",
+    "TrendData",
+    "WeeklyRollup",
 ]
