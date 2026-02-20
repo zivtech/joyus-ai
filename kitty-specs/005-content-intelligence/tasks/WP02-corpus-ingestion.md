@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Corpus Ingestion
-lane: "doing"
+lane: "for_review"
 dependencies: [WP01]
 base_branch: 005-content-intelligence-WP01
 base_commit: 6d8daa83cf3ef8de71290950c52b38f430793558
@@ -207,3 +207,7 @@ spec-kitty implement WP02 --base WP01
 - **PDF quality**: Scanned PDFs produce gibberish — PyMuPDF handles text-based PDFs only. Document this limitation.
 - **trafilatura availability**: May have C dependencies that fail on some systems. Fall back to BeautifulSoup `get_text()` if needed.
 - **URL loading**: Network-dependent — mock in tests, handle timeouts gracefully.
+
+## Activity Log
+
+- 2026-02-20T03:41:22Z – unknown – shell_pid=27946 – lane=for_review – Ready for review: corpus ingestion pipeline — CorpusLoader, 5 format extractors, Preprocessor, exceptions, 43 unit tests, all 88 tests passing
