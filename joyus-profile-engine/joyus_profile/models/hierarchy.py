@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
@@ -83,8 +83,8 @@ class DepartmentProfile(BaseModel):
     audience_registers: dict[str, RegisterInfo] = Field(default_factory=dict)
     typical_document_types: list[str] = Field(default_factory=list)
     stylometric_baseline: StylometricBaseline = Field(default_factory=StylometricBaseline)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class OrganizationProfile(BaseModel):
@@ -98,8 +98,8 @@ class OrganizationProfile(BaseModel):
     department_overrides: dict[str, OverrideSet] = Field(default_factory=dict)
     voice_definitions: dict[str, VoiceDefinition] = Field(default_factory=dict)
     stylometric_baseline: StylometricBaseline = Field(default_factory=StylometricBaseline)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ProfileHierarchy(BaseModel):
@@ -112,7 +112,7 @@ class ProfileHierarchy(BaseModel):
     department_members: dict[str, list[str]] = Field(default_factory=dict)
     person_departments: dict[str, list[str]] = Field(default_factory=dict)
     version: str = "0.1.0"
-    built_at: datetime = Field(default_factory=datetime.now)
+    built_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # Deferred import to avoid circular dependency

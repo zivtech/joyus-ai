@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Stylometric profile engine for author attribution, fidelity verification, and drift monitoring"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "pydantic>=2.0",
     "numpy",
@@ -21,7 +21,7 @@ dependencies = [
     "python-docx",
     "beautifulsoup4",
     "trafilatura",
-    "mcp>=1.20",
+    "mcp>=1.26",
     "click",
     "pyyaml",
     "cuid2",

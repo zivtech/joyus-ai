@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -155,8 +155,8 @@ class AuthorProfile(BaseModel):
     corpus_size: int = 0
     word_count: int = 0
     fidelity_tier: int = Field(default=1, ge=1, le=4)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     version: str = "0.1.0"
     department_ids: list[str] = Field(default_factory=list)

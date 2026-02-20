@@ -38,9 +38,9 @@ from joyus_profile.models.monitoring import (
     DriftSignal,
     RepairAction,
 )
+from joyus_profile.models.content import GeneratedContent, SourceRef
 from joyus_profile.models.verification import (
     FidelityScore,
-    GeneratedContent,
     InlineResult,
     VerificationResult,
 )
@@ -205,7 +205,7 @@ class TestVoiceContext:
         assert vc.fidelity_tier == 1
 
     def test_with_override(self, sample_voice_context):
-        assert sample_voice_context.audience_key == "advocate"
+        assert sample_voice_context.audience_key == "formal"
         assert sample_voice_context.voice_override is not None
         assert sample_voice_context.voice_override.emotion == 6.5
 
@@ -301,6 +301,7 @@ class TestDriftSignal:
         assert ds.signal_type == "vocabulary_shift"
         assert ds.severity == "medium"
         assert ds.deviation == 0.0
+        assert ds.window_end is None
 
 
 class TestDriftedFeature:
@@ -400,10 +401,12 @@ class TestProfileHierarchy:
 class TestDomainTemplates:
     def test_templates_exist(self):
         """All 4 domain template YAML files exist and are loadable."""
+        from pathlib import Path
+
         import yaml
 
         templates_dir = (
-            __import__("pathlib").Path(__file__).parent.parent.parent
+            Path(__file__).parent.parent.parent
             / "joyus_profile"
             / "profile"
             / "templates"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
@@ -17,8 +17,8 @@ class DriftSignal(BaseModel):
     current_value: float = 0.0
     baseline_value: float = 0.0
     deviation: float = 0.0
-    window_start: datetime = Field(default_factory=datetime.now)
-    window_end: datetime = Field(default_factory=datetime.now)
+    window_start: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    window_end: datetime | None = None
     sample_count: int = 0
 
 
@@ -49,7 +49,7 @@ class RepairAction(BaseModel):
     description: str = ""
     automated: bool = False
     status: str = "proposed"
-    proposed_at: datetime = Field(default_factory=datetime.now)
+    proposed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     applied_at: datetime | None = None
     verified_at: datetime | None = None
     verification_result: RepairVerification | None = None
@@ -60,10 +60,10 @@ class DriftDiagnosis(BaseModel):
 
     diagnosis_id: str
     profile_id: str
-    detection_date: datetime = Field(default_factory=datetime.now)
+    detection_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     severity: str = "medium"
     signals: list[DriftSignal] = Field(default_factory=list)
     affected_features: list[DriftedFeature] = Field(default_factory=list)
     probable_cause: str = "unknown"
     recommended_action: RepairAction | None = None
-    diagnosed_at: datetime = Field(default_factory=datetime.now)
+    diagnosed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

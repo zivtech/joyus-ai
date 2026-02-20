@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
@@ -29,4 +29,4 @@ class AttributionResult(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     explanation_tier: str = "pattern"
     explanation: str = ""
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -93,14 +93,14 @@ def sample_profile() -> AuthorProfile:
             tone_descriptors=["formal", "authoritative", "precise"],
         ),
         vocabulary=VocabularyProfile(
-            signature_phrases=["we urge the Bureau", "constitutes a violation"],
+            signature_phrases=["we urge the commission", "constitutes a violation"],
             preferred_terms=["regulation", "enforcement", "compliance"],
             avoided_terms=["customer", "client"],
             technical_terms=["statute", "rulemaking", "adjudication"],
         ),
         markers=MarkerSet(
             high_signal=[
-                Marker(text="we urge the Bureau", weight=0.9, frequency=0.15),
+                Marker(text="we urge the commission", weight=0.9, frequency=0.15),
                 Marker(text="constitutes a violation", weight=0.85, frequency=0.1),
             ],
             medium_signal=[
@@ -117,10 +117,10 @@ def sample_profile() -> AuthorProfile:
 def sample_voice_context() -> VoiceContext:
     """A sample voice context for multi-audience testing."""
     return VoiceContext(
-        voice_id="voice_advocate_001",
-        audience_key="advocate",
-        audience_label="Advocate (Public Interest)",
-        description="Voice used for public-facing advocacy communications",
+        voice_id="voice_formal_001",
+        audience_key="formal",
+        audience_label="Formal (Regulatory)",
+        description="Voice used for formal regulatory communications",
         fidelity_tier=2,
         corpus_size_for_voice=5000,
         voice_override=VoiceProfile(

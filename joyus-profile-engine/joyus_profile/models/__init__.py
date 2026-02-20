@@ -55,12 +55,14 @@ from .profile import (
     VoiceContext,
     VoiceProfile,
 )
+from .content import (
+    GeneratedContent,
+    SourceRef,
+)
 from .verification import (
     DeepResult,
     FidelityScore,
-    GeneratedContent,
     InlineResult,
-    SourceRef,
     VerificationResult,
 )
 
@@ -108,12 +110,13 @@ __all__ = [
     "StyleGuide",
     "StylometricBaseline",
     "VoiceDefinition",
+    # Content
+    "GeneratedContent",
+    "SourceRef",
     # Verification
     "DeepResult",
     "FidelityScore",
-    "GeneratedContent",
     "InlineResult",
-    "SourceRef",
     "VerificationResult",
     # Attribution
     "AttributionResult",
