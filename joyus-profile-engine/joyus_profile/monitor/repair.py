@@ -207,6 +207,7 @@ class RepairFramework:
                 f"Cannot reject action in '{action.status}' state"
             )
         action.status = "rejected"
+        action.rejection_reason = reason
         self._save_repair(action)
         return action
 

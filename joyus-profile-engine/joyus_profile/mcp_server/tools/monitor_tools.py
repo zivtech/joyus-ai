@@ -103,10 +103,10 @@ def handle_get_trends(
     alerts = AlertGenerator(data_dir).get_alerts(profile_id=profile_id)
 
     window_start = (
-        trend.daily_rollups[0].date.isoformat() if trend.daily_rollups else None
+        trend.daily_rollups[0].date.isoformat() if trend.daily_rollups else ""
     )
     window_end = (
-        trend.daily_rollups[-1].date.isoformat() if trend.daily_rollups else None
+        trend.daily_rollups[-1].date.isoformat() if trend.daily_rollups else ""
     )
 
     return {
@@ -132,17 +132,16 @@ def handle_get_trends(
 def handle_trigger_repair(
     diagnosis_id: str,
     data_dir: str,
-    action: str = "",
     auto_apply: bool = False,
 ) -> dict[str, Any]:
     """Propose or execute a repair action.
 
     The diagnosis must have been previously persisted via ``check_drift``.
+    The action type is determined by the diagnosis's recommended_action.
 
     Args:
         diagnosis_id: ID of the diagnosis to repair.
         data_dir: Directory where repair/diagnosis data is stored.
-        action: Unused — the action type is driven by the diagnosis.
         auto_apply: If True and the repair is automated, apply it immediately.
 
     Returns:
@@ -196,10 +195,9 @@ async def get_trends(
 async def trigger_repair(
     diagnosis_id: str,
     data_dir: str,
-    action: str = "",
     auto_apply: bool = False,
 ) -> dict[str, Any]:
     """Async MCP entry-point for trigger_repair."""
     return await asyncio.to_thread(
-        handle_trigger_repair, diagnosis_id, data_dir, action, auto_apply
+        handle_trigger_repair, diagnosis_id, data_dir, auto_apply
     )
