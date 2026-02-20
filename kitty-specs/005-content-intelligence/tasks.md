@@ -101,7 +101,7 @@
 Initialize the `joyus-profile-engine/` Python package with all Pydantic data models, domain templates, and test infrastructure. This WP produces the type foundation that all subsequent WPs build on.
 
 - [x] T001: Initialize pyproject.toml with dependencies and dev tooling
-- [ ] T002: Define Pydantic models for corpus types
+- [x] T002: Define Pydantic models for corpus types
 - [ ] T003: Define Pydantic models for feature types
 - [ ] T004: Define Pydantic models for profile types
 - [ ] T005: Define Pydantic models for verification types
