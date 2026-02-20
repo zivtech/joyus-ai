@@ -1,9 +1,13 @@
 ---
 work_package_id: WP02
 title: Corpus Ingestion
-lane: planned
+lane: "doing"
 dependencies: [WP01]
+base_branch: 005-content-intelligence-WP01
+base_commit: 6d8daa83cf3ef8de71290950c52b38f430793558
+created_at: '2026-02-20T03:37:08.374817+00:00'
 subtasks: [T008, T009, T010, T011]
+shell_pid: "27946"
 history:
 - date: '2026-02-19'
   action: created
