@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: Phase A Integration + Regression Testing
-lane: "doing"
+lane: "for_review"
 dependencies: [WP06]
 base_branch: 005-content-intelligence-WP06
 base_commit: a2df474e7bb2a568c0c63df0914190f18bfe7a14
@@ -143,3 +143,7 @@ spec-kitty implement WP07 --base WP06
 
 - **Fixture data quality**: Anonymized fixtures may not have the same stylometric properties as real author data. Accuracy numbers may differ.
 - **Performance on CI**: CI machines may be slower — use generous margins or mark slow tests as optional.
+
+## Activity Log
+
+- 2026-02-20T04:56:23Z – unknown – shell_pid=19485 – lane=for_review – Moved to for_review
