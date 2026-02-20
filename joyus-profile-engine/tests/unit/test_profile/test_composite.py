@@ -27,7 +27,6 @@ from joyus_profile.models.profile import (
 )
 from joyus_profile.profile.composite import CompositeBuilder
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────
 
 
@@ -221,6 +220,17 @@ class TestBuildDepartment:
         dept = builder.build_department(profiles_pair, "Generic")
         assert dept.domain_specialization == "general"
 
+    def test_build_department_zero_word_counts(
+        self, builder: CompositeBuilder
+    ) -> None:
+        """All profiles with word_count=0 should yield empty StylometricBaseline."""
+        p1 = _make_profile("p1", "Author A", word_count=0, fw_freqs={"the": 0.07})
+        p2 = _make_profile("p2", "Author B", word_count=0, fw_freqs={"the": 0.08})
+        dept = builder.build_department([p1, p2], "Empty Corpus")
+        assert dept.stylometric_baseline.sample_count == 0
+        assert dept.stylometric_baseline.feature_means == {}
+        assert dept.stylometric_baseline.feature_stds == {}
+
 
 # ── T040: build_organization ──────────────────────────────────────────
 
@@ -391,6 +401,31 @@ class TestIncrementalUpdate:
         member = _make_profile("p1", "Author A", word_count=5_000)
         updated = builder.update_department_incremental(existing, member)
         assert updated.member_ids.count("p1") == 1
+
+    def test_incremental_update_zero_word_count(
+        self, builder: CompositeBuilder
+    ) -> None:
+        """New member with word_count=0 uses max(..., 1) so combined stays valid."""
+        existing = DepartmentProfile(
+            department_id="d1",
+            name="Research",
+            member_ids=["p1"],
+            stylometric_baseline=StylometricBaseline(
+                feature_means={"the": 0.07},
+                sample_count=10_000,
+            ),
+        )
+        new_member = _make_profile(
+            "p2", "Author B", word_count=0,
+            fw_freqs={"the": 0.05},
+        )
+        updated = builder.update_department_incremental(existing, new_member)
+        # new_size = max(0, 1) = 1; combined = 10_001
+        assert updated.stylometric_baseline.sample_count == 10_001
+        assert "p2" in updated.member_ids
+        # Weighted mean: (0.07 * 10_000 + 0.05 * 1) / 10_001
+        expected_the = (0.07 * 10_000 + 0.05 * 1) / 10_001
+        assert abs(updated.stylometric_baseline.feature_means["the"] - expected_the) < 1e-9
 
 
 # ── T041/T042: Hierarchy validation ──────────────────────────────────

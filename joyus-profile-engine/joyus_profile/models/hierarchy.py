@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field, model_validator
 
+from joyus_profile.exceptions import HierarchyValidationError
+
 from .features import StructuralPatterns, VocabularyProfile
 from .profile import ContentAccessLevel, Position
 
@@ -114,6 +116,14 @@ class ProfileHierarchy(BaseModel):
     version: str = "0.1.0"
     built_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    def effective_prohibited_framings(self, entity_id: str | None = None) -> list:
+        """Return org-level prohibited framings (cascade to all levels).
+
+        Prohibited framings are defined at org level and cannot be overridden.
+        This method provides the canonical accessor for any level in the hierarchy.
+        """
+        return list(self.org_profile.prohibited_framings)
+
     @model_validator(mode="after")
     def _validate_hierarchy(self) -> "ProfileHierarchy":
         """Validate many-to-many consistency and catch orphaned people."""
@@ -150,8 +160,6 @@ class ProfileHierarchy(BaseModel):
                     )
 
         if errors:
-            from joyus_profile.exceptions import HierarchyValidationError
-
             raise HierarchyValidationError(
                 f"Hierarchy validation failed: {'; '.join(errors)}"
             )

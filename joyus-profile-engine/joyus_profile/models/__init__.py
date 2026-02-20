@@ -1,6 +1,10 @@
 """Pydantic data models for the profile engine."""
 
 from .attribution import AttributionResult, CandidateMatch
+from .content import (
+    GeneratedContent,
+    SourceRef,
+)
 from .corpus import (
     Chunk,
     Corpus,
@@ -54,10 +58,6 @@ from .profile import (
     VoiceAccessLevel,
     VoiceContext,
     VoiceProfile,
-)
-from .content import (
-    GeneratedContent,
-    SourceRef,
 )
 from .verification import (
     DeepResult,

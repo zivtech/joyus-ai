@@ -52,7 +52,7 @@ class CompositeBuilder:
 
         shared_vocab = self._intersect_vocabularies(member_profiles)
         shared_positions = self._aggregate_positions(member_profiles)
-        structural_range = self._union_structures(member_profiles)
+        structural_range = self._mean_structures(member_profiles)
         baseline = self._weighted_mean_features(member_profiles)
         registers = self._merge_registers(member_profiles)
 
@@ -92,6 +92,8 @@ class CompositeBuilder:
 
         baseline = self._weighted_mean_dept_features(department_profiles)
 
+        # Prohibited framings are stored at org level and cascade to all levels
+        # via ProfileHierarchy.effective_prohibited_framings() — they cannot be overridden.
         return OrganizationProfile(
             org_id=_cuid(),
             name=org_name,
@@ -109,7 +111,11 @@ class CompositeBuilder:
         existing: DepartmentProfile,
         new_profile: AuthorProfile,
     ) -> DepartmentProfile:
-        """Incrementally update a department composite with a new member.
+        """Incrementally update a department's stylometric baseline with a new member.
+
+        Note: Only function_word_frequencies are updated incrementally.
+        Other feature dimensions (sentence stats, vocabulary richness, etc.)
+        are not updated — trigger a full rebuild via build_department() for those.
 
         Uses the incremental formula from research.md §R4:
         new = (old * old_total + new_vec * new_size) / (old_total + new_size)
@@ -164,7 +170,9 @@ class CompositeBuilder:
         pref_sets = [set(p.vocabulary.preferred_terms) for p in profiles]
         tech_sets = [set(p.vocabulary.technical_terms) for p in profiles]
 
-        # Intersection: terms that appear in >= half of members
+        # Majority-vote threshold: terms shared by >= half of members.
+        # With 2 members this equals 1, meaning any term from either member passes.
+        # Use len(profiles) for strict intersection semantics if needed.
         threshold = max(len(profiles) // 2, 1)
 
         shared_sig = self._frequency_threshold(sig_sets, threshold)
@@ -216,10 +224,10 @@ class CompositeBuilder:
 
     # ── Private: structure ────────────────────────────────────────────
 
-    def _union_structures(
+    def _mean_structures(
         self, profiles: list[AuthorProfile]
     ) -> StructuralPatterns:
-        """Compute structural range (union of patterns, averaged values)."""
+        """Compute structural range (mean of patterns across members)."""
         if not profiles:
             return StructuralPatterns()
 
@@ -319,6 +327,8 @@ class CompositeBuilder:
                 weighted_sum += val * weights[d.department_id]
             means[key] = weighted_sum
 
+        # Org-level feature_stds require pooled variance across departments;
+        # deferred — consumers should use dept-level stds for spread estimates.
         return StylometricBaseline(
             feature_means=means,
             feature_stds={},
@@ -338,9 +348,14 @@ class CompositeBuilder:
             reg_name = p.audience.primary_register
             if reg_name in registers:
                 info = registers[reg_name]
-                info.frequency += 1.0
-                if p.profile_id not in info.contributors:
-                    info.contributors.append(p.profile_id)
+                new_contributors = (
+                    info.contributors
+                    if p.profile_id in info.contributors
+                    else info.contributors + [p.profile_id]
+                )
+                registers[reg_name] = info.model_copy(
+                    update={"frequency": info.frequency + 1.0, "contributors": new_contributors}
+                )
             else:
                 registers[reg_name] = RegisterInfo(
                     register_name=reg_name,
