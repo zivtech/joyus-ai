@@ -6,9 +6,6 @@
 # Default: all files not matched by a more specific rule
 * @zivtech/joyus-core
 
-# Profile engine library
-/joyus-profile-engine/ @zivtech/joyus-core
-
 # Specifications and design documents
 /spec/ @zivtech/joyus-core
 

@@ -43,7 +43,7 @@ body:
       label: Environment
       description: Provide relevant environment details.
       placeholder: |
-        - Component: joyus-ai-mcp-server / joyus-ai-state / joyus-profile-engine
+        - Component: joyus-ai-mcp-server / joyus-ai-state
         - Version / commit:
         - Node.js version (if applicable):
         - Python version (if applicable):

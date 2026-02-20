@@ -24,7 +24,7 @@ Please include as much of the following as possible to help us assess and addres
 
 - A description of the vulnerability and its potential impact
 - Steps to reproduce or a proof-of-concept
-- Affected component(s) (e.g., `joyus-ai-mcp-server`, `joyus-ai-state`, `joyus-profile-engine`)
+- Affected component(s) (e.g., `joyus-ai-mcp-server`, `joyus-ai-state`)
 - Any suggested mitigations you have identified
 
 ## Response Timeline

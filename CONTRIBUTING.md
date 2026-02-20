@@ -37,7 +37,6 @@ Keep PRs focused. One feature or fix per PR makes review faster and history clea
 ### Prerequisites
 
 - **Node.js** 20+ and **npm** 9+ (for the MCP server and session state packages)
-- **Python** 3.11 or 3.12 (for the profile engine; 3.13+ not yet supported)
 - **Docker** and **Docker Compose** (optional, for integration testing)
 
 ### TypeScript Packages
@@ -61,24 +60,6 @@ npx tsc --noEmit
 
 Repeat the same steps in `joyus-ai-state/` as needed.
 
-### Python Profile Engine
-
-The profile engine (`joyus-profile-engine/`) uses a virtual environment:
-
-```bash
-cd joyus-profile-engine
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Lint and format
-ruff check .
-ruff format .
-```
-
 ### Environment Variables
 
 Copy `.env.example` to `.env` in any package directory that provides one, and fill in the required values. The `.env` file is gitignored — never commit secrets.
@@ -92,13 +73,6 @@ Copy `.env.example` to `.env` in any package directory that provides one, and fi
 - **Schemas first**: define Zod schemas in `schema.ts`; infer types via `z.infer<>` in `types.ts`. Do not hand-write duplicate type definitions.
 - Prefer `const` over `let`. Avoid `any`; use `unknown` and narrow explicitly.
 - Export only what other modules need. Keep internal helpers unexported.
-
-### Python
-
-- **Formatter/Linter**: [Ruff](https://docs.astral.sh/ruff/) — run `ruff check . && ruff format .`
-- **Type hints**: required on all public functions and class members. Use `from __future__ import annotations` for forward references.
-- **Models**: use Pydantic v2. Prefer `model_validator` over manual `__init__` overrides.
-- Python 3.11+ syntax is acceptable (match statements, `tomllib`, etc.).
 
 ### General
 
@@ -119,14 +93,14 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`
 
-**Scope**: the package or area changed — e.g., `mcp-server`, `state`, `profile-engine`, `deploy`, `spec`
+**Scope**: the package or area changed — e.g., `mcp-server`, `state`, `deploy`, `spec`
 
 **Examples**:
 ```
 feat(state): add divergence detection for canonical documents
 fix(mcp-server): handle missing env vars at startup gracefully
 docs(contributing): add Python setup instructions
-test(profile-engine): add fixtures for multi-voice fidelity checks
+test(state): add fixtures for session divergence detection
 ```
 
 Keep the summary line under 72 characters. Use the body to explain _why_, not _what_.
