@@ -6,19 +6,15 @@ test_hierarchy_manager.py.
 
 from __future__ import annotations
 
-import pytest
-
 from joyus_profile.models.hierarchy import (
     DepartmentProfile,
     OrganizationProfile,
-    ProfileDiff,
     ProfileHierarchy,
     ProhibitedFraming,
     StylometricBaseline,
 )
 from joyus_profile.models.profile import AuthorProfile
 from joyus_profile.profile.hierarchy_manager import HierarchyManager
-
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
