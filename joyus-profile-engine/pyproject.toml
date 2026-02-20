@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "joyus-profile-engine"
+version = "0.1.0"
+description = "Stylometric profile engine for author attribution, fidelity verification, and drift monitoring"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "pydantic>=2.0",
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "pandas",
+    "spacy>=3.6",
+    "faststylometry>=1.0.15",
+    "pymupdf",
+    "python-docx",
+    "beautifulsoup4",
+    "trafilatura",
+    "mcp>=1.26",
+    "click",
+    "pyyaml",
+    "cuid2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "ruff",
+    "mypy",
+    "types-pyyaml",
+]
+
+[project.scripts]
+joyus-profile = "joyus_profile.cli.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["joyus_profile"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true

@@ -1,0 +1,29 @@
+domain: legal_advocacy
+display_name: "Legal Advocacy"
+section_weights:
+  positions: 0.9
+  argumentation: 0.9
+  citations: 0.8
+  vocabulary: 0.7
+  voice: 0.6
+  structure: 0.5
+  anti_patterns: 0.7
+  examples: 0.5
+terminology:
+  domain_terms:
+    - "regulation"
+    - "statute"
+    - "compliance"
+    - "enforcement"
+    - "rulemaking"
+    - "adjudication"
+    - "plaintiff"
+    - "defendant"
+    - "amicus"
+    - "standing"
+    - "due process"
+    - "remedies"
+  register_hints:
+    - "formal"
+    - "technical"
+    - "advocacy"

@@ -1,0 +1,5 @@
+The deployment architecture uses a three-tier model with load balancing at the ingress layer. Each application server runs in a containerized environment with strict resource limits to prevent noisy neighbor effects in multi-tenant deployments.
+
+Database connections are pooled at the application level using a connection pool size proportional to the expected concurrent request volume. For most deployments, a pool size of 20 connections per application instance provides adequate throughput without exhausting database server resources.
+
+Monitoring is implemented through structured logging and metrics collection. Every request generates a trace identifier that propagates through all downstream service calls, enabling end-to-end latency analysis and error correlation. Alert thresholds are configured per-environment to account for different traffic patterns between staging and production.
