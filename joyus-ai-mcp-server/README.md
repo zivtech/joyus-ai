@@ -1,4 +1,4 @@
-# Zivtech AI MCP Server
+# Joyus AI MCP Server
 
 A remote MCP (Model Context Protocol) server that enables Claude Desktop to interact with your work tools: Jira, Slack, GitHub, Gmail, and Google Drive/Docs.
 
@@ -19,7 +19,7 @@ A remote MCP (Model Context Protocol) server that enables Claude Desktop to inte
                                     │ MCP Protocol (HTTP + JSON-RPC)
                                     │
 ┌───────────────────────────────────▼─────────────────────────────────────┐
-│                       ZIVTECH AI MCP SERVER                              │
+│                        JOYUS AI MCP SERVER                               │
 │                                                                          │
 │  ┌──────────────┐  ┌─────────────────┐  ┌────────────────────────────┐  │
 │  │ Auth Portal  │  │  MCP Endpoint   │  │     Tool Executors         │  │
@@ -99,7 +99,7 @@ docker-compose up
    - **URL**: `http://localhost:3000/mcp` (or your production URL)
    - **Authentication**: Bearer token from Auth Portal
 4. Visit `http://localhost:3000/auth` to:
-   - Sign in with Google (Zivtech account)
+   - Sign in with Google (organization account)
    - Connect Jira, Slack, GitHub
    - Copy your MCP token
 
@@ -241,7 +241,7 @@ Each task type accepts specific configuration in JSON format:
 {"channel": "general", "lookbackHours": 24}
 
 // GitHub tasks
-{"repo": "zivtech/website", "org": "zivtech", "staleDays": 7}
+{"repo": "example-org/website", "org": "example-org", "staleDays": 7}
 
 // Gmail tasks
 {"query": "is:unread label:important"}
@@ -284,7 +284,7 @@ name: joyus-ai-mcp
 services:
   - name: web
     source:
-      repo: zivtech/joyus-ai
+      repo: joyus-ai/joyus-ai
       branch: main
     build_command: npm ci && npm run build
     run_command: npm run db:migrate && npm start
@@ -344,4 +344,4 @@ npm run db:studio     # Open Drizzle Studio
 
 ## License
 
-Proprietary - Zivtech Internal Use Only
+See LICENSE in the repository root.

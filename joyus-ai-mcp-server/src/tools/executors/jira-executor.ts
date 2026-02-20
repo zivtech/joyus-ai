@@ -195,7 +195,7 @@ function formatIssueDetailed(issue: any): any {
       key: issue.fields.project?.key,
       name: issue.fields.project?.name
     },
-    url: `https://zivtech.atlassian.net/browse/${issue.key}`
+    url: `https://example-org.atlassian.net/browse/${issue.key}`
   };
 }
 

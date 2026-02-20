@@ -1,8 +1,8 @@
-# Zivtech AI MCP Server - Architecture Document
+# Joyus AI MCP Server - Architecture Document
 
 ## Overview
 
-The Zivtech AI MCP Server is a remote MCP (Model Context Protocol) server that allows Claude Desktop users to interact with their work tools (Jira, Slack, GitHub, Google) directly through Claude's conversational interface.
+The Joyus AI MCP Server is a remote MCP (Model Context Protocol) server that allows Claude Desktop users to interact with their work tools (Jira, Slack, GitHub, Google) directly through Claude's conversational interface.
 
 ## Why MCP Server Instead of Full Web App?
 
@@ -41,7 +41,7 @@ We chose **MCP Server** because:
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        ZIVTECH AI MCP SERVER                                 │
+│                         JOYUS AI MCP SERVER                                  │
 │                         (Node.js / Express)                                  │
 │                                                                              │
 │   ┌─────────────────────────────────────────────────────────────────────┐   │
@@ -146,7 +146,7 @@ We chose **MCP Server** because:
 
 | Layer | Mechanism |
 |-------|-----------|
-| Auth Portal | Google OAuth (Zivtech domain only) |
+| Auth Portal | Google OAuth (organization domain only) |
 | MCP Endpoint | Bearer token (user's mcpToken) |
 | Service APIs | OAuth 2.0 tokens per service |
 
@@ -216,7 +216,7 @@ If we need to support users without Claude paid plans:
 
 ```
 ┌─────────────────┐      ┌───────────────────┐
-│  Claude Desktop │      │ Zivtech AI Web App│
+│  Claude Desktop │      │  Joyus AI Web App │
 │  (MCP Client)   │      │   (Custom Chat)   │
 └────────┬────────┘      └────────┬──────────┘
          │                        │
@@ -226,7 +226,7 @@ If we need to support users without Claude paid plans:
                   │
                   ▼
          ┌───────────────┐
-         │  Zivtech AI   │
+         │   Joyus AI    │
          │  MCP Server   │
          └───────────────┘
 ```

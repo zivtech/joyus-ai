@@ -122,7 +122,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 **Purpose**: Configure all secrets needed for the CI/CD pipeline to deploy automatically.
 
 **Steps**:
-1. Set the following GitHub Actions secrets on the `zivtech/joyus-ai` repository:
+1. Set the following GitHub Actions secrets on the `joyus-ai/joyus-ai` repository:
 
    | Secret | Value | Notes |
    |--------|-------|-------|
@@ -199,7 +199,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 
 **Validation**:
 - [ ] GitHub Actions workflow completes successfully
-- [ ] Both Docker images in GHCR (check `gh api orgs/zivtech/packages`)
+- [ ] Both Docker images in GHCR (check `gh api orgs/<org>/packages`)
 - [ ] All health endpoints return 200
 - [ ] MCP endpoint responds with bearer token auth
 - [ ] Web chat page loads
@@ -215,7 +215,7 @@ Provision the real EC2 instance, configure DNS, set GitHub Actions secrets, perf
 
 ### T037: Verify Team Member Claude Desktop Connections
 
-**Purpose**: Confirm at least 2 Zivtech team members can connect via Claude Desktop.
+**Purpose**: Confirm at least 2 team members can connect via Claude Desktop.
 
 **Steps**:
 1. Share the Claude Desktop config with team members:

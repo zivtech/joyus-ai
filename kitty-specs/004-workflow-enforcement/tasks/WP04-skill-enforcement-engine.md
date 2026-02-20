@@ -61,7 +61,7 @@ history:
 - **Data Model**: SkillMapping, Skill (runtime), PrecedenceLevel
 - **Research**: layered skill representation (context injection + validation tools)
 - **Clarifications**: Skill repo fallback uses cached version with warning
-- **Existing skills**: `zivtech-claude-skills/` repository (markdown files with rules)
+- **Existing skills**: `example-skills/` repository (markdown files with rules)
 - **Plan**: `joyus-ai-state/src/enforcement/skills/` directory
 
 **Implementation command**: `spec-kitty implement WP04 --base WP02`
@@ -130,7 +130,7 @@ history:
      - If no cache: return `{ source: 'none', error: 'Skill not available' }`
   4. Log the load source in the result for audit trail
 - **Files**: `joyus-ai-state/src/enforcement/skills/loader.ts` (extend, ~60 lines added)
-- **Notes**: The exact skill file format depends on the `zivtech-claude-skills` repo structure. Start with a simple markdown parser; refine when real skills are tested.
+- **Notes**: The exact skill file format depends on the `example-skills` repo structure. Start with a simple markdown parser; refine when real skills are tested.
 
 ### Subtask T022 -- Implement skill precedence resolver
 
@@ -201,7 +201,7 @@ history:
 
 ## Risks & Mitigations
 
-- **Skill file format unknown**: start with a simple format (markdown with YAML frontmatter for metadata, body for constraints, `## Anti-Patterns` section for violations). Validate against real `zivtech-claude-skills` files.
+- **Skill file format unknown**: start with a simple format (markdown with YAML frontmatter for metadata, body for constraints, `## Anti-Patterns` section for violations). Validate against real `example-skills` files.
 - **Glob matching performance**: `picomatch` is fast (compiled regex). Cache compiled matchers for repeated use.
 - **Precedence edge cases**: when two skills have equal precedence, use lexical sort on skill ID for determinism.
 

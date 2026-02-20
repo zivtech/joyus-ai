@@ -11,6 +11,7 @@ import { decryptToken, encryptToken } from '../db/encryption.js';
 import { executeGithubTool } from './executors/github-executor.js';
 import { executeGoogleTool } from './executors/google-executor.js';
 import { executeJiraTool } from './executors/jira-executor.js';
+import { executeOpsTool } from './executors/ops-executor.js';
 import { executeSlackTool } from './executors/slack-executor.js';
 
 export interface ExecutorContext {
@@ -24,6 +25,10 @@ export interface ExecutorContext {
  * Execute a tool by name with the given input
  */
 export async function executeTool(userId: string, toolName: string, input: Record<string, unknown>): Promise<unknown> {
+  if (toolName.startsWith('ops_')) {
+    return executeOpsTool(toolName, input, { userId });
+  }
+
   // Determine which service this tool belongs to
   let service: Service;
   let executeFunction: (name: string, input: Record<string, unknown>, context: ExecutorContext) => Promise<unknown>;

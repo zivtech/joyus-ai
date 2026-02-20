@@ -49,7 +49,7 @@ taskRouter.get('/', async (req: Request, res: Response) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Scheduled Tasks - Zivtech AI</title>
+      <title>Scheduled Tasks - Joyus AI</title>
       <style>
         body { font-family: system-ui, sans-serif; max-width: 900px; margin: 50px auto; padding: 20px; }
         h1 { color: #1a1a2e; }
@@ -390,7 +390,7 @@ taskRouter.get('/:id/edit', async (req: Request, res: Response) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Edit Task - Zivtech AI</title>
+      <title>Edit Task - Joyus AI</title>
       <style>
         body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
         .form-group { margin: 12px 0; }

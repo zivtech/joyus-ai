@@ -286,7 +286,7 @@ async function executeSlackMentionsSummary(userId: string, config: TaskConfig): 
 
 async function executeGithubPRReminder(userId: string, config: TaskConfig): Promise<any> {
   const repo = config.repo;
-  const org = config.org || 'zivtech';
+  const org = config.org || 'example-org';
 
   let prs: any[] = [];
 

@@ -8,6 +8,7 @@ import { jiraTools } from '../src/tools/jira-tools.js';
 import { slackTools } from '../src/tools/slack-tools.js';
 import { githubTools } from '../src/tools/github-tools.js';
 import { googleTools } from '../src/tools/google-tools.js';
+import { opsTools } from '../src/tools/ops-tools.js';
 
 describe('Tool Definitions', () => {
   const validateToolDefinition = (tool: any) => {
@@ -131,8 +132,29 @@ describe('Tool Definitions', () => {
     });
   });
 
+  describe('Ops Tools', () => {
+    it('should have valid tool definitions', () => {
+      expect(opsTools.length).toBeGreaterThan(0);
+
+      for (const tool of opsTools) {
+        validateToolDefinition(tool);
+        expect(tool.name).toMatch(/^ops_/);
+      }
+    });
+
+    it('should include the excel export tool', () => {
+      const toolNames = opsTools.map(t => t.name);
+      expect(toolNames).toContain('ops_export_excel');
+    });
+
+    it('should require tenant_id for ops_export_excel', () => {
+      const exportTool = opsTools.find(t => t.name === 'ops_export_excel');
+      expect(exportTool?.inputSchema.required).toContain('tenant_id');
+    });
+  });
+
   describe('All Tools Combined', () => {
-    const allTools = [...jiraTools, ...slackTools, ...githubTools, ...googleTools];
+    const allTools = [...jiraTools, ...slackTools, ...githubTools, ...googleTools, ...opsTools];
 
     it('should have unique tool names', () => {
       const names = allTools.map(t => t.name);

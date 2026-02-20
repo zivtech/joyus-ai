@@ -127,6 +127,19 @@ Monitoring is not optional — it's how we learn and improve. For operational us
 - The skill loading interface is the contract: any organization can build their own skills against the public API
 - This separation ensures the open source repo is self-contained, runnable, and valuable on its own — it is a complete product, not a crippled demo
 
+### 2.10 Client-Informed, Platform-Generic
+
+- Platform leadership discusses specific client needs, use cases, and domain requirements with AI agents during planning and development. **This is expected and encouraged** — real client needs are the best source of platform requirements.
+- The agent's responsibility is to **abstract specific needs into general capabilities**:
+  - "Client X needs 5 audience voices for their legal team" → the platform supports N configurable audience voices per organization
+  - "Client Y tracks regulation changes from a specific agency" → the platform supports pluggable regulatory monitoring sources
+  - "Client Z's authors use distinctive citation patterns" → the profile engine extracts citation patterns as a feature category
+- **What goes in the public repo** (joyus-ai): abstract data models, generic examples, configurable engines, domain templates with placeholder terminology, fictional examples (e.g., "Author A", "the compliance department", "Example Corp")
+- **What goes in private repos** (`<org>-skills`, `<client>-deploy`): client names, real author names, domain-specific terminology, corpus data, client-specific configurations, populated templates
+- **The test**: Could a stranger read this file and identify which client inspired it? If yes, it doesn't belong in the public repo.
+- This principle applies to all artifacts: specifications, data models, API contracts, task prompts, test fixtures, sample data, code comments, and documentation examples
+- AI agents working on this project must apply this abstraction automatically — do not wait for a sanitization pass to strip client details. **Generalize at the point of creation**, not after the fact.
+
 ### 2.9 Assumption Awareness
 
 - AI capabilities, organizational needs, and market conditions change faster than traditional software cycles
@@ -284,9 +297,10 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.5*
+*Constitution Version: 1.6*
 *Established: January 29, 2026*
-*Last Updated: February 18, 2026*
+*Last Updated: February 19, 2026*
+*Changes v1.6: Added §2.10 "Client-Informed, Platform-Generic" — client needs inform abstract platform capabilities; no client names, terminology, or domain-specific examples in the public repo; agents must generalize at point of creation*
 *Changes v1.5: Open source audience rewrite — generalized "Zivtech" to "deploying organization" throughout; renamed §2.2 from "Skills as Guardrails" to "Skills as Encoded Knowledge" (skills now include operational context, business rules, report definitions, compliance, not just constraints); renamed §2.6 from "Claude Code Alternative" to "Mediated AI Access" (model-agnostic framing); added single-org and multi-org deployment models; added first validated use case (ice cream manufacturer/distributor/retailer) and early use case breadth (healthcare, legal, higher ed, museum, assessment/credentialing); expanded stakeholders to include open source community and deploying organizations; broadened monitoring to include operational accuracy; added skill ecosystem concept (community packs, archetype packs); added §3.2 Compliance Framework Awareness (HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA) with hard-failure enforcement; updated Section 8 for multi-industry, model-agnostic positioning*
 *Changes v1.4: Added Principle 2.8 (Open Source by Default) with repository separation model; added Principle 2.9 (Assumption Awareness) for proactive tracking of design assumptions; updated Section 8 to reflect open source posture; removed "consumer product" constraint (open source inherently broadens audience)*
 *Changes v1.3: Added Principle 2.7 (Automated Pipelines as First-Class Citizens) from CTO discussion; added Jonathan DeLaigle as CTO stakeholder*

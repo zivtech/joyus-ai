@@ -1,4 +1,4 @@
-# Zivtech AI Agent Platform — Implementation Plan
+# Joyus AI Platform — Implementation Plan
 
 **Project:** Joyus AI Platform
 **Date:** January 29, 2026 (Updated February 11, 2026)
@@ -41,7 +41,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - [ ] GitHub repo (dedicated or branch of joyus-ai) with GitHub Pages enabled
 - [ ] GitHub Actions workflow: push assets → StatiCrypt encrypts → GitHub Pages serves
 - [ ] Per-project passwords in GitHub Secrets
-- [ ] Directory-based organization (`zivtech.github.io/project-name/`)
+- [ ] Directory-based organization (`<org>.github.io/project-name/`)
 - [ ] First asset deployed and password-protected
 - [ ] Custom domain (`ai.example.com`) when ready
 
@@ -88,7 +88,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 - [ ] Build Tier 2 deep analysis (full Burrows' Delta, cross-document consistency)
 - [ ] CLI tools for profile building and content verification
 - [ ] Regression tests (accuracy must not drop)
-- [ ] Second-domain validation (Zivtech internal writing profile)
+- [ ] Second-domain validation (internal writing profile)
 
 **Estimated effort:** 2-3 weeks
 
@@ -96,7 +96,7 @@ See `hosting-comparison.md` for full infrastructure analysis.
 
 **Goal:** Internal AI portal — web app with chat interface, multi-tenant infrastructure.
 
-**Context:** A Zivtech staff member on Windows cannot access Claude Cowork (Mac/Linux only). We need a web-based alternative that provides similar agentic capabilities.
+**Context:** A staff member on Windows cannot access Claude Cowork (Mac/Linux only). We need a web-based alternative that provides similar agentic capabilities.
 
 **Detailed spec:** See [`internal-ai-portal-spec.md`](internal-ai-portal-spec.md)
 
@@ -157,7 +157,7 @@ Informed by Boris Cherny's (Claude Code creator) design philosophy: orchestratio
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      ZIVTECH AI AGENT PLATFORM                               │
+│                        JOYUS AI AGENT PLATFORM                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
@@ -183,7 +183,7 @@ Informed by Boris Cherny's (Claude Code creator) design philosophy: orchestratio
 │  │                           SKILLS LAYER                                 │ │
 │  │                                                                        │ │
 │  │   Git-based skill repository:                                         │ │
-│  │   ├── zivtech-skills/           (shared Zivtech library)              │ │
+│  │   ├── org-skills/               (shared organization library)         │ │
 │  │   │   ├── presentation/                                               │ │
 │  │   │   ├── document/                                                   │ │
 │  │   │   └── analysis/                                                   │ │
@@ -240,14 +240,14 @@ Phase 3: Shared Infrastructure
 ┌─────────────────────────────────────────┐
 │           Platform Instance             │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │Zivtech  │ │Client A │ │Client B │   │
+│  │Internal │ │Client A │ │Client B │   │
 │  │ Skills  │ │ Skills  │ │ Skills  │   │
 │  └─────────┘ └─────────┘ └─────────┘   │
 └─────────────────────────────────────────┘
 
 Phase 4+: Container Isolation (if needed)
 ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│  Zivtech    │ │  Client A   │ │  Client B   │
+│  Internal   │ │  Client A   │ │  Client B   │
 │  Container  │ │  Container  │ │  Container  │
 └─────────────┘ └─────────────┘ └─────────────┘
 ```
@@ -265,7 +265,7 @@ Clients and internal tools connect to the platform via MCP:
 ```
 ┌─────────────┐     MCP      ┌─────────────────────┐
 │ Claude Code │ ──────────▶  │                     │
-│ / Cowork    │              │   Zivtech Platform  │
+│ / Cowork    │              │   Joyus AI Platform │
 └─────────────┘              │   (MCP Server)      │
                              │                     │
 ┌─────────────┐     MCP      │   Tools:            │
@@ -288,7 +288,7 @@ Platform orchestrates calls to external services:
 
 ```
 ┌─────────────────────┐
-│   Zivtech Platform  │
+│   Joyus AI Platform │
 │   (MCP Client)      │
 │                     │      MCP      ┌─────────────┐
 │   Orchestrator  ────┼─────────────▶ │    Jira     │
@@ -337,7 +337,7 @@ joyus-ai-skills/                       (Git repository)
 ├── README.md
 ├── .skill-registry.json              (skill metadata, versions)
 │
-├── core/                             (Zivtech shared skills)
+├── core/                             (shared platform skills)
 │   ├── presentation/
 │   │   ├── SKILL.md                  (instructions + constraints)
 │   │   ├── templates/
@@ -491,7 +491,7 @@ Platform is a skill that runs inside Claude Code/Cowork.
 ┌─────────────────────────────────────────┐
 │           Claude Code / Cowork          │
 │  ┌───────────────────────────────────┐  │
-│  │     Zivtech Platform Skill        │  │
+│  │     Joyus AI Platform Skill       │  │
 │  │  ┌─────────────────────────────┐  │  │
 │  │  │  Orchestration logic        │  │  │
 │  │  │  Skill loading              │  │  │
@@ -517,7 +517,7 @@ Separate Python service using Claude Agent SDK.
 
 ```
 ┌─────────────────────────────────────────┐
-│        Zivtech Platform Service         │
+│        Joyus AI Platform Service        │
 │        (Python + Agent SDK)             │
 │  ┌───────────────────────────────────┐  │
 │  │  FastAPI / Flask server           │  │
@@ -545,7 +545,7 @@ Separate Python service using Claude Agent SDK.
 Skill for internal use, standalone service for clients.
 
 ```
-Internal (Zivtech):           External (Clients):
+Internal:                     External (Clients):
 ┌─────────────────┐           ┌─────────────────┐
 │  Claude Code    │           │ Platform Service│
 │  + Platform     │           │ (Agent SDK)     │
@@ -585,7 +585,7 @@ Internal (Zivtech):           External (Clients):
 │  │  • 32 specialized agents          │  │
 │  │  • Smart model routing            │  │
 │  │  ┌─────────────────────────────┐  │  │
-│  │  │  Zivtech Presentation Skill │  │  │
+│  │  │  Platform Presentation Skill│  │  │
 │  │  └─────────────────────────────┘  │  │
 │  └───────────────────────────────────┘  │
 └─────────────────────────────────────────┘
@@ -609,7 +609,7 @@ Internal (Zivtech):           External (Clients):
 - Zero learning curve for Claude Code users
 
 **Cons:**
-- External dependency (not controlled by Zivtech)
+- External dependency (not controlled by the team)
 - Designed for dev workflows, not multi-tenant
 - Still need custom solution for client deployments
 - Less visibility into orchestration internals
@@ -626,11 +626,11 @@ Internal (Zivtech):           External (Clients):
 ```
 Phase 3 Architecture:
 ┌─────────────────────────────────────────────────────────┐
-│  Internal (Zivtech CLI users):                          │
+│  Internal (CLI users):                                   │
 │  └─ Native Claude Code + subagents + Plan Mode          │
 │     └─ Skills loaded via CLAUDE.md / skill files        │
 │                                                         │
-│  Web Portal (Zivtech staff + future clients):           │
+│  Web Portal (internal staff + future clients):          │
 │  └─ Thin FastAPI orchestrator + Agent SDK               │
 │     └─ Authenticate → load skills → inject verification │
 │        → call Agent SDK → log → return                  │
@@ -641,7 +641,7 @@ Phase 3 Architecture:
 
 1. **OMC solves the wrong problem.** Boris runs 10-15 raw Claude Code sessions with no framework. His "orchestration" is workflow discipline: Plan Mode on every task, CLAUDE.md for institutional memory, native subagents for parallel work. Power users don't need a framework layer.
 
-2. **OMC can't serve the web portal.** It's a local CLI plugin. The Phase 3 web portal (for Zivtech Windows users and future clients) needs server-side orchestration regardless. Building two orchestration paths (OMC + server) creates maintenance burden for no gain.
+2. **OMC can't serve the web portal.** It's a local CLI plugin. The Phase 3 web portal (for Windows users and future clients) needs server-side orchestration regardless. Building two orchestration paths (OMC + server) creates maintenance burden for no gain.
 
 3. **Scaffolding gets subsumed.** Boris's team deletes product code with every model upgrade. Complex orchestration logic has an expiration date. Domain knowledge (skills, client profiles, verification) does not. Invest there instead.
 
@@ -938,8 +938,8 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 
 | Question | Owner | Due | Status |
 |----------|-------|-----|--------|
-| GitHub Pages repo structure for PoCs | Alex + Claude | Phase 1 | **Resolved** — `zivtech/zivtech-demos` with `projects/<name>/` convention |
-| StatiCrypt CI pipeline design | Claude | Phase 1 | **Resolved** — GitHub Actions workflow in `zivtech-demos/.github/workflows/deploy.yml` |
+| GitHub Pages repo structure for PoCs | Alex + Claude | Phase 1 | **Resolved** — `<org>/<org>-demos` with `projects/<name>/` convention |
+| StatiCrypt CI pipeline design | Claude | Phase 1 | **Resolved** — GitHub Actions workflow in `<org>-demos/.github/workflows/deploy.yml` |
 | AWS EC2 instance sizing for MCP server | Alex + Claude | Phase 2 | Open |
 | Coolify vs raw Docker Compose for management | Alex + Claude | After Phase 2 + 1 month | Open |
 | Entire CLI pilot evaluation (2-week review) | Alex | Phase 1 + 2 weeks | Open |
@@ -959,7 +959,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | **Client Profile Building pipeline** | Alex + Claude | Phase 3 | Open |
 | ├─ Profile schema: what fields are required vs. optional? | | | Client PoC schema covers legal advocacy — need to validate for other domains (marketing, technical, corporate) |
 | ├─ Minimum corpus size for reliable profiles? | | | Client PoC used 7-9 docs per author; what's the floor for new clients? |
-| ├─ Self-service onboarding vs. Zivtech-assisted profile creation? | | | Cost/quality tradeoff; manual curation produced 94.6%+ accuracy |
+| ├─ Self-service onboarding vs. operator-assisted profile creation? | | | Cost/quality tradeoff; manual curation produced 94.6%+ accuracy |
 | └─ Profile update cadence: how often do profiles need refreshing? | | | Authors evolve; need versioning + staleness detection |
 | **Author Verification / Content Fidelity** | Alex + Claude | Phase 3 | Open |
 | ├─ Confidence threshold: what score triggers a mismatch flag? | | | Client PoC used content markers as primary discriminator; need calibration per client |
@@ -968,7 +968,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | **Code execution sandbox** | Alex + Claude | Phase 3 | Open — container tech (Docker vs gVisor vs Firecracker); resource limit defaults; supported languages; network policy |
 | **Job/task management** | Alex + Claude | Phase 3 | Open — queue implementation (Redis, PostgreSQL, in-memory); status API design; log streaming; cancellation semantics |
 | **API account & billing model** | Alex + Claude | Phase 3 | Open — Anthropic API uses Organizations → Workspaces → API keys (separate from Claude Team/Pro subscriptions). Key decisions: |
-| ├─ Zivtech-managed (one org, workspace per client) vs BYOK (client brings own API key)? | | | Zivtech-managed is simpler; BYOK gives clients billing control but adds complexity |
+| ├─ Operator-managed (one org, workspace per client) vs BYOK (client brings own API key)? | | | Operator-managed is simpler; BYOK gives clients billing control but adds complexity |
 | ├─ Per-workspace spend limits sufficient, or need per-user/per-task limits? | | | Workspaces have built-in spend caps; finer granularity requires platform-level tracking |
 | ├─ Admin API integration for programmatic workspace/key management? | | | Admin API (`sk-ant-admin...`) can create workspaces, manage keys, set limits |
 | └─ Usage & Cost API integration for billing attribution? | | | Anthropic provides token consumption breakdowns by model, workspace, service tier |
@@ -979,7 +979,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | └─ Execution environment: platform EC2, client infra, or ephemeral containers? | | | |
 | **Content Infrastructure (Feature 006)** | Alex + Claude | Phase 2.7 | Open |
 | ├─ Search backend: Solr, Elasticsearch, Drupal Search API, or abstraction layer? | | | Recommendation: platform defines search interface, deployment wires backend |
-| ├─ Content ingestion: what source types must be supported at launch? | | | XML treatises, Drupal CMS, web scraping — listservs and file shares deferred |
+| ├─ Content ingestion: what source types must be supported at launch? | | | XML publications, Drupal CMS, web scraping — listservs and file shares deferred |
 | ├─ Content state model: draft → staged → published → superseded? | | | Needs validation against the client's existing XML version control |
 | ├─ Bot mediation API: llms.txt standard or custom endpoint? | | | Research llms.txt adoption before deciding |
 | └─ Generate-then-verify: separate from standard RAG or unified interface? | | | Recommendation: unified interface with retrieval_strategy parameter |
@@ -989,4 +989,4 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 *Plan created: January 29, 2026*
 *Updated: February 19, 2026 — Added Phase 2.7 (Content Infrastructure, Feature 006) as new phase between Profile Engine and Platform Framework (Decision #22). Added platform-agnostic auth provider interface with JWT first implementation (Decision #20). Added VoiceContext 3-layer voice architecture (Decision #21). Added Content Infrastructure open questions. Based on architecture research report (5 parallel agents + cross-validation, 22 systems mapped).*
 *Updated: February 17, 2026 — Added Phase 2.5 (Profile Engine + Content Fidelity) as priority standalone library (Decision #19). Boris Cherny (Claude Code creator) analysis: replaced OMC with thin server orchestrator + native Claude Code (Decision #16), added two-tier content fidelity verification (Decision #17), added "thick domain, thin orchestration" architectural principle (Decision #18), resolved attribution timing and OMC open questions. Prior: Feb 15 — Client Profile Building pipeline, author verification, Attribution Service, decisions #14-15. Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
-*For: Zivtech AI Agent Platform*
+*For: Joyus AI Platform*

@@ -1,6 +1,6 @@
 # Specification: MCP Server AWS Deployment
 
-**Project:** Zivtech AI Agent Platform
+**Project:** Joyus AI Platform
 **Phase:** 2 — MCP Server Deployment
 **Date:** February 12, 2026
 **Status:** Specification Complete
@@ -11,7 +11,7 @@
 
 ### Problem
 
-The joyus-ai MCP server and supporting tools are fully built but running only locally. The Zivtech team needs centralized, always-on access to all MCP-connected tools and Claude skills — from Claude Desktop at their workstations and from the web when working from a phone or away from their computer.
+The joyus-ai MCP server and supporting tools are fully built but running only locally. The team needs centralized, always-on access to all MCP-connected tools and Claude skills — from Claude Desktop at their workstations and from the web when working from a phone or away from their computer.
 
 ### Solution
 
@@ -19,7 +19,7 @@ Deploy the complete MCP server suite to AWS EC2 with Docker Compose, including a
 
 ### Users
 
-- **Zivtech team** — connecting via Claude Desktop (primary) and web browser (mobile/AFK)
+- **Internal team** — connecting via Claude Desktop (primary) and web browser (mobile/AFK)
 - No client access at this phase
 
 > **Terminology**: This spec covers the **remote MCP server** — deployed to AWS, accessed over HTTPS. Feature 002 (Session & Context Management) defines a separate **local MCP server** (`joyus-ai-state`) that runs on each developer's machine. They are independent systems.
@@ -44,7 +44,7 @@ Deploy the following MCP servers as containerized services:
 
 ### FR2: Skill Runtime Environment
 
-The deployment must include a runtime environment that supports all Zivtech Claude skills:
+The deployment must include a runtime environment that supports all platform Claude skills:
 
 **System packages:**
 - Python 3 with pip
@@ -111,7 +111,7 @@ The deployment must include a runtime environment that supports all Zivtech Clau
 - All traffic over HTTPS (TLS 1.2+)
 - OAuth tokens encrypted at rest (AES-256, existing implementation)
 - No credentials in Docker images or repository
-- SSH access restricted to Zivtech IPs
+- SSH access restricted to authorized IPs
 - MCP bearer tokens for client authentication (revocable)
 
 ### Cost
@@ -124,7 +124,7 @@ The deployment must include a runtime environment that supports all Zivtech Clau
 ## 4. User Scenarios
 
 ### Scenario 1: Team Member Connects via Claude Desktop
-A Zivtech developer configures their Claude Desktop MCP client to point at the deployed server. They can immediately search Jira issues, post to Slack, create GitHub PRs, and query Google services — all through natural conversation. Skills like ticket-writing standards and coding standards are enforced automatically.
+A developer configures their Claude Desktop MCP client to point at the deployed server. They can immediately search Jira issues, post to Slack, create GitHub PRs, and query Google services — all through natural conversation. Skills like ticket-writing standards and coding standards are enforced automatically.
 
 ### Scenario 2: Mobile/AFK Access
 Alex is away from his computer and needs to check on a project. From his phone's web browser, he opens the lightweight web chat UI hosted on the server. Through a conversational interface backed by the Claude API, he can ask about Jira issues, check Slack threads, and review GitHub PRs — the chat UI routes requests through the MCP tool executors behind the scenes.
@@ -157,18 +157,18 @@ A team member invokes the PowerPoint MCP server to generate a branded client pre
 ## 6. Success Criteria
 
 1. **All MCP servers operational** — Jira, Slack, GitHub, Google, Playwright, Memory, PowerPoint, Excel, Word, and the platform `/mcp` endpoint all respond to tool calls successfully
-2. **Skills runtime complete** — All non-container Zivtech skills (17 of 19) can execute their CLI dependencies on the server
+2. **Skills runtime complete** — All non-container skills (17 of 19) can execute their CLI dependencies on the server
 3. **Web accessible** — Server reachable via HTTPS on a custom domain from any device
 4. **CI/CD working** — Push to main triggers automated build and deployment; new version live within 10 minutes
 5. **Uptime verified** — Health checks passing, Slack alerts configured for downtime
-6. **Team connected** — At least 2 Zivtech team members successfully using the deployed server via Claude Desktop
+6. **Team connected** — At least 2 team members successfully using the deployed server via Claude Desktop
 7. **Cost within budget** — Monthly infrastructure cost under $35/month
 
 ---
 
 ## 7. Assumptions
 
-- AWS account already exists or can be created for Zivtech
+- AWS account already exists or can be created
 - DNS can be configured for `ai.example.com`
 - The existing joyus-ai MCP server codebase is deployment-ready (Phase 0 complete)
 - Team members have Claude Desktop installed and configured

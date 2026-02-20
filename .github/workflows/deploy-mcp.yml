@@ -15,8 +15,8 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  PLATFORM_IMAGE: ghcr.io/zivtech/joyus-ai-platform
-  PLAYWRIGHT_IMAGE: ghcr.io/zivtech/joyus-ai-playwright
+  PLATFORM_IMAGE: ghcr.io/<org>/joyus-ai-platform
+  PLAYWRIGHT_IMAGE: ghcr.io/<org>/joyus-ai-playwright
 
 jobs:
   build-and-push:

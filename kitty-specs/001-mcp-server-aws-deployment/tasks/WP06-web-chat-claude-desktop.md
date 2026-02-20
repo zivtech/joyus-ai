@@ -27,7 +27,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 ## Context
 
 - **Dependencies**: WP01 (containers), WP04 (health endpoints for status display)
-- **Users**: Zivtech team — primary use case is Alex checking on projects from his phone
+- **Users**: Internal team — primary use case is checking on projects from a phone
 - **Stack**: Vanilla HTML/CSS/JS — no frameworks, no build tools, keep it minimal
 - **URL**: `https://ai.example.com/chat`
 - **Reference**: See `spec.md` Scenario 2 (Mobile/AFK Access) and `plan.md` Project Structure (web-chat/)
@@ -248,7 +248,7 @@ Build a lightweight web chat UI for mobile/AFK access to Claude with MCP tools, 
 
 ### T032: Configure Claude Desktop MCP Client Connection [P]
 
-**Purpose**: Document how Zivtech team members connect Claude Desktop to the deployed MCP server.
+**Purpose**: Document how team members connect Claude Desktop to the deployed MCP server.
 
 **Steps**:
 1. Create `deploy/claude-desktop-config.md` with setup instructions:

@@ -37,7 +37,7 @@ Verify that all 10 MCP server endpoints and all skill runtime dependencies work 
 2. Test each tool executor via MCP protocol or HTTP:
    - **Jira**: `jira_search` — search for a known issue (e.g., "type = Bug ORDER BY created DESC")
    - **Slack**: `slack_post_message` — post to a test channel (e.g., #bot-testing)
-   - **GitHub**: `github_list_repos` — list repos for zivtech org
+   - **GitHub**: `github_list_repos` — list repos for the organization
    - **Google**: `google_search` — execute a simple query
 3. Verify OAuth token refresh works (tokens are encrypted in PostgreSQL)
 4. Verify bearer token authentication on the `/mcp` endpoint

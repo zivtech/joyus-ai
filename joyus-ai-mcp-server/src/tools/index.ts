@@ -10,6 +10,7 @@ import { db, connections } from '../db/client.js';
 import { githubTools } from './github-tools.js';
 import { googleTools } from './google-tools.js';
 import { jiraTools } from './jira-tools.js';
+import { opsTools } from './ops-tools.js';
 import { slackTools } from './slack-tools.js';
 
 export interface ToolDefinition {
@@ -32,7 +33,7 @@ export async function getAllTools(userId: string): Promise<ToolDefinition[]> {
     .where(eq(connections.userId, userId));
 
   const connectedServices = new Set(userConnections.map((c) => c.service));
-  const tools: ToolDefinition[] = [];
+  const tools: ToolDefinition[] = [...opsTools];
 
   // Google tools always available if connected
   if (connectedServices.has('GOOGLE')) {
@@ -65,4 +66,4 @@ export async function isToolAvailable(userId: string, toolName: string): Promise
   return tools.some(t => t.name === toolName);
 }
 
-export { jiraTools, slackTools, githubTools, googleTools };
+export { jiraTools, slackTools, githubTools, googleTools, opsTools };

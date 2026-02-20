@@ -9,7 +9,7 @@
 
 - AWS account with EC2 access
 - Domain DNS access for `ai.example.com`
-- GitHub org access (`zivtech`)
+- GitHub org access (your organization)
 - GitHub Actions secrets configured (see below)
 
 ## Initial EC2 Setup (One-Time)
@@ -92,5 +92,5 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-re
   --pull never  # Uses locally cached previous images
 
 # Or specify a specific SHA:
-# Edit docker-compose.prod.yml image tags to ghcr.io/zivtech/joyus-ai-platform:<sha>
+# Edit docker-compose.prod.yml image tags to ghcr.io/<org>/joyus-ai-platform:<sha>
 ```

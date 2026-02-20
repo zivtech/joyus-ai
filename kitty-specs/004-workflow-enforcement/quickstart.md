@@ -8,7 +8,7 @@
 - Feature 002 (`joyus-ai-state`) MCP server and companion service running
 - Node.js 20+
 - At least one quality gate tool installed (e.g., `eslint`, `vitest`)
-- Skills repository cloned locally (e.g., `zivtech-claude-skills/`)
+- Skills repository cloned locally (e.g., `example-skills/`)
 
 ## Setup
 
@@ -97,7 +97,7 @@ Ensure the skill repository path is in your project config:
 ```json
 {
   "skills": {
-    "repoPath": "/path/to/zivtech-claude-skills",
+    "repoPath": "/path/to/example-skills",
     "cachePath": "~/.joyus-ai/projects/<hash>/skill-cache"
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "joyus-ai-state",
   "version": "0.1.0",
-  "description": "Zivtech AI Local MCP Server - Session state, enforcement, and workflow management",
+  "description": "Joyus AI Local MCP Server - Session state, enforcement, and workflow management",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

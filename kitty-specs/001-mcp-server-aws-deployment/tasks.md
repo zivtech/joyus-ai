@@ -18,7 +18,7 @@
 | T006 | Write EC2 provisioning script (`setup-ec2.sh`) | WP02 | |
 | T007 | Configure nginx reverse proxy with path-based routing | WP02 | |
 | T008 | Set up Let's Encrypt TLS via certbot | WP02 | |
-| T009 | Configure firewall rules (UFW: 443 any, 22 Zivtech IPs only) | WP02 | [P] |
+| T009 | Configure firewall rules (UFW: 443 any, 22 authorized IPs only) | WP02 | [P] |
 | T010 | Create production Docker Compose overrides | WP02 | |
 | T011 | Create GitHub Actions workflow for CI/CD | WP03 | |
 | T012 | Configure GHCR image build and push | WP03 | |
@@ -86,7 +86,7 @@
 1. Write `deploy/scripts/setup-ec2.sh` — install Docker, Docker Compose, certbot, fail2ban, configure swap
 2. Create `deploy/nginx/nginx.conf` — reverse proxy with path-based routing (/mcp → :3000, /chat → :3001, /playwright → :3002, /health → aggregated)
 3. Add Let's Encrypt certbot setup with auto-renewal systemd timer
-4. Configure UFW firewall (443 HTTPS from any, 22 SSH from Zivtech IPs only per spec NFR)
+4. Configure UFW firewall (443 HTTPS from any, 22 SSH from authorized IPs only per spec NFR)
 5. Create `deploy/docker-compose.prod.yml` — production overrides (restart policies, resource limits, log drivers)
 
 **Parallel opportunities**: T009 (firewall) independent of T007 (nginx).

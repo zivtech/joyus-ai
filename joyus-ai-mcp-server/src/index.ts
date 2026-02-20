@@ -1,5 +1,5 @@
 /**
- * Zivtech AI MCP Server
+ * Joyus AI MCP Server
  *
  * A remote MCP server that provides Claude Desktop with tools for:
  * - Jira (search, view, comment, transition)
@@ -22,6 +22,7 @@ import { sql } from 'drizzle-orm';
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
 import { db, auditLogs } from './db/client.js';
+import { exportRouter } from './exports/router.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
 import { executeTool } from './tools/executor.js';
@@ -96,7 +97,8 @@ app.get('/health/playwright', async (req, res) => {
     clearTimeout(timeout);
     if (response.ok) {
       const data = await response.json();
-      res.json({ status: 'ok', service: 'playwright', ...data });
+      const payload = typeof data === 'object' && data !== null ? data : {};
+      res.json({ status: 'ok', service: 'playwright', ...payload });
     } else {
       res.status(503).json({ status: 'degraded', service: 'playwright', error: `HTTP ${response.status}` });
     }
@@ -155,6 +157,9 @@ app.get('/health', async (req, res) => {
 
 // Auth routes (OAuth callbacks, token management)
 app.use('/auth', authRouter);
+
+// Joyus fast casual export API routes
+app.use('/api/v1', exportRouter);
 
 // Task management routes (scheduled tasks)
 app.use('/tasks', taskRouter);
@@ -300,7 +305,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start server
 app.listen(PORT, async () => {
-  console.log(`🚀 Zivtech AI MCP Server running on port ${PORT}`);
+  console.log(`🚀 Joyus AI MCP Server running on port ${PORT}`);
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   MCP:    http://localhost:${PORT}/mcp`);
   console.log(`   Auth:   http://localhost:${PORT}/auth`);

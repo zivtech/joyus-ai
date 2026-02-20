@@ -125,7 +125,7 @@ The remote MCP server lives in `joyus-ai-mcp-server/`. See its [README](joyus-ai
 
 ## Related Repos
 
-- [`zivtech/zivtech-demos`](https://github.com/zivtech/zivtech-demos) — Password-protected demo hosting (GitHub Pages + StatiCrypt)
-- [`zivtech/claude-presentation-toolkit`](https://github.com/zivtech/claude-presentation-toolkit) — Presentation generation skill
-- [`zivtech/drupal-brand-skill`](https://github.com/zivtech/drupal-brand-skill) — Drupal-specific brand design skill
-- [`zivtech/zivtech-claude-skills`](https://github.com/zivtech/zivtech-claude-skills) — Shared Claude skills library
+- Demo hosting repository — Password-protected demo hosting (GitHub Pages + StatiCrypt)
+- Presentation toolkit repository — Presentation generation skill
+- Drupal brand skill repository — Drupal-specific brand design skill
+- Shared skills repository — Shared Claude skills library

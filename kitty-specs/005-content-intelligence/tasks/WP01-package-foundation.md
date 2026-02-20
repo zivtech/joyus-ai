@@ -296,7 +296,7 @@ Key models to implement:
      voice: 0.6
      structure: 0.5
    terminology:
-     domain_terms: ["CFPB", "FCRA", "TILA", "furnisher"]
+     domain_terms: ["regulation", "statute", "compliance", "enforcement"]
      register_hints: ["formal", "technical", "advocacy"]
    ```
 3. Create 4 templates:

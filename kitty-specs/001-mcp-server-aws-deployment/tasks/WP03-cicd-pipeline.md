@@ -58,8 +58,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 
    env:
      REGISTRY: ghcr.io
-     PLATFORM_IMAGE: ghcr.io/zivtech/joyus-ai-platform
-     PLAYWRIGHT_IMAGE: ghcr.io/zivtech/joyus-ai-playwright
+     PLATFORM_IMAGE: ghcr.io/<org>/joyus-ai-platform
+     PLAYWRIGHT_IMAGE: ghcr.io/<org>/joyus-ai-playwright
 
    jobs:
      build-and-push:
@@ -142,8 +142,8 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 
 **Steps**:
 1. Each image gets two tags on every build:
-   - `ghcr.io/zivtech/joyus-ai-platform:latest` — current production
-   - `ghcr.io/zivtech/joyus-ai-platform:<git-sha>` — immutable rollback point
+   - `ghcr.io/<org>/joyus-ai-platform:latest` — current production
+   - `ghcr.io/<org>/joyus-ai-platform:<git-sha>` — immutable rollback point
 2. Same pattern for Playwright image
 3. Docker Buildx with GHA cache for faster builds:
    - First build may take 5-10 minutes
@@ -154,9 +154,9 @@ Create the GitHub Actions workflow that builds Docker images, pushes them to GHC
 - Part of `.github/workflows/deploy-mcp.yml` (build steps)
 
 **Validation**:
-- [ ] `docker pull ghcr.io/zivtech/joyus-ai-platform:latest` works
-- [ ] `docker pull ghcr.io/zivtech/joyus-ai-platform:<sha>` works for specific commit
-- [ ] GHCR packages visible under zivtech org
+- [ ] `docker pull ghcr.io/<org>/joyus-ai-platform:latest` works
+- [ ] `docker pull ghcr.io/<org>/joyus-ai-platform:<sha>` works for specific commit
+- [ ] GHCR packages visible under organization
 - [ ] Build cache reduces subsequent build times
 
 **Edge Cases**:

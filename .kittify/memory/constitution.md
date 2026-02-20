@@ -1,4 +1,4 @@
-# Zivtech AI Agent Platform — Constitution
+# Joyus AI Platform — Constitution
 
 > Project principles that guide all decisions. These are non-negotiable unless explicitly revised.
 
@@ -6,9 +6,9 @@
 
 ## 1. Project Identity
 
-**Name:** Zivtech AI Agent Platform
+**Name:** Joyus AI Platform
 
-**Purpose:** A multi-tenant AI agent platform that enables Zivtech to deliver AI-powered consulting services — both for internal productivity and as a managed service for clients who cannot have Claude Code-level access.
+**Purpose:** A multi-tenant AI agent platform that delivers AI-powered consulting services — both for internal productivity and as a managed service for clients who cannot have Claude Code-level access.
 
 **Starting Point:** The asset sharing pipeline — a foundational layer so everything we build has somewhere to go — followed by deploying the existing MCP server, then building the platform framework.
 
@@ -19,7 +19,7 @@
 ### 2.1 Multi-Tenant from Day One
 
 - Architecture must support N clients with proper isolation
-- Internal Zivtech use and client deployments share the same codebase
+- Internal use and client deployments share the same codebase
 - Configuration, not code changes, determines access levels
 - No shortcuts that assume single-tenant deployment
 
@@ -41,7 +41,7 @@
 
 - Client environments are isolated unless explicitly opened
 - Default posture: minimal access, add permissions as needed
-- Internal Zivtech use may have full access; client deployments do not
+- Internal use may have full access; client deployments do not
 - All data egress from client environments is logged
 
 ### 2.4 Monitor Everything
@@ -86,7 +86,7 @@ Monitoring is not optional — it's how we learn and improve.
 | Tier | Data Type | Allowed Processing |
 |------|-----------|-------------------|
 | 1 | Public | Any environment |
-| 2 | Internal (Zivtech) | Commercial tier+ |
+| 2 | Internal | Commercial tier+ |
 | 3 | Client Confidential | Enterprise plan, isolated environment |
 | 4 | Ultra-Sensitive | Enterprise + Zero Data Retention |
 
@@ -138,7 +138,7 @@ Monitoring is not optional — it's how we learn and improve.
 | Orchestrator | Claude Agent SDK | First-party, maintained by Anthropic |
 | Skills | File-based + version control | Simple, auditable, git-friendly |
 | Session Tracking | Entire CLI (pilot) | Git-native, MIT, no external DB; telemetry off |
-| Monitoring | Langfuse + custom | Industry standard + Zivtech-specific |
+| Monitoring | Langfuse + custom | Industry standard + platform-specific |
 
 ### 5.2 Cost Awareness
 
@@ -180,7 +180,7 @@ Monitoring is not optional — it's how we learn and improve.
 |------|------------------|
 | **Alex UA (CEO)** | Vision, priorities, client relationships |
 | **Jonathan DeLaigle (CTO)** | Technical direction, architecture review, platform strategy |
-| **Zivtech Team** | Internal users, feedback, testing |
+| **Internal Team** | Internal users, feedback, testing |
 | **Clients** | Requirements, brand assets, approval authority |
 | **Claude Code** | Primary development environment |
 
@@ -189,7 +189,7 @@ Monitoring is not optional — it's how we learn and improve.
 ## 8. What This Project Is NOT
 
 - ❌ A presentation-only tool (it's a platform with many tools)
-- ❌ A consumer product (it's for Zivtech internal + managed client use)
+- ❌ A consumer product (it's for internal + managed client use)
 - ❌ A replacement for human judgment (outputs are always reviewable)
 - ❌ A way to bypass client approval (clients retain authority)
 - ❌ A data collection play (client data is never used for training)

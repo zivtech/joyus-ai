@@ -1,4 +1,4 @@
-# Zivtech Skills Marketplace — Architecture
+# Skills Marketplace — Architecture
 
 **Extends:** [PLATFORM_ARCHITECTURE.md](./PLATFORM_ARCHITECTURE.md)
 **Date:** February 10, 2026
@@ -8,12 +8,12 @@
 
 ## Problem
 
-Zivtech has two user populations that need access to curated AI skills:
+The platform has two user populations that need access to curated AI skills:
 
 1. **Mac devs** — Running Claude Code natively in terminal. Can use the native plugin marketplace, `npx skills add`, etc.
-2. **Windows users** — No local Claude Code. Connecting remotely to a Zivtech server via Claude Desktop (remote MCP) or a web interface.
+2. **Windows users** — No local Claude Code. Connecting remotely to the platform server via Claude Desktop (remote MCP) or a web interface.
 
-Skills like `audit-website` (SquirrelScan) require CLI tools installed somewhere. For Windows users, that "somewhere" is the Zivtech server, not their local machine.
+Skills like `audit-website` (SquirrelScan) require CLI tools installed somewhere. For Windows users, that "somewhere" is the platform server, not their local machine.
 
 Additionally, PMs and non-dev team members need a way to **discover and request skills** that a dev then reviews and approves before the skill becomes available team-wide.
 
@@ -26,15 +26,15 @@ Additionally, PMs and non-dev team members need a way to **discover and request 
 │                           SKILL DISTRIBUTION LAYER                               │
 │                                                                                  │
 │   ┌────────────────────────────────────────────────────────────────────────┐     │
-│   │              GitHub: zivtech/claude-skills                             │     │
+│   │              GitHub: <org>/skills                             │     │
 │   │              (Plugin Marketplace Repository)                           │     │
 │   │                                                                        │     │
 │   │   .claude-plugin/marketplace.json   ◄── Catalog of approved skills    │     │
 │   │   plugins/                                                             │     │
 │   │   ├── audit-website/                ◄── SquirrelScan integration      │     │
-│   │   ├── zivtech-jira/                 ◄── Jira workflows + templates    │     │
-│   │   ├── zivtech-confluence/           ◄── Confluence read/write         │     │
-│   │   ├── zivtech-ticket-writing/       ◄── Ticket standards skill        │     │
+│   │   ├── org-jira/                 ◄── Jira workflows + templates    │     │
+│   │   ├── org-confluence/           ◄── Confluence read/write         │     │
+│   │   ├── org-ticket-writing/       ◄── Ticket standards skill        │     │
 │   │   └── ...                                                              │     │
 │   │                                                                        │     │
 │   │   PR WORKFLOW:                                                         │     │
@@ -48,12 +48,12 @@ Additionally, PMs and non-dev team members need a way to **discover and request 
 │  │  (Claude Code CLI)  │                              │  (Remote Access)    │   │
 │  │                     │                              │                     │   │
 │  │  /plugin marketplace│                              │  Claude Desktop     │   │
-│  │    add zivtech/     │                              │  → MCP Server       │   │
-│  │    claude-skills    │                              │  → zivtech_skills   │   │
+│  │    add <org>/       │                              │  → MCP Server       │   │
+│  │    claude-skills    │                              │  → org_skills   │   │
 │  │                     │                              │    tool             │   │
 │  │  /plugin install    │                              │                     │   │
 │  │    audit-website@   │                              │  OR                 │   │
-│  │    zivtech-skills   │                              │                     │   │
+│  │    org-skills   │                              │                     │   │
 │  │                     │                              │  Web UI             │   │
 │  │  Skills run locally │                              │  → ai.example.com  │   │
 │  │  (squirrel CLI on   │                              │  → Skills run on    │   │
@@ -67,43 +67,43 @@ Additionally, PMs and non-dev team members need a way to **discover and request 
 
 ## Two Delivery Channels, One Source of Truth
 
-The GitHub repo `zivtech/claude-skills` is the single source of truth for all approved skills. It serves two audiences through two mechanisms:
+The GitHub repo `<org>/skills` is the single source of truth for all approved skills. It serves two audiences through two mechanisms:
 
 ### Channel 1: Native Claude Code (Mac Devs)
 
 Uses the official Claude Code plugin marketplace system. The repo contains a `marketplace.json` that lists all skills as installable plugins. Devs register it once:
 
 ```bash
-/plugin marketplace add zivtech/claude-skills
+/plugin marketplace add <org>/skills
 ```
 
 Then browse and install:
 
 ```bash
-/plugin install audit-website@zivtech-skills
+/plugin install audit-website@org-skills
 ```
 
 Skills run locally — SquirrelScan CLI gets installed on their Mac, Jira/Confluence integrations use their own OAuth tokens or the shared MCP server.
 
 ### Channel 2: Remote MCP (Windows Users)
 
-The Zivtech AI MCP Server reads from the same GitHub repo and exposes two things:
+The Joyus AI MCP Server reads from the same GitHub repo and exposes two things:
 
-1. **A `zivtech_skills` MCP tool** — Lists available skills, shows descriptions, lets users enable/disable skills for their session. When a Windows user types something like "show me available Zivtech skills" or "audit this website," Claude sees the tool and knows what's available.
+1. **A `org_skills` MCP tool** — Lists available skills, shows descriptions, lets users enable/disable skills for their session. When a Windows user types something like "show me available skills" or "audit this website," Claude sees the tool and knows what's available.
 
 2. **Server-side skill execution** — Skills that require CLI tools (like SquirrelScan) run on the server. The MCP server has those tools installed and executes them on behalf of the user.
 
 ---
 
-## The `zivtech_skills` MCP Tool
+## The `org_skills` MCP Tool
 
-When Windows users connect Claude Desktop to the Zivtech MCP server, they get a tool that lets them interact with the skills catalog:
+When Windows users connect Claude Desktop to the platform MCP server, they get a tool that lets them interact with the skills catalog:
 
 ```typescript
 // Tool definition exposed via MCP
 {
-  name: "zivtech_skills",
-  description: "Browse and manage Zivtech's curated AI skill catalog. " +
+  name: "org_skills",
+  description: "Browse and manage the curated AI skill catalog. " +
     "Use 'list' to see available skills, 'info <skill>' for details, " +
     "or 'enable <skill>' to activate a skill for your session.",
   inputSchema: {
@@ -132,7 +132,7 @@ When Windows users connect Claude Desktop to the Zivtech MCP server, they get a 
 
 | Action | Description | Example User Prompt |
 |--------|-------------|---------------------|
-| `list` | Shows all available skills with descriptions | "What Zivtech skills are available?" |
+| `list` | Shows all available skills with descriptions | "What skills are available?" |
 | `info` | Shows full details for a skill including what it does, requirements, and examples | "Tell me about the audit-website skill" |
 | `enable` | Activates a skill's tools for this session | "Enable the site audit skill" |
 | `disable` | Deactivates a skill's tools | "Disable the audit skill" |
@@ -140,13 +140,13 @@ When Windows users connect Claude Desktop to the Zivtech MCP server, they get a 
 
 ### How Claude Discovers Skills
 
-When Claude Desktop connects, the MCP server's `tools/list` response includes `zivtech_skills` as one of the available tools. Claude's description tells it what the tool does, so when a user asks about available skills or wants to audit a website, Claude knows to use this tool.
+When Claude Desktop connects, the MCP server's `tools/list` response includes `org_skills` as one of the available tools. Claude's description tells it what the tool does, so when a user asks about available skills or wants to audit a website, Claude knows to use this tool.
 
-This means there's no special "zivtech skill" command — instead, users just talk naturally:
+This means there's no special skill command — instead, users just talk naturally:
 
-- "What skills does Zivtech have?" → Claude calls `zivtech_skills` with `action: "list"`
+- "What skills are available?" → Claude calls `org_skills` with `action: "list"`
 - "Audit our website" → Claude recognizes this matches the `audit-website` skill, enables it, then runs the audit
-- "I need a skill that can do X" → Claude calls `zivtech_skills` with `action: "request"`
+- "I need a skill that can do X" → Claude calls `org_skills` with `action: "request"`
 
 ---
 
@@ -158,7 +158,7 @@ Not all skills work the same way when delivered remotely. The marketplace catego
 
 Skills that only add instructions/context to Claude's prompt. These work identically in both channels — the SKILL.md content gets injected into the conversation.
 
-**Examples:** `zivtech-ticket-writing`, `zivtech-writing-style`, `drupal-coding-standards`
+**Examples:** `org-ticket-writing`, `org-writing-style`, `drupal-coding-standards`
 
 **Remote delivery:** MCP server loads the SKILL.md content and returns it as context when the skill is enabled. Claude uses the instructions for the rest of the session.
 
@@ -174,9 +174,9 @@ Skills that require executing external tools/CLIs. For Mac devs, these run local
 
 Skills that connect to external APIs. The MCP server handles OAuth and credentials centrally.
 
-**Examples:** `zivtech-jira`, `zivtech-confluence`, `zivtech-slack`
+**Examples:** `org-jira`, `org-confluence`, `org-slack`
 
-**Remote delivery:** Already handled by the existing MCP tool layer. The skill adds knowledge about Zivtech-specific workflows (JQL patterns, Confluence space conventions, etc.) on top of the raw API tools.
+**Remote delivery:** Already handled by the existing MCP tool layer. The skill adds knowledge about organization-specific workflows (JQL patterns, Confluence space conventions, etc.) on top of the raw API tools.
 
 ### Type 4: Hybrid Skills
 
@@ -187,7 +187,7 @@ Skills that combine knowledge + tools. Example: `audit-website` is both a knowle
 ## GitHub Repository Structure
 
 ```
-zivtech/claude-skills/
+<org>/skills/
 ├── .claude-plugin/
 │   └── marketplace.json            # Plugin marketplace catalog
 ├── plugins/
@@ -202,29 +202,29 @@ zivtech/claude-skills/
 │   │   └── scripts/
 │   │       └── install-squirrelscan.sh
 │   │
-│   ├── zivtech-jira/
+│   ├── org-jira/
 │   │   ├── .claude-plugin/
 │   │   │   └── plugin.json
 │   │   ├── skills/
-│   │   │   └── zivtech-jira/
-│   │   │       └── SKILL.md        # Zivtech Jira conventions
+│   │   │   └── org-jira/
+│   │   │       └── SKILL.md        # Org Jira conventions
 │   │   └── .mcp.json               # Jira MCP config (if needed)
 │   │
-│   ├── zivtech-confluence/
+│   ├── org-confluence/
 │   │   ├── .claude-plugin/
 │   │   │   └── plugin.json
 │   │   └── skills/
-│   │       └── zivtech-confluence/
+│   │       └── org-confluence/
 │   │           └── SKILL.md        # Confluence integration skill
 │   │
-│   ├── zivtech-ticket-writing/
+│   ├── org-ticket-writing/
 │   │   └── skills/
-│   │       └── zivtech-ticket-writing/
+│   │       └── org-ticket-writing/
 │   │           └── SKILL.md        # Mirrors existing local skill
 │   │
-│   └── zivtech-writing-style/
+│   └── org-writing-style/
 │       └── skills/
-│           └── zivtech-writing-style/
+│           └── org-writing-style/
 │               └── SKILL.md        # Mirrors existing local skill
 │
 ├── .github/
@@ -252,7 +252,7 @@ zivtech/claude-skills/
 │  1. PM REQUESTS                                                             │
 │     ├─ Option A: Opens GitHub Issue using "Skill Request" template          │
 │     ├─ Option B: Says "I want to request a skill" in Claude Desktop         │
-│     │            → Claude calls zivtech_skills(action: "request")           │
+│     │            → Claude calls org_skills(action: "request")           │
 │     │            → Creates GitHub Issue automatically                       │
 │     └─ Option C: Opens a PR directly (for devs adding their own skill)      │
 │                                                                             │
@@ -276,7 +276,7 @@ zivtech/claude-skills/
 │  5. DEPLOYMENT                                                              │
 │     ├─ PR merged → marketplace.json updated                                 │
 │     ├─ GitHub Action notifies MCP server to refresh skill catalog           │
-│     ├─ Mac devs: /plugin marketplace update zivtech-skills                  │
+│     ├─ Mac devs: /plugin marketplace update org-skills                  │
 │     └─ Windows users: skills appear automatically on next session           │
 │                                                                             │
 └────────────────────────────────────────────────────────────────────────────┘
@@ -286,7 +286,7 @@ zivtech/claude-skills/
 
 ```yaml
 name: Skill Request
-description: Request a new skill for the Zivtech AI platform
+description: Request a new skill for the Joyus AI platform
 labels: ["skill-request"]
 body:
   - type: input
@@ -373,7 +373,7 @@ Claude Desktop
       │ { url: "staging.client-site.com", categories: ["seo", "performance"] }
       │
       ▼
-Zivtech AI MCP Server
+Joyus AI MCP Server
       │
       │ 1. Verify user has audit-website skill enabled
       │ 2. Validate URL (not internal, not blocked)
@@ -440,16 +440,16 @@ read:confluence-content.summary
 
 ### Confluence Skill (Knowledge Layer)
 
-The `zivtech-confluence` skill would tell Claude about Zivtech's Confluence conventions:
+The `org-confluence` skill would tell Claude about the organization's Confluence conventions:
 
 ```markdown
 ---
-name: zivtech-confluence
-description: Zivtech Confluence conventions and workflows.
+name: org-confluence
+description: Organization Confluence conventions and workflows.
   Use when creating, updating, or searching Confluence pages.
 ---
 
-## Zivtech Confluence Conventions
+## Organization Confluence Conventions
 
 When working with Confluence:
 
@@ -468,13 +468,13 @@ When working with Confluence:
 
 ```json
 {
-  "name": "zivtech-skills",
+  "name": "org-skills",
   "owner": {
-    "name": "Zivtech",
+    "name": "Example Org",
     "email": "dev@example.com"
   },
   "metadata": {
-    "description": "Curated AI skills for the Zivtech team",
+    "description": "Curated AI skills for the platform team",
     "version": "0.1.0",
     "pluginRoot": "./plugins"
   },
@@ -489,33 +489,33 @@ When working with Confluence:
       "keywords": ["audit", "seo", "website", "squirrelscan", "performance"]
     },
     {
-      "name": "zivtech-jira",
-      "source": "./plugins/zivtech-jira",
-      "description": "Zivtech-specific Jira workflows, JQL patterns, and ticket conventions",
+      "name": "org-jira",
+      "source": "./plugins/org-jira",
+      "description": "Organization-specific Jira workflows, JQL patterns, and ticket conventions",
       "version": "1.0.0",
       "category": "project-management",
       "tags": ["jira", "tickets", "agile"]
     },
     {
-      "name": "zivtech-confluence",
-      "source": "./plugins/zivtech-confluence",
-      "description": "Read, create, and update Confluence pages with Zivtech conventions",
+      "name": "org-confluence",
+      "source": "./plugins/org-confluence",
+      "description": "Read, create, and update Confluence pages with organization conventions",
       "version": "1.0.0",
       "category": "documentation",
       "tags": ["confluence", "docs", "wiki"]
     },
     {
-      "name": "zivtech-ticket-writing",
-      "source": "./plugins/zivtech-ticket-writing",
-      "description": "Write actionable Jira tickets following Zivtech standards with proper acceptance criteria",
+      "name": "org-ticket-writing",
+      "source": "./plugins/org-ticket-writing",
+      "description": "Write actionable Jira tickets following organization standards with proper acceptance criteria",
       "version": "1.0.0",
       "category": "project-management",
       "tags": ["jira", "tickets", "user-stories", "acceptance-criteria"]
     },
     {
-      "name": "zivtech-writing-style",
-      "source": "./plugins/zivtech-writing-style",
-      "description": "Zivtech brand voice, tone, and writing style for all content",
+      "name": "org-writing-style",
+      "source": "./plugins/org-writing-style",
+      "description": "Organization brand voice, tone, and writing style for all content",
       "version": "1.0.0",
       "category": "content",
       "tags": ["writing", "brand", "content", "marketing"]
@@ -530,13 +530,13 @@ When working with Confluence:
 
 ### Step 1: Create the GitHub repo (this session)
 
-Set up `zivtech/claude-skills` with marketplace.json, the audit-website skill, and the PR workflow templates.
+Set up `<org>/skills` with marketplace.json, the audit-website skill, and the PR workflow templates.
 
 ### Step 2: Add Confluence tools to MCP server
 
 Extend the existing Atlassian OAuth integration with Confluence API endpoints.
 
-### Step 3: Add `zivtech_skills` tool to MCP server
+### Step 3: Add `org_skills` tool to MCP server
 
 Build the catalog browsing tool that Windows users interact with through Claude Desktop.
 
@@ -546,7 +546,7 @@ Install SquirrelScan on the server, expose `squirrelscan_audit` as an MCP tool w
 
 ### Step 5: Port existing local skills to the marketplace
 
-Move `zivtech-ticket-writing`, `zivtech-writing-style`, `drupal-coding-standards` etc. into the marketplace repo so they're available to all team members.
+Move `org-ticket-writing`, `org-writing-style`, `drupal-coding-standards` etc. into the marketplace repo so they're available to all team members.
 
 ---
 

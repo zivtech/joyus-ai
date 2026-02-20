@@ -3,6 +3,6 @@
   "slug": "003-platform-architecture-overview",
   "friendly_name": "joyus-ai Platform Architecture Overview",
   "mission": "software-dev",
-  "source_description": "Umbrella specification for joyus-ai (Zivtech AI Agent Platform). High-level architecture and domain inventory covering all 11 capability domains, with each domain to be broken out into its own deep spec later.",
+  "source_description": "Umbrella specification for the Joyus AI Platform. High-level architecture and domain inventory covering all 11 capability domains, with each domain to be broken out into its own deep spec later.",
   "created_at": "2026-02-17T07:58:00Z"
 }

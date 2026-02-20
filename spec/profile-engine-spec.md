@@ -186,7 +186,7 @@ class AuthorProfile(BaseModel):
 
 ### 3.1 VoiceContext Architecture (Added Feb 19, 2026)
 
-The `RegisterShift` model (simple parameter deltas on voice/tone) is insufficient for organizations whose authors write in fundamentally different voices for different audiences. Legal advocacy attorneys, for example, write as Litigator (courts), Advocate (legislators), Educator (public), Expert (treatises), and Consumer Advocate (teaching lawyers) — these differ across vocabulary, argumentation, citations, structure, and positions, not just tone.
+The `RegisterShift` model (simple parameter deltas on voice/tone) is insufficient for organizations whose authors write in fundamentally different voices for different audiences. Legal advocacy attorneys, for example, write as Formal (courts), Accessible (public), Technical (practitioners), and Persuasive (legislators) — these differ across vocabulary, argumentation, citations, structure, and positions, not just tone.
 
 **Three-layer opt-in design:**
 
@@ -206,7 +206,7 @@ class VoiceContext(BaseModel):
 
     voice_id: str                                # Unique identifier
     audience_key: str                            # e.g., "litigator", "advocate", "educator"
-    audience_label: str                          # Human-readable: "Litigator (Courts)"
+    audience_label: str                          # Human-readable: "Formal (Courts)"
     description: str                             # When to use this voice
 
     # Fidelity tier for THIS voice (may differ from base profile)
@@ -241,7 +241,7 @@ class VoiceAccessLevel(BaseModel):
 class CompositeVoiceConfig(BaseModel):
     """Configuration for composite voices that blend multiple source voices.
 
-    Example: A composite "Priest" voice blends Litigator + Advocate + Educator + Expert
+    Example: A composite blended voice merges Formal + Accessible + Technical + Persuasive
     voices plus restricted strategic "secrets" corpus.
     """
 
@@ -254,11 +254,11 @@ class CompositeVoiceConfig(BaseModel):
     #   conditional: switch source voice based on content topic
 ```
 
-**Per-voice fidelity:** An author may be Tier 4 for Expert voice (50K+ words of treatise writing) but Tier 2 for Advocate voice (5K words of congressional testimony). The `fidelity_tier` field lives on `VoiceContext`, not on `AuthorProfile`, enabling honest representation of what's achievable per audience.
+**Per-voice fidelity:** An author may be Tier 4 for Expert voice (50K+ words of published writing) but Tier 2 for Advocate voice (5K words of congressional testimony). The `fidelity_tier` field lives on `VoiceContext`, not on `AuthorProfile`, enabling honest representation of what's achievable per audience.
 
 **Resolution at generation time:**
-1. Request specifies target author + audience (e.g., "Write as Lauren Saunders, Advocate voice")
-2. Load base `AuthorProfile` for Lauren Saunders
+1. Request specifies target author + audience (e.g., "Write as Author A, Accessible voice")
+2. Load base `AuthorProfile` for Author A
 3. Look up `voice_contexts["advocate"]`
 4. For each profile section: use override if present, otherwise inherit from base
 5. Apply merged profile to generation
@@ -300,7 +300,7 @@ Tone: Analytical with measured passion on [topic areas]
 
 ## Vocabulary
 ### Signature Phrases (use frequently)
-- "rent-a-bank scheme" — when discussing bank/fintech partnerships
+- "regulatory enforcement action" — when discussing agency oversight
 - ...
 
 ### Preferred Terms
@@ -344,8 +344,8 @@ Machine-readable content markers for fast Tier 1 verification.
   "domain": "legal_advocacy",
   "markers": {
     "high_signal": [
-      {"term": "rent-a-bank scheme", "weight": 0.95, "context": "bank/fintech partnerships"},
-      {"term": "Regulation F", "weight": 0.90, "context": "FDCPA debt collection"}
+      {"term": "regulatory enforcement", "weight": 0.95, "context": "agency oversight"},
+      {"term": "compliance framework", "weight": 0.90, "context": "statutory obligations"}
     ],
     "medium_signal": [
       {"term": "predatory lending", "weight": 0.60, "context": "high-cost credit"},
@@ -443,7 +443,7 @@ def inline_check(text: str, profile: AuthorProfile) -> InlineResult:
     # Generate feedback for model if failed
     if score < threshold:
         feedback = generate_inline_feedback(text, profile, marker_score, style_score)
-        # e.g. "Score 0.52/1.0. Missing signature phrases: 'rent-a-bank',
+        # e.g. "Score 0.52/1.0. Missing signature phrases: 'regulatory enforcement',
         #        'predatory lending'. Detected negative marker: 'innovation'
         #        used positively in paragraph 3. Sentence length averaging
         #        32 words (target: 24). Regenerate with closer attention
@@ -614,8 +614,8 @@ Based on client PoC experience: 7-9 documents per author was the minimum for rel
 
 **Goal:** Prove the engine works beyond the initial domain.
 
-- Build a Zivtech internal writing profile from existing content (proposals, blog posts, documentation)
-- Run verification against known Zivtech-authored text
+- Build an internal writing profile from existing content (proposals, blog posts, documentation)
+- Run verification against known internally-authored text
 - Document what worked, what needed domain-specific tuning
 
 ---
@@ -661,7 +661,7 @@ Based on client PoC experience: 7-9 documents per author was the minimum for rel
 | Tier 1 verification latency | < 500ms per 1000-word doc |
 | Tier 1 wrong-voice detection rate | > 90% |
 | Skill file generation (end-to-end) | < 5 minutes per author corpus |
-| Second-domain validation | Zivtech profile builds successfully, Tier 1 detects voice mismatch |
+| Second-domain validation | Internal profile builds successfully, Tier 1 detects voice mismatch |
 | Test coverage | > 80% |
 
 ---

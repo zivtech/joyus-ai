@@ -1,8 +1,8 @@
-# Zivtech AI Platform - Implementation Plan
+# Joyus AI Platform - Implementation Plan
 
 ## Executive Summary
 
-Transform the existing Zivtech AI MCP Server into a full platform that enables all team members to access AI-powered work tools without local setup. The platform will be built incrementally, with each phase delivering usable value.
+Transform the existing Joyus AI MCP Server into a full platform that enables all team members to access AI-powered work tools without local setup. The platform will be built incrementally, with each phase delivering usable value.
 
 **Timeline:** 6-8 weeks to MVP
 **Team:** 1-2 developers
@@ -166,7 +166,7 @@ joyus-ai-web/
 **Chat Interface**
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Zivtech AI                                              admin@example.com ▼ │
+│  Joyus AI                                              admin@example.com ▼ │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ┌───────────────┐ ┌─────────────────────────────────────────────────────────┤
 │ │ Conversations │ │                                                         │
@@ -189,7 +189,7 @@ joyus-ai-web/
 │ │               │ │  └─────────────────────────────────────────────────────┘│
 │ │               │ │                                                         │
 │ │               │ │  ┌─────────────────────────────────────────────────────┐│
-│ │               │ │  │ Message Zivtech AI...                          Send ││
+│ │               │ │  │ Message Joyus AI...                          Send ││
 │ │               │ │  └─────────────────────────────────────────────────────┘│
 │ └───────────────┘ └─────────────────────────────────────────────────────────┘
 └─────────────────────────────────────────────────────────────────────────────┘

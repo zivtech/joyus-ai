@@ -7,7 +7,7 @@
 
 ## Summary
 
-Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with Docker Compose. Three consolidated containers (Platform, Playwright, PostgreSQL) serve the Zivtech team via Claude Desktop and a lightweight web chat UI for mobile/AFK access. The Platform container includes the skill runtime with all CLI dependencies (Python, Node, git, composer, drush, squirrel, Office packages). CI/CD via GitHub Actions pushes to GHCR and deploys automatically. Domain: `ai.example.com` with Let's Encrypt TLS.
+Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with Docker Compose. Three consolidated containers (Platform, Playwright, PostgreSQL) serve the team via Claude Desktop and a lightweight web chat UI for mobile/AFK access. The Platform container includes the skill runtime with all CLI dependencies (Python, Node, git, composer, drush, squirrel, Office packages). CI/CD via GitHub Actions pushes to GHCR and deploys automatically. Domain: `ai.example.com` with Let's Encrypt TLS.
 
 ## Technical Context
 
@@ -18,8 +18,8 @@ Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with D
 **Target Platform**: AWS EC2 (t3.small/medium), Ubuntu 24.04 LTS, Docker + Docker Compose
 **Project Type**: Infrastructure deployment (Docker Compose + CI/CD)
 **Performance Goals**: MCP tool calls <5s standard, <60s Playwright operations
-**Constraints**: $15-35/month budget, single EC2 instance, Zivtech team only
-**Scale/Scope**: ~5-10 concurrent users (Zivtech team), 10 MCP server endpoints
+**Constraints**: $15-35/month budget, single EC2 instance, internal team only
+**Scale/Scope**: ~5-10 concurrent users (internal team), 10 MCP server endpoints
 
 ## Constitution Check
 
@@ -29,7 +29,7 @@ Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with D
 |-----------|--------|-------|
 | 2.1 Multi-Tenant from Day One | **PASS** | Consolidated containers now; architecture notes future split per client. No single-tenant shortcuts. |
 | 2.2 Skills as Guardrails | **PASS** | Skill runtime deployed with all dependencies; skills loaded per context. |
-| 2.3 Sandbox by Default | **PASS** | Zivtech-only access at launch. MCP bearer tokens revocable. SSH restricted. |
+| 2.3 Sandbox by Default | **PASS** | Internal-only access at launch. MCP bearer tokens revocable. SSH restricted. |
 | 2.4 Monitor Everything | **PARTIAL** | Phase 2 covers operational monitoring (health checks, log aggregation, Slack alerts). Full 4-layer monitoring (usage, content fidelity, guardrails, insights) is Phase 3 scope. |
 | 2.5 Feedback Loops | **DEFERRED** | Full feedback system is Phase 3. Phase 2 has logging for manual review. |
 | 2.6 Claude Code Alternative | **PASS** | Web chat UI provides access for users without Claude Desktop. |
@@ -155,8 +155,8 @@ Push to main
     ▼
 GitHub Actions (.github/workflows/deploy-mcp.yml)
     │
-    ├── Build Platform image → ghcr.io/zivtech/joyus-ai-platform:latest
-    ├── Build Playwright image → ghcr.io/zivtech/joyus-ai-playwright:latest
+    ├── Build Platform image → ghcr.io/<org>/joyus-ai-platform:latest
+    ├── Build Playwright image → ghcr.io/<org>/joyus-ai-playwright:latest
     │
     ▼
 SSH to EC2
@@ -170,7 +170,7 @@ SSH to EC2
 ```
 
 ### Rollback Strategy
-- Each successful build is tagged with git SHA (e.g., `ghcr.io/zivtech/joyus-ai-platform:abc123`)
+- Each successful build is tagged with git SHA (e.g., `ghcr.io/<org>/joyus-ai-platform:abc123`)
 - `latest` tag always points to current production
 - Rollback: `docker compose` with previous SHA tag
 - PostgreSQL volume persists across deployments
@@ -178,7 +178,7 @@ SSH to EC2
 ## Security
 
 - **TLS**: Let's Encrypt auto-renewed certificates on `ai.example.com`
-- **SSH**: Key-based only, restricted to Zivtech IPs
+- **SSH**: Key-based only, restricted to authorized IPs
 - **MCP Auth**: Bearer tokens (existing implementation, revocable)
 - **OAuth Tokens**: AES-256 encrypted in PostgreSQL (existing implementation)
 - **Secrets**: GitHub Actions secrets for deploy key, env vars. `.env` on EC2 not in repo.

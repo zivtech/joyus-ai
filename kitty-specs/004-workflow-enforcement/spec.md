@@ -254,7 +254,7 @@ A team lead reviews what happened during a junior developer's coding session. Th
 
 - **002-session-context-management** (required): Provides the MCP server infrastructure, companion service, state snapshots (branch, files, task context), and event detection system. Workflow enforcement extends these with new MCP tools and event handlers.
 - **003-platform-architecture-overview** (informational): Defines the domain inventory, skill repository structure, and monitoring architecture that this spec implements for Domains 2-4.
-- **Skills repository** (required at runtime): A git-based skill repository must exist with at least one skill for enforcement to be meaningful. Initial skills can be the existing `zivtech-claude-skills/` collection.
+- **Skills repository** (required at runtime): A git-based skill repository must exist with at least one skill for enforcement to be meaningful. Initial skills can be the existing skills repository collection.
 - **Quality gate tools** (required at runtime): Linters, test runners, and other gate tools must be installed on the developer's machine. The system invokes but does not manage tool installation.
 - **Claude Enterprise** (recommended): Handles general audit logging, cost tracking, and compliance. Not required for core enforcement, but recommended for team-wide visibility.
 
@@ -307,6 +307,6 @@ Session & Context Management is foundational — this spec depends on the state 
 ---
 
 *Specification captured: February 17, 2026*
-*Discovery conducted with: Alex UA*
+*Discovery conducted with: project leadership*
 *Evidence source: 003-platform-architecture-overview (Domains 2-4), joyus-ai-requirements-brief.md, 002 deferred items*
 *For: joyus-ai — Mediator Layer, Spec 2 of 2*

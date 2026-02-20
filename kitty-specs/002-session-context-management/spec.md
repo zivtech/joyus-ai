@@ -268,6 +268,6 @@ After landscape analysis of ~50+ existing projects and Claude Enterprise feature
 
 *Specification captured: February 16, 2026*
 *Revised: February 16, 2026 (architecture reframing, Enterprise overlap)*
-*Discovery conducted with: Alex UA*
+*Discovery conducted with: project leadership*
 *Evidence source: joyus-ai-requirements-brief.md (prior project workflow analysis), existing-projects-landscape.md*
 *For: joyus-ai — Mediator Layer, Spec 1 of 2*

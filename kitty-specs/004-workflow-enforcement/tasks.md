@@ -131,7 +131,7 @@
 - [x] T025 Integrate skill loading with audit trail logging
 
 ### Implementation Notes
-- Skills are markdown files in a git-cloned repo (e.g., `zivtech-claude-skills/`)
+- Skills are markdown files in a git-cloned repo (e.g., `example-skills/`)
 - Cache stored in `~/.joyus-ai/projects/<hash>/skill-cache/`
 - Freshness check: compare git HEAD of skill repo with cached version; if fetch fails, use cache + warn
 - Precedence order: client-override > client-brand > core > platform-default (deterministic, logged per SC-010)

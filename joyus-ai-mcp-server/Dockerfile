@@ -1,4 +1,4 @@
-# Zivtech AI MCP Server Dockerfile
+# Joyus AI MCP Server Dockerfile
 # Multi-stage build for production
 
 # Build stage

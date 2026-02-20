@@ -7,7 +7,7 @@ import { ToolDefinition } from './index.js';
 export const githubTools: ToolDefinition[] = [
   {
     name: 'github_search_code',
-    description: 'Search for code across GitHub repositories. Supports GitHub search qualifiers like "org:zivtech", "language:python", "filename:package.json"',
+    description: 'Search for code across GitHub repositories. Supports GitHub search qualifiers like "org:example-org", "language:python", "filename:package.json"',
     inputSchema: {
       type: 'object',
       properties: {
@@ -17,7 +17,7 @@ export const githubTools: ToolDefinition[] = [
         },
         org: {
           type: 'string',
-          description: 'Limit to organization (e.g., "zivtech")'
+          description: 'Limit to organization (e.g., "example-org")'
         },
         per_page: {
           type: 'number',
@@ -35,7 +35,7 @@ export const githubTools: ToolDefinition[] = [
       properties: {
         repo: {
           type: 'string',
-          description: 'Repository in owner/repo format (e.g., "zivtech/website")'
+          description: 'Repository in owner/repo format (e.g., "example-org/website")'
         },
         state: {
           type: 'string',
@@ -121,7 +121,7 @@ export const githubTools: ToolDefinition[] = [
       properties: {
         org: {
           type: 'string',
-          description: 'Organization name (e.g., "zivtech")'
+          description: 'Organization name (e.g., "example-org")'
         },
         type: {
           type: 'string',

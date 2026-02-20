@@ -38,7 +38,7 @@
 
 **Decision**: Layered — plain-language context injection + validation MCP tools
 
-**Rationale**: Plain-language constraints in Claude's context are sufficient for most generation guidance (Claude follows "use Drupal's database abstraction layer" reliably). Validation tools as a second pass catch what slipped through and provide auditable verification. This maps to the existing skill format in `zivtech-claude-skills/` (markdown files with rules and anti-patterns).
+**Rationale**: Plain-language constraints in Claude's context are sufficient for most generation guidance (Claude follows "use Drupal's database abstraction layer" reliably). Validation tools as a second pass catch what slipped through and provide auditable verification. This maps to the existing skill format in the skills repository (markdown files with rules and anti-patterns).
 
 **Alternatives considered**:
 - Structured tool metadata only: Too rigid for the variety of skill constraints (brand voice, coding standards, security rules).

@@ -199,7 +199,7 @@ Identify the most likely author of a text using cascade attribution.
             "profile_type": "person",
             "author_name": "Author Name",
             "score": 0.91,
-            "matched_markers": ["rent-a-bank scheme", "predatory lending"]
+            "matched_markers": ["regulatory enforcement", "compliance violation"]
         },
         {
             "profile_id": "prof_def456",
@@ -208,7 +208,7 @@ Identify the most likely author of a text using cascade attribution.
             "score": 0.43
         }
     ],
-    "explanation": "High confidence person-level match. Text matches Author Name's voice profile with 91% confidence. Key markers: 'rent-a-bank scheme' (high signal), 'predatory lending' (medium signal). Stylometric distance within expected range."
+    "explanation": "High confidence person-level match. Text matches Author Name's voice profile with 91% confidence. Key markers: 'regulatory enforcement' (high signal), 'compliance violation' (medium signal). Stylometric distance within expected range."
 }
 ```
 
@@ -262,7 +262,7 @@ Check if text comes from outside the organization.
         "profile_type": "department",
         "score": 0.38
     },
-    "explanation": "Text does not match any person, department, or organization profile. Closest match is the credit reporting department at 38% confidence (below 70% org threshold)."
+    "explanation": "Text does not match any person, department, or organization profile. Closest match is the regulatory compliance department at 38% confidence (below 70% org threshold)."
 }
 ```
 
@@ -291,7 +291,7 @@ Check for quality drift on a specific profile.
         {
             "signal_type": "marker_shift",
             "severity": "medium",
-            "description": "Signature phrase 'rent-a-bank scheme' usage dropped 28% over 14-day window",
+            "description": "Signature phrase 'regulatory enforcement' usage dropped 28% over 14-day window",
             "current_value": 0.52,
             "baseline_value": 0.72
         }

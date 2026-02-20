@@ -3,7 +3,7 @@
 **Feature Branch**: `003-platform-architecture-overview`
 **Created**: 2026-02-17
 **Status**: Draft
-**Input**: Umbrella specification — high-level architecture and domain inventory for joyus-ai, the Zivtech AI Agent Platform
+**Input**: Umbrella specification — high-level architecture and domain inventory for the Joyus AI Platform
 
 ---
 
@@ -20,14 +20,14 @@ joyus-ai prevents these failures through **structured mediation** — not by lim
 ### What joyus-ai Is
 
 - A mediator layer between users and AI agents
-- A multi-tenant platform for Zivtech internal use and client deployments
+- A multi-tenant platform for internal use and client deployments
 - A skills-as-guardrails system where outputs are guided by constraints
 - A Claude Code alternative for clients who can't grant deep system access
 
 ### What joyus-ai Is NOT
 
 - A replacement for Claude Code or spec-kitty (it sits between the user and the agent)
-- A consumer product (it's for Zivtech internal + managed client use)
+- A consumer product (it's for internal + managed client use)
 - A replacement for human judgment (outputs are always reviewable)
 - A way to bypass client approval (clients retain authority)
 - A data collection play (client data is never used for training)
@@ -38,7 +38,7 @@ joyus-ai prevents these failures through **structured mediation** — not by lim
 
 ### User Story 1 — Junior Dev Gets Workflow Guardrails (Priority: P1)
 
-A junior developer at Zivtech uses Claude Code to work on a Drupal client project. joyus-ai intercepts their session, loads the correct skills (drupal-coding-standards, drupal-security), enforces branch verification, and gates pushes behind quality checks — all without the developer needing to remember any of this.
+A junior developer uses Claude Code to work on a Drupal client project. joyus-ai intercepts their session, loads the correct skills (drupal-coding-standards, drupal-security), enforces branch verification, and gates pushes behind quality checks — all without the developer needing to remember any of this.
 
 **Why this priority**: Junior devs are the highest-risk, highest-volume users. Preventing their mistakes has the largest ROI.
 
@@ -68,9 +68,9 @@ An experienced developer (Alex-tier) uses joyus-ai with configurable flags. They
 
 ---
 
-### User Story 3 — Zivtech Manages a Client Deployment (Priority: P2)
+### User Story 3 — Platform Operator Manages a Client Deployment (Priority: P2)
 
-Zivtech onboards a new client onto the platform. They create a workspace with the client's brand skills, writing profiles, and spend limits. The client's staff interact with AI through the platform with appropriate guardrails, and Zivtech monitors usage and content fidelity.
+The platform operator onboards a new client onto the platform. They create a workspace with the client's brand skills, writing profiles, and spend limits. The client's staff interact with AI through the platform with appropriate guardrails, and the operator monitors usage and content fidelity.
 
 **Why this priority**: Multi-tenant client deployment is the business model. It must work, but internal use (P1) validates the architecture first.
 
@@ -78,8 +78,8 @@ Zivtech onboards a new client onto the platform. They create a workspace with th
 
 **Acceptance Scenarios**:
 
-1. **Given** Zivtech creates a new client workspace, **When** the client's users interact with the platform, **Then** only that client's skills and brand assets are loaded.
-2. **Given** a client has a monthly spend limit of $500, **When** usage approaches the limit, **Then** the platform alerts Zivtech and throttles or blocks further requests.
+1. **Given** the operator creates a new client workspace, **When** the client's users interact with the platform, **Then** only that client's skills and brand assets are loaded.
+2. **Given** a client has a monthly spend limit of $500, **When** usage approaches the limit, **Then** the platform alerts the operator and throttles or blocks further requests.
 3. **Given** a client task generates content, **When** the output is produced, **Then** content fidelity checks verify brand compliance and voice consistency before delivery.
 
 ---
@@ -197,7 +197,7 @@ Each domain is summarized here. Each will receive its own deep specification via
 
 ### Domain 11: API Account & Billing Model
 
-**Problem**: The platform needs to support multiple billing configurations — Zivtech managing API costs on behalf of clients, and potentially clients bringing their own Anthropic API keys.
+**Problem**: The platform needs to support multiple billing configurations — the operator managing API costs on behalf of clients, and potentially clients bringing their own Anthropic API keys.
 
 **Scope**: Anthropic API workspace management (one organization, workspace per client), BYOK (Bring Your Own Key) support, per-workspace spend limits, Admin API integration for programmatic workspace/key management, Usage & Cost API integration for billing attribution.
 
@@ -213,7 +213,7 @@ Each domain is summarized here. Each will receive its own deep specification via
 
 **Key dependencies**: 001 (MCP server — GitHub, Jira access), 004 (quality gates and skill enforcement for the fix stage), Playwright MCP (browser access for reproduction), Activepieces or similar (event trigger/orchestration).
 
-**Existing work**: Concept described as "Probo on steroids" — extending Zivtech's existing proactive monitoring approach with AI-powered diagnosis and remediation. Validated by CTO (Jonathan DeLaigle) as a high-value addition to the pipeline.
+**Existing work**: Concept described as "Probo on steroids" — extending existing proactive monitoring approaches with AI-powered diagnosis and remediation. Validated by CTO (Jonathan DeLaigle) as a high-value addition to the pipeline.
 
 ---
 
@@ -286,7 +286,7 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 | 5 | Risk tiering: Who defines low/medium/high risk — per-project config, per-user, or derived from action? | Medium | Resolve in Domain 2 spec |
 | 6 | Multi-agent coordination: How to maintain consistent state across Claude, Codex, Gemini? | Medium | Resolve in Domain 1 spec |
 | 7 | Spec-kitty integration: Does joyus-ai use spec-kitty artifacts as input at runtime? | Low | Resolve during `/spec-kitty.plan` |
-| 8 | Billing model: Zivtech-managed vs BYOK vs both? | High | Resolve in Domain 11 spec |
+| 8 | Billing model: Operator-managed vs BYOK vs both? | High | Resolve in Domain 11 spec |
 | 9 | Orchestration: OMC, standalone service, or hybrid? | High | Evaluation planned for Phase 3 |
 | 10 | Bug triage pipeline: What constraints should limit automated fixes (file count, risk level, project type)? | High | Resolve in Domain 12 spec |
 | 11 | Bug triage pipeline: How does the agent access staging/dev environments safely for reproduction? | High | Resolve in Domain 12 spec (Playwright MCP + sandboxing) |
@@ -296,11 +296,11 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 
 ## Assumptions
 
-- Zivtech internal use is the first deployment target; client deployments come after internal validation
+- Internal use is the first deployment target; client deployments come after internal validation
 - Claude Code is the primary AI agent for initial implementation; other backends are supported but not first-class initially
 - The existing constitution (`spec/constitution.md`) and plan (`spec/plan.md`) remain the authoritative source for principles and phasing
 - Phase ordering (Asset Sharing > MCP Deploy > Platform > Tools) is fixed; this spec covers Phase 3+ architecture
-- Existing skills in `zivtech-claude-skills/` will be leveraged, not rewritten
+- Existing skills in the skills repository will be leveraged, not rewritten
 - Each domain in the inventory will receive its own deep spec before implementation begins
 
 ---
@@ -331,5 +331,5 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 ---
 
 *Specification captured: February 17, 2026*
-*Interview conducted with: Alex UA*
-*For: joyus-ai — Zivtech AI Agent Platform (Feature 003)*
+*Interview conducted with: project leadership*
+*For: joyus-ai — Joyus AI Platform (Feature 003)*

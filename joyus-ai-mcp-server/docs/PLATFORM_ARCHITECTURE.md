@@ -1,4 +1,4 @@
-# Zivtech AI Platform Architecture
+# Joyus AI Platform Architecture
 
 ## Vision
 
@@ -229,10 +229,10 @@ IMPROVEMENT ACTIONS:
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                                                                               │
 │  1. User opens Claude Desktop                                                 │
-│  2. Zivtech AI MCP already configured (one-time setup)                        │
+│  2. Joyus AI MCP already configured (one-time setup)                        │
 │  3. User asks: "What are my open Jira tickets?"                               │
 │                                                                               │
-│     Claude Desktop                    Zivtech AI Gateway                      │
+│     Claude Desktop                    Joyus AI Gateway                      │
 │          │                                  │                                 │
 │          │──── MCP tools/list ─────────────▶│                                 │
 │          │◀─── [jira_*, slack_*, ...] ──────│                                 │
@@ -255,10 +255,10 @@ IMPROVEMENT ACTIONS:
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                                                                               │
 │  1. User visits https://ai.example.com                                        │
-│  2. Signs in with Google (Zivtech domain)                                     │
+│  2. Signs in with Google (organization domain)                                     │
 │  3. Chat interface appears with conversation history                          │
 │                                                                               │
-│     Web Browser                       Zivtech AI Gateway                      │
+│     Web Browser                       Joyus AI Gateway                      │
 │          │                                  │                                 │
 │          │──── POST /api/v1/chat ──────────▶│                                 │
 │          │     { message: "..." }           │                                 │

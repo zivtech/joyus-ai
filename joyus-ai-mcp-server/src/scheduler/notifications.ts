@@ -213,7 +213,7 @@ Scheduled Task Report: ${task.name}
 ${resultObj?.markdown || resultObj?.title || 'Task completed successfully'}
 
 ---
-This is an automated message from Zivtech AI.
+This is an automated message from Joyus AI.
 Task executed at: ${new Date().toLocaleString()}
     `.trim();
   } else {
@@ -225,7 +225,7 @@ Error: ${errorMessage || 'Unknown error'}
 Please check the task configuration and try again.
 
 ---
-This is an automated message from Zivtech AI.
+This is an automated message from Joyus AI.
 Task failed at: ${new Date().toLocaleString()}
     `.trim();
   }
@@ -277,7 +277,7 @@ export async function sendTestNotification(
 
   const mockResult = {
     title: 'Test Notification',
-    markdown: '🧪 This is a test notification from Zivtech AI.\n\nIf you received this, notifications are working correctly!'
+    markdown: '🧪 This is a test notification from Joyus AI.\n\nIf you received this, notifications are working correctly!'
   };
 
   try {

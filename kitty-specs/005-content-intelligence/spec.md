@@ -25,11 +25,11 @@ While the legal advocacy org drives the high-fidelity (Tier 4) requirements, the
 ### First validated use case
 
 A nonprofit legal advocacy organization — the foremost experts on consumer law in the United States — that:
-- Publishes multi-volume legal treatises updated as laws change
+- Publishes multi-volume publications updated as laws change
 - Has 30+ expert attorneys, each with distinct specializations, audiences, and writing voices
-- Needs AI to help update treatise content when regulations change, written in the correct author's voice
+- Needs AI to help update publication content when regulations change, written in the correct author's voice
 - Must validate that AI-generated content is consistent with the organization's positions and style
-- Has **paywalled content** (subscriber-only treatises) that is both the training corpus and the primary revenue source
+- Has **paywalled content** (subscriber-only publications) that is both the training corpus and the primary revenue source
 
 ---
 
@@ -83,8 +83,8 @@ All three systems share the **profile hierarchy** — the same profiles that Sys
 
 | Level | What it captures | How it's built | Example |
 |-------|-----------------|----------------|---------|
-| **Person** | Individual voice, vocabulary, positions, citation patterns, audience registers | Statistical analysis of the person's corpus (proven: 97.9% accuracy on 9 authors) | "Lauren Saunders writes about rent-a-bank schemes with a tone of measured outrage and heavy CFPB citations" |
-| **Department / Expertise Area** | Shared vocabulary and positions of a group, common structural patterns, domain terminology | Composite of person-level profiles within the group, with individual quirks abstracted away | "The credit reporting team writes with heavy FCRA citation density and technical precision about furnisher obligations" |
+| **Person** | Individual voice, vocabulary, positions, citation patterns, audience registers | Statistical analysis of the person's corpus (proven: 97.9% accuracy on 9 authors) | "Author A writes about regulatory enforcement with a tone of measured authority and heavy agency citations" |
+| **Department / Expertise Area** | Shared vocabulary and positions of a group, common structural patterns, domain terminology | Composite of person-level profiles within the group, with individual quirks abstracted away | "The regulatory compliance team writes with heavy statutory citation density and technical precision about enforcement obligations" |
 | **Organization** | Official positions, editorial voice, brand standards, organizational terminology, prohibited framings | Composite of all department profiles + editorial/brand layer that captures the org's collective identity | "The organization writes as consumer advocates — never neutral, always on the side of the consumer, never adopting industry framing" |
 
 ### 3.2 Composite Profile Construction
@@ -167,7 +167,7 @@ Answer: "Can we validate this text as ours?" at any level of the hierarchy.
 |------|-------|--------|----------|
 | **Verify known author** | Text + target person ID | Confidence score + explanation | "Confirm this draft matches Lauren's voice before publishing" |
 | **Identify author** | Text only | Ranked list of candidate authors + scores | "Who wrote this unsigned document?" |
-| **Validate department** | Text + target department ID | Confidence score + explanation | "Is this consistent with how our credit reporting team writes?" |
+| **Validate department** | Text + target department ID | Confidence score + explanation | "Is this consistent with how our regulatory compliance team writes?" |
 | **Validate organization** | Text only (checked against org profile) | Confidence score + explanation | "Is this consistent with our organizational voice?" |
 | **Detect outsider** | Text only | Boolean + confidence | "This doesn't match anyone in our hierarchy — flag for review" |
 
@@ -181,7 +181,7 @@ When identifying authorship with no target specified:
 
 2. If no person match, check against department profiles
    → If high-confidence match (>0.80): return department match
-   (meaning: "this sounds like your credit reporting team, but
+   (meaning: "this sounds like your regulatory compliance team, but
     we can't pin it to a specific person")
 
 3. If no department match, check against org profile
@@ -268,7 +268,7 @@ Deliver to review queue (or directly, depending on confidence + org policy)
 System 3: Async deep analysis (Tier 2, background)
 ```
 
-### 5.4 Treatise Update Pipeline
+### 5.4 Publication Update Pipeline
 
 The key automated workflow for the legal advocacy org:
 
@@ -278,10 +278,10 @@ Trigger: Regulatory change detected
     │
     ▼
 Step 1: IMPACT MAPPING
-  Identify all treatise sections that reference the changed law/regulation
+  Identify all publication sections that reference the changed law/regulation
   - Full-text search for statute/regulation citations
   - Semantic search for related concepts
-  - Output: list of (treatise, chapter, section, paragraph) tuples
+  - Output: list of (publication, chapter, section, paragraph) tuples
     │
     ▼
 Step 2: AUTHOR ROUTING
@@ -322,13 +322,13 @@ Step 6: EXPERT REVIEW QUEUE
     │
     ▼
 Step 7: PUBLISH
-  Approved updates are applied to the treatise content
+  Approved updates are applied to the publication content
   - Track which updates were accepted as-is vs. edited
   - Edited updates become training data for profile improvement
   - Audit trail: who approved, when, what changed, what the AI proposed vs. final
 ```
 
-### 5.5 Non-Treatise Use Cases
+### 5.5 Non-Publication Use Cases
 
 The same profile infrastructure supports:
 - **Blog posts**: "Write a blog post about [topic] in [person]'s voice for a general audience"
@@ -492,34 +492,34 @@ Drift detected → Diagnose → Propose repair → Human approves
 
 ### 7.1 The Core Tension
 
-The organization's treatises are their primary revenue source (subscriber-only content). The AI systems are trained on this content, but cannot become a backdoor around the paywall.
+The organization's publications are their primary revenue source (subscriber-only content). The AI systems are trained on this content, but cannot become a backdoor around the paywall.
 
 ### 7.2 Principles
 
-1. **Profiles are derived knowledge, not content.** A profile that captures "this author uses 'rent-a-bank scheme' frequently" is a statistical pattern — safe to use without access restrictions. A profile that contains verbatim paragraphs from a subscriber treatise is content — not safe.
+1. **Profiles are derived knowledge, not content.** A profile that captures "this author uses 'regulatory enforcement action' frequently" is a statistical pattern — safe to use without access restrictions. A profile that contains verbatim paragraphs from a subscriber publication is content — not safe.
 
-2. **Generated content inherits the highest access level of its sources.** If a treatise update references subscriber-only analysis, the output is subscriber-level. The system must track source provenance.
+2. **Generated content inherits the highest access level of its sources.** If a publication update references subscriber-only analysis, the output is subscriber-level. The system must track source provenance.
 
 3. **Attribution explanations come in two tiers:**
    - **Pattern-level** (marker matches, stylometric scores) — any authorized system user
    - **Passage-level** (quoting source text for comparison) — requires access to source content
 
-4. **The system must never synthesize paywalled content into free-tier responses.** A user without a subscription cannot use the AI to get treatise content they haven't paid for.
+4. **The system must never synthesize paywalled content into free-tier responses.** A user without a subscription cannot use the AI to get publication content they haven't paid for.
 
-5. **The treatise update pipeline operates entirely within the subscriber boundary.** Attorneys reviewing drafts already have access. Generated drafts inherit subscriber status. Published updates go behind the same paywall.
+5. **The publication update pipeline operates entirely within the subscriber boundary.** Attorneys reviewing drafts already have access. Generated drafts inherit subscriber status. Published updates go behind the same paywall.
 
 6. **Partial access, full awareness.** When the system has access to some sources but not others, it must provide what it knows from accessible sources AND explicitly reference relevant content in inaccessible sources. For example: if the system has access to Book 1 but relevant information also exists in Book 2, the output should include the substance from Book 1 and then say "there is also relevant material in [Book 2, Chapter X], but you'll need a subscription to access it." The system never silently omits relevant content — it either delivers it or tells the user where to find it and what access they need.
 
 7. **Audit trail tracks source provenance.** Every output records which source documents influenced it, enabling access control verification and ensuring the organization can audit for accidental content leakage.
 
-8. **Voice profiles carry independent access levels.** Statistical patterns (markers, stylometrics) within any voice profile remain unrestricted — they are derived knowledge. However, positions, analytical frameworks, strategic approaches, and example outputs within restricted voice profiles inherit the voice's access level. This enables Layer 2 voices (e.g., the "Priest" voice containing privileged legal strategies) to be access-gated without restricting the underlying stylometric infrastructure. See `profile-engine-spec.md §3.1` for the `VoiceAccessLevel` model.
+8. **Voice profiles carry independent access levels.** Statistical patterns (markers, stylometrics) within any voice profile remain unrestricted — they are derived knowledge. However, positions, analytical frameworks, strategic approaches, and example outputs within restricted voice profiles inherit the voice's access level. This enables Layer 2 voices (e.g., a restricted composite voice containing privileged domain strategies) to be access-gated without restricting the underlying stylometric infrastructure. See `profile-engine-spec.md §3.1` for the `VoiceAccessLevel` model.
 
 ### 7.3 Access Control Integration
 
 ```python
 class ContentAccessLevel(Enum):
     PUBLIC = "public"           # Free articles, blog posts, press releases
-    SUBSCRIBER = "subscriber"   # Treatise content, practice aids
+    SUBSCRIBER = "subscriber"   # Published content, practice aids
     GROUP = "group"             # Shared with specific user groups
     INTERNAL = "internal"       # Staff-only content
 
@@ -539,7 +539,7 @@ class GeneratedContent:
 | Profile patterns (markers, stylometrics, vocabulary lists) | No — statistical patterns | Unrestricted within the system |
 | Attribution scores and pattern-level explanations | No — aggregate metrics | Any authorized system user |
 | Attribution passage-level comparisons | Potentially — may quote source | Requires access to the source |
-| Generated treatise updates | Yes — derived from subscriber content | Subscriber-level |
+| Generated publication updates | Yes — derived from subscriber content | Subscriber-level |
 | Generated blog posts from public sources only | No — if provenance is clean | Public |
 | Fidelity reports with diagnostic detail | Potentially — may reference sources | Matches highest source access level |
 | "What does the org say about X?" answers | Depends on which sources are retrieved | Access-filtered per user; content from accessible sources delivered in full, inaccessible sources referenced with subscribe-to-access pointers (Principle 6) |
@@ -555,7 +555,7 @@ class GeneratedContent:
 | Profile hierarchy | Skill files (SKILL.md + markers.json + stylometrics.json) per person/dept/org | §2.2 Skills as Encoded Knowledge |
 | Attribution engine | Verification service (standalone + platform-integrated) | §2.4 Monitor Everything (Output Accuracy) |
 | Writing generation | Skill-mediated content generation pipeline | §2.6 Mediated AI Access |
-| Treatise update pipeline | Automated pipeline with regulatory trigger | §2.7 Automated Pipelines |
+| Publication update pipeline | Automated pipeline with regulatory trigger | §2.7 Automated Pipelines |
 | Fidelity monitoring | Monitoring layer (Tier 2 deep analysis) | §2.4 + §2.5 Feedback Loops |
 | Drift detection | Assumption awareness — profile assumptions can go stale | §2.9 Assumption Awareness |
 | Repair process | Feedback loop: drift → diagnose → repair → verify → deploy | §2.5 Feedback Loops |
@@ -607,11 +607,11 @@ skills/
 | Composite profile builder (dept + org level) | Yes | — |
 | Attribution engine (cascade logic, scoring) | Yes | — |
 | Fidelity monitoring service (drift detection, repair framework) | Yes | — |
-| Treatise update pipeline framework (trigger → map → route → draft → review) | Yes | — |
+| Publication update pipeline framework (trigger → map → route → draft → review) | Yes | — |
 | Legal advocacy domain template (`profile/templates/legal_advocacy.yaml`) | Yes (generic) | Customized version |
 | Actual person/dept/org profiles | — | Yes (organizational IP) |
 | Marker lists, stylometric baselines | — | Yes (derived from private corpus) |
-| Treatise content, regulatory mappings | — | Yes (paywalled content) |
+| Publication content, regulatory mappings | — | Yes (paywalled content) |
 | Access control integration (Drupal-specific) | — | Yes (deployment-specific) |
 
 ---
@@ -626,7 +626,7 @@ skills/
 | **Congress.gov** | Bill text, status changes, enacted laws | As events occur |
 | **State legislatures** | State law changes (50 states) | Varies by state |
 | **Court decisions** | Case law affecting consumer protections | As decisions are published |
-| **CFPB / FTC / OCC** | Enforcement actions, guidance, bulletins | As published |
+| **Regulatory agencies** | Enforcement actions, guidance, bulletins | As published |
 
 ### 9.2 Detection Pipeline
 
@@ -636,7 +636,7 @@ Source feed (RSS/API/scraper)
     ▼
 Relevance filter: Does this affect consumer law topics we cover?
   - Check against organization's topic taxonomy
-  - Check against treatise subject index
+  - Check against publication subject index
   - If not relevant: discard
     │
     ▼
@@ -645,19 +645,19 @@ Impact assessment: What does this change?
   - Severity classification: minor update / significant change / major overhaul
     │
     ▼
-Treatise mapping: Which sections need updating?
-  - Search treatise content for references to the affected law/regulation
+Publication mapping: Which sections need updating?
+  - Search publication content for references to the affected law/regulation
   - Identify specific sections, with change type (factual, analytical, positional)
     │
     ▼
-Notification: Alert appropriate staff + queue for treatise update pipeline
+Notification: Alert appropriate staff + queue for publication update pipeline
 ```
 
 ### 9.3 Initial Scope
 
 Start with Federal Register monitoring for final rules affecting:
-- CFPB regulations (TILA, FCRA, FDCPA, EFTA, ECOA)
-- FTC regulations (UDAP, Holder Rule, Used Car Rule)
+- Federal and state regulations (applicable statutes and rules)
+- Agency enforcement actions and guidance (UDAP, consumer protection, industry-specific rules)
 - State-level monitoring deferred to later phase
 
 ---
@@ -673,7 +673,7 @@ Start with Federal Register monitoring for final rules affecting:
 | Tier 1 inline verification latency | < 500ms per 1000-word document | Performance test suite |
 | Tier 2 deep analysis latency | < 60 seconds per document | Performance test |
 | Drift detection time | < 48 hours from onset to alert | Simulated drift scenarios |
-| Treatise update pipeline: regulatory change → draft | < 24 hours | End-to-end pipeline test |
+| Publication update pipeline: regulatory change → draft | < 24 hours | End-to-end pipeline test |
 | Generated content fidelity score | >= 0.80 for person-level, >= 0.75 for dept/org | Averaged across outputs |
 | Access control: zero paywalled content leakage | 0 incidents | Audit + automated provenance checking |
 | Profile rebuild time | < 30 minutes per person (10+ document corpus) | Performance test |
@@ -728,9 +728,9 @@ Start with Federal Register monitoring for final rules affecting:
 - Repair action framework (propose, approve, apply, verify)
 - Regression verification after repair
 
-### Phase D: Treatise Update Pipeline (Weeks 7-10)
-- Federal Register monitoring (CFPB/FTC regulations)
-- Impact mapping (regulatory change → affected treatise sections)
+### Phase D: Publication Update Pipeline (Weeks 7-10)
+- Federal Register monitoring (agency regulations)
+- Impact mapping (regulatory change → affected publication sections)
 - Author routing (System 1 identifies whose voice each section is in)
 - Draft generation with fidelity checking
 - Expert review queue

@@ -46,7 +46,7 @@ Per-audience voice configuration. Overrides specific AuthorProfile sections when
 |-------|------|-------------|
 | `voice_id` | str | Unique identifier |
 | `audience_key` | str | e.g., "litigator", "advocate", "educator" |
-| `audience_label` | str | Human-readable: "Litigator (Courts)" |
+| `audience_label` | str | Human-readable: "Formal (Courts)" |
 | `description` | str | When to use this voice |
 | `fidelity_tier` | int (1-4) | Per-voice fidelity (may differ from base) |
 | `corpus_size_for_voice` | int | Words analyzed for this voice |
@@ -71,7 +71,7 @@ Access control for a voice profile (Layer 2).
 
 ### CompositeVoiceConfig
 
-Configuration for blended voices (e.g., composite "Priest" voice).
+Configuration for blended voices (e.g., composite blended voice).
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -357,7 +357,7 @@ Provenance tracking for generated content.
 | Field | Type | Description |
 |-------|------|-------------|
 | `source_id` | str | Document identifier |
-| `source_type` | str | `treatise` \| `article` \| `blog` \| `memo` \| `testimony` |
+| `source_type` | str | `book` \| `article` \| `blog` \| `memo` \| `testimony` |
 | `access_level` | ContentAccessLevel | Source's access level |
 | `influence_type` | str | `direct_reference` \| `style_source` \| `position_source` |
 | `section_ref` | str \| null | Specific section referenced |

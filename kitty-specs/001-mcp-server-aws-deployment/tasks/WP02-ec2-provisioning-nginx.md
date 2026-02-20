@@ -265,7 +265,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
    version: "3.8"
    services:
      platform:
-       image: ghcr.io/zivtech/joyus-ai-platform:latest
+       image: ghcr.io/<org>/joyus-ai-platform:latest
        restart: unless-stopped
        deploy:
          resources:
@@ -280,7 +280,7 @@ Create the EC2 provisioning script, nginx reverse proxy configuration, TLS setup
            max-file: "3"
 
      playwright:
-       image: ghcr.io/zivtech/joyus-ai-playwright:latest
+       image: ghcr.io/<org>/joyus-ai-playwright:latest
        restart: unless-stopped
        deploy:
          resources:

@@ -57,7 +57,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Zivtech AI - Connect</title>
+        <title>Joyus AI - Connect</title>
         <style>
           body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
           h1 { color: #1a1a2e; }
@@ -67,11 +67,11 @@ authRouter.get('/', async (req: Request, res: Response) => {
         </style>
       </head>
       <body>
-        <h1>🔌 Zivtech AI</h1>
+        <h1>🔌 Joyus AI</h1>
         <p>Connect your work tools to use them with Claude Desktop.</p>
 
         <div class="info">
-          <strong>Step 1:</strong> Sign in with Google (Zivtech account)
+          <strong>Step 1:</strong> Sign in with Google (organization account)
         </div>
 
         <a href="/auth/google/start" class="btn">Sign in with Google</a>
@@ -103,7 +103,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Zivtech AI - Dashboard</title>
+      <title>Joyus AI - Dashboard</title>
       <style>
         body { font-family: system-ui, sans-serif; max-width: 700px; margin: 50px auto; padding: 20px; }
         h1 { color: #1a1a2e; }
@@ -120,7 +120,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
       </style>
     </head>
     <body>
-      <h1>🔌 Zivtech AI</h1>
+      <h1>🔌 Joyus AI</h1>
       <p>Welcome, <strong>${user.name || user.email}</strong></p>
 
       <h2>Your MCP Connection URL</h2>
