@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Hierarchy Management + Emission
-lane: "doing"
+lane: "for_review"
 dependencies: [WP08]
 base_branch: 005-content-intelligence-WP08
 base_commit: 05ec16b4eb97098515b802820dea12cce9d9863d
@@ -199,3 +199,7 @@ spec-kitty implement WP09 --base WP08
 ## Risks
 
 - **Cascade performance**: Rebuilding all department composites when one person changes could be slow for large orgs. Consider incremental update formula from research.md.
+
+## Activity Log
+
+- 2026-02-20T10:58:38Z – unknown – shell_pid=71035 – lane=for_review – Ready for review: HierarchyManager CRUD, cascade propagation, diffing, multi-level emission. 35 tests.
