@@ -1,9 +1,13 @@
 ---
 work_package_id: WP10
 title: Cascade Attribution
-lane: planned
+lane: "doing"
 dependencies: [WP09]
+base_branch: 005-content-intelligence-WP08
+base_commit: 05ec16b4eb97098515b802820dea12cce9d9863d
+created_at: '2026-02-20T10:48:38.882528+00:00'
 subtasks: [T047, T048, T049, T050]
+shell_pid: "71842"
 history:
 - date: '2026-02-19'
   action: created
