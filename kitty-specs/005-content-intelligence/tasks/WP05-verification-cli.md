@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Two-Tier Verification + CLI
-lane: "doing"
+lane: "for_review"
 dependencies: [WP04]
 base_branch: 005-content-intelligence-WP04
 base_commit: 26db9dfd4b0edfa5473ed0dd6668f097545e847a
@@ -263,3 +263,7 @@ spec-kitty implement WP05 --base WP04
 
 - **Tier 1 latency**: If marker lookup is slow, pre-build a `frozenset` at profile load time.
 - **Delta normalization**: Burrows' Delta is unbounded — need empirical calibration to map to 0-1 range.
+
+## Activity Log
+
+- 2026-02-20T04:30:47Z – unknown – shell_pid=84820 – lane=for_review – Ready for review: Two-tier verification (InlineChecker + DeepAnalyzer), FidelityScorer, feedback generation, CLI build/verify commands. 24 new tests, 181 total passing, ruff clean.
