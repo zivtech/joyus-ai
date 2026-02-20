@@ -30,3 +30,11 @@ class FormatExtractionError(CorpusError):
         self.path = path
         self.format_name = format_name
         super().__init__(f"Failed to extract {format_name} from {path}: {reason}")
+
+
+class ProfileBuildError(ProfileEngineError):
+    """Error during profile construction (e.g., insufficient members for composite)."""
+
+
+class HierarchyValidationError(ProfileEngineError):
+    """Error validating a profile hierarchy (e.g., orphaned people, missing departments)."""

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .features import StructuralPatterns, VocabularyProfile
 from .profile import ContentAccessLevel, Position
@@ -113,6 +113,50 @@ class ProfileHierarchy(BaseModel):
     person_departments: dict[str, list[str]] = Field(default_factory=dict)
     version: str = "0.1.0"
     built_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @model_validator(mode="after")
+    def _validate_hierarchy(self) -> "ProfileHierarchy":
+        """Validate many-to-many consistency and catch orphaned people."""
+        errors: list[str] = []
+
+        # Every person must belong to at least one department
+        for person_id in self.people:
+            depts = self.person_departments.get(person_id, [])
+            if not depts:
+                errors.append(f"Person '{person_id}' has no department assignment")
+
+        # Department members must reference known people
+        for dept_id, members in self.department_members.items():
+            if dept_id not in self.departments:
+                errors.append(
+                    f"department_members references unknown department '{dept_id}'"
+                )
+            for pid in members:
+                if pid not in self.people:
+                    errors.append(
+                        f"Department '{dept_id}' references unknown person '{pid}'"
+                    )
+
+        # person_departments must reference known departments
+        for person_id, depts in self.person_departments.items():
+            if person_id not in self.people:
+                errors.append(
+                    f"person_departments references unknown person '{person_id}'"
+                )
+            for did in depts:
+                if did not in self.departments:
+                    errors.append(
+                        f"Person '{person_id}' references unknown department '{did}'"
+                    )
+
+        if errors:
+            from joyus_profile.exceptions import HierarchyValidationError
+
+            raise HierarchyValidationError(
+                f"Hierarchy validation failed: {'; '.join(errors)}"
+            )
+
+        return self
 
 
 # Deferred import to avoid circular dependency
