@@ -344,11 +344,11 @@ Diagnosis engine that identifies what drifted and why, plus repair action framew
 
 Expose monitoring as MCP tools, integrate with Langfuse, and run simulated drift + repair verification scenarios.
 
-- [ ] T069: Implement monitoring MCP tools
-- [ ] T070: Langfuse integration hooks
-- [ ] T071: Simulated drift scenarios
-- [ ] T072: Repair verification tests
-- [ ] T073: Cross-profile regression tests
+- [x] T069: Implement monitoring MCP tools
+- [x] T070: Langfuse integration hooks
+- [x] T071: Simulated drift scenarios
+- [x] T072: Repair verification tests
+- [x] T073: Cross-profile regression tests
 
 **Parallel**: T070 (Langfuse) is independent of T069 (MCP tools).
 
