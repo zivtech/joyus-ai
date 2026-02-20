@@ -181,12 +181,12 @@ Transform extracted features into structured 12-section AuthorProfiles and emit 
 
 Implement the two-tier verification system (Tier 1 inline <500ms, Tier 2 deep analysis) and CLI commands for building profiles and verifying content.
 
-- [ ] T026: Implement CLI build command
-- [ ] T027: Implement InlineChecker (Tier 1)
-- [ ] T028: Implement DeepAnalyzer (Tier 2)
-- [ ] T029: Implement FidelityScorer
-- [ ] T030: Implement feedback.py
-- [ ] T031: Implement CLI verify command
+- [x] T026: Implement CLI build command
+- [x] T027: Implement InlineChecker (Tier 1)
+- [x] T028: Implement DeepAnalyzer (Tier 2)
+- [x] T029: Implement FidelityScorer
+- [x] T030: Implement feedback.py
+- [x] T031: Implement CLI verify command
 
 **Parallel**: T027 and T028 are independent verification tiers — can be developed in parallel.
 **Risk**: Tier 1 latency target (<500ms) needs profiling; may require limiting to top-20 function words.
