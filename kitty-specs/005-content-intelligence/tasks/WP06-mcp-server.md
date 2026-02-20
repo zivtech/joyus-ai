@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: MCP Server (Profile + Verify Tools)
-lane: "doing"
+lane: "for_review"
 dependencies: [WP05]
 base_branch: 005-content-intelligence-WP05
 base_commit: 5290b28860ae08e4c8b7c79084142e4398d368e3
@@ -180,3 +180,7 @@ spec-kitty implement WP06 --base WP05
 - **mcp SDK version**: Pin to `mcp>=1.20,<2.0` to avoid breaking changes
 - **asyncio.to_thread() overhead**: Each tool call spawns a thread — acceptable for single-user MCP server, may need pooling for multi-user
 - **stdio buffering**: Ensure all JSON responses are flushed immediately (no buffered stdout)
+
+## Activity Log
+
+- 2026-02-20T04:45:32Z – unknown – shell_pid=801 – lane=for_review – Ready for review: MCP server with 5 tools (build_profile, get_profile, compare_profiles, verify_content, check_fidelity), stdio transport, 15 integration tests, 196 total passing, ruff clean.
