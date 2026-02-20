@@ -217,9 +217,9 @@ Expose the profile engine as MCP tools using the official Python `mcp` SDK. Impl
 
 Validate Phase A end-to-end: port PoC accuracy tests, run full corpus-to-verification pipeline, measure performance against targets.
 
-- [ ] T036: Port PoC accuracy tests
-- [ ] T037: End-to-end test: corpus → profile → skill files → verify
-- [ ] T038: Performance tests
+- [x] T036: Port PoC accuracy tests
+- [x] T037: End-to-end test: corpus → profile → skill files → verify
+- [x] T038: Performance tests
 
 **Parallel**: T036 and T038 are independent test suites.
 **Risk**: Accuracy regression requires real corpus samples; anonymized fixtures may give different results.
