@@ -1,13 +1,14 @@
 ---
 work_package_id: WP11
 title: Voice Context + Phase B Testing
-lane: "for_review"
+lane: "doing"
 dependencies: [WP10]
 base_branch: 005-content-intelligence-WP10
 base_commit: a381b339987c84d6d8db7030c73c3bde1fc016de
 created_at: '2026-02-20T11:25:07.586470+00:00'
 subtasks: [T051, T052, T053, T054, T055, T056]
-shell_pid: "94608"
+shell_pid: "74448"
+agent: "claude-lead"
 history:
 - date: '2026-02-19'
   action: created
@@ -263,3 +264,4 @@ spec-kitty implement WP11 --base WP10
 ## Activity Log
 
 - 2026-02-20T13:35:40Z – unknown – shell_pid=94608 – lane=for_review – Ready for review: VoiceResolver, AccessChecker, 143 tests passing, ruff clean
+- 2026-02-20T13:35:59Z – claude-lead – shell_pid=74448 – lane=doing – Started review via workflow command
