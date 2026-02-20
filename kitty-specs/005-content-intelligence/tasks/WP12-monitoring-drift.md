@@ -1,7 +1,7 @@
 ---
 work_package_id: WP12
 title: Monitoring Pipeline + Drift Detection
-lane: "doing"
+lane: "for_review"
 dependencies: [WP07, WP11]
 subtasks: [T057, T058, T059, T060, T061, T062]
 history:
@@ -445,3 +445,4 @@ spec-kitty implement WP12 --base WP07
 ## Activity Log
 
 - 2026-02-20T13:40:56Z – unknown – lane=doing – Implementation started by claude-lead
+- 2026-02-20T13:48:16Z – unknown – lane=for_review – 70 tests passing, all 6 subtasks done
