@@ -1,9 +1,11 @@
 ---
 work_package_id: WP13
 title: Drift Diagnosis + Repair Framework
-lane: "for_review"
+lane: "done"
 dependencies: [WP12]
 subtasks: [T063, T064, T065, T066, T067, T068]
+reviewed_by: "Alex Urevick-Ackelsberg"
+review_status: "approved"
 history:
 - date: '2026-02-19'
   action: created
@@ -511,3 +513,4 @@ Drift detected → Diagnose → Propose repair → Human approves
 
 - 2026-02-20T13:48:41Z – unknown – lane=doing – Implementation started by claude-lead
 - 2026-02-20T13:58:05Z – unknown – lane=for_review – 162 tests passing, all subtasks done
+- 2026-02-20T14:00:56Z – unknown – lane=done – Review passed: 162 tests, rejection_reason persisted, deterministic sibling ordering
