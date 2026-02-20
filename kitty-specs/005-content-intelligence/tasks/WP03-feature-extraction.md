@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: Feature Extraction (129 Features)
-lane: "doing"
+lane: "for_review"
 dependencies: [WP02]
 base_branch: 005-content-intelligence-WP02
 base_commit: 68349569f1d57f3cf77c6a9c8d4d4675c27d4626
@@ -274,3 +274,7 @@ spec-kitty implement WP03 --base WP02
 - **spaCy Python version**: If running Python 3.13+, spaCy may not install. Pin Python 3.12 in pyproject.toml `requires-python = ">=3.11,<3.14"`.
 - **faststylometry requires >=2 authors**: For single-author corpora, create a synthetic "baseline" author from generic English text for delta comparison.
 - **Feature count**: The "129 features" is a target — the actual count depends on vocabulary size and n-gram pruning. Track `feature_count` to document the actual number.
+
+## Activity Log
+
+- 2026-02-20T04:14:00Z – unknown – shell_pid=40891 – lane=for_review – Ready for review: 5 analyzers (stylometric, marker, vocabulary, structure, audience), 35 unit + 6 regression tests, 123 total passing, ruff clean
