@@ -13,7 +13,7 @@ from .profile import ContentAccessLevel, Position
 class RegisterInfo(BaseModel):
     """Audience register information for a department."""
 
-    register: str = "neutral"
+    register_name: str = "neutral"
     frequency: float = 0.0
     contributors: list[str] = Field(default_factory=list)
 

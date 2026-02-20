@@ -40,6 +40,9 @@ dev = [
 [project.scripts]
 joyus-profile = "joyus_profile.cli.main:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["joyus_profile"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
