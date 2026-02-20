@@ -270,10 +270,10 @@ CRUD operations for the full profile hierarchy, cascade propagation, diffing, an
 
 Multi-level attribution engine: person → department → organization → outsider cascade with ranked candidate lists and MCP tool exposure.
 
-- [ ] T047: Implement cascade attribution engine
-- [ ] T048: Implement author identifier
-- [ ] T049: Implement outsider detection
-- [ ] T050: Attribution MCP tools
+- [x] T047: Implement cascade attribution engine
+- [x] T048: Implement author identifier
+- [x] T049: Implement outsider detection
+- [x] T050: Attribution MCP tools
 
 **Parallel**: T048 and T049 are independent attribution modes.
 
