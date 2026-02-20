@@ -1,0 +1,14 @@
+{
+  "wp_id": "WP02",
+  "feature_slug": "005-content-intelligence",
+  "worktree_path": ".worktrees/005-content-intelligence-WP02",
+  "branch_name": "005-content-intelligence-WP02",
+  "base_branch": "005-content-intelligence-WP01",
+  "base_commit": "6d8daa83cf3ef8de71290950c52b38f430793558",
+  "dependencies": [
+    "WP01"
+  ],
+  "created_at": "2026-02-20T03:37:08.374817+00:00",
+  "created_by": "implement-command",
+  "vcs_backend": "git"
+}
