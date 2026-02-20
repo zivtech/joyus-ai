@@ -116,13 +116,21 @@ Files moved to `_private/` staging directories (gitignored):
 
 ## Remaining for Professional Release
 
-### 9. "Zivtech AI" Product Branding
+### 9. "Zivtech AI" Product Branding ✅
 
-Many files still use "Zivtech AI" as the product name in titles, page headings, and ASCII art. These should be renamed to "Joyus AI" in a follow-up pass:
-- `joyus-ai-mcp-server/src/scheduler/routes.ts` — HTML page titles
-- `joyus-ai-mcp-server/docs/*.md` — document titles
-- `joyus-ai-mcp-server/ARCHITECTURE.md` — title
-- `kitty-specs/003-platform-architecture-overview/` — references
+All "Zivtech AI" product branding replaced with "Joyus AI" across all files:
+- Titles, ASCII art, startup messages, descriptions
+- GHCR image refs, Atlassian URLs, skills repo names → generic placeholders
+- Person names (Lauren Saunders, Alex UA) → generic identifiers
+- TypeScript compilation verified clean after edits
+
+### 11. Client-Specific Terminology ✅
+
+- "treatise" → "publication" / "book" (NCLC-specific term for books)
+- CFPB/FCRA/TILA/furnisher/servicer → generic regulatory terms
+- Lauren Saunders → Author A; rent-a-bank → regulatory enforcement
+- Litigator/Advocate/Educator/Expert/Priest voices → Formal/Accessible/Technical/Persuasive
+- Constitution §2.10 "Client-Informed, Platform-Generic" added (v1.6)
 
 ### 10. License and Community Files
 
@@ -148,5 +156,5 @@ These areas passed review:
 ---
 
 *Created: February 18, 2026*
-*Updated: February 19, 2026 — repository separation and bulk sanitization completed*
-*Status: Core sanitization complete. Branding rename and license selection remaining.*
+*Updated: February 20, 2026 — full sanitization pass (branding, client terms, person names, domains)*
+*Status: All sanitization complete. License selection remaining before public release.*
