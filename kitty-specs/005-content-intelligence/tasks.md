@@ -105,7 +105,7 @@ Initialize the `joyus-profile-engine/` Python package with all Pydantic data mod
 - [x] T003: Define Pydantic models for feature types
 - [x] T004: Define Pydantic models for profile types
 - [x] T005: Define Pydantic models for verification types
-- [ ] T006: Create domain template YAML schema and 4 templates
+- [x] T006: Create domain template YAML schema and 4 templates
 - [ ] T007: Set up test infrastructure with conftest.py and fixtures
 
 **Parallel**: T002-T005 can be developed in parallel (independent model files).
