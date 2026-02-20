@@ -1,9 +1,13 @@
 ---
 work_package_id: WP11
 title: Voice Context + Phase B Testing
-lane: planned
+lane: "doing"
 dependencies: [WP10]
+base_branch: 005-content-intelligence-WP10
+base_commit: a381b339987c84d6d8db7030c73c3bde1fc016de
+created_at: '2026-02-20T11:25:07.586470+00:00'
 subtasks: [T051, T052, T053, T054, T055, T056]
+shell_pid: "94608"
 history:
 - date: '2026-02-19'
   action: created
