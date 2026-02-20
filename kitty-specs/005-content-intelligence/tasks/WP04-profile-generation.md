@@ -1,9 +1,13 @@
 ---
 work_package_id: WP04
 title: Profile Generation + Skill Emission
-lane: planned
+lane: "doing"
 dependencies: [WP03]
+base_branch: 005-content-intelligence-WP03
+base_commit: 11e2ef0032b1bf1d234a12d690c2d97af9b31ca0
+created_at: '2026-02-20T04:14:38.062463+00:00'
 subtasks: [T019, T020, T021, T022, T023, T024, T025]
+shell_pid: "68230"
 history:
 - date: '2026-02-19'
   action: created
