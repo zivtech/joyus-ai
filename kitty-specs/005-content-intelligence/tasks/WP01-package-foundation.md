@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP01"
 title: "Package Foundation + Data Models"
-lane: "doing"
+lane: "for_review"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
 agent: "claude"
@@ -365,3 +365,4 @@ Key models to implement:
 ## Activity Log
 
 - 2026-02-19T23:50:19Z – claude – shell_pid=54869 – lane=doing – Started implementation via workflow command
+- 2026-02-20T02:56:36Z – claude – shell_pid=54869 – lane=for_review – Complete: 7 model modules, 4 domain templates, 5 fixtures, 45 passing tests, pip installable via uv
