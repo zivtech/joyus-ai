@@ -204,10 +204,10 @@ Build the background voice drift monitoring system: interface, scheduler, report
 Build structured logging, health endpoints, and metrics collection for all content operations.
 
 **Subtasks**:
-- [ ] T050: Create structured content operation logger (`src/content/monitoring/logger.ts`)
-- [ ] T051: Create health endpoint handler — all subsystem health checks (`src/content/monitoring/health.ts`)
-- [ ] T052: Create metrics collection — sync stats, search latency, resolution times, generation metrics (`src/content/monitoring/metrics.ts`)
-- [ ] T053: Mount health/metrics routes in Express app
+- [x] T050: Create structured content operation logger (`src/content/monitoring/logger.ts`)
+- [x] T051: Create health endpoint handler — all subsystem health checks (`src/content/monitoring/health.ts`)
+- [x] T052: Create metrics collection — sync stats, search latency, resolution times, generation metrics (`src/content/monitoring/metrics.ts`)
+- [x] T053: Mount health/metrics routes in Express app
 
 **Parallel opportunities**: Can run in parallel with WP02, WP04, WP05 (only depends on WP01). T050-T052 are independent files.
 **Risks**: Health checks must aggregate status from connectors, search provider, and entitlement resolver — need to handle partial availability gracefully.
