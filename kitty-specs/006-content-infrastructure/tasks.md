@@ -133,13 +133,13 @@ Build the content-aware generation pipeline: retrieve relevant content from acce
 Implement all 13 MCP tools for content operations and register them in the existing tool system.
 
 **Subtasks**:
-- [ ] T031: Implement source management tools — content_list_sources, content_get_source, content_sync_source, content_get_sync_status
-- [ ] T032: Implement search tools — content_search, content_get_item
-- [ ] T033: Implement entitlement tools — content_resolve_entitlements, content_list_products
-- [ ] T034: Implement generation tool — content_generate
-- [ ] T035: Implement content state dashboard tool — content_state_dashboard
-- [ ] T036: Implement drift monitoring tools — content_drift_report, content_drift_summary
-- [ ] T037: Register content tools in tool index (`src/tools/index.ts`) and executor (`src/tools/executor.ts`)
+- [x] T031: Implement source management tools — content_list_sources, content_get_source, content_sync_source, content_get_sync_status
+- [x] T032: Implement search tools — content_search, content_get_item
+- [x] T033: Implement entitlement tools — content_resolve_entitlements, content_list_products
+- [x] T034: Implement generation tool — content_generate
+- [x] T035: Implement content state dashboard tool — content_state_dashboard
+- [x] T036: Implement drift monitoring tools — content_drift_report, content_drift_summary
+- [x] T037: Register content tools in tool index (`src/tools/index.ts`) and executor (`src/tools/executor.ts`)
 
 **Parallel opportunities**: T031-T036 are independent (different tool groups). T037 must come last.
 **Risks**: Must match existing tool registration pattern exactly (ToolDefinition interface, prefix routing in executor).
