@@ -223,11 +223,11 @@ Build structured logging, health endpoints, and metrics collection for all conte
 Wire the content module into server startup and create integration tests covering the full content pipeline, mediation flow, entitlement enforcement, and drift monitoring.
 
 **Subtasks**:
-- [ ] T054: Wire content module initialization into server startup (`src/index.ts`)
-- [ ] T055: Integration tests — content pipeline (connect → sync → search → generate)
-- [ ] T056: Integration tests — mediation flow (auth → session → message → cite)
-- [ ] T057: Integration tests — entitlement enforcement (access granted/denied across all paths)
-- [ ] T058: Integration tests — drift monitoring pipeline
+- [x] T054: Wire content module initialization into server startup (`src/index.ts`)
+- [x] T055: Integration tests — content pipeline (connect → sync → search → generate)
+- [x] T056: Integration tests — mediation flow (auth → session → message → cite)
+- [x] T057: Integration tests — entitlement enforcement (access granted/denied across all paths)
+- [x] T058: Integration tests — drift monitoring pipeline
 
 **Parallel opportunities**: T055-T058 are independent test suites.
 **Risks**: Integration tests need database fixtures and mock external services. Must not interfere with existing tests.
