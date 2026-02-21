@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import type { SearchResult, ResolvedEntitlements } from '../../../src/content/types.js';
 import { CitationManager } from '../../../src/content/generation/citations.js';
-import { EntitlementCache } from '../../../src/content/entitlements/cache.js';
+import type { RetrievedItem } from '../../../src/content/generation/retriever.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -32,6 +32,17 @@ function makeSearchResult(overrides: Partial<SearchResult> = {}): SearchResult {
     score: 0.9,
     metadata: {},
     isStale: false,
+    ...overrides,
+  };
+}
+
+function makeRetrievedItem(overrides: Partial<RetrievedItem> = {}): RetrievedItem {
+  return {
+    itemId: 'item-1',
+    sourceId: 'source-1',
+    title: 'Test Article',
+    body: 'This is the full body text of the article.',
+    metadata: {},
     ...overrides,
   };
 }
@@ -135,55 +146,55 @@ describe('Content Pipeline Integration', () => {
   describe('generation pipeline produces cited response', () => {
     it('extracts citations from [Source N] markers', () => {
       const citationManager = new CitationManager();
-      const sources: SearchResult[] = [
-        makeSearchResult({ itemId: 'item-1', sourceId: 'src-1', title: 'First Article' }),
-        makeSearchResult({ itemId: 'item-2', sourceId: 'src-2', title: 'Second Article' }),
+      const sources: RetrievedItem[] = [
+        makeRetrievedItem({ itemId: 'item-1', sourceId: 'src-1', title: 'First Article' }),
+        makeRetrievedItem({ itemId: 'item-2', sourceId: 'src-2', title: 'Second Article' }),
       ];
 
       const text = 'Based on research [Source 1], we can confirm [Source 2] the finding.';
-      const citations = citationManager.extract(text, sources);
+      const result = citationManager.extractCitations(text, sources);
 
-      expect(citations).toHaveLength(2);
-      expect(citations[0].itemId).toBe('item-1');
-      expect(citations[0].title).toBe('First Article');
-      expect(citations[1].itemId).toBe('item-2');
+      expect(result.citations).toHaveLength(2);
+      expect(result.citations[0].itemId).toBe('item-1');
+      expect(result.citations[0].title).toBe('First Article');
+      expect(result.citations[1].itemId).toBe('item-2');
     });
 
     it('deduplicates repeated citations', () => {
       const citationManager = new CitationManager();
-      const sources: SearchResult[] = [
-        makeSearchResult({ itemId: 'item-1', sourceId: 'src-1', title: 'Article A' }),
+      const sources: RetrievedItem[] = [
+        makeRetrievedItem({ itemId: 'item-1', sourceId: 'src-1', title: 'Article A' }),
       ];
 
       const text = 'See [Source 1] for details, and again [Source 1] confirms this.';
-      const citations = citationManager.extract(text, sources);
+      const result = citationManager.extractCitations(text, sources);
 
-      expect(citations).toHaveLength(1);
+      expect(result.citations).toHaveLength(1);
     });
 
     it('ignores out-of-range source markers', () => {
       const citationManager = new CitationManager();
-      const sources: SearchResult[] = [
-        makeSearchResult({ itemId: 'item-1', sourceId: 'src-1', title: 'Only Article' }),
+      const sources: RetrievedItem[] = [
+        makeRetrievedItem({ itemId: 'item-1', sourceId: 'src-1', title: 'Only Article' }),
       ];
 
       const text = 'See [Source 1] and also [Source 99].';
-      const citations = citationManager.extract(text, sources);
+      const result = citationManager.extractCitations(text, sources);
 
-      expect(citations).toHaveLength(1);
-      expect(citations[0].itemId).toBe('item-1');
+      expect(result.citations).toHaveLength(1);
+      expect(result.citations[0].itemId).toBe('item-1');
     });
 
     it('returns empty citations when no markers present', () => {
       const citationManager = new CitationManager();
-      const sources: SearchResult[] = [
-        makeSearchResult({ itemId: 'item-1', sourceId: 'src-1', title: 'Article' }),
+      const sources: RetrievedItem[] = [
+        makeRetrievedItem({ itemId: 'item-1', sourceId: 'src-1', title: 'Article' }),
       ];
 
       const text = 'A response with no citation markers.';
-      const citations = citationManager.extract(text, sources);
+      const result = citationManager.extractCitations(text, sources);
 
-      expect(citations).toHaveLength(0);
+      expect(result.citations).toHaveLength(0);
     });
   });
 

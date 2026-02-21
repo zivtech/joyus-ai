@@ -7,13 +7,16 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { DriftMonitor, StubVoiceAnalyzer } from '../../../src/content/monitoring/drift.js';
+import { DriftMonitor } from '../../../src/content/monitoring/drift.js';
+import { StubVoiceAnalyzer } from '../../../src/content/monitoring/voice-analyzer.js';
+import type { DriftAnalysis } from '../../../src/content/monitoring/voice-analyzer.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 interface GenerationLogEntry {
   id: string;
   profileId: string | null;
+  tenantId: string;
   query: string;
   responseText: string;
   driftScore: number | null;
@@ -23,6 +26,7 @@ function makeLogEntry(overrides: Partial<GenerationLogEntry> = {}): GenerationLo
   return {
     id: `log-${Math.random().toString(36).slice(2)}`,
     profileId: 'profile-1',
+    tenantId: 'tenant-1',
     query: 'What is the policy?',
     responseText: 'The policy states that all accounts must comply.',
     driftScore: null,
@@ -36,14 +40,14 @@ const mockDb = {} as never;
 
 describe('Drift Monitoring', () => {
   describe('StubVoiceAnalyzer', () => {
-    it('returns a perfect score for any text', async () => {
+    it('returns a zero-drift score for any text', async () => {
       const analyzer = new StubVoiceAnalyzer();
-      const result = await analyzer.analyze('Any text here.', 'profile-1');
+      const result = await analyzer.analyze('Any text here.', 'profile-1', 'tenant-1');
 
-      expect(result.score).toBe(1.0);
-      expect(result.dimensions).toHaveProperty('tone');
-      expect(result.dimensions).toHaveProperty('vocabulary');
-      expect(result.dimensions).toHaveProperty('structure');
+      expect(result.overallScore).toBe(0.0);
+      expect(result.dimensionScores).toBeDefined();
+      expect(result.sampleSize).toBe(0);
+      expect(result.recommendations).toHaveLength(1);
     });
   });
 
@@ -51,9 +55,11 @@ describe('Drift Monitoring', () => {
     it('calls analyzer for entries with null driftScore', async () => {
       const mockAnalyzer = {
         analyze: vi.fn().mockResolvedValue({
-          score: 0.87,
-          dimensions: { tone: 0.9, vocabulary: 0.85, structure: 0.86 },
-        }),
+          overallScore: 0.87,
+          dimensionScores: { tone: 0.9, vocabulary: 0.85, structure: 0.86 },
+          sampleSize: 1,
+          recommendations: [],
+        } satisfies DriftAnalysis),
       };
 
       const unscoredEntries = [
@@ -65,8 +71,8 @@ describe('Drift Monitoring', () => {
       const scored: Array<GenerationLogEntry & { driftScore: number }> = [];
       for (const entry of unscoredEntries) {
         if (entry.profileId && entry.driftScore === null) {
-          const analysis = await mockAnalyzer.analyze(entry.responseText, entry.profileId);
-          scored.push({ ...entry, driftScore: analysis.score });
+          const analysis = await mockAnalyzer.analyze(entry.responseText, entry.profileId, entry.tenantId);
+          scored.push({ ...entry, driftScore: analysis.overallScore });
         }
       }
 
@@ -78,7 +84,12 @@ describe('Drift Monitoring', () => {
 
     it('skips already-scored entries', async () => {
       const mockAnalyzer = {
-        analyze: vi.fn().mockResolvedValue({ score: 0.9, dimensions: {} }),
+        analyze: vi.fn().mockResolvedValue({
+          overallScore: 0.9,
+          dimensionScores: {},
+          sampleSize: 1,
+          recommendations: [],
+        } satisfies DriftAnalysis),
       };
 
       const entries = [
@@ -87,7 +98,7 @@ describe('Drift Monitoring', () => {
 
       for (const entry of entries) {
         if (entry.profileId && entry.driftScore === null) {
-          await mockAnalyzer.analyze(entry.responseText, entry.profileId);
+          await mockAnalyzer.analyze(entry.responseText, entry.profileId, entry.tenantId);
         }
       }
 
@@ -98,7 +109,12 @@ describe('Drift Monitoring', () => {
   describe('skips generations without profileId', () => {
     it('does not evaluate entries with null profileId', async () => {
       const mockAnalyzer = {
-        analyze: vi.fn().mockResolvedValue({ score: 0.9, dimensions: {} }),
+        analyze: vi.fn().mockResolvedValue({
+          overallScore: 0.9,
+          dimensionScores: {},
+          sampleSize: 1,
+          recommendations: [],
+        } satisfies DriftAnalysis),
       };
 
       const entries = [
@@ -108,7 +124,7 @@ describe('Drift Monitoring', () => {
 
       for (const entry of entries) {
         if (entry.profileId && entry.driftScore === null) {
-          await mockAnalyzer.analyze(entry.responseText, entry.profileId);
+          await mockAnalyzer.analyze(entry.responseText, entry.profileId, entry.tenantId);
         }
       }
 
@@ -116,6 +132,7 @@ describe('Drift Monitoring', () => {
       expect(mockAnalyzer.analyze).toHaveBeenCalledWith(
         entries[1].responseText,
         'profile-1',
+        'tenant-1',
       );
     });
   });
@@ -125,9 +142,9 @@ describe('Drift Monitoring', () => {
       const mockAnalyzer = {
         analyze: vi
           .fn()
-          .mockResolvedValueOnce({ score: 0.80, dimensions: { tone: 0.8, vocabulary: 0.8, structure: 0.8 } })
-          .mockResolvedValueOnce({ score: 0.90, dimensions: { tone: 0.9, vocabulary: 0.9, structure: 0.9 } })
-          .mockResolvedValueOnce({ score: 1.00, dimensions: { tone: 1.0, vocabulary: 1.0, structure: 1.0 } }),
+          .mockResolvedValueOnce({ overallScore: 0.80, dimensionScores: { tone: 0.8 }, sampleSize: 1, recommendations: [] })
+          .mockResolvedValueOnce({ overallScore: 0.90, dimensionScores: { tone: 0.9 }, sampleSize: 1, recommendations: [] })
+          .mockResolvedValueOnce({ overallScore: 1.00, dimensionScores: { tone: 1.0 }, sampleSize: 1, recommendations: [] }),
       };
 
       const entries = [
@@ -139,8 +156,8 @@ describe('Drift Monitoring', () => {
       const scores: number[] = [];
       for (const entry of entries) {
         if (entry.profileId && entry.driftScore === null) {
-          const analysis = await mockAnalyzer.analyze(entry.responseText, entry.profileId);
-          scores.push(analysis.score);
+          const analysis = await mockAnalyzer.analyze(entry.responseText, entry.profileId, entry.tenantId);
+          scores.push(analysis.overallScore);
         }
       }
 

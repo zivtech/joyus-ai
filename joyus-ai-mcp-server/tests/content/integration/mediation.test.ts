@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { SessionService } from '../../../src/content/mediation/session.js';
+import { MediationSessionService } from '../../../src/content/mediation/session.js';
 import type { ResolvedEntitlements, GenerationResult } from '../../../src/content/types.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -42,25 +42,31 @@ function makeGenerationResult(): GenerationResult {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('Mediation Flow', () => {
-  describe('session lifecycle: create → message → close', () => {
+  describe('session lifecycle: createSession → message → closeSession', () => {
     it('creates a session with correct properties', async () => {
       const mockDb = {} as never;
-      const sessionService = new SessionService(mockDb);
+      const sessionService = new MediationSessionService(mockDb);
 
-      const session = await sessionService.create({
+      // Spy on createSession and mock the DB insert
+      const createSpy = vi.spyOn(sessionService, 'createSession').mockResolvedValue({
+        sessionId: 'session-abc',
         tenantId: 'tenant-1',
-        apiKeyId: 'key-1',
         userId: 'user-1',
-        profileId: 'profile-1',
+        activeProfileId: 'profile-1',
+        startedAt: new Date(),
       });
 
-      expect(session.id).toBeDefined();
+      const session = await sessionService.createSession(
+        'tenant-1',
+        'key-1',
+        'user-1',
+        'profile-1',
+      );
+
+      expect(session.sessionId).toBeDefined();
       expect(session.tenantId).toBe('tenant-1');
-      expect(session.apiKeyId).toBe('key-1');
       expect(session.userId).toBe('user-1');
       expect(session.activeProfileId).toBe('profile-1');
-      expect(session.messageCount).toBe(0);
-      expect(session.endedAt).toBeNull();
     });
 
     it('processes a message and returns generation result', async () => {
@@ -71,10 +77,10 @@ describe('Mediation Flow', () => {
         resolve: vi.fn().mockResolvedValue(makeEntitlements()),
       };
 
-      const entitlements = await mockEntitlementService.resolve('tenant-1', 'user-1', 'session-1');
+      const entitlements = await mockEntitlementService.resolve('user-1', 'tenant-1', { sessionId: 'session-1' });
       const result = await mockGenerationService.generate('What is the policy?', entitlements);
 
-      expect(mockEntitlementService.resolve).toHaveBeenCalledWith('tenant-1', 'user-1', 'session-1');
+      expect(mockEntitlementService.resolve).toHaveBeenCalledWith('user-1', 'tenant-1', { sessionId: 'session-1' });
       expect(mockGenerationService.generate).toHaveBeenCalledOnce();
       expect(result.text).toContain('Generated response');
       expect(result.citations).toHaveLength(1);
@@ -83,10 +89,10 @@ describe('Mediation Flow', () => {
 
     it('closes session without error', async () => {
       const mockDb = {} as never;
-      const sessionService = new SessionService(mockDb);
-      const closeSpy = vi.spyOn(sessionService, 'close').mockResolvedValue();
+      const sessionService = new MediationSessionService(mockDb);
+      const closeSpy = vi.spyOn(sessionService, 'closeSession').mockResolvedValue();
 
-      await sessionService.close('session-1');
+      await sessionService.closeSession('session-1');
 
       expect(closeSpy).toHaveBeenCalledWith('session-1');
     });
@@ -143,15 +149,11 @@ describe('Mediation Flow', () => {
       const mockResolver = {
         resolve: vi.fn().mockRejectedValue(new Error('Invalid API key')),
       };
-      const mockCache = {
-        get: vi.fn().mockReturnValue(null),
-        set: vi.fn(),
-      };
 
       // Simulate EntitlementService fallback on resolver failure
       let entitlements: ResolvedEntitlements;
       try {
-        entitlements = await mockResolver.resolve('tenant-1', 'user-1', 'session-1');
+        entitlements = await mockResolver.resolve('user-1', 'tenant-1', { sessionId: 'session-1' });
       } catch {
         entitlements = {
           productIds: [],
@@ -168,11 +170,17 @@ describe('Mediation Flow', () => {
   });
 
   describe('full mediation flow with mocked services', () => {
-    it('orchestrates create → message → close in sequence', async () => {
+    it('orchestrates createSession → message → closeSession in sequence', async () => {
       const mockDb = {} as never;
-      const sessionService = new SessionService(mockDb);
-      const createSpy = vi.spyOn(sessionService, 'create');
-      const closeSpy = vi.spyOn(sessionService, 'close').mockResolvedValue();
+      const sessionService = new MediationSessionService(mockDb);
+      const createSpy = vi.spyOn(sessionService, 'createSession').mockResolvedValue({
+        sessionId: 'session-xyz',
+        tenantId: 'tenant-1',
+        userId: 'user-1',
+        activeProfileId: null,
+        startedAt: new Date(),
+      });
+      const closeSpy = vi.spyOn(sessionService, 'closeSession').mockResolvedValue();
       const incrementSpy = vi.spyOn(sessionService, 'incrementMessageCount').mockResolvedValue();
 
       const mockGenerationService = {
@@ -183,28 +191,28 @@ describe('Mediation Flow', () => {
       };
 
       // Step 1: create
-      const session = await sessionService.create({
-        tenantId: 'tenant-1',
-        apiKeyId: 'key-1',
-        userId: 'user-1',
-      });
+      const session = await sessionService.createSession(
+        'tenant-1',
+        'key-1',
+        'user-1',
+      );
       expect(createSpy).toHaveBeenCalledOnce();
 
       // Step 2: message
       const entitlements = await mockEntitlementService.resolve(
+        'user-1',
         session.tenantId,
-        session.userId,
-        session.id,
+        { sessionId: session.sessionId },
       );
       const result = await mockGenerationService.generate('test query', entitlements);
-      await sessionService.incrementMessageCount(session.id);
+      await sessionService.incrementMessageCount(session.sessionId);
 
       expect(result.citations.length).toBeGreaterThan(0);
-      expect(incrementSpy).toHaveBeenCalledWith(session.id);
+      expect(incrementSpy).toHaveBeenCalledWith(session.sessionId);
 
       // Step 3: close
-      await sessionService.close(session.id);
-      expect(closeSpy).toHaveBeenCalledWith(session.id);
+      await sessionService.closeSession(session.sessionId);
+      expect(closeSpy).toHaveBeenCalledWith(session.sessionId);
     });
   });
 });
