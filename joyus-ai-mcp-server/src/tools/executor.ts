@@ -8,6 +8,7 @@ import { eq, and } from 'drizzle-orm';
 import { db, connections, type Service } from '../db/client.js';
 import { decryptToken, encryptToken } from '../db/encryption.js';
 
+import { executeContentTool } from './executors/content-executor.js';
 import { executeGithubTool } from './executors/github-executor.js';
 import { executeGoogleTool } from './executors/google-executor.js';
 import { executeJiraTool } from './executors/jira-executor.js';
@@ -27,6 +28,11 @@ export interface ExecutorContext {
 export async function executeTool(userId: string, toolName: string, input: Record<string, unknown>): Promise<unknown> {
   if (toolName.startsWith('ops_')) {
     return executeOpsTool(toolName, input, { userId });
+  }
+
+  if (toolName.startsWith('content_')) {
+    const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
+    return executeContentTool(toolName, input, { userId, tenantId, db });
   }
 
   // Determine which service this tool belongs to
