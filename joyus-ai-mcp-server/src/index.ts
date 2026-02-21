@@ -22,6 +22,7 @@ import { sql } from 'drizzle-orm';
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
 import { db, auditLogs } from './db/client.js';
+import { initializeContentModule } from './content/index.js';
 import { exportRouter } from './exports/router.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
@@ -316,6 +317,13 @@ app.listen(PORT, async () => {
     await initializeScheduler();
   } catch (error) {
     console.error('Failed to initialize scheduler:', error);
+  }
+
+  // Initialize content module (failure is isolated — won't crash the server)
+  try {
+    await initializeContentModule(app, { db });
+  } catch (error) {
+    console.error('Failed to initialize content module:', error);
   }
 });
 
