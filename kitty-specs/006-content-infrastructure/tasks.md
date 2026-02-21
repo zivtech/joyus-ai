@@ -189,10 +189,10 @@ Implement the mediation REST API endpoints: session creation, messaging, and hea
 Build the background voice drift monitoring system: interface, scheduler, report generation, and drift score integration.
 
 **Subtasks**:
-- [ ] T046: Define VoiceAnalyzer interface (`src/content/monitoring/interface.ts`)
-- [ ] T047: Create drift monitor scheduler — cron background job (`src/content/monitoring/drift.ts`)
-- [ ] T048: Implement drift report generation and storage — DriftReport records
-- [ ] T049: Integrate drift scores with generation logs — back-populate driftScore field
+- [x] T046: Define VoiceAnalyzer interface (`src/content/monitoring/interface.ts`)
+- [x] T047: Create drift monitor scheduler — cron background job (`src/content/monitoring/drift.ts`)
+- [x] T048: Implement drift report generation and storage — DriftReport records
+- [x] T049: Integrate drift scores with generation logs — back-populate driftScore field
 
 **Parallel opportunities**: Can run in parallel with WP07, WP08.
 **Risks**: VoiceAnalyzer is an interface with no concrete implementation in this feature (profile engine provides it). Must ship with a mock/stub for testing.
