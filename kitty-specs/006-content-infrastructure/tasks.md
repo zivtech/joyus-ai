@@ -98,11 +98,11 @@ Build the search layer: a `SearchProvider` interface with PostgreSQL full-text s
 Build the entitlement system: pluggable resolver interface, HTTP-based resolver, session-scoped cache, and product management.
 
 **Subtasks**:
-- [ ] T022: Define EntitlementResolver interface (`src/content/entitlements/interface.ts`)
-- [ ] T023: Implement HttpEntitlementResolver — generic HTTP endpoint query (`src/content/entitlements/http-resolver.ts`)
-- [ ] T024: Create session-scoped entitlement cache (`src/content/entitlements/cache.ts`)
-- [ ] T025: Create entitlement service — resolve + cache + fallback (`src/content/entitlements/index.ts`)
-- [ ] T026: Create product management — CRUD for products, source mappings, profile mappings
+- [x] T022: Define EntitlementResolver interface (`src/content/entitlements/interface.ts`)
+- [x] T023: Implement HttpEntitlementResolver — generic HTTP endpoint query (`src/content/entitlements/http-resolver.ts`)
+- [x] T024: Create session-scoped entitlement cache (`src/content/entitlements/cache.ts`)
+- [x] T025: Create entitlement service — resolve + cache + fallback (`src/content/entitlements/index.ts`)
+- [x] T026: Create product management — CRUD for products, source mappings, profile mappings
 
 **Parallel opportunities**: Can run in parallel with WP02, WP04. T026 (products) is independent of T022-T025 (resolver).
 **Risks**: Entitlement cache must handle concurrent access safely. Fallback behavior (restricted access mode) must not leak content.
