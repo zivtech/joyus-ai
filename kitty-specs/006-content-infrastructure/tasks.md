@@ -61,13 +61,13 @@ Define the pluggable `ContentConnector` interface and implement both MVP connect
 Build the batch sync engine that orchestrates content indexing across connected sources, supporting all three sync strategies with scheduled and manual triggers.
 
 **Subtasks**:
-- [ ] T011: Create SyncEngine batch orchestrator (`src/content/sync/engine.ts`)
-- [ ] T012: Implement cursor-based incremental indexing with configurable batch size
-- [ ] T013: Implement sync state tracking — SyncRun records with status transitions
-- [ ] T014: Implement sync strategy handling (mirror/pass-through/hybrid)
-- [ ] T015: Add content staleness detection and flagging
-- [ ] T016: Add scheduled sync via node-cron (`src/content/sync/scheduler.ts`)
-- [ ] T017: Add manual sync trigger
+- [x] T011: Create SyncEngine batch orchestrator (`src/content/sync/engine.ts`)
+- [x] T012: Implement cursor-based incremental indexing with configurable batch size
+- [x] T013: Implement sync state tracking — SyncRun records with status transitions
+- [x] T014: Implement sync strategy handling (mirror/pass-through/hybrid)
+- [x] T015: Add content staleness detection and flagging
+- [x] T016: Add scheduled sync via node-cron (`src/content/sync/scheduler.ts`)
+- [x] T017: Add manual sync trigger
 
 **Parallel opportunities**: T015 (staleness) and T016 (scheduling) are independent.
 **Risks**: Cursor-based pagination must handle 500K items without memory issues. Sync state must survive server restarts.
