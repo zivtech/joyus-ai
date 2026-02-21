@@ -20,7 +20,7 @@ export const CreateSourceInput = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(['relational-database', 'rest-api']),
   syncStrategy: z.enum(['mirror', 'pass-through', 'hybrid']),
-  connectionConfig: z.record(z.unknown()),
+  connectionConfig: z.record(z.string(), z.unknown()),
   freshnessWindowMinutes: z.number().int().positive().default(1440),
 });
 export type CreateSourceInput = z.infer<typeof CreateSourceInput>;
