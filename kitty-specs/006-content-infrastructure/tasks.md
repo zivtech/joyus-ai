@@ -25,11 +25,11 @@ Layer 4: WP12 (integration — depends on all)
 Create the Drizzle ORM schema for the `content` PostgreSQL schema (12 tables), Zod validation schemas, shared TypeScript types, and wire exports into the existing db client.
 
 **Subtasks**:
-- [ ] T001: Create content Drizzle schema (`src/content/schema.ts`) — all 12 tables with pgSchema, enums, relations, indexes
-- [ ] T002: Create Zod validation schemas (`src/content/validation.ts`) — input validation for all content operations
-- [ ] T003: Create shared TypeScript types and constants (`src/content/types.ts`)
-- [ ] T004: Export content schema from `src/db/client.ts`
-- [ ] T005: Add Zod dependency to `package.json`
+- [x] T001: Create content Drizzle schema (`src/content/schema.ts`) — all 12 tables with pgSchema, enums, relations, indexes
+- [x] T002: Create Zod validation schemas (`src/content/validation.ts`) — input validation for all content operations
+- [x] T003: Create shared TypeScript types and constants (`src/content/types.ts`)
+- [x] T004: Export content schema from `src/db/client.ts`
+- [x] T005: Add Zod dependency to `package.json`
 
 **Parallel opportunities**: None — this is the foundation.
 **Risks**: Drizzle `pgSchema` API may need custom SQL for generated `tsvector` column and GIN index.
