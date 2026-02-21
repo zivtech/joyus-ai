@@ -83,10 +83,10 @@ Build the batch sync engine that orchestrates content indexing across connected 
 Build the search layer: a `SearchProvider` interface with PostgreSQL full-text search as the default implementation, wrapped in an entitlement-filtered search service.
 
 **Subtasks**:
-- [ ] T018: Define SearchProvider interface (`src/content/search/interface.ts`)
-- [ ] T019: Implement PostgreSQL FTS provider — tsvector, GIN index, ts_rank (`src/content/search/pg-fts-provider.ts`)
-- [ ] T020: Create entitlement-filtered search service (`src/content/search/index.ts`)
-- [ ] T021: Add search result formatting — source attribution, ranking, staleness indicators
+- [x] T018: Define SearchProvider interface (`src/content/search/interface.ts`)
+- [x] T019: Implement PostgreSQL FTS provider — tsvector, GIN index, ts_rank (`src/content/search/pg-fts-provider.ts`)
+- [x] T020: Create entitlement-filtered search service (`src/content/search/index.ts`)
+- [x] T021: Add search result formatting — source attribution, ranking, staleness indicators
 
 **Parallel opportunities**: Can run in parallel with WP02, WP05.
 **Risks**: Drizzle ORM FTS requires raw SQL via `sql` tagged template — no built-in tsvector support.
