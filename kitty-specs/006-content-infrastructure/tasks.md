@@ -118,10 +118,10 @@ Build the entitlement system: pluggable resolver interface, HTTP-based resolver,
 Build the content-aware generation pipeline: retrieve relevant content from accessible sources, apply voice profiles, generate with citations, and log for audit.
 
 **Subtasks**:
-- [ ] T027: Create content retriever — search + entitlement filter → ranked context (`src/content/generation/retriever.ts`)
-- [ ] T028: Create voice-consistent generator — profile engine integration interface (`src/content/generation/generator.ts`)
-- [ ] T029: Create citation manager — source reference extraction and formatting (`src/content/generation/citations.ts`)
-- [ ] T030: Create generation audit logging — GenerationLog records
+- [x] T027: Create content retriever — search + entitlement filter → ranked context (`src/content/generation/retriever.ts`)
+- [x] T028: Create voice-consistent generator — profile engine integration interface (`src/content/generation/generator.ts`)
+- [x] T029: Create citation manager — source reference extraction and formatting (`src/content/generation/citations.ts`)
+- [x] T030: Create generation audit logging — GenerationLog records
 
 **Parallel opportunities**: T029 (citations) is independent of T028 (generator).
 **Risks**: Generator must be model-agnostic (§2.6). Citation extraction depends on generation output format.
