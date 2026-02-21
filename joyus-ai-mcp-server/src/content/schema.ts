@@ -11,7 +11,6 @@ import { createId } from '@paralleldrive/cuid2';
 import { relations } from 'drizzle-orm';
 import {
   pgSchema,
-  pgEnum,
   text,
   timestamp,
   boolean,
@@ -48,32 +47,32 @@ const tsvector = customType<{ data: string }>({
 // ENUMS
 // ============================================================
 
-export const sourceTypeEnum = pgEnum('content_source_type', [
+export const sourceTypeEnum = contentSchema.enum('content_source_type', [
   'relational-database',
   'rest-api',
 ]);
 
-export const syncStrategyEnum = pgEnum('content_sync_strategy', [
+export const syncStrategyEnum = contentSchema.enum('content_sync_strategy', [
   'mirror',
   'pass-through',
   'hybrid',
 ]);
 
-export const sourceStatusEnum = pgEnum('content_source_status', [
+export const sourceStatusEnum = contentSchema.enum('content_source_status', [
   'active',
   'syncing',
   'error',
   'disconnected',
 ]);
 
-export const syncRunStatusEnum = pgEnum('content_sync_run_status', [
+export const syncRunStatusEnum = contentSchema.enum('content_sync_run_status', [
   'pending',
   'running',
   'completed',
   'failed',
 ]);
 
-export const syncTriggerEnum = pgEnum('content_sync_trigger', [
+export const syncTriggerEnum = contentSchema.enum('content_sync_trigger', [
   'scheduled',
   'manual',
 ]);
@@ -114,7 +113,7 @@ export const contentItems = contentSchema.table('items', {
   title: text('title').notNull(),
   body: text('body'),
   contentType: text('content_type').notNull().default('text'),
-  metadata: jsonb('metadata').notNull().default({}),
+  metadata: jsonb('metadata').notNull().$defaultFn(() => ({})),
   dataTier: integer('data_tier').notNull().default(1),
   searchVector: tsvector('search_vector'), // Generated column + GIN index via migration
   lastSyncedAt: timestamp('last_synced_at').notNull(),
@@ -243,7 +242,7 @@ export const contentGenerationLogs = contentSchema.table('generation_logs', {
   sessionId: text('session_id'),
   profileId: text('profile_id'),
   query: text('query').notNull(),
-  sourcesUsed: jsonb('sources_used').notNull().default([]),
+  sourcesUsed: jsonb('sources_used').notNull().$defaultFn(() => []),
   citationCount: integer('citation_count').notNull().default(0),
   responseLength: integer('response_length').notNull(),
   driftScore: real('drift_score'), // Populated by background drift monitor
@@ -265,7 +264,7 @@ export const contentDriftReports = contentSchema.table('drift_reports', {
   generationsEvaluated: integer('generations_evaluated').notNull(),
   overallDriftScore: real('overall_drift_score').notNull(),
   dimensionScores: jsonb('dimension_scores').notNull(),
-  recommendations: jsonb('recommendations').notNull().default([]),
+  recommendations: jsonb('recommendations').notNull().$defaultFn(() => []),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   tenantProfileWindowIdx: index('content_drift_tenant_profile_window_idx').on(table.tenantId, table.profileId, table.windowEnd),
@@ -282,7 +281,7 @@ export const contentOperationLogs = contentSchema.table('operation_logs', {
   userId: text('user_id'),
   durationMs: integer('duration_ms').notNull(),
   success: boolean('success').notNull(),
-  metadata: jsonb('metadata').notNull().default({}),
+  metadata: jsonb('metadata').notNull().$defaultFn(() => ({})),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   tenantOpCreatedIdx: index('content_op_logs_tenant_op_created_idx').on(table.tenantId, table.operation, table.createdAt),

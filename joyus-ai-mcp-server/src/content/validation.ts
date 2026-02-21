@@ -2,6 +2,12 @@
  * Content Infrastructure — Zod Validation Schemas
  *
  * Input validation for content operations (MCP tool inputs, API request bodies).
+ *
+ * TENANT SCOPING: tenantId is NOT included in these input schemas because it
+ * is always resolved from the authenticated session context, never from
+ * user-supplied input. This prevents tenant spoofing. All service methods
+ * that write or query data must accept tenantId as a separate parameter
+ * injected from the auth layer.
  */
 
 import { z } from 'zod';
