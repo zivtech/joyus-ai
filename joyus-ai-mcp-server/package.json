@@ -38,7 +38,8 @@
     "helmet": "^7.1.0",
     "luxon": "^3.4.4",
     "node-cron": "^3.0.3",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
