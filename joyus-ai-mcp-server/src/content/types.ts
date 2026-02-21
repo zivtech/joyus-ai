@@ -79,6 +79,8 @@ export interface ResolvedEntitlements {
   profileIds: string[];
   resolvedFrom: string;
   resolvedAt: Date;
+  /** TTL hint from the resolver backend, in seconds. Used by cache and persistence. */
+  ttlSeconds?: number;
 }
 
 export interface GenerationResult {
