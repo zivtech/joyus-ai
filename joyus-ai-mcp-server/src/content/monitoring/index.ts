@@ -22,3 +22,8 @@ export type {
 } from './metrics.js';
 
 export { createMonitoringRouter } from './routes.js';
+
+export type { DriftAnalysis, VoiceAnalyzer } from './voice-analyzer.js';
+export { StubVoiceAnalyzer } from './voice-analyzer.js';
+
+export { DriftMonitor, getLatestDriftReport, getDriftSummary } from './drift.js';
