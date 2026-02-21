@@ -45,11 +45,11 @@ Create the Drizzle ORM schema for the `content` PostgreSQL schema (12 tables), Z
 Define the pluggable `ContentConnector` interface and implement both MVP connectors: relational database (PostgreSQL/MySQL) and REST/GraphQL API.
 
 **Subtasks**:
-- [ ] T006: Define ContentConnector interface and shared connector types (`src/content/connectors/interface.ts`)
-- [ ] T007: Create ConnectorRegistry — type string → connector factory (`src/content/connectors/registry.ts`)
-- [ ] T008: Implement DatabaseConnector — query-based indexing for PostgreSQL/MySQL (`src/content/connectors/database-connector.ts`)
-- [ ] T009: Implement ApiConnector — REST/GraphQL endpoint indexing (`src/content/connectors/api-connector.ts`)
-- [ ] T010: Add connector health check support and error handling
+- [x] T006: Define ContentConnector interface and shared connector types (`src/content/connectors/interface.ts`)
+- [x] T007: Create ConnectorRegistry — type string → connector factory (`src/content/connectors/registry.ts`)
+- [x] T008: Implement DatabaseConnector — query-based indexing for PostgreSQL/MySQL (`src/content/connectors/database-connector.ts`)
+- [x] T009: Implement ApiConnector — REST/GraphQL endpoint indexing (`src/content/connectors/api-connector.ts`)
+- [x] T010: Add connector health check support and error handling
 
 **Parallel opportunities**: T008 and T009 can be developed in parallel (different files, same interface).
 **Risks**: Database connector needs to handle varied schema structures; API connector must handle pagination patterns.
