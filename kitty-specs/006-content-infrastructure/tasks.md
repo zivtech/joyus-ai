@@ -155,10 +155,10 @@ Implement all 13 MCP tools for content operations and register them in the exist
 Build the mediation API authentication layer (two-layer: API key + OAuth2/OIDC) and session management.
 
 **Subtasks**:
-- [ ] T038: Create two-layer auth middleware — API key validation + JWT/OIDC token verification (`src/content/mediation/auth.ts`)
-- [ ] T039: Create API key management — hashed storage, creation, validation, revocation
-- [ ] T040: Create mediation session management — create, get, close sessions (`src/content/mediation/session.ts`)
-- [ ] T041: Mount mediation router in Express app (`src/content/mediation/router.ts`)
+- [x] T038: Create two-layer auth middleware — API key validation + JWT/OIDC token verification (`src/content/mediation/auth.ts`)
+- [x] T039: Create API key management — hashed storage, creation, validation, revocation
+- [x] T040: Create mediation session management — create, get, close sessions (`src/content/mediation/session.ts`)
+- [x] T041: Mount mediation router in Express app (`src/content/mediation/router.ts`)
 
 **Parallel opportunities**: Can run in parallel with WP06, WP07.
 **Risks**: JWKS URI fetching and JWT verification must handle network failures gracefully. API key hashing must use constant-time comparison.
