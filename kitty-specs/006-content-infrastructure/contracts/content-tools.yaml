@@ -1,0 +1,178 @@
+# MCP Tool Contracts: Content Infrastructure
+# These tools are exposed via the MCP server for AI agent consumption.
+
+tools:
+  # ─── Content Source Management ───
+
+  - name: content_list_sources
+    description: >
+      List all content sources configured for the current tenant.
+      Returns source name, type, sync strategy, status, item count, and freshness info.
+    inputSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, syncing, error, disconnected]
+          description: Filter by source status (optional, returns all if omitted)
+      required: []
+
+  - name: content_get_source
+    description: >
+      Get detailed information about a specific content source including
+      connection status, sync history, and item statistics.
+    inputSchema:
+      type: object
+      properties:
+        sourceId:
+          type: string
+          description: Content source ID
+      required: [sourceId]
+
+  - name: content_sync_source
+    description: >
+      Trigger an immediate sync for a content source. Returns the sync run ID
+      for tracking progress. The sync runs asynchronously in the background.
+    inputSchema:
+      type: object
+      properties:
+        sourceId:
+          type: string
+          description: Content source ID to sync
+      required: [sourceId]
+
+  - name: content_get_sync_status
+    description: >
+      Check the status of a sync run. Returns progress information including
+      items discovered, created, updated, and any errors.
+    inputSchema:
+      type: object
+      properties:
+        syncRunId:
+          type: string
+          description: Sync run ID (returned by content_sync_source)
+      required: [syncRunId]
+
+  # ─── Search ───
+
+  - name: content_search
+    description: >
+      Search across all content sources accessible to the current user.
+      Results are filtered by the user's resolved entitlements.
+      Returns ranked results with source attribution, metadata, and staleness indicators.
+    inputSchema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Search query text
+        sourceId:
+          type: string
+          description: Limit search to a specific source (optional)
+        limit:
+          type: integer
+          description: Maximum results to return (default 20, max 100)
+        offset:
+          type: integer
+          description: Pagination offset (default 0)
+      required: [query]
+
+  - name: content_get_item
+    description: >
+      Retrieve a specific content item by ID. For pass-through and hybrid sources,
+      this fetches the full content from the source on demand.
+      Access is checked against the user's entitlements.
+    inputSchema:
+      type: object
+      properties:
+        itemId:
+          type: string
+          description: Content item ID
+      required: [itemId]
+
+  # ─── Entitlements ───
+
+  - name: content_resolve_entitlements
+    description: >
+      Resolve the current user's content entitlements from configured external systems.
+      Returns the list of products (content collections and voice profiles) the user can access.
+      Entitlements are cached for the session duration.
+    inputSchema:
+      type: object
+      properties:
+        forceRefresh:
+          type: boolean
+          description: Force re-resolution even if cached entitlements exist (default false)
+      required: []
+
+  - name: content_list_products
+    description: >
+      List all products available to the current user based on their resolved entitlements.
+      Each product includes its associated content sources and voice profiles.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+
+  # ─── Generation ───
+
+  - name: content_generate
+    description: >
+      Generate content-aware AI response using relevant content from accessible sources
+      and the appropriate voice profile. Retrieves matching content, applies the voice
+      profile, and includes source citations in the response.
+    inputSchema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: User's question or writing prompt
+        profileId:
+          type: string
+          description: Voice profile ID to apply (optional — uses default for context if omitted)
+        sourceIds:
+          type: array
+          items:
+            type: string
+          description: Limit retrieval to specific sources (optional — searches all accessible if omitted)
+        maxSources:
+          type: integer
+          description: Maximum number of source documents to use as context (default 5)
+      required: [query]
+
+  # ─── Content State ───
+
+  - name: content_state_dashboard
+    description: >
+      Get a summary of content state across all sources. Shows each source's
+      sync status, item count, last sync time, staleness indicators, and health.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+
+  # ─── Drift Monitoring ───
+
+  - name: content_drift_report
+    description: >
+      Get the latest voice drift report for a specific profile.
+      Shows which dimensions have drifted, severity, and recommendations for correction.
+    inputSchema:
+      type: object
+      properties:
+        profileId:
+          type: string
+          description: Voice profile ID
+        windowDays:
+          type: integer
+          description: Look-back window in days (default 7)
+      required: [profileId]
+
+  - name: content_drift_summary
+    description: >
+      Get a summary of drift status across all monitored voice profiles for the tenant.
+      Highlights profiles with significant drift that need attention.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []

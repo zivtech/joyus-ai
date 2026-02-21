@@ -1,0 +1,247 @@
+# Bot Mediation REST API Contracts
+# External chat interfaces connect to these endpoints.
+# Two-layer auth: X-API-Key (integration) + Authorization: Bearer (user)
+
+openapi: 3.0.3
+info:
+  title: Joyus AI Mediation API
+  version: 0.1.0
+  description: >
+    Bot mediation gateway for external chat interfaces. Provides content-aware
+    AI interactions with entitlement enforcement and voice consistency.
+
+servers:
+  - url: /api/mediation
+    description: Mediation API base path
+
+security:
+  - apiKey: []
+    bearerAuth: []
+
+paths:
+  /sessions:
+    post:
+      summary: Create a mediation session
+      description: >
+        Initiates a new mediation session. Validates both the integration API key
+        and user token, resolves user entitlements, and returns a session ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profileId:
+                  type: string
+                  description: Voice profile to use for this session (optional)
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediationSession'
+        '401':
+          description: Missing or invalid API key or user token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthError'
+        '403':
+          description: User has no entitlements for this tenant
+
+  /sessions/{sessionId}/messages:
+    post:
+      summary: Send a message in a mediation session
+      description: >
+        Send a user message and receive a content-aware AI response.
+        The response includes generated text, source citations, and metadata.
+        Content retrieval is filtered by the user's resolved entitlements.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  description: User's message text
+                  maxLength: 10000
+                maxSources:
+                  type: integer
+                  description: Max source documents for context (default 5)
+      responses:
+        '200':
+          description: AI response generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediationResponse'
+        '401':
+          description: Invalid or expired credentials
+        '404':
+          description: Session not found or expired
+
+  /sessions/{sessionId}:
+    get:
+      summary: Get session details
+      description: Returns session metadata including entitlements, message count, and activity timestamps.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediationSession'
+    delete:
+      summary: End a mediation session
+      description: Closes the session and clears cached entitlements.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Session ended
+
+  /health:
+    get:
+      summary: Mediation API health check
+      description: Returns health status of the mediation subsystem.
+      security: []
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Integration API key (identifies the external system)
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: User OAuth2/OIDC token (identifies the end user)
+
+  schemas:
+    MediationSession:
+      type: object
+      properties:
+        id:
+          type: string
+        integrationName:
+          type: string
+        userId:
+          type: string
+        activeProfileId:
+          type: string
+          nullable: true
+        entitledProducts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        messageCount:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        lastActivityAt:
+          type: string
+          format: date-time
+
+    MediationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Generated AI response text
+        citations:
+          type: array
+          items:
+            type: object
+            properties:
+              sourceId:
+                type: string
+              itemId:
+                type: string
+              title:
+                type: string
+              excerpt:
+                type: string
+                description: Relevant excerpt from the source
+              sourceType:
+                type: string
+        profileUsed:
+          type: string
+          nullable: true
+          description: Voice profile ID applied to this response
+        metadata:
+          type: object
+          properties:
+            sourcesSearched:
+              type: integer
+            sourcesUsed:
+              type: integer
+            responseTime:
+              type: integer
+              description: Response time in milliseconds
+
+    AuthError:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [missing_api_key, invalid_api_key, missing_user_token, invalid_user_token, token_expired]
+        message:
+          type: string
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        components:
+          type: object
+          properties:
+            database:
+              type: string
+            connectors:
+              type: object
+              description: Per-source health status
+            entitlementResolver:
+              type: string
+            searchProvider:
+              type: string
+        timestamp:
+          type: string
+          format: date-time
