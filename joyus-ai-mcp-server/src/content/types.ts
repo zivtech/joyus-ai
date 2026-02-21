@@ -109,3 +109,10 @@ export interface Citation {
 export const DEFAULT_BATCH_SIZE = 100;
 export const MAX_SEARCH_LIMIT = 100;
 export const DEFAULT_FRESHNESS_WINDOW_MINUTES = 1440; // 24 hours
+
+// ============================================================
+// DB CLIENT TYPE
+// ============================================================
+
+import { drizzle } from 'drizzle-orm/node-postgres';
+export type DrizzleClient = ReturnType<typeof drizzle>;
