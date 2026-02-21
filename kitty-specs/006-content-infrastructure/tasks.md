@@ -170,10 +170,10 @@ Build the mediation API authentication layer (two-layer: API key + OAuth2/OIDC) 
 Implement the mediation REST API endpoints: session creation, messaging, and health check.
 
 **Subtasks**:
-- [ ] T042: Implement POST /sessions — create session with entitlement resolution
-- [ ] T043: Implement POST /sessions/:id/messages — send message, generate response
-- [ ] T044: Implement GET /sessions/:id and DELETE /sessions/:id
-- [ ] T045: Implement GET /health — mediation subsystem health check
+- [x] T042: Implement POST /sessions — create session with entitlement resolution
+- [x] T043: Implement POST /sessions/:id/messages — send message, generate response
+- [x] T044: Implement GET /sessions/:id and DELETE /sessions/:id
+- [x] T045: Implement GET /health — mediation subsystem health check
 
 **Parallel opportunities**: T042-T045 are independent endpoints.
 **Risks**: Message endpoint (T043) is the critical path — must orchestrate retrieval, generation, and citation in a single request. Must handle 100 concurrent sessions (SC-006).
