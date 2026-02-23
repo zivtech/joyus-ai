@@ -157,7 +157,11 @@ Given that feature description, do this:
      "friendly_name": "<Friendly Title>",
      "mission": "<selected-mission>",
      "source_description": "$ARGUMENTS",
-     "created_at": "<ISO timestamp>"
+     "created_at": "<ISO timestamp>",
+     "measurement_owner": "<owner role>",
+     "review_cadence": "<weekly|biweekly|monthly>",
+     "risk_class": "<low|platform|critical>",
+     "lifecycle_state": "<spec-only|planning|execution|done>"
    }
    ```
 
@@ -174,6 +178,10 @@ Given that feature description, do this:
     - Generate Functional Requirements (each requirement must be testable)
     - Define Success Criteria (measurable, technology-agnostic outcomes)
     - Identify Key Entities (if data involved)
+    - For platform-level or critical features (`risk_class` = `platform` or `critical`), include required sections:
+      * `Adoption Plan`
+      * `ROI Metrics`
+      * `Security + MCP Governance`
 
 7. Write the specification to `<feature_dir>/spec.md` using the template structure, replacing placeholders with concrete details derived from the feature description while preserving section order and headings.
 
@@ -212,6 +220,12 @@ Given that feature description, do this:
       - [ ] User scenarios cover primary flows
       - [ ] Feature meets measurable outcomes defined in Success Criteria
       - [ ] No implementation details leak into specification
+
+      ## Platform Governance Completeness (Required when `risk_class` is `platform` or `critical`)
+
+      - [ ] Adoption Plan section is present and explicit
+      - [ ] ROI Metrics section includes owner and review cadence
+      - [ ] Security + MCP Governance section includes approval and audit lifecycle
       
       ## Notes
       
@@ -271,6 +285,7 @@ Given that feature description, do this:
 - **Mandatory sections**: Must be completed for every feature
 - **Optional sections**: Include only when relevant to the feature
 - When a section doesn't apply, remove it entirely (don't leave as "N/A")
+- For `risk_class` of `platform` or `critical`, `Adoption Plan`, `ROI Metrics`, and `Security + MCP Governance` are mandatory
 
 ### For AI Generation
 

@@ -4,5 +4,9 @@
   "friendly_name": "joyus-ai Platform Architecture Overview",
   "mission": "software-dev",
   "source_description": "Umbrella specification for the Joyus AI Platform. High-level architecture and domain inventory covering all 11 capability domains, with each domain to be broken out into its own deep spec later.",
-  "created_at": "2026-02-17T07:58:00Z"
+  "created_at": "2026-02-17T07:58:00Z",
+  "measurement_owner": "Architecture",
+  "review_cadence": "monthly",
+  "risk_class": "platform",
+  "lifecycle_state": "spec-only"
 }

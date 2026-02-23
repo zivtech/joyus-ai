@@ -6,5 +6,9 @@
   "source_description": "006-content-infrastructure",
   "created_at": "2026-02-20T14:30:00Z",
   "vcs": "git",
-  "vcs_locked_at": "2026-02-21T12:32:19.149813+00:00"
+  "vcs_locked_at": "2026-02-21T12:32:19.149813+00:00",
+  "measurement_owner": "Platform Operations",
+  "review_cadence": "weekly",
+  "risk_class": "platform",
+  "lifecycle_state": "done"
 }
