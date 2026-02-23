@@ -25,6 +25,18 @@ _private/
 # Block WP status files (managed in main repo, prevents merge conflicts)
 # Research artifacts in kitty-specs/**/research/ are allowed
 kitty-specs/**/tasks/*.md
+!kitty-specs/006-content-infrastructure/tasks/WP01-content-schema-foundation.md
+!kitty-specs/006-content-infrastructure/tasks/WP02-connectors.md
+!kitty-specs/006-content-infrastructure/tasks/WP03-sync-engine.md
+!kitty-specs/006-content-infrastructure/tasks/WP04-search.md
+!kitty-specs/006-content-infrastructure/tasks/WP05-entitlements.md
+!kitty-specs/006-content-infrastructure/tasks/WP06-generation.md
+!kitty-specs/006-content-infrastructure/tasks/WP07-mcp-tools.md
+!kitty-specs/006-content-infrastructure/tasks/WP08-mediation-auth.md
+!kitty-specs/006-content-infrastructure/tasks/WP09-mediation-endpoints.md
+!kitty-specs/006-content-infrastructure/tasks/WP10-drift-monitoring.md
+!kitty-specs/006-content-infrastructure/tasks/WP11-observability.md
+!kitty-specs/006-content-infrastructure/tasks/WP12-integration.md
 
 # Deploy secrets (never commit actual .env files)
 deploy/.env
