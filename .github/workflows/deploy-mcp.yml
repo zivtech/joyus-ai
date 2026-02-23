@@ -19,7 +19,58 @@ env:
   PLAYWRIGHT_IMAGE: ghcr.io/<org>/joyus-ai-playwright
 
 jobs:
+  require-jonathan-signoff:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Require approval from Jonathan Delaigle (@grndlvl)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          APPROVER="grndlvl"
+          REPO="${GITHUB_REPOSITORY}"
+          SHA="${GITHUB_SHA}"
+
+          PR_NUMBERS="$(gh api "repos/${REPO}/commits/${SHA}/pulls" --jq '.[].number')"
+          if [ -z "${PR_NUMBERS}" ]; then
+            echo "::error::No PR associated with commit ${SHA}. Release requires merged PR approval from @${APPROVER}."
+            exit 1
+          fi
+
+          APPROVED_PR=""
+          for PR in ${PR_NUMBERS}; do
+            MERGED="$(gh api "repos/${REPO}/pulls/${PR}" --jq '.merged')"
+            if [ "${MERGED}" != "true" ]; then
+              continue
+            fi
+
+            LAST_REVIEW_STATE="$(
+              gh api "repos/${REPO}/pulls/${PR}/reviews" \
+                | jq -r --arg approver "${APPROVER}" \
+                  '[.[] | select((.user.login | ascii_downcase) == ($approver | ascii_downcase))] | last | .state // empty'
+            )"
+            if [ "${LAST_REVIEW_STATE}" = "APPROVED" ]; then
+              APPROVED_PR="${PR}"
+              break
+            fi
+          done
+
+          if [ -z "${APPROVED_PR}" ]; then
+            echo "::error::Release blocked. No merged PR for commit ${SHA} has latest review state APPROVED by @${APPROVER}."
+            exit 1
+          fi
+
+          {
+            echo "## OSS Release Gate"
+            echo ""
+            echo "Approved by @${APPROVER} on merged PR #${APPROVED_PR}."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
   build-and-push:
+    needs: require-jonathan-signoff
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -1,0 +1,57 @@
+name: Spec Signoff Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  jonathan-signoff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Jonathan approval for governed spec changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPROVER: grndlvl
+        run: |
+          set -euo pipefail
+          REPO="${GITHUB_REPOSITORY}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          CHANGED_FILES="$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate --jq '.[].filename')"
+          GOVERNED_REGEX='^(spec/|kitty-specs/|\.claude/commands/|\.kittify/|README\.md$|ROADMAP\.md$)'
+          GOVERNED_CHANGES="$(printf '%s\n' "${CHANGED_FILES}" | grep -E "${GOVERNED_REGEX}" || true)"
+
+          if [ -z "${GOVERNED_CHANGES}" ]; then
+            echo "No governed spec files changed. Jonathan signoff not required for this PR."
+            {
+              echo "## Spec Signoff Gate"
+              echo ""
+              echo "No governed spec files changed."
+              echo "Use \`ideas/\` for fast idea intake without redirecting active specs."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          APPROVAL_COUNT="$(
+            gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" --paginate \
+              | jq -r --arg approver "${APPROVER}" --arg head_sha "${HEAD_SHA}" \
+                '[.[] | select((.user.login | ascii_downcase) == ($approver | ascii_downcase) and .state == "APPROVED" and .commit_id == $head_sha)] | length'
+          )"
+
+          if [ "${APPROVAL_COUNT}" -lt 1 ]; then
+            echo "::error::Governed spec files changed, but @${APPROVER} has not approved this PR at current head commit ${HEAD_SHA}."
+            echo "::error::Capture ideas in ideas/ first, then promote to governed specs after approval."
+            exit 1
+          fi
+
+          {
+            echo "## Spec Signoff Gate"
+            echo ""
+            echo "Governed spec changes detected."
+            echo "Approval from @${APPROVER} confirmed for head commit ${HEAD_SHA}."
+          } >> "${GITHUB_STEP_SUMMARY}"

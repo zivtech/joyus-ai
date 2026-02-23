@@ -7,7 +7,12 @@
 * @zivtech/joyus-core
 
 # Specifications and design documents
-/spec/ @zivtech/joyus-core
+/spec/ @zivtech/joyus-core @grndlvl
+/kitty-specs/ @zivtech/joyus-core @grndlvl
+/.claude/commands/ @zivtech/joyus-core @grndlvl
+/.kittify/ @zivtech/joyus-core @grndlvl
+/README.md @zivtech/joyus-core @grndlvl
+/ROADMAP.md @zivtech/joyus-core @grndlvl
 
 # Deployment infrastructure
 /deploy/ @zivtech/joyus-ops
