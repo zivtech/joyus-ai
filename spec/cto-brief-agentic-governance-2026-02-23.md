@@ -83,12 +83,18 @@ We executed a 30-day governance implementation kickoff to make agentic coding sc
    - Confirm accountable owner roles for weekly and monthly KPI review.
 4. **MCP governance operating model:**
    - Confirm security approval authority, quarterly review owner, and deprecation authority.
+5. **Autonomy level policy:**
+   - Confirm target maturity strategy (default Level 3, selective Level 4, evidence-gated Level 5 only).
+6. **Scenario validation policy:**
+   - Confirm that Level 4/5 workflows require holdout behavioral scenarios outside implementation context.
 
 ## 6) Recommended CTO Position
 - Approve **vNext baseline now** with P0-only merge blocking.
 - Set a **30-45 day target** to retire P1 checklist consistency debt.
 - Require all new platform/critical features to follow the new section and metadata contracts immediately.
 - Formalize quarterly MCP governance review with named owner and escalation path.
+- Adopt explicit autonomy-level governance: optimize for measured Level 3/4 performance before scaling Level 5 patterns.
+- Require legacy migration staging and talent pipeline safeguards as part of rollout quality criteria.
 
 ## 7) Proposed Discussion Agenda (25 minutes)
 1. 5 min - What changed and why it matters
@@ -98,3 +104,13 @@ We executed a 30-day governance implementation kickoff to make agentic coding sc
 
 ## 8) Meeting Ask
 Approve the vNext governance baseline and decision framework so the team can move from remediation to sustained operating cadence without reopening foundational policy debates.
+
+## 9) New Input Incorporated (Dark Factory Evidence)
+The latest article adds four strategic implications now integrated into governance artifacts:
+1. **Five-level maturity language** is now used as operating vocabulary to reduce hype ambiguity.
+2. **Outcome-over-diff evaluation** is enforced for high-autonomy workflows via scenario holdout policy.
+3. **J-curve risk control** is formalized by tracking measured vs perceived productivity deltas.
+4. **Legacy and talent realism** is codified through staged migration requirements and role-development safeguards.
+
+Reference memo:
+- `/Users/AlexUA/claude/joyus-ai/spec/dark-factory-incorporation-2026-02-23.md`

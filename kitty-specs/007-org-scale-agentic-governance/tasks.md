@@ -25,3 +25,9 @@
 - Implement governance validation script.
 - Extend pride-status integrity reporting.
 - Add CI workflow and publish verification report.
+
+### WP06 - Autonomy Leveling and Scenario Policy
+- Define and publish five-level operating maturity classification process.
+- Add holdout-scenario policy requirements for Level 4/5 workflows.
+- Define digital twin/simulation expectation for high-autonomy integration testing.
+- Document legacy migration staging and talent pipeline safeguards.

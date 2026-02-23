@@ -44,6 +44,16 @@
 | E5-02 | P0 | Governance Owner | `spec/constitution.md`, `.kittify/memory/constitution.md` | Constitution sync check passes after title-normalized diff | 2026-03-05 |
 | E5-03 | P1 | Spec Maintainer | `kitty-specs/003-platform-architecture-overview/plan.md`, `kitty-specs/003-platform-architecture-overview/research.md`, `kitty-specs/003-platform-architecture-overview/tasks.md`, `kitty-specs/005-content-intelligence/checklists/requirements.md` | Missing artifacts are present and pass governance check | 2026-03-08 |
 
+## Epic E6 - Factory Readiness and Autonomy Leveling
+
+| ID | Priority | Owner Role | Target Files | Acceptance Test | Due Date |
+|---|---|---|---|---|---|
+| E6-01 | P1 | Engineering Operations | `kitty-specs/007-org-scale-agentic-governance/spec.md` | Five-level maturity model is defined and baseline classification process is documented | 2026-03-06 |
+| E6-02 | P1 | Validation Maintainer | `kitty-specs/007-org-scale-agentic-governance/spec.md`, `scripts/spec-governance-check.py` | Level 4/5 scenario holdout policy is documented and referenced by governance checks | 2026-03-11 |
+| E6-03 | P1 | Architecture Owner | `kitty-specs/007-org-scale-agentic-governance/spec.md` | Legacy migration path is documented with stage-gated progression criteria | 2026-03-10 |
+| E6-04 | P2 | Security Lead | `kitty-specs/007-org-scale-agentic-governance/spec.md` | Digital twin or simulation requirement is defined for high-autonomy workflows | 2026-03-12 |
+| E6-05 | P2 | Developer Experience Lead | `kitty-specs/007-org-scale-agentic-governance/spec.md`, `spec/cto-brief-agentic-governance-2026-02-23.md` | Talent and role transition policy (including early-career safeguards) is documented | 2026-03-13 |
+
 ## Exit Criteria for 2026-03-20 Freeze
 1. All P0 items complete.
 2. Governance check reports zero failing checks.
