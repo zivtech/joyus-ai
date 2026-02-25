@@ -38,6 +38,7 @@ Most AI deployments are undifferentiated: the same model, the same defaults, the
 - The state package maintains session continuity across Claude sessions and compactions.
 - The content intelligence system (writing profiles, fidelity verification, drift monitoring) is maintained in a separate private package.
 - Skills are modular prompt fragments loaded at runtime; org-specific skills live outside this repo.
+- Additional capabilities — including structured knowledge capture, interactive research tooling, and artifact lifecycle management — are under active development in private repositories.
 
 ## Packages
 
@@ -89,12 +90,7 @@ npm run build
 
 ### Full Stack (Docker)
 
-```bash
-cd deploy
-docker compose up
-```
-
-See `deploy/` for environment variable documentation and health-check scripts.
+Production deployment configuration is maintained in a separate private repository. For local development, see the per-package instructions above.
 
 ## Specs and Development
 
@@ -106,6 +102,8 @@ This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for sp
 | `002` | Session Context Management | Complete |
 | `004` | Workflow Enforcement | Complete |
 | `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
+| `006` | Content Infrastructure | Complete (WP01–WP12) |
+| `007` | Org-Scale Agentic Governance | Planning |
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 

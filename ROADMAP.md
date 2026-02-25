@@ -15,11 +15,12 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 ## In Development
 
 - **Content Infrastructure** — Corpus connector interface, search abstraction layer, content state management, access level mapping, AI-optimized content API for bot mediation.
+- **Org-Scale Agentic Governance** — Maturity scoring, spec lifecycle enforcement, CI-integrated governance gates, remediation tracking.
 
 ## Planned
 
 - **Platform Framework** — Multi-tenant web portal, skill-based mediation, thin orchestration layer, monitoring infrastructure.
-- **Fast Casual Operations Module** — Multi-location staffing planner with manager/CEO approval gates and server-side Square publish (dry-run + apply), tenant-isolated and fully audited.
+- **Multi-Location Operations Module** — Staffing planner with manager approval gates and server-side POS publish (dry-run + apply), tenant-isolated and fully audited.
 - **Compliance Modules** — HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA — declared per tenant, enforced as hard failures.
 - **Automated Pipelines** — Event-driven workflows: regulatory change detection, scheduled reports, content update routing, quality gate automation.
 - **Self-Service Profile Building** — Upload writing samples, receive a usable writing skill. Automatic tier detection with progression guidance.
@@ -43,6 +44,8 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 
 ## Under Evaluation
 
+- Structured knowledge capture and artifact lifecycle management
+- AI-assisted research and decision documentation tooling
 - Industry-specific pipeline integrations
 - Compliance framework extensions
 - Enriched expert profiles (subject matter domains, citation networks)
