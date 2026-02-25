@@ -1,0 +1,125 @@
+I created a new branch to track some specifcations work on a new feature set (or feature sets) find it
+
+---
+
+I meant access-chat-history-2SBsm
+
+---
+
+yes
+
+---
+
+I need this work to be done in a private repo. Let's move it
+
+---
+
+1
+
+---
+
+can I continue to work on that work here or do I need to open a new session in joyus-ai internal?
+
+---
+
+go ahead, skip the modified files
+
+---
+
+push it to the internal repo remote
+
+---
+
+yes clean it up
+
+---
+
+yes move that one too
+
+---
+
+analyze the files and make recomendations based upon what you find
+
+---
+
+yes do it
+
+---
+
+what do you recommend?
+
+---
+
+let's move on to that untracked file, what is it
+
+---
+
+move it to internal
+
+---
+
+let's look at the other branches, clean up anything stale
+
+---
+
+you can move the fast-casual ones to joyus-fast-casual, then we will review the other two
+
+---
+
+yes extract from that one
+
+---
+
+remote has work, pull first then push
+
+---
+
+just take the remote version of README and keep our changes
+
+---
+
+go ahead and remove the worktrees then delete the branches
+
+---
+
+let's look at both in parallel
+
+---
+
+yes, delete joyusly-joyfull and start cleaning up scaling-coding-research
+
+---
+
+generalize the roadmap line, leave CLAUDE.md as-is
+
+---
+
+no?
+
+---
+
+push it
+
+---
+
+yes
+
+---
+
+okay, now I want to return to the research project on the AI-assisted ARD/specifications tool we were investigating. Can we do that here?
+
+---
+
+I think this should all be private until we determine we want to tell the world about it.
+
+---
+
+okay, but what is related to those features that exists here?
+
+---
+
+make sure the current readme here is up to date. Feel free to mention the roadmap items we are working on privately but only give a hint at what they are
+
+---
+
+yes
