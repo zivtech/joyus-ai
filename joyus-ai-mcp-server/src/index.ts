@@ -159,7 +159,7 @@ app.get('/health', async (req, res) => {
 // Auth routes (OAuth callbacks, token management)
 app.use('/auth', authRouter);
 
-// Joyus fast casual export API routes
+// Export API routes
 app.use('/api/v1', exportRouter);
 
 // Task management routes (scheduled tasks)

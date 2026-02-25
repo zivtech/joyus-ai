@@ -1,5 +1,5 @@
 /**
- * Joyus Fast Casual Tool Definitions
+ * Ops Tool Definitions
  */
 
 import { ToolDefinition } from './index.js';
@@ -8,7 +8,7 @@ export const opsTools: ToolDefinition[] = [
   {
     name: 'ops_export_excel',
     description:
-      'Generate a Joyus Fast Casual operator workbook (.xlsx) and return a signed download URL. Supports current-view or full-period scope.',
+      'Generate an operator workbook (.xlsx) and return a signed download URL. Supports current-view or full-period scope.',
     inputSchema: {
       type: 'object',
       properties: {

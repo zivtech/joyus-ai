@@ -104,7 +104,7 @@ function defaultWorkbookPayload(
       headers: ['field', 'value'],
       col_widths: [24, 100],
       rows: [
-        ['feature_set', 'joyus fast casual'],
+        ['feature_set', tenantId],
         ['tenant_id', tenantId],
         ['requested_by_user_id', userId],
         ['generated_utc', created],
@@ -249,7 +249,7 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
   const locations = normalizeExportLocations(params.request.locations);
   const now = nowIso();
   const jobId = createId();
-  const fileName = `joyus-fast-casual-export-${params.tenantId}-${jobId}.xlsx`;
+  const fileName = `export-${params.tenantId}-${jobId}.xlsx`;
   const outputDir = path.join(exportRootDir(), params.tenantId);
   const outputPath = path.join(outputDir, fileName);
 

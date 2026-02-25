@@ -1,7 +1,7 @@
 # Agentic Coding Gap Baseline - 2026-02-23
 
 ## Benchmark
-- Source: `/Users/AlexUA/claude/claude-files/joyus/Scaling agentic coding across your organization.pdf`
+- Source: Anthropic, "Scaling agentic coding across your organization" (2025)
 - Benchmark date context: guide reflects insights through August 2025; baseline completed on February 23, 2026.
 - Scope: `spec/`, `kitty-specs/`, `.claude/commands/`, `.kittify/`, `README.md`, `ROADMAP.md`.
 

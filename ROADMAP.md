@@ -21,7 +21,7 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 ## Planned
 
 - **Platform Framework** - Multi-tenant web portal, skill-based mediation, thin orchestration layer, monitoring infrastructure.
-- **Fast Casual Operations Module** - Multi-location staffing planner with manager/CEO approval gates and server-side Square publish (dry-run + apply), tenant-isolated and fully audited.
+- **Multi-Location Operations Module** - Staffing planner with manager approval gates and server-side POS publish (dry-run + apply), tenant-isolated and fully audited.
 - **Compliance Modules** - HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA - declared per tenant, enforced as hard failures.
 - **Automated Pipelines** - Event-driven workflows: regulatory change detection, scheduled reports, content update routing, quality gate automation.
 - **Self-Service Profile Building** - Upload writing samples, receive a usable writing skill. Automatic tier detection with progression guidance.

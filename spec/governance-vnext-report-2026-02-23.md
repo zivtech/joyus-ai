@@ -1,6 +1,6 @@
 # Spec Governance Verification Report
 
-Generated from `/Users/AlexUA/claude/joyus-ai`
+Generated from repository root
 
 ## Summary
 - Total findings: 12

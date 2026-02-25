@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build operator-oriented XLSX exports for joyus fast casual.
+"""Build operator-oriented XLSX exports.
 
 Reads JSON payload from stdin and writes workbook to output_path.
 """

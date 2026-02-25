@@ -16,44 +16,44 @@ We executed a 30-day governance implementation kickoff to make agentic coding sc
 
 ### Governance foundation
 - New baseline and scored gap matrix:
-  - `/Users/AlexUA/claude/joyus-ai/spec/agentic-coding-gap-baseline-2026-02-23.md`
+  - `spec/agentic-coding-gap-baseline-2026-02-23.md`
 - Prioritized remediation backlog with owners, acceptance tests, due dates:
-  - `/Users/AlexUA/claude/joyus-ai/spec/agentic-coding-remediation-backlog-2026-02-23.md`
+  - `spec/agentic-coding-remediation-backlog-2026-02-23.md`
 - vNext governance policy:
-  - `/Users/AlexUA/claude/joyus-ai/spec/spec-governance.md`
+  - `spec/spec-governance.md`
 
 ### New governance feature stream
 - Created `007-org-scale-agentic-governance` with full spec artifacts:
-  - `/Users/AlexUA/claude/joyus-ai/kitty-specs/007-org-scale-agentic-governance/spec.md`
-  - `/Users/AlexUA/claude/joyus-ai/kitty-specs/007-org-scale-agentic-governance/plan.md`
-  - `/Users/AlexUA/claude/joyus-ai/kitty-specs/007-org-scale-agentic-governance/tasks.md`
+  - `kitty-specs/007-org-scale-agentic-governance/spec.md`
+  - `kitty-specs/007-org-scale-agentic-governance/plan.md`
+  - `kitty-specs/007-org-scale-agentic-governance/tasks.md`
   - plus `research.md`, `data-model.md`, `quickstart.md`, checklist, and meta.
 
 ### Workflow and metadata hardening
 - Added required metadata contract to existing features (`001`-`006`):
   - `measurement_owner`, `review_cadence`, `risk_class`, `lifecycle_state`
 - Updated command template source to require governance sections for platform/critical features:
-  - `/Users/AlexUA/claude/joyus-ai/.kittify/missions/software-dev/command-templates/specify.md`
+  - `.kittify/missions/software-dev/command-templates/specify.md`
 
 ### Automation and CI
 - Extended pride status with integrity and constitution sync signals:
-  - `/Users/AlexUA/claude/joyus-ai/scripts/pride-status.py`
+  - `scripts/pride-status.py`
 - Added automated governance checker:
-  - `/Users/AlexUA/claude/joyus-ai/scripts/spec-governance-check.py`
+  - `scripts/spec-governance-check.py`
 - Added CI workflow for governance checks:
-  - `/Users/AlexUA/claude/joyus-ai/.github/workflows/spec-governance.yml`
+  - `.github/workflows/spec-governance.yml`
 - Published verification report and freeze note:
-  - `/Users/AlexUA/claude/joyus-ai/spec/governance-vnext-report-2026-02-23.md`
-  - `/Users/AlexUA/claude/joyus-ai/spec/governance-vnext-freeze-2026-02-23.md`
+  - `spec/governance-vnext-report-2026-02-23.md`
+  - `spec/governance-vnext-freeze-2026-02-23.md`
 
 ### Source-of-truth alignment
 - Synced constitution source and memory copy.
 - Fixed missing planning references by adding:
-  - `/Users/AlexUA/claude/joyus-ai/spec/hosting-comparison.md`
-  - `/Users/AlexUA/claude/joyus-ai/spec/internal-ai-portal-spec.md`
+  - `spec/hosting-comparison.md`
+  - `spec/internal-ai-portal-spec.md`
 - Updated status docs:
-  - `/Users/AlexUA/claude/joyus-ai/README.md`
-  - `/Users/AlexUA/claude/joyus-ai/ROADMAP.md`
+  - `README.md`
+  - `ROADMAP.md`
 
 ## 3) Current Status (as of Feb 23, 2026)
 
@@ -113,4 +113,4 @@ The latest article adds four strategic implications now integrated into governan
 4. **Legacy and talent realism** is codified through staged migration requirements and role-development safeguards.
 
 Reference memo:
-- `/Users/AlexUA/claude/joyus-ai/spec/dark-factory-incorporation-2026-02-23.md`
+- `spec/dark-factory-incorporation-2026-02-23.md`

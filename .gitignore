@@ -38,5 +38,12 @@ kitty-specs/**/tasks/*.md
 !kitty-specs/006-content-infrastructure/tasks/WP11-observability.md
 !kitty-specs/006-content-infrastructure/tasks/WP12-integration.md
 
+# Generated artifacts
+**/tmp/
+**/__pycache__/
+*.pyc
+*.wav
+*.xlsx
+
 # Deploy secrets (never commit actual .env files)
 deploy/.env

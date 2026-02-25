@@ -1,7 +1,7 @@
 # Governance vNext Freeze - 2026-02-23
 
 ## Scope
-- Repository: `/Users/AlexUA/claude/joyus-ai`
+- Repository: `joyus-ai`
 - In-scope areas: `spec/`, `kitty-specs/`, `.claude/commands`, `.kittify/`, `README.md`, `ROADMAP.md`
 
 ## Freeze Outcome
