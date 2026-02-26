@@ -1,24 +1,10 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 
-import { getUserFromToken } from '../auth/verify.js';
+import { AuthenticatedRequest, requireTokenAuth } from '../auth/middleware.js';
 import { db, auditLogs } from '../db/client.js';
 
 import { createExcelExportJob, getExcelExportJobForUser, resolveDownloadToken } from './service.js';
 import { ExcelExportRequest } from './types.js';
-
-interface AuthenticatedRequest extends Request {
-  authUser?: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
-}
-
-function extractBearerToken(req: Request): string | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-  return authHeader.substring(7);
-}
 
 function inferredBaseUrl(req: Request): string {
   return process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
@@ -44,27 +30,6 @@ async function writeAudit(
   } catch (auditError) {
     console.warn('Failed to persist export audit log', auditError);
   }
-}
-
-async function requireTokenAuth(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-  const token = extractBearerToken(req);
-  if (!token) {
-    res.status(401).json({ error: 'Missing or invalid authorization header' });
-    return;
-  }
-
-  const user = await getUserFromToken(token);
-  if (!user) {
-    res.status(401).json({ error: 'Invalid token' });
-    return;
-  }
-
-  req.authUser = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-  };
-  next();
 }
 
 export const exportRouter = Router();

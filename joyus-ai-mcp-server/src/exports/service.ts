@@ -96,7 +96,6 @@ function defaultWorkbookPayload(
   const period = monthlyPeriodLabel(req, scope);
   const created = nowIso();
   const locationLabel = locations === 'all_accessible' ? 'all_accessible' : 'current';
-  const managerNote = 'Manager baseline: $25/hr, 40 hrs/week';
 
   const sheets: WorkbookSheetDefinition[] = [
     {
@@ -104,7 +103,6 @@ function defaultWorkbookPayload(
       headers: ['field', 'value'],
       col_widths: [24, 100],
       rows: [
-        ['feature_set', tenantId],
         ['tenant_id', tenantId],
         ['requested_by_user_id', userId],
         ['generated_utc', created],
@@ -112,112 +110,35 @@ function defaultWorkbookPayload(
         ['locations', locationLabel],
         ['period', period],
         ['scenario_id', req.scenario_id || 'none'],
-        ['workbook_style', 'operator-oriented values workbook'],
+        ['workbook_style', 'standard-export'],
       ],
     },
     {
-      name: 'KPI_Summary',
-      headers: [
-        'location',
-        'period',
-        'weekly_revenue',
-        'weekly_labor',
-        'weekly_gp_72',
-        'weekly_labor_pct',
-        'monday_revenue',
-        'monday_labor',
-      ],
-      col_widths: [20, 22, 16, 16, 16, 14, 16, 16],
-      formats: {
-        weekly_revenue: '"$"#,##0.00',
-        weekly_labor: '"$"#,##0.00',
-        weekly_gp_72: '"$"#,##0.00',
-        weekly_labor_pct: '0.00%',
-        monday_revenue: '"$"#,##0.00',
-        monday_labor: '"$"#,##0.00',
-      },
-      rows: [['placeholder', period, 0, 0, 0, 0, 0, 0]],
-    },
-    {
-      name: 'Staffing_Plan',
-      headers: ['location', 'category', 'rule', 'value', 'detail'],
-      col_widths: [20, 16, 26, 18, 72],
+      name: 'Summary',
+      headers: ['category', 'label', 'value', 'notes'],
+      col_widths: [20, 28, 18, 60],
       rows: [
-        ['all', 'manager', 'manager_hours_weekly', 40, managerNote],
-        ['all', 'coverage', 'opening_min_staff', 1, 'One person opening allowed'],
-        ['all', 'coverage', 'closing_min_staff', 2, 'Two people required at close'],
-        ['all', 'shift_design', 'core_shift_hours', '7-8', 'Full-day blocks for core team'],
+        ['example', 'placeholder label', 0, 'Replace with real summary rows'],
       ],
     },
     {
-      name: 'Daypart_Hourly',
-      headers: ['location', 'period', 'hour_24', 'avg_revenue', 'avg_labor', 'avg_gp_72', 'labor_pct'],
-      col_widths: [20, 22, 10, 14, 14, 14, 12],
-      formats: {
-        avg_revenue: '"$"#,##0.00',
-        avg_labor: '"$"#,##0.00',
-        avg_gp_72: '"$"#,##0.00',
-        labor_pct: '0.00%',
-      },
-      rows: [['placeholder', period, 18, 0, 0, 0, 0]],
-    },
-    {
-      name: 'Seasonal_Triggers',
-      headers: ['location', 'transition', 'metric', 'operator', 'threshold', 'current_value', 'met'],
-      col_widths: [20, 24, 22, 10, 12, 14, 8],
-      rows: [['placeholder', 'winter_to_spring', 'avg_daily_revenue', '>=', 0, 0, 'NO']],
-    },
-    {
-      name: 'Daily_Raw',
-      headers: [
-        'location',
-        'period',
-        'weekday',
-        'days_in_month_for_weekday',
-        'avg_revenue',
-        'avg_labor',
-        'avg_gp_72',
-        'labor_pct',
-      ],
-      col_widths: [20, 22, 12, 20, 14, 14, 14, 12],
-      formats: {
-        avg_revenue: '"$"#,##0.00',
-        avg_labor: '"$"#,##0.00',
-        avg_gp_72: '"$"#,##0.00',
-        labor_pct: '0.00%',
-      },
-      rows: [['placeholder', period, 'Mon', 0, 0, 0, 0, 0]],
-    },
-    {
-      name: 'Run_Costs',
-      headers: ['model', 'profile', 'input_tokens', 'cached_input_tokens', 'output_tokens', 'estimated_cost_usd', 'notes'],
-      col_widths: [16, 20, 14, 20, 14, 18, 40],
-      formats: {
-        estimated_cost_usd: '"$"#,##0.0000',
-      },
+      name: 'Detail',
+      headers: ['id', 'category', 'label', 'period', 'value', 'notes'],
+      col_widths: [12, 20, 28, 22, 18, 60],
       rows: [
-        ['Deterministic', 'No LLM', 0, 0, 0, 0, 'No model usage required for baseline planning'],
-        ['GPT-5 mini', 'Small Narrative', 12000, 0, 3000, 0.009, 'Optional narrative add-on'],
-        ['GPT-5 mini', 'Medium Narrative', 40000, 10000, 8000, 0.0265, 'Optional narrative add-on'],
-        ['GPT-5 mini', 'Large Narrative', 90000, 25000, 20000, 0.0626, 'Optional narrative add-on'],
+        ['1', 'example', 'placeholder label', period, 0, 'Replace with real detail rows'],
       ],
     },
   ];
 
   if (locations === 'all_accessible') {
     sheets.push({
-      name: 'Location_Benchmark',
-      headers: ['rank', 'location', 'period', 'revenue', 'labor', 'gp_72', 'labor_pct'],
-      col_widths: [8, 20, 22, 14, 14, 14, 12],
-      formats: {
-        revenue: '"$"#,##0.00',
-        labor: '"$"#,##0.00',
-        gp_72: '"$"#,##0.00',
-        labor_pct: '0.00%',
-      },
+      name: 'Location_Comparison',
+      headers: ['rank', 'location', 'period', 'category', 'value', 'notes'],
+      col_widths: [8, 24, 22, 20, 18, 60],
       rows: [
-        [1, 'placeholder_a', period, 0, 0, 0, 0],
-        [2, 'placeholder_b', period, 0, 0, 0, 0],
+        [1, 'location_a', period, 'example', 0, 'Replace with real location rows'],
+        [2, 'location_b', period, 'example', 0, 'Replace with real location rows'],
       ],
     });
   }
