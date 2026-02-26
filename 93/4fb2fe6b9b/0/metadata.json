@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "934fb2fe6b9b",
+  "session_id": "faadca9e-fcad-4116-9f1e-f1241c7f85f7",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T22:06:26.664205Z",
+  "branch": "codex/scaling-coding-research",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/CODEOWNERS",
+    ".github/workflows/deploy-mcp.yml",
+    "README.md",
+    "ROADMAP.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "7ac2250b-c639-49d9-bfce-0298e31a8839",
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 105208,
+    "cache_read_tokens": 982759,
+    "output_tokens": 7669,
+    "api_call_count": 20
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T22:06:26.648174Z",
+    "agent_lines": 38,
+    "human_added": 6063,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 6101,
+    "agent_percentage": 0.6228487133256844
+  }
+}

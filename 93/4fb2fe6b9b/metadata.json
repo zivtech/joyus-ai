@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "934fb2fe6b9b",
+  "strategy": "manual-commit",
+  "branch": "codex/scaling-coding-research",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/CODEOWNERS",
+    ".github/workflows/deploy-mcp.yml",
+    "README.md",
+    "ROADMAP.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/93/4fb2fe6b9b/0/metadata.json",
+      "transcript": "/93/4fb2fe6b9b/0/full.jsonl",
+      "context": "/93/4fb2fe6b9b/0/context.md",
+      "content_hash": "/93/4fb2fe6b9b/0/content_hash.txt",
+      "prompt": "/93/4fb2fe6b9b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 105208,
+    "cache_read_tokens": 982759,
+    "output_tokens": 7669,
+    "api_call_count": 20
+  }
+}
