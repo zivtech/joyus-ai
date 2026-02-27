@@ -1,4 +1,4 @@
-# Joyus AI — Open-Source Multi-Tenant AI Agent Platform
+# Joyus AI - Open-Source Multi-Tenant AI Agent Platform
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
@@ -10,16 +10,16 @@ Most AI deployments are undifferentiated: the same model, the same defaults, the
 
 **Core ideas:**
 
-- **Skills as encoded knowledge** — organizational standards, voice guidelines, domain rules, and workflow constraints are packaged as skills that constrain and guide AI outputs
-- **Content intelligence** — writing profiles built from real corpora enable attribution, fidelity monitoring, and voice-consistent generation
-- **Open core, private skills** — the platform is open source; client- and org-specific skills live in private repos and are loaded at runtime
-- **MCP-native** — all agent capabilities are exposed via the [Model Context Protocol](https://modelcontextprotocol.io), making them composable with Claude and other MCP-aware tools
+- **Skills as encoded knowledge** - organizational standards, voice guidelines, domain rules, and workflow constraints are packaged as skills that constrain and guide AI outputs
+- **Content intelligence** - writing profiles built from real corpora enable attribution, fidelity monitoring, and voice-consistent generation
+- **Open core, private skills** - the platform is open source; client- and org-specific skills live in private repos and are loaded at runtime
+- **MCP-native** - all agent capabilities are exposed via the [Model Context Protocol](https://modelcontextprotocol.io), making them composable with Claude and other MCP-aware tools
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
-│                  Claude / AI Client              │
+│                  Claude / AI Client             │
 └────────────────────────┬────────────────────────┘
                          │ MCP
                ┌─────────┴─────────┐
@@ -30,8 +30,8 @@ Most AI deployments are undifferentiated: the same model, the same defaults, the
        └───────┬──────┘    └──────┬───────┘
                │                  │
        ┌───────▼──────────────────▼───────┐
-       │  Skills · Profiles · Session State│
-       └──────────────────────────────────┘
+       │ Skills · Profiles · Session State│
+       └───────────────────────────────────┘
 ```
 
 - The MCP server is the primary interface between AI clients and platform capabilities.
@@ -42,7 +42,7 @@ Most AI deployments are undifferentiated: the same model, the same defaults, the
 
 ## Packages
 
-### `joyus-ai-mcp-server/` — Remote MCP Server
+### `joyus-ai-mcp-server/` - Remote MCP Server
 
 Express-based MCP server hosting platform tools and operator-defined skills. Connects to external services (issue trackers, version control, messaging) and exposes them as MCP tools.
 
@@ -50,18 +50,18 @@ Express-based MCP server hosting platform tools and operator-defined skills. Con
 - Drizzle ORM + PostgreSQL for persistent state
 - Deployable via Docker Compose on any cloud VM
 
-### `joyus-ai-state/` — Session State
+### `joyus-ai-state/` - Session State
 
 Maintains working state across Claude sessions. Captures git context, open files, decisions, and test status so Claude can restore context at session start without manual re-orientation.
 
 MCP tools exposed:
-- `get_context` — restore working state at session start
-- `save_state` — snapshot after significant actions
-- `verify_action` — pre-commit guardrails
-- `check_canonical` — route to authoritative document copies
-- `share_state` — share context with teammates
+- `get_context` - restore working state at session start
+- `save_state` - snapshot after significant actions
+- `verify_action` - pre-commit guardrails
+- `check_canonical` - route to authoritative document copies
+- `share_state` - share context with teammates
 
-### `web-chat/` — Chat UI
+### `web-chat/` - Chat UI
 
 Minimal browser-based chat interface for local development and demonstration. Not intended for production use.
 
@@ -94,18 +94,35 @@ Production deployment configuration is maintained in a separate private reposito
 
 ## Specs and Development
 
-This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`:
+This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`.
+
+Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23):
 
 | Spec | Description | Status |
 |------|-------------|--------|
 | `001` | MCP Server AWS Deployment | Complete |
 | `002` | Session Context Management | Complete |
+| `003` | Platform Architecture Overview | Spec-Only |
 | `004` | Workflow Enforcement | Complete |
 | `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
 | `006` | Content Infrastructure | Complete (WP01–WP12) |
 | `007` | Org-Scale Agentic Governance | Planning |
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
+
+## Branch Protection
+
+The default branch (`main`) is protected by a GitHub ruleset that requires pull request reviews from code owners, passing status checks, and prevents force pushes and branch deletion. The ruleset configuration is stored in `.github/ruleset-default.json`.
+
+To apply the ruleset to a new fork or repository:
+
+```bash
+gh api repos/OWNER/REPO/rulesets \
+  --method POST \
+  --input .github/ruleset-default.json
+```
+
+Code ownership rules are defined in `.github/CODEOWNERS`.
 
 ## Contributing
 
@@ -115,4 +132,4 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE) for details.
+Apache License 2.0 - see [LICENSE](LICENSE) for details.

@@ -1,4 +1,4 @@
-# Joyus AI — Roadmap
+# Joyus AI - Roadmap
 
 An open-source, multi-tenant AI agent platform that encodes organizational knowledge as testable, enforceable skills.
 
@@ -6,11 +6,11 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 
 ## Shipped
 
-- **MCP Server** — OAuth authentication, tool executors for project management, chat, code hosting, and productivity integrations. Docker deployment.
-- **Session Context Management** — Event-driven state snapshots, context handoff across session compaction, resume protocols.
-- **Workflow Enforcement** — Quality gates, permission escalation, kanban state machine with enforced transitions.
-- **Web Chat UI** — Browser-based chat interface with Claude Desktop configuration.
-- **Content Intelligence** — Corpus analysis, 129-feature stylometric extraction, structured writing profiles with hierarchical composition (person → department → organization), multi-audience voice support, fidelity verification, drift monitoring, and repair. 500+ tests across the full pipeline.
+- **MCP Server Core** - OAuth authentication, tool executors for project management, chat, code hosting, and productivity integrations. Dockerized runtime available.
+- **Session Context Management** - Event-driven state snapshots, context handoff across session compaction, resume protocols.
+- **Workflow Enforcement** - Quality gates, permission escalation, and traceable workflow guardrails.
+- **Web Chat UI** - Browser-based chat interface with Claude Desktop configuration support.
+- **Content Intelligence** - Corpus analysis, stylometric extraction, structured writing profiles, fidelity verification, drift monitoring, and repair.
 
 ## In Development
 
@@ -32,12 +32,12 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 ## Roadmap
 
 - Presentation Toolkit (branded slides, deck rebranding)
-- Document Generator (reports, proposals, memos — DOCX, PDF)
+- Document Generator (reports, proposals, memos - DOCX, PDF)
 - Analysis Tools (financial modeling, gap analysis, research synthesis)
 - Regulatory Change Detection Pipeline
 - Expert Voice Routing
-- Visual Regression & Accessibility Testing Service
-- Content Staging & Deployment Pipeline
+- Visual Regression and Accessibility Testing Service
+- Content Staging and Deployment Pipeline
 - Knowledge Base Ingestion (XML, CMS, web, archives)
 - Attribution Service (standalone authorship analysis)
 - Code Execution Sandbox
