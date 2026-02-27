@@ -4,15 +4,15 @@
 # See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default: all files not matched by a more specific rule
-* @zivtech/joyus-core
+* @zivtech/joyus-ai
 
 # Specifications and design documents
-/spec/ @zivtech/joyus-core @grndlvl
-/kitty-specs/ @zivtech/joyus-core @grndlvl
-/.claude/commands/ @zivtech/joyus-core @grndlvl
-/.kittify/ @zivtech/joyus-core @grndlvl
-/README.md @zivtech/joyus-core @grndlvl
-/ROADMAP.md @zivtech/joyus-core @grndlvl
+/spec/ @zivtech/joyus-ai @grndlvl
+/kitty-specs/ @zivtech/joyus-ai @grndlvl
+/.claude/commands/ @zivtech/joyus-ai @grndlvl
+/.kittify/ @zivtech/joyus-ai @grndlvl
+/README.md @zivtech/joyus-ai @grndlvl
+/ROADMAP.md @zivtech/joyus-ai @grndlvl
 
 # Deployment infrastructure
 /deploy/ @zivtech/joyus-ops

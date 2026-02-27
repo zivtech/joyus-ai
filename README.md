@@ -99,13 +99,13 @@ This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for sp
 Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23):
 
 | Spec | Description | Status |
-|---|---|---|
-| `001` | MCP Server AWS Deployment | In Progress (5/7 work packages complete) |
-| `002` | Session Context Management | Done |
+|------|-------------|--------|
+| `001` | MCP Server AWS Deployment | Complete |
+| `002` | Session Context Management | Complete |
 | `003` | Platform Architecture Overview | Spec-Only |
-| `004` | Workflow Enforcement | Done |
-| `005` | Content Intelligence (Profile Engine) | Done |
-| `006` | Content Infrastructure | Done |
+| `004` | Workflow Enforcement | Complete |
+| `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
+| `006` | Content Infrastructure | Complete (WP01–WP12) |
 | `007` | Org-Scale Agentic Governance | Planning |
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.

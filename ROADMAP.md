@@ -14,21 +14,20 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 
 ## In Development
 
-- **MCP Server AWS Deployment** - Production deployment stream for the remote MCP suite (`001`).
-- **Content Infrastructure** - Corpus connector interface, search abstraction layer, content state management, access level mapping, AI-optimized content API for bot mediation (`006` follow-on).
-- **Org-Scale Agentic Governance** - Rollout model, ROI contract, MCP governance lifecycle, and automated spec governance checks (`007`).
+- **Content Infrastructure** — Corpus connector interface, search abstraction layer, content state management, access level mapping, AI-optimized content API for bot mediation.
+- **Org-Scale Agentic Governance** — Maturity scoring, spec lifecycle enforcement, CI-integrated governance gates, remediation tracking.
 
 ## Planned
 
-- **Platform Framework** - Multi-tenant web portal, skill-based mediation, thin orchestration layer, monitoring infrastructure.
-- **Multi-Location Operations Module** - Staffing planner with manager approval gates and server-side POS publish (dry-run + apply), tenant-isolated and fully audited.
-- **Compliance Modules** - HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA - declared per tenant, enforced as hard failures.
-- **Automated Pipelines** - Event-driven workflows: regulatory change detection, scheduled reports, content update routing, quality gate automation.
-- **Self-Service Profile Building** - Upload writing samples, receive a usable writing skill. Automatic tier detection with progression guidance.
-- **AI-Assisted Generation** - Content generation using profiles as constraints for voice-consistent output (builds on Content Intelligence foundation).
-- **Multi-Tenant Profile Isolation** - Tenant-scoped profile storage, access control, and audit logging for the profile engine.
-- **Profile Engine at Scale** - Batch ingestion, caching, and latency optimization for large corpora and high-throughput verification.
-- **Asset Sharing Pipeline** - Secure delivery of AI-generated artifacts behind access control.
+- **Platform Framework** — Multi-tenant web portal, skill-based mediation, thin orchestration layer, monitoring infrastructure.
+- **Multi-Location Operations Module** — Staffing planner with manager approval gates and server-side POS publish (dry-run + apply), tenant-isolated and fully audited.
+- **Compliance Modules** — HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA — declared per tenant, enforced as hard failures.
+- **Automated Pipelines** — Event-driven workflows: regulatory change detection, scheduled reports, content update routing, quality gate automation.
+- **Self-Service Profile Building** — Upload writing samples, receive a usable writing skill. Automatic tier detection with progression guidance.
+- **AI-Assisted Generation** — Content generation using profiles as constraints for voice-consistent output (builds on Content Intelligence foundation).
+- **Multi-Tenant Profile Isolation** — Tenant-scoped profile storage, access control, and audit logging for the profile engine.
+- **Profile Engine at Scale** — Batch ingestion, caching, and latency optimization for large corpora and high-throughput verification.
+- **Asset Sharing Pipeline** — Secure delivery of AI-generated artifacts behind access control.
 
 ## Roadmap
 
