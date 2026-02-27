@@ -110,6 +110,20 @@ Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23)
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 
+## Branch Protection
+
+The default branch (`main`) is protected by a GitHub ruleset that requires pull request reviews from code owners, passing status checks, and prevents force pushes and branch deletion. The ruleset configuration is stored in `.github/ruleset-default.json`.
+
+To apply the ruleset to a new fork or repository:
+
+```bash
+gh api repos/OWNER/REPO/rulesets \
+  --method POST \
+  --input .github/ruleset-default.json
+```
+
+Code ownership rules are defined in `.github/CODEOWNERS`.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, branch conventions, and contribution guidelines.
