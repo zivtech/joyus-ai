@@ -1,0 +1,93 @@
+Implement the following plan:
+
+# Auth Middleware Extraction + PR #3 Follow-ups
+
+## Context
+
+grndlvl's PR #3 review identified four follow-up items. This plan addresses all four — though two turn out to be N/A since the `exports/` module was removed before merge.
+
+## Scope Assessment
+
+| # | Item | Status |
+|---|------|--------|
+| 1 | Extract auth into shared middleware | **Actionable** |
+| 2 | Increase test coverage (auth, router) | **Actionable** — scoped to new middleware |
+| 3 | Persist download links to DB | **N/A** — `exports/service.ts` doesn't exist on main |
+| 4 | Abstract "workbook" terminology | **N/A** — `exports/service.ts` doesn't exist on main |
+
+Additionally: `index.ts:26` has a **broken import** of `./exports/router.js` which needs to be removed.
+
+---
+
+## Task 1: Create shared auth middleware
+
+**New file:** `src/auth/middleware.ts`
+
+Three middleware functions covering the two auth mechanisms currently duplicated:
+
+### 1a. `requireBearerToken` — MCP token auth (Express middleware)
+Extracts `Authorization: Bearer <token>`, calls existing `getUserFromToken()` from `verify.ts`, attaches user to `req.mcpUser`. Replaces inline auth at:
+- `index.ts:170-179` (`/mcp` POST)
+- `index.ts:273-281` (`/mcp/sse` GET — token from query param, so this variant takes token from either header or `?token=`)
+
+### 1b. `requireSession` — Session cookie auth (Express middleware)
+Checks `req.session?.userId`, returns 401 JSON for API routes. Replaces manual checks in:
+- `scheduler/routes.ts` lines 24, 252, 298, 325, 374, 465, 524 (~8 instances)
+
+### 1c. `requireSessionOrRedirect` — Session cookie with redirect (Express middleware)
+Same as `requireSession` but redirects to `/auth` for UI routes. Replaces manual checks in:
+- `auth/routes.ts` lines 52-54, 343, 451, 547, 648
+- `scheduler/routes.ts` lines 24, 373
+
+**Pattern:** Follow the factory style from `content/mediation/auth.ts` — no DB import at module level, consistent error responses.
+
+**Type augmentation:** Extend `Express.Request` in existing `types/express-session.d.ts` to add `mcpUser?: UserWithConnections`.
+
+### Files modified:
+- **Create** `src/auth/middleware.ts` — the three middleware functions
+- **Edit** `src/types/express-session.d.ts` — add `mcpUser` to Request
+- **Edit** `src/index.ts` — use `requireBearerToken` on `/mcp` and `/mcp/sse`; remove broken `exports/router` import + mount
+- **Edit** `src/scheduler/routes.ts` — use `requireSession` / `requireSessionOrRedirect`
+- **Edit** `src/auth/routes.ts` — use `requireSessionOrRedirect` where applicable (note: the `/` route has split logic — show login vs dashboard — so it keeps its inline check; only the service-start and disconnect routes use the middleware)
+
+---
+
+## Task 2: Add auth middleware tests
+
+**New file:** `tests/auth/middleware.test.ts`
+
+Unit tests using mock Request/Response objects (consistent with existing test patterns):
+- `requireBearerToken`: missing header, invalid token, valid token, SSE query param fallback
+- `requireSession`: missing session, valid session
+- `requireSessionOrRedirect`: missing session redirects to `/auth`
+
+---
+
+## Task 3: Remove broken exports import
+
+**Edit** `src/index.ts`:
+- Remove line 26: `import { exportRouter } from './exports/router.js'`
+- Remove lines 162-163: the `/api/v1` mount
+- This is a bug fix — the import will fail at runtime
+
+---
+
+## Verification
+
+1. `npx tsc --noEmit` — confirm no type errors
+2. `npx vitest run` — all existing + new tests pass
+3. Grep for remaining inline `req.session?.userId` checks to confirm extraction is complete
+4. Grep for remaining inline `Bearer` extraction in index.ts to confirm MCP auth uses middleware
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+
+If this plan can be broken down into multiple independent tasks, consider using the TeamCreate tool to create a team and parallelize the work.
+
+---
+
+ok, what's next?
+
+---
+
+yes
