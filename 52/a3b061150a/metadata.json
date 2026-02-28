@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "52a3b061150a",
+  "strategy": "manual-commit",
+  "branch": "fix/remove-broken-deploy-workflow",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "deploy/examples/deploy-mcp.yml",
+    "joyus-ai-mcp-server/src/auth/middleware.ts",
+    "joyus-ai-mcp-server/src/exports/router.ts",
+    "joyus-ai-mcp-server/src/index.ts",
+    "joyus-ai-mcp-server/tests/exports.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/52/a3b061150a/0/metadata.json",
+      "transcript": "/52/a3b061150a/0/full.jsonl",
+      "context": "/52/a3b061150a/0/context.md",
+      "content_hash": "/52/a3b061150a/0/content_hash.txt",
+      "prompt": "/52/a3b061150a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 147,
+    "cache_creation_tokens": 151301,
+    "cache_read_tokens": 6331744,
+    "output_tokens": 12779,
+    "api_call_count": 49
+  }
+}
