@@ -17,6 +17,10 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function toJsStringLiteral(str: string): string {
+  return JSON.stringify(str);
+}
+
 // OAuth configuration
 const OAUTH_CONFIG = {
   google: {
@@ -103,6 +107,11 @@ authRouter.get('/', async (req: Request, res: Response) => {
     .where(eq(connections.userId, userId));
 
   const connectedServices = new Set(userConnections.map((c) => c.service));
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const safeDisplayName = escapeHtml(user.name || user.email);
+  const safeToken = escapeHtml(user.mcpToken);
+  const baseUrlJsLiteral = toJsStringLiteral(baseUrl);
+  const tokenJsLiteral = toJsStringLiteral(user.mcpToken);
 
   res.send(`
     <!DOCTYPE html>
@@ -126,17 +135,17 @@ authRouter.get('/', async (req: Request, res: Response) => {
     </head>
     <body>
       <h1>🔌 Joyus AI</h1>
-      <p>Welcome, <strong>${user.name || user.email}</strong></p>
+      <p>Welcome, <strong>${safeDisplayName}</strong></p>
 
       <h2>Your MCP Connection URL</h2>
       <div class="mcp-url">
-        ${process.env.BASE_URL || 'http://localhost:3000'}/mcp
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('${process.env.BASE_URL || 'http://localhost:3000'}/mcp')">Copy</button>
+        ${escapeHtml(baseUrl)}/mcp
+        <button class="copy-btn" onclick='navigator.clipboard.writeText(${baseUrlJsLiteral} + "/mcp")'>Copy</button>
       </div>
 
       <div class="mcp-url">
-        Token: ${escapeHtml(user.mcpToken)}
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('${escapeHtml(user.mcpToken)}')">Copy</button>
+        Token: ${safeToken}
+        <button class="copy-btn" onclick='navigator.clipboard.writeText(${tokenJsLiteral})'>Copy</button>
       </div>
 
       <div class="info">
