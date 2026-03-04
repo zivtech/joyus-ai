@@ -108,7 +108,7 @@ API keys are provisioned per tenant for each integration (admin operation).
 
 ```bash
 curl -X POST /api/mediation/sessions \
-  -H "X-API-Key: jyk_abc123..." \
+  -H "X-API-Key: <tenant-api-key>" \
   -H "Authorization: Bearer <user-oidc-token>" \
   -H "Content-Type: application/json" \
   -d '{"profileId": "voice-profile-formal"}'
@@ -118,7 +118,7 @@ curl -X POST /api/mediation/sessions \
 
 ```bash
 curl -X POST /api/mediation/sessions/{sessionId}/messages \
-  -H "X-API-Key: jyk_abc123..." \
+  -H "X-API-Key: <tenant-api-key>" \
   -H "Authorization: Bearer <user-oidc-token>" \
   -H "Content-Type: application/json" \
   -d '{"message": "What are the key compliance requirements?"}'
@@ -130,7 +130,7 @@ Response includes generated text, citations, and metadata.
 
 ```bash
 curl -X DELETE /api/mediation/sessions/{sessionId} \
-  -H "X-API-Key: jyk_abc123..." \
+  -H "X-API-Key: <tenant-api-key>" \
   -H "Authorization: Bearer <user-oidc-token>"
 ```
 
