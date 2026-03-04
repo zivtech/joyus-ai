@@ -1,0 +1,62 @@
+# Joyus AI Platform Container
+# Node.js 20 + Python 3 + PHP + system tools + skill runtime dependencies
+
+# --- Stage 1: Node.js build ---
+FROM node:20-bookworm AS builder
+
+WORKDIR /app
+
+COPY joyus-ai-mcp-server/package*.json ./
+RUN npm ci
+
+COPY joyus-ai-mcp-server/ ./
+RUN npm run build
+
+# --- Stage 2: Production runtime ---
+FROM node:20-bookworm-slim AS production
+
+# System packages: Python, PHP, git
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv \
+    git \
+    php-cli php-xml php-mbstring php-curl \
+    curl wget ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python packages (venv to avoid PEP 668)
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir \
+    python-pptx python-docx openpyxl lxml pypdf \
+    pillow imageio numpy requests PyYAML packaging
+
+# Composer + Drush
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+ENV COMPOSER_HOME="/opt/composer"
+ENV PATH="$COMPOSER_HOME/vendor/bin:$PATH"
+RUN composer global require drush/drush --no-interaction --no-progress
+
+# Squirrel CLI (SquirrelScan)
+RUN curl -fsSL https://squirrelscan.com/install.sh | bash || \
+    echo "Warning: squirrel install failed, will retry on next build"
+
+# Node global packages for skills
+RUN npm install -g html2pptx
+
+# Application code
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/drizzle ./drizzle
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+EXPOSE 3000 3001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/health/platform || exit 1
+
+CMD ["sh", "-c", "npx drizzle-kit migrate && node dist/index.js"]

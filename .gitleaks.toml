@@ -1,0 +1,27 @@
+# Gitleaks allowlist configuration
+# See: https://github.com/gitleaks/gitleaks#configuration
+
+[allowlist]
+  description = "Known false-positive patterns for Joyus AI"
+
+  # Firebase configuration values (public by design, not secrets)
+  regexTarget = "match"
+  paths = [
+    '''\.env\.example$''',
+  ]
+
+  [[allowlist.regexes]]
+    description = "Firebase API key (public client-side config, not a secret)"
+    regex = '''AIza[0-9A-Za-z\-_]{35}'''
+
+  [[allowlist.regexes]]
+    description = "Google service account key ID (identifier, not a secret)"
+    regex = '''\"key_id\":\s*\"[a-f0-9]{40}\"'''
+
+  [[allowlist.regexes]]
+    description = "Google OAuth client ID (public, not a secret)"
+    regex = '''[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com'''
+
+  [[allowlist.regexes]]
+    description = "Example/placeholder tokens in test fixtures and documentation"
+    regex = '''(test-id-|test-token-|change-me-in-production|example\.com)'''

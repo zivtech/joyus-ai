@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <rect width="400" height="100" rx="8" fill="#1a1a2e"/>
+  <text x="20" y="62" font-family="system-ui, -apple-system, sans-serif" font-size="42" font-weight="700" fill="#e0e0ff">
+    Joyus AI
+  </text>
+  <text x="228" y="62" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="400" fill="#8888aa">
+    agent platform
+  </text>
+  <circle cx="375" cy="50" r="12" fill="#6c5ce7" opacity="0.8"/>
+  <circle cx="375" cy="50" r="6" fill="#a29bfe"/>
+</svg>

@@ -1,0 +1,131 @@
+/**
+ * joyus-ai-state — Package exports
+ *
+ * Re-exports core types, schemas, and config for consumers.
+ */
+
+// --- Core types (session context) ---
+export type {
+  EventType,
+  ProjectContext,
+  AheadBehind,
+  GitState,
+  FileState,
+  TaskContext,
+  TestResults,
+  Decision,
+  CanonicalStatus,
+  SharerNote,
+  Snapshot,
+  GlobalConfig,
+  ProjectConfig,
+  EventTriggerConfig,
+  CanonicalDeclaration,
+  CanonicalDocument,
+} from './core/types.js';
+
+// --- Zod schemas (session context) ---
+export {
+  EventTypeSchema,
+  ProjectContextSchema,
+  AheadBehindSchema,
+  GitStateSchema,
+  FileStateSchema,
+  TaskContextSchema,
+  TestResultsSchema,
+  DecisionSchema,
+  CanonicalStatusSchema,
+  SharerNoteSchema,
+  SnapshotSchema,
+  GlobalConfigSchema,
+  ProjectConfigSchema,
+  EventTriggerConfigSchema,
+  CanonicalDeclarationSchema,
+  CanonicalDocumentSchema,
+} from './core/schema.js';
+
+// --- Configuration ---
+export {
+  DEFAULT_GLOBAL_CONFIG,
+  DEFAULT_PROJECT_CONFIG,
+  loadGlobalConfig,
+  loadProjectConfig,
+  loadConfig,
+} from './core/config.js';
+
+// --- State store ---
+export {
+  StateStore,
+  getProjectHash,
+  getStateDir,
+  getSnapshotsDir,
+  initStateDirectory,
+} from './state/store.js';
+export type { SnapshotFilter, SnapshotSummary } from './state/store.js';
+
+// --- Divergence detection ---
+export { detectDivergence } from './state/divergence.js';
+export type { DivergenceReport, DivergenceChange } from './state/divergence.js';
+
+// --- Collectors ---
+export { collectGitState } from './collectors/git.js';
+export { collectFileState } from './collectors/files.js';
+export { parseTestResults } from './collectors/tests.js';
+export { carryForwardDecisions } from './collectors/decisions.js';
+
+// --- Canonical documents ---
+export {
+  loadCanonical,
+  saveCanonical,
+  addDeclaration,
+  removeDeclaration,
+  listDeclarations,
+  checkPath,
+  generateWarning,
+  getCanonicalStatuses,
+} from './state/canonical.js';
+export type { CanonicalDeclarations, CheckResult } from './state/canonical.js';
+
+// --- State sharing ---
+export {
+  exportSharedState,
+  loadSharedState,
+  getSharedOutgoingDir,
+  getSharedIncomingDir,
+  ensureSharedDirs,
+  generateShareFilename,
+} from './state/share.js';
+export type { ShareOptions, LoadResult } from './state/share.js';
+
+// --- MCP server ---
+export { createMcpServer, startMcpServer } from './mcp/server.js';
+export { getContextToolDef, handleGetContext } from './mcp/tools/get-context.js';
+export { saveStateToolDef, handleSaveState } from './mcp/tools/save-state.js';
+export { verifyActionToolDef, handleVerifyAction } from './mcp/tools/verify-action.js';
+export { checkCanonicalToolDef, handleCheckCanonical } from './mcp/tools/check-canonical.js';
+export { shareStateToolDef, handleShareState } from './mcp/tools/share-state.js';
+
+// --- MCP tool utilities ---
+export {
+  validateInput,
+  createErrorResponse,
+  createSuccessResponse,
+  GetContextInputSchema,
+  SaveStateInputSchema,
+  VerifyActionInputSchema,
+  CheckCanonicalInputSchema,
+  ShareStateInputSchema,
+} from './mcp/tools/utils.js';
+
+// --- Companion service ---
+export { startService, stopService, isServiceRunning } from './service/daemon.js';
+export type { ServiceOptions } from './service/daemon.js';
+export { FileWatcher } from './service/watcher.js';
+export type { WatcherOptions } from './service/watcher.js';
+export { EventHandler } from './service/event-handler.js';
+export { createIpcServer, checkServiceHealth, requestCapture } from './service/ipc.js';
+export type { IpcServer } from './service/ipc.js';
+
+// --- Utilities ---
+export { LogLevel, setLogLevel, getLogLevel, logError, logWarn, logInfo, logDebug } from './utils/logger.js';
+export { acquireLock, releaseLock } from './state/lock.js';

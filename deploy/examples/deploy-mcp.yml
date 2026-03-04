@@ -1,0 +1,110 @@
+# ============================================================================
+# Example: Deploy MCP Server (GitHub Actions)
+#
+# This is a REFERENCE workflow — it will not run from this location.
+# To use it, copy to .github/workflows/deploy-mcp.yml in your private
+# deployment repo and replace all <placeholder> values with your org's config.
+#
+# Placeholders to customize:
+#   <org>                  — your GitHub org or username (for GHCR image paths)
+#   secrets.EC2_HOST       — target deployment host
+#   secrets.EC2_USER       — SSH user on the deployment host
+#   secrets.EC2_SSH_KEY    — SSH private key for deployment
+#   secrets.SLACK_WEBHOOK_URL — Slack incoming webhook for deploy notifications
+#
+# See: spec/constitution.md §2.10 — org-specific deployment config belongs
+# in private repos, not in the public open source repo.
+# ============================================================================
+
+name: Deploy MCP Server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/**'
+      - 'joyus-ai-mcp-server/**'
+      - 'web-chat/**'
+      - '.github/workflows/deploy-mcp.yml'
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  PLATFORM_IMAGE: ghcr.io/<org>/joyus-ai-platform
+  PLAYWRIGHT_IMAGE: ghcr.io/<org>/joyus-ai-playwright
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Platform image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.platform
+          push: true
+          tags: |
+            ${{ env.PLATFORM_IMAGE }}:latest
+            ${{ env.PLATFORM_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Playwright image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.playwright
+          push: true
+          tags: |
+            ${{ env.PLAYWRIGHT_IMAGE }}:latest
+            ${{ env.PLAYWRIGHT_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/joyus-ai
+            ./deploy/scripts/deploy.sh ${{ github.sha }}
+
+  notify:
+    needs: deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.deploy.result }}
+          fields: repo,message,commit,author,action,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true

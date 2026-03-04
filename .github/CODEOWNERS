@@ -1,0 +1,18 @@
+# CODEOWNERS
+# Each line defines a pattern and the owners responsible for reviewing changes.
+# Order matters: the last matching pattern takes precedence.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: all files not matched by a more specific rule
+* @zivtech/joyus-ai
+
+# Specifications and design documents
+/spec/ @zivtech/joyus-ai @grndlvl
+/kitty-specs/ @zivtech/joyus-ai @grndlvl
+/.claude/commands/ @zivtech/joyus-ai @grndlvl
+/.kittify/ @zivtech/joyus-ai @grndlvl
+/README.md @zivtech/joyus-ai @grndlvl
+/ROADMAP.md @zivtech/joyus-ai @grndlvl
+
+# Deployment infrastructure
+/deploy/ @zivtech/joyus-ops

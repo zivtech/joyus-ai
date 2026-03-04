@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+import { startService, stopService, isServiceRunning } from '../dist/service/daemon.js';
+import { getStateDir } from '../dist/state/store.js';
+
+const args = process.argv.slice(2);
+const projectIdx = args.indexOf('--project');
+const projectRoot = projectIdx !== -1 ? args[projectIdx + 1] : (process.env.PROJECT_ROOT || process.cwd());
+
+if (args.includes('--stop')) {
+  const stateDir = getStateDir(projectRoot);
+  stopService(stateDir).catch((error) => {
+    console.error('Failed to stop service:', error);
+    process.exit(1);
+  });
+} else if (args.includes('--status')) {
+  const stateDir = getStateDir(projectRoot);
+  isServiceRunning(stateDir).then((running) => {
+    console.log(running ? 'Service is running' : 'Service is not running');
+    process.exit(running ? 0 : 1);
+  });
+} else {
+  startService({ projectRoot }).catch((error) => {
+    console.error('Failed to start companion service:', error);
+    process.exit(1);
+  });
+}

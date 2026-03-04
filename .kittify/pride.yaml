@@ -1,0 +1,6 @@
+# Kitty Pride — cross-repo spec federation
+# See spec/spec-governance.md for full documentation
+pride: joyus
+repo_id: joyus-ai
+visibility: public
+feature_range: "001-099"

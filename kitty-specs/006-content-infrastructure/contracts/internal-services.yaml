@@ -1,0 +1,183 @@
+# Internal Service Interfaces: Content Infrastructure
+# TypeScript interface contracts for pluggable components.
+# These are NOT HTTP APIs — they are in-process interfaces implemented by providers.
+
+interfaces:
+
+  # ─── Content Connector ───
+
+  ContentConnector:
+    description: >
+      Pluggable interface for content source types. Each connector type
+      (database, REST API, etc.) implements this interface.
+    methods:
+      discover:
+        description: >
+          Probe the source to discover available content (tables, endpoints, collections).
+          Used during initial source configuration.
+        input:
+          config: ConnectorConfig
+        output: DiscoveryResult
+      indexBatch:
+        description: >
+          Fetch a batch of content items from the source for indexing.
+          Returns items + a cursor for pagination. Null cursor = no more items.
+        input:
+          config: ConnectorConfig
+          cursor: string | null
+          batchSize: number
+        output: IndexBatchResult
+      fetchContent:
+        description: >
+          Fetch the full content of a specific item on demand.
+          Used for pass-through and hybrid sync strategies.
+        input:
+          config: ConnectorConfig
+          itemRef: string
+        output: ContentPayload
+      healthCheck:
+        description: Check if the source is reachable and responding.
+        input:
+          config: ConnectorConfig
+        output: HealthStatus
+
+  # ─── Search Provider ───
+
+  SearchProvider:
+    description: >
+      Abstraction over the search implementation. Default: PostgreSQL FTS.
+      Can be swapped for Elasticsearch, Typesense, etc.
+    methods:
+      search:
+        description: >
+          Execute a search query against indexed content.
+          Results are pre-filtered by accessible source IDs (entitlement enforcement
+          happens at the service layer, not the provider layer).
+        input:
+          query: string
+          accessibleSourceIds: string[]
+          options: SearchOptions
+        output: SearchResult[]
+      indexItem:
+        description: Index or update a content item in the search index.
+        input:
+          item: ContentItem
+        output: void
+      removeItem:
+        description: Remove a content item from the search index.
+        input:
+          itemId: string
+        output: void
+
+  # ─── Entitlement Resolver ───
+
+  EntitlementResolver:
+    description: >
+      Pluggable interface for resolving user entitlements from external systems.
+      Default: HTTP resolver that queries a configurable endpoint.
+    methods:
+      resolve:
+        description: >
+          Resolve what products a user is entitled to access.
+          Returns product IDs with resolution metadata.
+        input:
+          userId: string
+          tenantId: string
+          context: ResolverContext
+        output: ResolvedEntitlements
+
+  # ─── Voice Analyzer ───
+
+  VoiceAnalyzer:
+    description: >
+      Interface for voice drift analysis. Decouples the monitoring scheduler
+      from the specific analysis implementation (profile engine).
+    methods:
+      analyze:
+        description: >
+          Analyze generated content against a voice profile.
+          Returns drift scores per dimension.
+        input:
+          content: string
+          profileId: string
+          tenantId: string
+        output: DriftAnalysis
+
+# ─── Shared Types ───
+
+types:
+
+  ConnectorConfig:
+    description: Source-specific connection configuration (encrypted at rest)
+    fields:
+      type: string  # relational-database | rest-api
+      host: string
+      port: number | null
+      credentials: object  # varies by type
+      queryConfig: object  # varies by type (table/view/endpoint/graphql query)
+
+  DiscoveryResult:
+    fields:
+      collections: DiscoveredCollection[]
+      totalEstimate: number
+
+  DiscoveredCollection:
+    fields:
+      name: string
+      itemEstimate: number
+      fields: string[]
+
+  IndexBatchResult:
+    fields:
+      items: ContentPayload[]
+      nextCursor: string | null
+      totalProcessed: number
+
+  ContentPayload:
+    fields:
+      sourceRef: string
+      title: string
+      body: string | null
+      contentType: string
+      metadata: Record<string, unknown>
+
+  HealthStatus:
+    fields:
+      healthy: boolean
+      message: string | null
+      latencyMs: number
+
+  SearchOptions:
+    fields:
+      limit: number  # default 20, max 100
+      offset: number  # default 0
+      sourceId: string | null  # filter to specific source
+
+  SearchResult:
+    fields:
+      itemId: string
+      sourceId: string
+      title: string
+      excerpt: string
+      score: number
+      metadata: Record<string, unknown>
+      isStale: boolean
+
+  ResolverContext:
+    fields:
+      sessionId: string
+      integrationId: string | null  # if via mediation API
+
+  ResolvedEntitlements:
+    fields:
+      productIds: string[]
+      resolvedFrom: string
+      resolvedAt: string  # ISO timestamp
+      ttlSeconds: number
+
+  DriftAnalysis:
+    fields:
+      overallScore: number  # 0.0 = perfect match, 1.0 = max drift
+      dimensionScores: Record<string, number>
+      sampleSize: number
+      recommendations: string[]

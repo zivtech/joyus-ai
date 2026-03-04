@@ -1,0 +1,13 @@
+{
+  "feature_number": "005",
+  "slug": "content-intelligence",
+  "friendly_name": "Content Intelligence",
+  "mission": "software-dev",
+  "source_description": "Profile engine library: authorship attribution, writing profile generation, fidelity monitoring, and content verification for the Joyus AI platform.",
+  "created_at": "2026-02-19T12:00:00Z",
+  "vcs": "git",
+  "measurement_owner": "Content Intelligence",
+  "review_cadence": "weekly",
+  "risk_class": "platform",
+  "lifecycle_state": "done"
+}

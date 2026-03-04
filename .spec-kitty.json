@@ -1,0 +1,29 @@
+{
+  "name": "joyus-ai-agent-platform",
+  "phase": "research",
+  "version": "1.1.0",
+  "created": "2026-01-29",
+  "updated": "2026-02-11",
+  "phases": {
+    "constitution": {
+      "status": "complete",
+      "file": "spec/constitution.md",
+      "note": "v1.1 — updated phase ordering, infrastructure decisions, session tracking (Feb 11)"
+    },
+    "specification": {
+      "status": "complete",
+      "file": "spec/specification.md",
+      "note": "Presentation Toolkit now Phase 4 (was Phase 1)"
+    },
+    "plan": {
+      "status": "complete",
+      "file": "spec/plan.md",
+      "note": "Phases reordered: 1=Sharing, 2=MCP Deploy, 3=Platform, 4=Tools (Feb 11)"
+    },
+    "research": {
+      "status": "in-progress",
+      "file": "research/joyus-ai-research.md",
+      "note": "Hosting comparison complete, session tracking evaluated"
+    }
+  }
+}

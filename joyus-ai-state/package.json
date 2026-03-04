@@ -1,0 +1,40 @@
+{
+  "name": "joyus-ai-state",
+  "version": "0.1.0",
+  "description": "Joyus AI Local MCP Server - Session state, enforcement, and workflow management",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "joyus-ai-mcp": "./bin/joyus-ai-mcp",
+    "joyus-ai-service": "./bin/joyus-ai-service"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@paralleldrive/cuid2": "^3.3.0",
+    "better-sqlite3": "^12.6.2",
+    "chokidar": "^5.0.0",
+    "picomatch": "^4.0.3",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.11.0",
+    "@types/picomatch": "^4.0.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

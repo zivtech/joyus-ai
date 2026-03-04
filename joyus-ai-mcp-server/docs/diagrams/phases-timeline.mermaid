@@ -1,0 +1,48 @@
+gantt
+    title Joyus AI Platform - Implementation Timeline
+    dateFormat  YYYY-MM-DD
+
+    section Phase 0
+    Current State (Complete)       :done, p0, 2026-01-15, 2026-01-30
+
+    section Phase 1
+    Database Schema Extensions     :p1a, 2026-02-03, 3d
+    Claude API Integration         :p1b, after p1a, 4d
+    REST API for Conversations     :p1c, after p1a, 3d
+    SSE Streaming Infrastructure   :p1d, after p1b, 2d
+
+    section Phase 2
+    Next.js App Setup              :p2a, after p1d, 2d
+    Chat Interface Components      :p2b, after p2a, 5d
+    Authentication Integration     :p2c, after p2a, 2d
+    Streaming Response Handling    :p2d, after p2b, 3d
+    Mobile Responsive Design       :p2e, after p2d, 2d
+
+    section Phase 3
+    Playwright MCP Integration     :p3a, after p2e, 3d
+    Browser Tool Definitions       :p3b, after p3a, 2d
+    Security Sandboxing            :p3c, after p3a, 3d
+    Screenshot Streaming           :p3d, after p3b, 2d
+
+    section Phase 4
+    Confusion Detection            :p4a, after p3d, 3d
+    Feedback UI Components         :p4b, after p4a, 2d
+    Admin Improvement Queue        :p4c, after p4b, 3d
+    Auto-Documentation             :p4d, after p4c, 2d
+
+    section Phase 5
+    Admin Dashboard UI             :p5a, after p4d, 4d
+    Metrics & Monitoring           :p5b, after p5a, 3d
+    User Management                :p5c, after p5a, 2d
+
+    section Phase 6
+    Production Hardening           :p6a, after p5b, 3d
+    Documentation                  :p6b, after p5b, 3d
+    Deployment & Launch            :p6c, after p6a, 2d
+    Team Onboarding                :p6d, after p6c, 2d
+
+    section Milestones
+    MVP Ready (Web Chat)           :milestone, m1, after p2e, 0d
+    Browser Automation Live        :milestone, m2, after p3d, 0d
+    Improvement System Active      :milestone, m3, after p4d, 0d
+    Production Launch              :milestone, m4, after p6d, 0d

@@ -1,0 +1,93 @@
+erDiagram
+    USER ||--o{ CONNECTION : has
+    USER ||--o{ CONVERSATION : owns
+    USER ||--o{ TOOL_EXECUTION : performs
+    USER ||--o{ CONFUSION_EVENT : triggers
+
+    CONVERSATION ||--o{ MESSAGE : contains
+    MESSAGE ||--o{ TOOL_EXECUTION : triggers
+
+    CONFUSION_EVENT }o--|| CONVERSATION : "relates to"
+    FEEDBACK }o--|| MESSAGE : "about"
+
+    IMPROVEMENT }o--o{ CONFUSION_EVENT : "addresses"
+
+    USER {
+        text id PK
+        text email UK
+        text name
+        text role
+        text mcpToken UK
+        jsonb preferences
+        timestamp createdAt
+    }
+
+    CONNECTION {
+        text id PK
+        text userId FK
+        enum service
+        text accessToken
+        text refreshToken
+        timestamp expiresAt
+        jsonb metadata
+    }
+
+    CONVERSATION {
+        text id PK
+        text userId FK
+        text title
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    MESSAGE {
+        text id PK
+        text conversationId FK
+        enum role
+        text content
+        jsonb toolCalls
+        timestamp createdAt
+    }
+
+    TOOL_EXECUTION {
+        text id PK
+        text userId FK
+        text messageId FK
+        text toolName
+        jsonb input
+        jsonb output
+        boolean success
+        text errorType
+        text errorMessage
+        integer durationMs
+        timestamp createdAt
+    }
+
+    CONFUSION_EVENT {
+        text id PK
+        text userId FK
+        text conversationId FK
+        enum triggerType
+        jsonb context
+        boolean resolved
+        timestamp createdAt
+    }
+
+    FEEDBACK {
+        text id PK
+        text userId FK
+        text messageId FK
+        integer rating
+        text comment
+        timestamp createdAt
+    }
+
+    IMPROVEMENT {
+        text id PK
+        enum type
+        enum status
+        text description
+        jsonb relatedEvents
+        timestamp implementedAt
+        jsonb impact
+    }
