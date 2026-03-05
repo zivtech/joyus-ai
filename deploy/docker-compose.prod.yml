@@ -1,0 +1,47 @@
+# Joyus AI — Docker Compose production overrides
+
+services:
+  platform:
+    image: ${PLATFORM_IMAGE:-ghcr.io/zivtech/joyus-ai-platform}:${IMAGE_TAG:-latest}
+    build: null
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.50"
+          memory: 2G
+
+  playwright:
+    image: ${PLAYWRIGHT_IMAGE:-ghcr.io/zivtech/joyus-ai-playwright}:${IMAGE_TAG:-latest}
+    build: null
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1G
+
+  postgres:
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1G
