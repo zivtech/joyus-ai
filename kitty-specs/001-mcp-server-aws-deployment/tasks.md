@@ -71,7 +71,7 @@
 **Parallel opportunities**: T003 and T004 can be built independently of T002.
 **Success criteria**: `docker compose build` succeeds. `docker compose up -d` starts all 3 containers. Containers can communicate on internal network.
 **Risks**: Platform container image may be large (~2GB) due to multi-runtime. Monitor build times.
-**Prompt file**: [tasks/WP01-docker-compose-containers.md](tasks/WP01-docker-compose-containers.md)
+**Prompt file**: `tasks/WP01-docker-compose-containers.md`
 
 ---
 
@@ -92,7 +92,7 @@
 **Parallel opportunities**: T009 (firewall) independent of T007 (nginx).
 **Success criteria**: Fresh Ubuntu 24.04 instance can be provisioned from scratch by running `setup-ec2.sh`. Nginx routes requests correctly. TLS works on `ai.example.com`.
 **Risks**: DNS propagation delay. Certbot requires domain to resolve to EC2 IP first.
-**Prompt file**: [tasks/WP02-ec2-provisioning-nginx.md](tasks/WP02-ec2-provisioning-nginx.md)
+**Prompt file**: `tasks/WP02-ec2-provisioning-nginx.md`
 
 ---
 
@@ -113,7 +113,7 @@
 **Parallel opportunities**: T015 (Slack notification) independent of T011-T014.
 **Success criteria**: Push to main triggers automated build + deploy. New version live within 10 minutes. Failed deploy triggers rollback and Slack alert.
 **Risks**: GitHub Actions needs `workflow` scope on gh auth. EC2 SSH key must be in GitHub secrets.
-**Prompt file**: [tasks/WP03-cicd-pipeline.md](tasks/WP03-cicd-pipeline.md)
+**Prompt file**: `tasks/WP03-cicd-pipeline.md`
 
 ---
 
@@ -135,7 +135,7 @@
 **Parallel opportunities**: T017, T018, T019, T039 all independent of each other.
 **Success criteria**: `/health` endpoint returns correct service status. Logs rotate automatically. Slack alert fires on simulated downtime.
 **Risks**: Health check must not create excessive load. Use lightweight checks (TCP for DB, HTTP 200 for services).
-**Prompt file**: [tasks/WP04-monitoring-health.md](tasks/WP04-monitoring-health.md)
+**Prompt file**: `tasks/WP04-monitoring-health.md`
 
 ---
 
@@ -158,7 +158,7 @@
 **Parallel opportunities**: T022-T027 all independent of each other (different services/runtimes).
 **Success criteria**: All MCP endpoints respond to tool calls. All Python packages importable. All CLI tools executable. Memory persists across restart.
 **Risks**: OAuth tokens may need re-auth for production environment. Playwright may need display config (Xvfb or headless flag).
-**Prompt file**: [tasks/WP05-mcp-skill-verification.md](tasks/WP05-mcp-skill-verification.md)
+**Prompt file**: `tasks/WP05-mcp-skill-verification.md`
 
 ---
 
@@ -179,7 +179,7 @@
 **Parallel opportunities**: T032 (Claude Desktop config) independent of T028-T031.
 **Success criteria**: Chat UI loads on mobile browser. Can send message and receive Claude response with tool call results. Auth prevents unauthorized access. Claude Desktop connects and lists all MCP tools.
 **Risks**: Claude API streaming may need CORS configuration in nginx. Mobile keyboard handling may need viewport meta tag.
-**Prompt file**: [tasks/WP06-web-chat-claude-desktop.md](tasks/WP06-web-chat-claude-desktop.md)
+**Prompt file**: `tasks/WP06-web-chat-claude-desktop.md`
 
 ---
 
@@ -203,7 +203,7 @@
 **Parallel opportunities**: T034 (DNS) can start while T033 (EC2) provisions.
 **Success criteria**: `ai.example.com` serves HTTPS. All health checks green. 2+ team members connected. Web chat works from phone. Monthly cost under $35.
 **Risks**: DNS propagation (up to 48h worst case, usually <1h). May need t3.medium if OOM under load.
-**Prompt file**: [tasks/WP07-production-launch.md](tasks/WP07-production-launch.md)
+**Prompt file**: `tasks/WP07-production-launch.md`
 
 ---
 
