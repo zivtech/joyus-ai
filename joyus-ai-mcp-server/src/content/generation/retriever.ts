@@ -55,10 +55,11 @@ export class ContentRetriever {
     const results = await this.searchService.search(query, accessibleSourceIds, {
       limit: maxSources,
     });
+    const scopedResults = results.filter(result => accessibleSourceIds.includes(result.sourceId));
 
     // 3. Fetch full content for each result
     const items: RetrievedItem[] = [];
-    for (const result of results) {
+    for (const result of scopedResults) {
       const rows = await this.db
         .select()
         .from(contentItems)
@@ -82,6 +83,6 @@ export class ContentRetriever {
       .map((item, i) => `[Source ${i + 1}: "${item.title}"] ${item.body}`)
       .join('\n\n');
 
-    return { items, contextText, totalSearchResults: results.length };
+    return { items, contextText, totalSearchResults: scopedResults.length };
   }
 }
