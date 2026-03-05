@@ -5,10 +5,19 @@
   "branch": "main",
   "checkpoints_count": 1,
   "files_touched": [
+    ".gitleaks.toml",
+    "README.md",
+    "deploy/examples/deploy-mcp.yml",
+    "joyus-ai-mcp-server/src/auth/middleware.ts",
+    "joyus-ai-mcp-server/src/auth/routes.ts",
+    "joyus-ai-mcp-server/src/auth/verify.ts",
     "joyus-ai-mcp-server/src/db/schema.ts",
     "joyus-ai-mcp-server/src/exports/router.ts",
     "joyus-ai-mcp-server/src/exports/service.ts",
     "joyus-ai-mcp-server/src/exports/types.ts",
+    "joyus-ai-mcp-server/src/index.ts",
+    "joyus-ai-mcp-server/src/scheduler/routes.ts",
+    "joyus-ai-mcp-server/tests/auth/middleware.test.ts",
     "joyus-ai-mcp-server/tests/exports.test.ts",
     "joyus-ai-mcp-server/tests/exports/service.test.ts"
   ],
@@ -19,13 +28,20 @@
       "context": "/1b/ce99a50185/0/context.md",
       "content_hash": "/1b/ce99a50185/0/content_hash.txt",
       "prompt": "/1b/ce99a50185/0/prompt.txt"
+    },
+    {
+      "metadata": "/1b/ce99a50185/1/metadata.json",
+      "transcript": "/1b/ce99a50185/1/full.jsonl",
+      "context": "/1b/ce99a50185/1/context.md",
+      "content_hash": "/1b/ce99a50185/1/content_hash.txt",
+      "prompt": "/1b/ce99a50185/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 57,
-    "cache_creation_tokens": 76956,
-    "cache_read_tokens": 1477343,
-    "output_tokens": 38097,
-    "api_call_count": 19
+    "input_tokens": 73,
+    "cache_creation_tokens": 239772,
+    "cache_read_tokens": 1787673,
+    "output_tokens": 40773,
+    "api_call_count": 25
   }
 }

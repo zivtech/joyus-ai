@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "1bce99a50185",
+  "session_id": "3e008854-141f-47e9-8b81-d1b3a064e096",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-05T14:33:20.147154Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".gitleaks.toml",
+    "README.md",
+    "deploy/examples/deploy-mcp.yml",
+    "joyus-ai-mcp-server/src/auth/middleware.ts",
+    "joyus-ai-mcp-server/src/auth/routes.ts",
+    "joyus-ai-mcp-server/src/auth/verify.ts",
+    "joyus-ai-mcp-server/src/exports/router.ts",
+    "joyus-ai-mcp-server/src/index.ts",
+    "joyus-ai-mcp-server/src/scheduler/routes.ts",
+    "joyus-ai-mcp-server/tests/auth/middleware.test.ts",
+    "joyus-ai-mcp-server/tests/exports.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "c1b96c6d-0a37-47ca-93b4-7c204fd71b5d",
+  "checkpoint_transcript_start": 1029,
+  "transcript_lines_at_start": 1029,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 162816,
+    "cache_read_tokens": 310330,
+    "output_tokens": 2676,
+    "api_call_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-05T14:33:20.02777Z",
+    "agent_lines": 0,
+    "human_added": 3463,
+    "human_modified": 207,
+    "human_removed": 0,
+    "total_committed": 3661,
+    "agent_percentage": 0
+  }
+}

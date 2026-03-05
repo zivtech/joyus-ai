@@ -1,0 +1,336 @@
+Implement the following plan:
+
+# Auth Middleware Extraction + PR #3 Follow-ups
+
+## Context
+
+grndlvl's PR #3 review identified four follow-up items. This plan addresses all four — though two turn out to be N/A since the `exports/` module was removed before merge.
+
+## Scope Assessment
+
+| # | Item | Status |
+|---|------|--------|
+| 1 | Extract auth into shared middleware | **Actionable** |
+| 2 | Increase test coverage (auth, router) | **Actionable** — scoped to new middleware |
+| 3 | Persist download links to DB | **N/A** — `exports/service.ts` doesn't exist on main |
+| 4 | Abstract "workbook" terminology | **N/A** — `exports/service.ts` doesn't exist on main |
+
+Additionally: `index.ts:26` has a **broken import** of `./exports/router.js` which needs to be removed.
+
+---
+
+## Task 1: Create shared auth middleware
+
+**New file:** `src/auth/middleware.ts`
+
+Three middleware functions covering the two auth mechanisms currently duplicated:
+
+### 1a. `requireBearerToken` — MCP token auth (Express middleware)
+Extracts `Authorization: Bearer <token>`, calls existing `getUserFromToken()` from `verify.ts`, attaches user to `req.mcpUser`. Replaces inline auth at:
+- `index.ts:170-179` (`/mcp` POST)
+- `index.ts:273-281` (`/mcp/sse` GET — token from query param, so this variant takes token from either header or `?token=`)
+
+### 1b. `requireSession` — Session cookie auth (Express middleware)
+Checks `req.session?.userId`, returns 401 JSON for API routes. Replaces manual checks in:
+- `scheduler/routes.ts` lines 24, 252, 298, 325, 374, 465, 524 (~8 instances)
+
+### 1c. `requireSessionOrRedirect` — Session cookie with redirect (Express middleware)
+Same as `requireSession` but redirects to `/auth` for UI routes. Replaces manual checks in:
+- `auth/routes.ts` lines 52-54, 343, 451, 547, 648
+- `scheduler/routes.ts` lines 24, 373
+
+**Pattern:** Follow the factory style from `content/mediation/auth.ts` — no DB import at module level, consistent error responses.
+
+**Type augmentation:** Extend `Express.Request` in existing `types/express-session.d.ts` to add `mcpUser?: UserWithConnections`.
+
+### Files modified:
+- **Create** `src/auth/middleware.ts` — the three middleware functions
+- **Edit** `src/types/express-session.d.ts` — add `mcpUser` to Request
+- **Edit** `src/index.ts` — use `requireBearerToken` on `/mcp` and `/mcp/sse`; remove broken `exports/router` import + mount
+- **Edit** `src/scheduler/routes.ts` — use `requireSession` / `requireSessionOrRedirect`
+- **Edit** `src/auth/routes.ts` — use `requireSessionOrRedirect` where applicable (note: the `/` route has split logic — show login vs dashboard — so it keeps its inline check; only the service-start and disconnect routes use the middleware)
+
+---
+
+## Task 2: Add auth middleware tests
+
+**New file:** `tests/auth/middleware.test.ts`
+
+Unit tests using mock Request/Response objects (consistent with existing test patterns):
+- `requireBearerToken`: missing header, invalid token, valid token, SSE query param fallback
+- `requireSession`: missing session, valid session
+- `requireSessionOrRedirect`: missing session redirects to `/auth`
+
+---
+
+## Task 3: Remove broken exports import
+
+**Edit** `src/index.ts`:
+- Remove line 26: `import { exportRouter } from './exports/router.js'`
+- Remove lines 162-163: the `/api/v1` mount
+- This is a bug fix — the import will fail at runtime
+
+---
+
+## Verification
+
+1. `npx tsc --noEmit` — confirm no type errors
+2. `npx vitest run` — all existing + new tests pass
+3. Grep for remaining inline `req.session?.userId` checks to confirm extraction is complete
+4. Grep for remaining inline `Bearer` extraction in index.ts to confirm MCP auth uses middleware
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+
+If this plan can be broken down into multiple independent tasks, consider using the TeamCreate tool to create a team and parallelize the work.
+
+---
+
+ok, what's next?
+
+---
+
+yes
+
+---
+
+push
+
+---
+
+can you review and merge any open prs?
+
+---
+
+did you already address this? https://github.com/zivtech/joyus-ai/issues/14
+
+---
+
+yes
+
+---
+
+check the rest of the issues and see if his suggestions are addressed?
+
+---
+
+yes
+
+---
+
+tackle 5
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the entire conversation:
+
+1. The user provided a detailed implementation plan for "Auth Middleware Extraction + PR #3 Follow-ups" with 3 tasks:
+   - Task 1: Create shared auth middleware (`src/auth/middleware.ts`) with three functions
+   - Task 2: Add auth middleware tests
+   - Task 3: Remove broken exports import from index.ts
+
+2. I explored the codebase, finding source files are under `joyus-ai-mcp-server/src/` (not `src/` at root).
+
+3. I read all key files: index.ts, auth/routes.ts, scheduler/routes.ts, types/express-session.d.ts, auth/verify.ts, content/mediation/auth.ts
+
+4. I implemented all changes:
+   - Exported `UserWithConnections` from verify.ts
+   - Created `src/auth/middleware.ts` with `requireBearerToken`, `requireSession`, `requireSessionOrRedirect`
+   - Edited index.ts: removed broken exports/router import, removed /api/v1 mount, used requireBearerToken on /mcp and /mcp/sse routes
+   - Edited scheduler/routes.ts: applied middleware to all 8 routes
+   - Edited auth/routes.ts: applied requireSessionOrRedirect to 4 routes (jira/start, slack/start, github/start, /:service/disconnect)
+   - Created tests/auth/middleware.test.ts with 9 tests
+
+5. Verification: tsc passed (only pre-existing errors), all 9 new tests passed, grep confirmed zero remaining inline auth checks.
+
+6. User asked to commit - I committed successfully.
+
+7. User asked to push - encountered `_joyus_safe_run: command not found` (exit 127) from shell wrapper. Push didn't go through.
+
+8. After fetching, discovered origin/main had moved ahead (PR #3 was merged). Rebased, hit conflicts because PR #3 had added its own version of `auth/middleware.ts` and changes to `index.ts`.
+
+9. Resolved conflicts:
+   - middleware.ts: Kept my fuller version (PR #3 had simpler `AuthenticatedRequest`/`requireTokenAuth`/`extractBearerToken`)
+   - index.ts: Removed the export router mount that PR #3 had kept
+   - Also had to update `exports/router.ts` to use new middleware names (`requireBearerToken`/`mcpUser` instead of `requireTokenAuth`/`authUser`)
+   - Updated `tests/exports.test.ts` to remove old middleware test suites (now covered by tests/auth/middleware.test.ts)
+
+10. After conflict resolution: tsc had ZERO errors, all 110 tests passed across 9 suites.
+
+11. Push to main was rejected by branch protection rules (requires PR + review). Created branch `refactor/auth-middleware-extraction`, pushed, created PR #15.
+
+12. User asked to review and merge open PRs. Only PR #15 existed but required approving review from write-access member.
+
+13. User asked to check if issue #14 was addressed. It wasn't (separate from auth work). I implemented it: moved broken `deploy-mcp.yml` to `deploy/examples/` with documentation header. Created PR #16.
+
+14. User asked to check rest of grndlvl's issues. I identified 5 open issues from grndlvl:
+   - #14: Deploy workflow → PR #16 (done)
+   - #8: Mermaid diagram → not addressed
+   - #6: Sanitize MCP token → not addressed  
+   - #5: Persist export tokens to DB → not addressed (bigger lift)
+   - #4: .gitleaks.toml allowlist → not addressed
+
+15. User said "yes" to tackling quick wins (#4, #6, #8). I implemented all three:
+   - #4: Created `.gitleaks.toml` with allowlist rules → PR #17
+   - #6: Added `escapeHtml` helper to auth/routes.ts, escaped token rendering → PR #18
+   - #8: Replaced ASCII diagram with Mermaid in README.md → PR #19
+
+16. User said "tackle 5" (persist export download tokens to DB). I entered plan mode to plan this bigger task.
+
+Now let me trace the current state: I'm in plan mode, about to explore and plan issue #5 (persist export download tokens to database).
+
+Summary:
+1. Primary Request and Intent:
+   The user's overarching goal was to address follow-up items from grndlvl's PR #3 review and all open issues filed by grndlvl. The session progressed through these explicit requests:
+   - Implement auth middleware extraction plan (PR #3 follow-ups: shared middleware, tests, broken import removal)
+   - Commit and push changes
+   - Review and merge open PRs
+   - Check if issue #14 was addressed, then fix it
+   - Check remaining grndlvl issues and address quick wins (#4, #6, #8)
+   - **Most recent**: "tackle 5" — Issue #5: Persist export download tokens to database (currently in plan mode)
+
+2. Key Technical Concepts:
+   - Express middleware pattern (req/res/next) for auth extraction
+   - Bearer token auth (MCP endpoints) with header + query param fallback for SSE
+   - Session-based auth (cookie/session userId) for UI routes vs API routes
+   - `declare global { namespace Express { interface Request { mcpUser?: UserWithConnections } } }` for type augmentation
+   - Drizzle ORM + PostgreSQL (existing DB layer)
+   - GitHub branch protection requiring PR + approving review + status checks
+   - Gitleaks secret scanning with TOML allowlist configuration
+   - XSS prevention via HTML escaping in server-rendered templates
+   - Mermaid diagrams for GitHub markdown
+   - Constitution §2.10: org-specific content belongs in private repos
+
+3. Files and Code Sections:
+
+   - **`joyus-ai-mcp-server/src/auth/middleware.ts`** (CREATED)
+     - Central deliverable: three shared middleware functions replacing duplicated auth checks
+     - After rebase conflict with PR #3's simpler version, kept the fuller implementation
+     ```typescript
+     import { Request, Response, NextFunction } from 'express';
+     import { getUserFromToken, type UserWithConnections } from './verify.js';
+     
+     declare global {
+       namespace Express {
+         interface Request {
+           mcpUser?: UserWithConnections;
+         }
+       }
+     }
+     
+     export async function requireBearerToken(req, res, next): Promise<void> {
+       // Checks Authorization header first, falls back to ?token= query param (SSE)
+       // Attaches user to req.mcpUser
+     }
+     export function requireSession(req, res, next): void {
+       // Returns 401 JSON for API/form routes
+     }
+     export function requireSessionOrRedirect(req, res, next): void {
+       // Redirects to /auth for UI routes
+     }
+     ```
+
+   - **`joyus-ai-mcp-server/src/auth/verify.ts`** (MODIFIED)
+     - Exported `UserWithConnections` interface (was internal) so middleware can use it
+     - Change: `interface UserWithConnections {` → `export interface UserWithConnections {`
+
+   - **`joyus-ai-mcp-server/src/index.ts`** (MODIFIED)
+     - Removed broken `import { exportRouter } from './exports/router.js'`
+     - Removed `app.use('/api/v1', exportRouter)` mount
+     - Replaced `import { getUserFromToken }` with `import { requireBearerToken }`
+     - `/mcp` POST and `/mcp/sse` GET now use `requireBearerToken` middleware instead of inline auth
+     - Handler uses `const user = req.mcpUser!;`
+
+   - **`joyus-ai-mcp-server/src/scheduler/routes.ts`** (MODIFIED)
+     - Added `import { requireSession, requireSessionOrRedirect } from '../auth/middleware.js'`
+     - 8 routes updated: GET `/` and `/:id/edit` use `requireSessionOrRedirect`; POST `/create`, `/:id/toggle`, `/:id/run`, `/:id/delete`, `/:id/update`, `/api/test-notification` use `requireSession`
+     - Pattern: `const userId = req.session?.userId; if (!userId) return ...` → middleware + `const userId = req.session!.userId!;`
+
+   - **`joyus-ai-mcp-server/src/auth/routes.ts`** (MODIFIED)
+     - Added `import { requireSessionOrRedirect } from './middleware.js'`
+     - 4 routes updated: `/jira/start`, `/slack/start`, `/github/start`, `/:service/disconnect`
+     - The `/` route kept inline check (split login vs dashboard logic)
+     - For issue #6 fix: added `escapeHtml` helper, escaped `${user.mcpToken}` in HTML rendering
+
+   - **`joyus-ai-mcp-server/src/exports/router.ts`** (MODIFIED during rebase)
+     - Updated PR #3's code to use new middleware API: `requireBearerToken` instead of `requireTokenAuth`, `req.mcpUser` instead of `req.authUser`, `Request` instead of `AuthenticatedRequest`
+
+   - **`joyus-ai-mcp-server/tests/auth/middleware.test.ts`** (CREATED)
+     - 9 unit tests: missing token, invalid token, valid Bearer header, SSE query param fallback, header priority over query param, session missing (401), session present, redirect on missing session, redirect present session
+
+   - **`joyus-ai-mcp-server/tests/exports.test.ts`** (MODIFIED during rebase)
+     - Removed old `extractBearerToken` (5 tests) and `requireTokenAuth` (5 tests) suites — now covered by tests/auth/middleware.test.ts
+     - Removed unused `import { requireBearerToken }` after suite removal
+
+   - **`.gitleaks.toml`** (CREATED for issue #4)
+     - Allowlist rules for Firebase API keys, Google service account key IDs, OAuth client IDs, test fixtures
+
+   - **`deploy/examples/deploy-mcp.yml`** (CREATED for issue #14)
+     - Moved from `.github/workflows/deploy-mcp.yml` with documentation header explaining all `<org>` placeholders
+
+   - **`README.md`** (MODIFIED for issue #8)
+     - Replaced ASCII art architecture diagram with Mermaid `graph TD` diagram
+
+   - **`joyus-ai-mcp-server/src/exports/service.ts`** (NOT YET READ — needed for issue #5)
+     - Contains in-memory Maps for export jobs and download tokens that need DB persistence
+
+4. Errors and Fixes:
+   - **File not found (`src/index.ts`)**: Source files are under `joyus-ai-mcp-server/src/`, not project root `src/`. Fixed by using correct paths.
+   - **`_joyus_safe_run: command not found` (exit 127)**: Shell wrapper intercepting `git push`. Known harmless hook issue per MEMORY.md. Push didn't actually go through.
+   - **Branch protection rejection**: Direct push to main rejected — requires PR + review + status checks. Fixed by creating feature branch and PR.
+   - **Rebase conflicts**: PR #3 had been merged while working, introducing its own `auth/middleware.ts` and changes. Resolved by keeping the fuller implementation and updating `exports/router.ts` and `tests/exports.test.ts` to use new API names.
+   - **`npx vitest run` changed cwd**: Running vitest from the mcp-server directory changed the working directory, causing `git add` with repo-root-relative paths to fail. Fixed by using `cd /Users/AlexUA/claude/joyus-ai &&` prefix or relative paths from cwd.
+   - **10 test failures in exports.test.ts after rebase**: Old tests referenced removed functions (`extractBearerToken`, `requireTokenAuth`). Fixed by removing those test suites and the unused import.
+
+5. Problem Solving:
+   - Efficiently extracted 12+ inline auth checks across 3 files into 3 reusable middleware functions
+   - Resolved complex rebase conflict where PR #3 introduced a competing simpler middleware implementation
+   - Identified that `exports/router.ts` (added by PR #3) also needed updating for the new middleware API
+   - Branch protection discovery led to PR-based workflow for all subsequent changes
+   - Systematically triaged all 5 grndlvl issues, implemented 4 of 5 (deferring only the DB persistence task)
+
+6. All User Messages:
+   - "Implement the following plan: # Auth Middleware Extraction + PR #3 Follow-ups [detailed plan]"
+   - "yes" (to commit)
+   - "push"
+   - "what's next?"
+   - "yes" (to commit after being told all done)
+   - "push"
+   - "can you review and merge any open prs?"
+   - "did you already address this? https://github.com/zivtech/joyus-ai/issues/14"
+   - "yes" (to tackle issue #14)
+   - "check the rest of the issues and see if his suggestions are addressed?"
+   - "yes" (to tackle quick wins #4, #6, #8)
+   - "tackle 5"
+
+7. Pending Tasks:
+   - **Issue #5**: Persist export download tokens to database — currently in plan mode, no exploration or implementation started yet
+   - All 5 PRs (#15-#19) need approving review from write-access team member before merge
+
+8. Current Work:
+   The user said "tackle 5" referring to GitHub issue #5: "Persist export download tokens to database". I entered plan mode. The issue describes that `joyus-ai-mcp-server/src/exports/service.ts` uses in-memory JavaScript Maps for download tokens/job records, which get wiped on server restart. The proposed solution is to add a database table and persist to PostgreSQL via Drizzle ORM.
+   
+   I have NOT yet:
+   - Read `src/exports/service.ts` or `src/exports/types.ts`
+   - Explored the Drizzle schema/migration patterns
+   - Launched any exploration agents
+   - Written anything to the plan file
+
+9. Optional Next Step:
+   Begin Phase 1 of planning for issue #5 by exploring the exports module and Drizzle schema:
+   - Read `joyus-ai-mcp-server/src/exports/service.ts` to understand the in-memory Maps and job lifecycle
+   - Read `joyus-ai-mcp-server/src/exports/types.ts` for the `ExcelExportRequest` type
+   - Explore existing Drizzle schema patterns in `joyus-ai-mcp-server/src/db/` (migrations, table definitions)
+   - Read `joyus-ai-mcp-server/src/exports/router.ts` (already read during conflict resolution but need fresh read on main)
+   
+   User's exact words: **"tackle 5"** — referring to issue #5 "Persist export download tokens to database"
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+[Request interrupted by user for tool use]
