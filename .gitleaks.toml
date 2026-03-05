@@ -1,0 +1,13 @@
+title = "Joyus AI gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Known non-secret fixtures and documentation placeholders"
+paths = [
+  '''^joyus-ai-mcp-server/tests/exports\.test\.ts$''',
+  '''^kitty-specs/006-content-infrastructure/quickstart\.md$''',
+  '''^[0-9]{2}/[0-9a-f]+/[0-9]+/full\.jsonl$''',
+  '''^\.entire/metadata/.+/full\.jsonl$''',
+]
