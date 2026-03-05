@@ -6,6 +6,7 @@
  */
 
 import type { RetrievalResult } from './retriever.js';
+import axios from 'axios';
 
 export interface GenerationProvider {
   generate(prompt: string, systemPrompt: string): Promise<string>;
@@ -15,6 +16,13 @@ export interface GenerationOutput {
   text: string;
   profileUsed: string | null;
   sourcesProvided: number;
+}
+
+export interface HttpGenerationProviderConfig {
+  url: string;
+  timeoutMs?: number;
+  authHeader?: string;
+  authToken?: string;
 }
 
 export class ContentGenerator {
@@ -65,5 +73,48 @@ export class PlaceholderGenerationProvider implements GenerationProvider {
       `[Generation not configured] Query received: "${prompt}". ` +
       `Configure a GenerationProvider to enable AI responses.`
     );
+  }
+}
+
+/**
+ * HTTP-backed generation provider. The endpoint must return one of:
+ * - plain string body
+ * - object with `text`, `output`, or `response` string field
+ */
+export class HttpGenerationProvider implements GenerationProvider {
+  constructor(private config: HttpGenerationProviderConfig) {}
+
+  async generate(prompt: string, systemPrompt: string): Promise<string> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.config.authHeader && this.config.authToken) {
+      headers[this.config.authHeader] = this.config.authToken;
+    }
+
+    const response = await axios.post(
+      this.config.url,
+      { prompt, systemPrompt },
+      {
+        timeout: this.config.timeoutMs ?? 12_000,
+        headers,
+      },
+    );
+
+    const payload = response.data as unknown;
+    if (typeof payload === 'string' && payload.trim().length > 0) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const text = (payload as Record<string, unknown>).text;
+      const output = (payload as Record<string, unknown>).output;
+      const result = (payload as Record<string, unknown>).response;
+      for (const candidate of [text, output, result]) {
+        if (typeof candidate === 'string' && candidate.trim().length > 0) {
+          return candidate;
+        }
+      }
+    }
+
+    throw new Error('Generation provider returned no usable text payload');
   }
 }

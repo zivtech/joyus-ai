@@ -10,9 +10,11 @@ import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 import { ContentRetriever, type SearchService, type RetrievalResult, type RetrievedItem } from './retriever.js';
 import {
   ContentGenerator,
+  HttpGenerationProvider,
   PlaceholderGenerationProvider,
   type GenerationProvider,
   type GenerationOutput,
+  type HttpGenerationProviderConfig,
 } from './generator.js';
 import { CitationManager, type CitationResult } from './citations.js';
 
@@ -89,6 +91,7 @@ export class GenerationService {
       success: true,
       metadata: {
         citationCount: citationResult.citationCount,
+        responseLength: citationResult.text.length,
         sourcesUsed: retrieval.items.length,
         profileId: options?.profileId ?? null,
       },
@@ -116,8 +119,10 @@ export {
 } from './retriever.js';
 export {
   ContentGenerator,
+  HttpGenerationProvider,
   PlaceholderGenerationProvider,
   type GenerationProvider,
   type GenerationOutput,
+  type HttpGenerationProviderConfig,
 } from './generator.js';
 export { CitationManager, type CitationResult } from './citations.js';
