@@ -19,6 +19,7 @@ import { saveStateToolDef, handleSaveState } from './tools/save-state.js';
 import { verifyActionToolDef, handleVerifyAction } from './tools/verify-action.js';
 import { checkCanonicalToolDef, handleCheckCanonical } from './tools/check-canonical.js';
 import { shareStateToolDef, handleShareState } from './tools/share-state.js';
+import { querySnapshotsToolDef, handleQuerySnapshots } from './tools/query-snapshots.js';
 
 export async function createMcpServer(projectRoot: string): Promise<Server> {
   const server = new Server(
@@ -33,6 +34,7 @@ export async function createMcpServer(projectRoot: string): Promise<Server> {
       verifyActionToolDef,
       checkCanonicalToolDef,
       shareStateToolDef,
+      querySnapshotsToolDef,
     ],
   }));
 
@@ -52,6 +54,8 @@ export async function createMcpServer(projectRoot: string): Promise<Server> {
           return handleCheckCanonical(toolArgs, projectRoot);
         case 'share_state':
           return handleShareState(toolArgs, projectRoot);
+        case 'query_snapshots':
+          return handleQuerySnapshots(toolArgs, projectRoot);
         default:
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
       }

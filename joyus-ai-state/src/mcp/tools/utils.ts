@@ -54,3 +54,11 @@ export const ShareStateInputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('export'), note: z.string() }),
   z.object({ action: z.literal('import'), path: z.string() }),
 ]);
+
+export const QuerySnapshotsInputSchema = z.object({
+  since: z.string().optional(),
+  until: z.string().optional(),
+  event: EventTypeSchema.optional(),
+  branch: z.string().optional(),
+  limit: z.number().int().min(1).max(1000).optional(),
+});

@@ -96,7 +96,7 @@
 **Dependencies**: None
 **Subtasks**: T001-T007 (7 subtasks)
 **Estimated prompt**: ~450 lines
-**Prompt file**: [tasks/WP01-package-foundation.md](tasks/WP01-package-foundation.md)
+**Prompt file**: `tasks/WP01-package-foundation.md`
 
 Initialize the `joyus-profile-engine/` Python package with all Pydantic data models, domain templates, and test infrastructure. This WP produces the type foundation that all subsequent WPs build on.
 
@@ -120,7 +120,7 @@ Initialize the `joyus-profile-engine/` Python package with all Pydantic data mod
 **Dependencies**: WP01
 **Subtasks**: T008-T011 (4 subtasks)
 **Estimated prompt**: ~350 lines
-**Prompt file**: [tasks/WP02-corpus-ingestion.md](tasks/WP02-corpus-ingestion.md)
+**Prompt file**: `tasks/WP02-corpus-ingestion.md`
 
 Build the document ingestion pipeline: load from multiple sources and formats, preprocess into normalized chunks ready for feature extraction.
 
@@ -137,7 +137,7 @@ Build the document ingestion pipeline: load from multiple sources and formats, p
 **Dependencies**: WP02
 **Subtasks**: T012-T018 (7 subtasks)
 **Estimated prompt**: ~500 lines
-**Prompt file**: [tasks/WP03-feature-extraction.md](tasks/WP03-feature-extraction.md)
+**Prompt file**: `tasks/WP03-feature-extraction.md`
 
 Implement all six analyzers that extract the 129-feature stylometric vector from processed corpora. The StylometricAnalyzer wraps faststylometry; others use spaCy and custom NLP.
 
@@ -157,7 +157,7 @@ Implement all six analyzers that extract the 129-feature stylometric vector from
 **Dependencies**: WP03
 **Subtasks**: T019-T025 (7 subtasks)
 **Estimated prompt**: ~450 lines
-**Prompt file**: [tasks/WP04-profile-generation.md](tasks/WP04-profile-generation.md)
+**Prompt file**: `tasks/WP04-profile-generation.md`
 
 Transform extracted features into structured 12-section AuthorProfiles and emit platform-consumable skill files (SKILL.md + markers.json + stylometrics.json).
 
@@ -177,7 +177,7 @@ Transform extracted features into structured 12-section AuthorProfiles and emit 
 **Dependencies**: WP04
 **Subtasks**: T026-T031 (6 subtasks)
 **Estimated prompt**: ~400 lines
-**Prompt file**: [tasks/WP05-verification-cli.md](tasks/WP05-verification-cli.md)
+**Prompt file**: `tasks/WP05-verification-cli.md`
 
 Implement the two-tier verification system (Tier 1 inline <500ms, Tier 2 deep analysis) and CLI commands for building profiles and verifying content.
 
@@ -196,7 +196,7 @@ Implement the two-tier verification system (Tier 1 inline <500ms, Tier 2 deep an
 **Dependencies**: WP05
 **Subtasks**: T032-T035 (4 subtasks)
 **Estimated prompt**: ~350 lines
-**Prompt file**: [tasks/WP06-mcp-server.md](tasks/WP06-mcp-server.md)
+**Prompt file**: `tasks/WP06-mcp-server.md`
 
 Expose the profile engine as MCP tools using the official Python `mcp` SDK. Implements build_profile, get_profile, compare_profiles, verify_content, and check_fidelity.
 
@@ -213,7 +213,7 @@ Expose the profile engine as MCP tools using the official Python `mcp` SDK. Impl
 **Dependencies**: WP06
 **Subtasks**: T036-T038 (3 subtasks)
 **Estimated prompt**: ~300 lines
-**Prompt file**: [tasks/WP07-phase-a-testing.md](tasks/WP07-phase-a-testing.md)
+**Prompt file**: `tasks/WP07-phase-a-testing.md`
 
 Validate Phase A end-to-end: port PoC accuracy tests, run full corpus-to-verification pipeline, measure performance against targets.
 
@@ -233,7 +233,7 @@ Validate Phase A end-to-end: port PoC accuracy tests, run full corpus-to-verific
 **Dependencies**: WP04
 **Subtasks**: T039-T042 (4 subtasks)
 **Estimated prompt**: ~350 lines
-**Prompt file**: [tasks/WP08-composite-builder.md](tasks/WP08-composite-builder.md)
+**Prompt file**: `tasks/WP08-composite-builder.md`
 
 Build department-level and org-level composite profiles from member profiles using corpus-size weighted mean aggregation.
 
@@ -250,7 +250,7 @@ Build department-level and org-level composite profiles from member profiles usi
 **Dependencies**: WP08
 **Subtasks**: T043-T046 (4 subtasks)
 **Estimated prompt**: ~350 lines
-**Prompt file**: [tasks/WP09-hierarchy-management.md](tasks/WP09-hierarchy-management.md)
+**Prompt file**: `tasks/WP09-hierarchy-management.md`
 
 CRUD operations for the full profile hierarchy, cascade propagation, diffing, and multi-level skill file emission.
 
@@ -266,7 +266,7 @@ CRUD operations for the full profile hierarchy, cascade propagation, diffing, an
 **Dependencies**: WP09
 **Subtasks**: T047-T050 (4 subtasks)
 **Estimated prompt**: ~400 lines
-**Prompt file**: [tasks/WP10-cascade-attribution.md](tasks/WP10-cascade-attribution.md)
+**Prompt file**: `tasks/WP10-cascade-attribution.md`
 
 Multi-level attribution engine: person → department → organization → outsider cascade with ranked candidate lists and MCP tool exposure.
 
@@ -282,7 +282,7 @@ Multi-level attribution engine: person → department → organization → outsi
 **Dependencies**: WP10
 **Subtasks**: T051-T056 (6 subtasks)
 **Estimated prompt**: ~450 lines
-**Prompt file**: [tasks/WP11-voice-context-testing.md](tasks/WP11-voice-context-testing.md)
+**Prompt file**: `tasks/WP11-voice-context-testing.md`
 
 VoiceContext resolution (3-layer opt-in), access control, and comprehensive Phase B integration testing including hierarchy build and attribution accuracy.
 
@@ -304,7 +304,7 @@ VoiceContext resolution (3-layer opt-in), access control, and comprehensive Phas
 **Dependencies**: WP07, WP11
 **Subtasks**: T057-T062 (6 subtasks)
 **Estimated prompt**: ~400 lines
-**Prompt file**: [tasks/WP12-monitoring-drift.md](tasks/WP12-monitoring-drift.md)
+**Prompt file**: `tasks/WP12-monitoring-drift.md`
 
 Continuous monitoring pipeline with Tier 2 analysis queue, JSON-based score storage, trend aggregation, and five drift detection signals.
 
@@ -322,7 +322,7 @@ Continuous monitoring pipeline with Tier 2 analysis queue, JSON-based score stor
 **Dependencies**: WP12
 **Subtasks**: T063-T068 (6 subtasks)
 **Estimated prompt**: ~400 lines
-**Prompt file**: [tasks/WP13-diagnosis-repair.md](tasks/WP13-diagnosis-repair.md)
+**Prompt file**: `tasks/WP13-diagnosis-repair.md`
 
 Diagnosis engine that identifies what drifted and why, plus repair action framework with 6 repair types, verification, and revert capability.
 
@@ -340,7 +340,7 @@ Diagnosis engine that identifies what drifted and why, plus repair action framew
 **Dependencies**: WP13
 **Subtasks**: T069-T073 (5 subtasks)
 **Estimated prompt**: ~350 lines
-**Prompt file**: [tasks/WP14-monitoring-mcp-testing.md](tasks/WP14-monitoring-mcp-testing.md)
+**Prompt file**: `tasks/WP14-monitoring-mcp-testing.md`
 
 Expose monitoring as MCP tools, integrate with Langfuse, and run simulated drift + repair verification scenarios.
 
