@@ -8,6 +8,34 @@
       "when": 1769805467445,
       "tag": "0000_aromatic_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772659997606,
+      "tag": "0001_bouncy_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772708300000,
+      "tag": "0002_control_plane_contracts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772711000000,
+      "tag": "0003_policy_jti_replay_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772718600000,
+      "tag": "0004_control_plane_approvals_memberships",
+      "breakpoints": true
     }
   ]
 }

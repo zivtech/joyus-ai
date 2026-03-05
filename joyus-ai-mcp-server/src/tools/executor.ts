@@ -9,11 +9,13 @@ import { db, connections, type Service } from '../db/client.js';
 import { decryptToken, encryptToken } from '../db/encryption.js';
 
 import { executeContentTool } from './executors/content-executor.js';
+import { executeControlPlaneTool } from './executors/control-plane-executor.js';
 import { executeGithubTool } from './executors/github-executor.js';
 import { executeGoogleTool } from './executors/google-executor.js';
 import { executeJiraTool } from './executors/jira-executor.js';
 import { executeOpsTool } from './executors/ops-executor.js';
 import { executeSlackTool } from './executors/slack-executor.js';
+import { isControlPlaneToolName } from './control-plane-tools.js';
 
 export interface ExecutorContext {
   userId: string;
@@ -26,6 +28,10 @@ export interface ExecutorContext {
  * Execute a tool by name with the given input
  */
 export async function executeTool(userId: string, toolName: string, input: Record<string, unknown>): Promise<unknown> {
+  if (isControlPlaneToolName(toolName)) {
+    return executeControlPlaneTool(toolName, input, { userId });
+  }
+
   if (toolName.startsWith('ops_')) {
     return executeOpsTool(toolName, input, { userId });
   }

@@ -8,6 +8,7 @@ import { jiraTools } from '../src/tools/jira-tools.js';
 import { slackTools } from '../src/tools/slack-tools.js';
 import { githubTools } from '../src/tools/github-tools.js';
 import { googleTools } from '../src/tools/google-tools.js';
+import { controlPlaneTools } from '../src/tools/control-plane-tools.js';
 import { opsTools } from '../src/tools/ops-tools.js';
 
 describe('Tool Definitions', () => {
@@ -153,8 +154,47 @@ describe('Tool Definitions', () => {
     });
   });
 
+  describe('Control Plane Tools', () => {
+    it('should have valid tool definitions', () => {
+      expect(controlPlaneTools.length).toBeGreaterThan(0);
+
+      for (const tool of controlPlaneTools) {
+        validateToolDefinition(tool);
+      }
+    });
+
+    it('should include required desktop mediation tools', () => {
+      const toolNames = controlPlaneTools.map(t => t.name);
+      expect(toolNames).toContain('verify_before_action');
+      expect(toolNames).toContain('request_workspace');
+      expect(toolNames).toContain('submit_output');
+      expect(toolNames).toContain('get_provenance');
+      expect(toolNames).toContain('request_approval');
+      expect(toolNames).toContain('resolve_approval');
+      expect(toolNames).toContain('get_approval_status');
+      expect(toolNames).toContain('get_governance_metrics');
+    });
+
+    it('should require artifact_id for get_provenance', () => {
+      const provenanceTool = controlPlaneTools.find(t => t.name === 'get_provenance');
+      expect(provenanceTool?.inputSchema.required).toContain('artifact_id');
+    });
+
+    it('should require policy_decision_token for submit_output', () => {
+      const submitTool = controlPlaneTools.find(t => t.name === 'submit_output');
+      expect(submitTool?.inputSchema.required).toContain('policy_decision_token');
+    });
+  });
+
   describe('All Tools Combined', () => {
-    const allTools = [...jiraTools, ...slackTools, ...githubTools, ...googleTools, ...opsTools];
+    const allTools = [
+      ...jiraTools,
+      ...slackTools,
+      ...githubTools,
+      ...googleTools,
+      ...opsTools,
+      ...controlPlaneTools,
+    ];
 
     it('should have unique tool names', () => {
       const names = allTools.map(t => t.name);

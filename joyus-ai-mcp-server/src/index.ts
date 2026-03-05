@@ -11,6 +11,8 @@
  * Transport: Streamable HTTP (recommended for remote MCP servers)
  */
 
+import { pathToFileURL } from 'node:url';
+
 import cors from 'cors';
 import { config } from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
@@ -20,6 +22,7 @@ import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
 
 import { authRouter } from './auth/routes.js';
+import { controlPlaneRouter } from './control-plane/router.js';
 import { getUserFromToken } from './auth/verify.js';
 import { db, auditLogs } from './db/client.js';
 import { initializeContentModule } from './content/index.js';
@@ -165,6 +168,9 @@ app.use('/api/v1', exportRouter);
 // Task management routes (scheduled tasks)
 app.use('/tasks', taskRouter);
 
+// Control plane API routes for policy/workspaces/events/artifacts/skills
+app.use('/v1', controlPlaneRouter);
+
 // MCP endpoint with Bearer token auth
 app.post('/mcp', async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
@@ -304,14 +310,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-app.listen(PORT, async () => {
-  console.log(`🚀 Joyus AI MCP Server running on port ${PORT}`);
-  console.log(`   Health: http://localhost:${PORT}/health`);
-  console.log(`   MCP:    http://localhost:${PORT}/mcp`);
-  console.log(`   Auth:   http://localhost:${PORT}/auth`);
-  console.log(`   Tasks:  http://localhost:${PORT}/tasks`);
-
+export async function initializeServices(): Promise<void> {
   // Initialize task scheduler
   try {
     await initializeScheduler();
@@ -325,6 +324,22 @@ app.listen(PORT, async () => {
   } catch (error) {
     console.error('Failed to initialize content module:', error);
   }
-});
+}
+
+export function startServer(port: number = Number(PORT)): void {
+  app.listen(port, async () => {
+    console.log(`🚀 Joyus AI MCP Server running on port ${port}`);
+    console.log(`   Health: http://localhost:${port}/health`);
+    console.log(`   MCP:    http://localhost:${port}/mcp`);
+    console.log(`   Auth:   http://localhost:${port}/auth`);
+    console.log(`   Tasks:  http://localhost:${port}/tasks`);
+    await initializeServices();
+  });
+}
+
+const directExecution = process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (directExecution) {
+  startServer();
+}
 
 export { app };
