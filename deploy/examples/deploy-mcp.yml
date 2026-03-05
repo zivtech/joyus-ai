@@ -37,7 +37,51 @@ env:
   PLAYWRIGHT_IMAGE: ghcr.io/<org>/joyus-ai-playwright
 
 jobs:
+  staging-preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.gate.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine staging preflight availability
+        id: gate
+        env:
+          STAGING_EC2_HOST: ${{ secrets.STAGING_EC2_HOST }}
+          STAGING_EC2_USER: ${{ secrets.STAGING_EC2_USER }}
+          STAGING_EC2_SSH_KEY: ${{ secrets.STAGING_EC2_SSH_KEY }}
+          STAGING_BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+        run: |
+          enabled=true
+          for key in STAGING_EC2_HOST STAGING_EC2_USER STAGING_EC2_SSH_KEY STAGING_BASE_URL; do
+            if [ -z "${!key}" ]; then
+              echo "::warning title=Missing staging secret::${key} is not configured"
+              enabled=false
+            fi
+          done
+          echo "enabled=${enabled}" >> "${GITHUB_OUTPUT}"
+
+      - name: Skip staging preflight (secrets unavailable)
+        if: steps.gate.outputs.enabled != 'true'
+        run: |
+          echo "::warning title=Staging preflight skipped::Staging secrets are not fully configured; proceeding with build-and-push."
+
+      - name: Run staging migrate + smoke checklist
+        if: steps.gate.outputs.enabled == 'true'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STAGING_EC2_HOST }}
+          username: ${{ secrets.STAGING_EC2_USER }}
+          key: ${{ secrets.STAGING_EC2_SSH_KEY }}
+          script: |
+            cd /opt/joyus-ai
+            git fetch origin --prune
+            git checkout --detach ${{ github.sha }}
+            export STAGING_BASE_URL="${{ secrets.STAGING_BASE_URL }}"
+            ./deploy/scripts/staging-migrate-and-smoke.sh
+
   build-and-push:
+    needs: staging-preflight
     runs-on: ubuntu-latest
     permissions:
       contents: read
