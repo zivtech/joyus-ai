@@ -40,6 +40,8 @@ export interface EntitlementMetrics {
 
 export interface GenerationMetrics {
   totalGenerations: number;
+  avgDurationMs: number;
+  p95DurationMs: number;
   avgCitationCount: number;
   avgResponseLength: number;
 }
@@ -191,6 +193,8 @@ export class MetricsCollector {
     const rows = await db
       .select({
         total: sql<number>`count(*)::int`,
+        avgDuration: sql<number>`coalesce(avg(${contentOperationLogs.durationMs}), 0)::float`,
+        p95Duration: sql<number>`coalesce(percentile_cont(0.95) within group (order by ${contentOperationLogs.durationMs}), 0)::float`,
         avgCitations: sql<number>`coalesce(avg((${contentOperationLogs.metadata}->>'citationCount')::int), 0)::float`,
         avgResponseLength: sql<number>`coalesce(avg((${contentOperationLogs.metadata}->>'responseLength')::int), 0)::float`,
       })
@@ -205,6 +209,8 @@ export class MetricsCollector {
     const row = rows[0];
     return {
       totalGenerations: row?.total ?? 0,
+      avgDurationMs: Math.round(row?.avgDuration ?? 0),
+      p95DurationMs: Math.round(row?.p95Duration ?? 0),
       avgCitationCount: Math.round((row?.avgCitations ?? 0) * 10) / 10,
       avgResponseLength: Math.round(row?.avgResponseLength ?? 0),
     };

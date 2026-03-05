@@ -30,6 +30,12 @@ export interface HealthReport {
   timestamp: string;
 }
 
+export interface ProviderWiringHealthConfig {
+  generationProvider: string;
+  voiceAnalyzer: string;
+  driftMonitoringEnabled: boolean;
+}
+
 // ============================================================
 // HEALTH CHECKER
 // ============================================================
@@ -49,6 +55,8 @@ function withTimeout<T>(
 }
 
 export class HealthChecker {
+  constructor(private providerWiring?: ProviderWiringHealthConfig) {}
+
   async check(): Promise<HealthReport> {
     const [database, connectors, searchProvider, entitlementResolver] =
       await Promise.all([
@@ -63,6 +71,7 @@ export class HealthChecker {
       connectors,
       searchProvider,
       entitlementResolver,
+      providerWiring: this.checkProviderWiring(),
     };
 
     const statuses = Object.values(components).map((c) => c.status);
@@ -143,5 +152,31 @@ export class HealthChecker {
       const detail = err instanceof Error ? err.message : 'unknown error';
       return { status: 'unhealthy', detail };
     }
+  }
+
+  private checkProviderWiring(): ComponentHealth {
+    if (!this.providerWiring) {
+      return { status: 'degraded', detail: 'provider wiring status unavailable' };
+    }
+
+    const issues: string[] = [];
+    if (this.providerWiring.generationProvider === 'placeholder') {
+      issues.push('generation provider is placeholder');
+    }
+    if (
+      this.providerWiring.driftMonitoringEnabled &&
+      this.providerWiring.voiceAnalyzer === 'stub'
+    ) {
+      issues.push('voice analyzer is stub while drift monitoring is enabled');
+    }
+
+    if (issues.length > 0) {
+      return { status: 'degraded', detail: issues.join('; ') };
+    }
+
+    return {
+      status: 'healthy',
+      detail: `generation=${this.providerWiring.generationProvider}, voiceAnalyzer=${this.providerWiring.voiceAnalyzer}`,
+    };
   }
 }

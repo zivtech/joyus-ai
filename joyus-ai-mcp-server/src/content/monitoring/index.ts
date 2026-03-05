@@ -23,7 +23,7 @@ export type {
 
 export { createMonitoringRouter } from './routes.js';
 
-export type { DriftAnalysis, VoiceAnalyzer } from './voice-analyzer.js';
-export { StubVoiceAnalyzer } from './voice-analyzer.js';
+export type { DriftAnalysis, VoiceAnalyzer, HttpVoiceAnalyzerConfig } from './voice-analyzer.js';
+export { StubVoiceAnalyzer, HttpVoiceAnalyzer } from './voice-analyzer.js';
 
 export { DriftMonitor, getLatestDriftReport, getDriftSummary } from './drift.js';

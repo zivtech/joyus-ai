@@ -11,14 +11,19 @@ import type { DrizzleClient } from './types.js';
 import { connectorRegistry } from './connectors/index.js';
 import { PgFtsProvider, SearchService } from './search/index.js';
 import { EntitlementCache, EntitlementService, HttpEntitlementResolver } from './entitlements/index.js';
-import { GenerationService, PlaceholderGenerationProvider, type SearchService as GenSearchService } from './generation/index.js';
+import { GenerationService, type SearchService as GenSearchService } from './generation/index.js';
 import { SyncEngine, initializeSyncScheduler } from './sync/index.js';
 import { HealthChecker } from './monitoring/health.js';
 import { MetricsCollector } from './monitoring/metrics.js';
 import { DriftMonitor } from './monitoring/drift.js';
-import { StubVoiceAnalyzer } from './monitoring/voice-analyzer.js';
 import { createMonitoringRouter } from './monitoring/routes.js';
 import { createMediationRouter } from './mediation/router.js';
+import {
+  createGenerationProviderFromEnv,
+  createVoiceAnalyzerFromEnv,
+  describeProviderWiring,
+  enforceProviderReadiness,
+} from './runtime-config.js';
 
 export interface ContentModuleConfig {
   db: DrizzleClient;
@@ -51,7 +56,7 @@ export async function initializeContentModule(
     const entitlementService = new EntitlementService(entitlementResolver, entitlementCache, db);
 
     // 3. Generation (bridge search service to generation's expected interface)
-    const generationProvider = new PlaceholderGenerationProvider();
+    const generationProvider = createGenerationProviderFromEnv(process.env);
     const generationService = new GenerationService(
       searchService as unknown as GenSearchService,
       generationProvider,
@@ -62,9 +67,14 @@ export async function initializeContentModule(
     const syncEngine = new SyncEngine(db, connectorRegistry);
 
     // 5. Monitoring (use module-level db from db/client.js)
-    const healthChecker = new HealthChecker();
+    const voiceAnalyzer = createVoiceAnalyzerFromEnv(process.env);
+    enforceProviderReadiness(generationProvider, voiceAnalyzer, process.env);
+
+    const healthChecker = new HealthChecker(
+      describeProviderWiring(generationProvider, voiceAnalyzer, process.env),
+    );
     const metricsCollector = new MetricsCollector();
-    const driftMonitor = new DriftMonitor(new StubVoiceAnalyzer(), db);
+    const driftMonitor = new DriftMonitor(voiceAnalyzer, db);
 
     // 6. Background jobs (gated on env vars)
     if (process.env.CONTENT_SYNC_ENABLED === 'true') {
