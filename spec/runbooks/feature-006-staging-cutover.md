@@ -43,6 +43,10 @@ npm run db:push
 cd ..
 ./deploy/scripts/feature-006-search-vector-check.sh
 ```
+3. Optional single-command rehearsal (migration + search_vector check + optional smoke + optional rollback):
+```bash
+./deploy/scripts/feature-006-staging-rehearsal.sh
+```
 
 ## 4. Smoke Test Staging
 

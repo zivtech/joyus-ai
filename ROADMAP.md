@@ -2,6 +2,8 @@
 
 An open-source, multi-tenant AI agent platform that encodes organizational knowledge as testable, enforceable skills.
 
+Canonical readiness source: `status/feature-readiness.json` (rendered summary: `status/generated/feature-table.md`).
+
 ---
 
 ## Shipped
@@ -12,10 +14,12 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 - **Web Chat UI** - Browser-based chat interface with Claude Desktop configuration support.
 - **Content Intelligence** - Corpus analysis, stylometric extraction, structured writing profiles, fidelity verification, drift monitoring, and repair.
 
-## In Development
+## In Development / Hardening
 
-- **Content Infrastructure** — Corpus connector interface, search abstraction layer, content state management, access level mapping, AI-optimized content API for bot mediation.
+- **Content Infrastructure** — Lifecycle: done, implementation: integrated, production_readiness: not_ready (staging/data-schema validation and soak/rollback gates pending).
 - **Org-Scale Agentic Governance** — Maturity scoring, spec lifecycle enforcement, CI-integrated governance gates, remediation tracking.
+- **Profile Isolation and Scale** — Lifecycle: execution, implementation: integrated (WP01/WP02 enforcement path), production_readiness: not_ready.
+- **Automated Pipelines Framework** — Lifecycle: execution, implementation: scaffolded, production_readiness: not_ready.
 
 ## Planned
 

@@ -87,17 +87,23 @@ Production deployment configuration is maintained in a separate private reposito
 
 This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`.
 
-Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23):
+Current status snapshot (canonical source: `status/feature-readiness.json`; generated via `python scripts/generate-status-snippets.py`):
 
 | Spec | Description | Status |
 |------|-------------|--------|
-| `001` | MCP Server AWS Deployment | Complete |
-| `002` | Session Context Management | Complete |
-| `003` | Platform Architecture Overview | Spec-Only |
-| `004` | Workflow Enforcement | Complete |
-| `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
-| `006` | Content Infrastructure | Complete (WP01–WP12) |
-| `007` | Org-Scale Agentic Governance | Planning |
+| `001` | MCP Server AWS Deployment | Lifecycle: execution, implementation: integrated, readiness: not_ready |
+| `002` | Session Context Management | Lifecycle: done, implementation: validated, readiness: pilot_ready |
+| `003` | Platform Architecture Overview | Lifecycle: spec-only, implementation: none, readiness: not_ready |
+| `004` | Workflow Enforcement | Lifecycle: done, implementation: validated, readiness: pilot_ready |
+| `005` | Content Intelligence (Profile Engine) | Lifecycle: done, implementation: validated, readiness: pilot_ready |
+| `006` | Content Infrastructure | Lifecycle: done, implementation: integrated, readiness: not_ready |
+| `007` | Org-Scale Agentic Governance | Lifecycle: planning, implementation: scaffolded, readiness: not_ready |
+| `008` | Profile Isolation and Scale | Lifecycle: execution, implementation: integrated, readiness: not_ready |
+| `009` | Automated Pipelines Framework | Lifecycle: execution, implementation: scaffolded, readiness: not_ready |
+| `010` | Multi-Location Operations Module | Lifecycle: planning, implementation: none, readiness: not_ready |
+| `011` | Compliance Policy Modules | Lifecycle: planning, implementation: none, readiness: not_ready |
+
+Generated status artifact: `status/generated/feature-table.md`.
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 

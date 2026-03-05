@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { ContentRetriever } from '../../../src/content/generation/retriever.js';
+import { isSessionAccessible } from '../../../src/content/mediation/router.js';
 import type { ResolvedEntitlements, SearchResult } from '../../../src/content/types.js';
 
 function makeEntitlements(sourceIds: string[]): ResolvedEntitlements {
@@ -127,5 +128,28 @@ describe('Tenant isolation', () => {
     expect(limit).not.toHaveBeenCalled();
     expect(result.items).toHaveLength(0);
     expect(result.totalSearchResults).toBe(0);
+  });
+
+  it('denies mediation session access when tenant does not match', () => {
+    const session = {
+      id: 'session-1',
+      tenantId: 'tenant-allowed',
+      userId: 'user-1',
+      endedAt: null,
+    };
+
+    expect(isSessionAccessible(session as never, 'user-1', 'tenant-other')).toBe(false);
+    expect(isSessionAccessible(session as never, 'user-1', 'tenant-allowed')).toBe(true);
+  });
+
+  it('denies mediation session access when session is closed', () => {
+    const session = {
+      id: 'session-1',
+      tenantId: 'tenant-allowed',
+      userId: 'user-1',
+      endedAt: new Date(),
+    };
+
+    expect(isSessionAccessible(session as never, 'user-1', 'tenant-allowed')).toBe(false);
   });
 });

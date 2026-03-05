@@ -8,6 +8,8 @@
 #   MEDIATION_PROFILE_ID      Optional profile for session create
 #   MEDIATION_TEST_MESSAGE    Message for happy path (default provided)
 #   MEDIATION_TEST_MAX_SOURCES Max sources (default: 3)
+#   REQUIRE_NON_PLACEHOLDER   Require response to not include placeholder sentinel (default: true)
+#   REQUIRE_CITATIONS         Require at least 1 citation in happy-path response (default: true)
 set -euo pipefail
 
 if ! command -v curl >/dev/null 2>&1; then
@@ -19,8 +21,10 @@ BASE_URL="${BASE_URL:-http://localhost:3000}"
 MEDIATION_API_KEY="${MEDIATION_API_KEY:-}"
 MEDIATION_BEARER_TOKEN="${MEDIATION_BEARER_TOKEN:-}"
 MEDIATION_PROFILE_ID="${MEDIATION_PROFILE_ID:-}"
-MEDIATION_TEST_MESSAGE="${MEDIATION_TEST_MESSAGE:-Give a concise update on current policy status.}"
+MEDIATION_TEST_MESSAGE="${MEDIATION_TEST_MESSAGE:-policy status update}"
 MEDIATION_TEST_MAX_SOURCES="${MEDIATION_TEST_MAX_SOURCES:-3}"
+REQUIRE_NON_PLACEHOLDER="${REQUIRE_NON_PLACEHOLDER:-true}"
+REQUIRE_CITATIONS="${REQUIRE_CITATIONS:-true}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -161,6 +165,23 @@ else
       pass "message response present"
     else
       fail "message response missing"
+    fi
+
+    if [ "$REQUIRE_NON_PLACEHOLDER" = "true" ]; then
+      if echo "$MESSAGE_TEXT" | grep -Fq '[Generation not configured]'; then
+        fail "message is placeholder sentinel (generation provider not configured)"
+      else
+        pass "message is non-placeholder"
+      fi
+    fi
+
+    if [ "$REQUIRE_CITATIONS" = "true" ]; then
+      CITATION_COUNT="$(json_get '(.citations // []) | length')"
+      if [ "${CITATION_COUNT:-0}" -gt 0 ]; then
+        pass "citations present ($CITATION_COUNT)"
+      else
+        fail "expected citations in response"
+      fi
     fi
 
     request DELETE "$BASE_URL/api/mediation/sessions/$SESSION_ID" "" \

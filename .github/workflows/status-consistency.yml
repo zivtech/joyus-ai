@@ -1,0 +1,27 @@
+name: Status Consistency
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  status-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate canonical status consistency
+        run: |
+          python scripts/verify-status-consistency.py
+
+      - name: Verify generated status snippets are up to date
+        run: |
+          python scripts/generate-status-snippets.py --check

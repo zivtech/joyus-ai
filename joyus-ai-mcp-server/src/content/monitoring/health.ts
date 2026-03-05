@@ -30,6 +30,11 @@ export interface HealthReport {
   timestamp: string;
 }
 
+export interface ProviderWiringStatus {
+  generationProvider: 'real' | 'placeholder';
+  voiceAnalyzer: 'real' | 'stub';
+}
+
 // ============================================================
 // HEALTH CHECKER
 // ============================================================
@@ -49,6 +54,8 @@ function withTimeout<T>(
 }
 
 export class HealthChecker {
+  constructor(private readonly providerWiring?: ProviderWiringStatus) {}
+
   async check(): Promise<HealthReport> {
     const [database, connectors, searchProvider, entitlementResolver] =
       await Promise.all([
@@ -64,6 +71,20 @@ export class HealthChecker {
       searchProvider,
       entitlementResolver,
     };
+
+    if (this.providerWiring) {
+      const hasPlaceholder = this.providerWiring.generationProvider === 'placeholder';
+      const hasStubAnalyzer = this.providerWiring.voiceAnalyzer === 'stub';
+      components.providerWiring = hasPlaceholder || hasStubAnalyzer
+        ? {
+            status: 'degraded',
+            detail: `generation=${this.providerWiring.generationProvider}, voiceAnalyzer=${this.providerWiring.voiceAnalyzer}`,
+          }
+        : {
+            status: 'healthy',
+            detail: 'generation=real, voiceAnalyzer=real',
+          };
+    }
 
     const statuses = Object.values(components).map((c) => c.status);
     const overall: HealthStatus = statuses.includes('unhealthy')

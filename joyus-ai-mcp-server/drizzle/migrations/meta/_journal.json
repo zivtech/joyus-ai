@@ -8,6 +8,13 @@
       "when": 1769805467445,
       "tag": "0000_aromatic_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772748522434,
+      "tag": "0001_fast_shadowcat",
+      "breakpoints": true
     }
   ]
 }

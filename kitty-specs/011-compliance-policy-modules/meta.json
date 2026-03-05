@@ -1,0 +1,13 @@
+{
+  "feature_number": "011",
+  "slug": "011-compliance-policy-modules",
+  "friendly_name": "Compliance Policy Modules",
+  "mission": "software-dev",
+  "source_description": "Tenant-declared compliance modules with hard-fail policy enforcement and auditable controls.",
+  "created_at": "2026-03-05T00:00:00Z",
+  "vcs": "git",
+  "measurement_owner": "Security and Compliance",
+  "review_cadence": "weekly",
+  "risk_class": "critical",
+  "lifecycle_state": "planning"
+}

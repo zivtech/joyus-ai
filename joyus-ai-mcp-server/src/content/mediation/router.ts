@@ -17,6 +17,7 @@ import { Router, type Request, type Response } from 'express';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { createAuthMiddleware } from './auth.js';
 import { MediationSessionService } from './session.js';
+import { ProfileAccessDeniedError } from '../profiles/access.js';
 import type { GenerationService } from '../generation/index.js';
 import type { EntitlementService } from '../entitlements/index.js';
 import type { EntitlementCache } from '../entitlements/cache.js';
@@ -28,6 +29,17 @@ export interface MediationDependencies {
   generationService: GenerationService;
   entitlementService: EntitlementService;
   entitlementCache: EntitlementCache;
+}
+
+type SessionRecord = Awaited<ReturnType<MediationSessionService['getSession']>>;
+
+export function isSessionAccessible(
+  session: SessionRecord,
+  userId: string,
+  tenantId: string,
+): session is NonNullable<SessionRecord> {
+  if (!session || session.endedAt) return false;
+  return session.userId === userId && session.tenantId === tenantId;
 }
 
 export function createMediationRouter(deps: MediationDependencies): Router {
@@ -74,12 +86,8 @@ export function createMediationRouter(deps: MediationDependencies): Router {
 
       // Validate session exists, belongs to this user, and is not closed
       const session = await sessionService.getSession(sessionId);
-      if (!session || session.endedAt) {
+      if (!isSessionAccessible(session, req.userId!, req.tenantId!)) {
         res.status(404).json({ error: 'session_not_found', message: 'Session not found or already closed' });
-        return;
-      }
-      if (session.userId !== req.userId) {
-        res.status(404).json({ error: 'session_not_found', message: 'Session not found' });
         return;
       }
 
@@ -117,6 +125,14 @@ export function createMediationRouter(deps: MediationDependencies): Router {
         },
       });
     } catch (err) {
+      if (err instanceof ProfileAccessDeniedError) {
+        res.status(403).json({
+          error: 'profile_access_denied',
+          message: 'Active profile is not accessible for this tenant/session',
+        });
+        return;
+      }
+      console.error('[mediation] message processing failed', err);
       res.status(500).json({ error: 'internal_error', message: 'Failed to process message' });
     }
   });
@@ -125,7 +141,7 @@ export function createMediationRouter(deps: MediationDependencies): Router {
   router.get('/sessions/:sessionId', async (req: Request, res: Response): Promise<void> => {
     try {
       const session = await sessionService.getSession(req.params.sessionId);
-      if (!session || session.userId !== req.userId) {
+      if (!isSessionAccessible(session, req.userId!, req.tenantId!)) {
         res.status(404).json({ error: 'session_not_found', message: 'Session not found' });
         return;
       }
@@ -139,7 +155,7 @@ export function createMediationRouter(deps: MediationDependencies): Router {
   router.delete('/sessions/:sessionId', async (req: Request, res: Response): Promise<void> => {
     try {
       const session = await sessionService.getSession(req.params.sessionId);
-      if (!session || session.userId !== req.userId) {
+      if (!isSessionAccessible(session, req.userId!, req.tenantId!)) {
         res.status(404).json({ error: 'session_not_found', message: 'Session not found' });
         return;
       }

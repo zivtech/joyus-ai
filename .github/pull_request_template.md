@@ -22,6 +22,8 @@
 - [ ] All tests pass
 - [ ] TypeScript / Python types are valid (no new type errors)
 - [ ] Documentation updated if behavior changed
+- [ ] If feature/status labels changed, I updated `status/feature-readiness.json`, regenerated `status/generated/feature-table.md`, and synchronized `README.md`, `ROADMAP.md`, and affected `kitty-specs/*/meta.json`
+- [ ] If status changes impact private planning docs, I logged the required `joyus-ai-internal` sync action in this PR (or marked N/A)
 - [ ] No secrets, credentials, or client-specific content introduced
 - [ ] Follows the Client Abstraction rule (§2.10): no real names, client names, or domain-specific jargon
 - [ ] PR title is descriptive and follows conventional commit style if applicable

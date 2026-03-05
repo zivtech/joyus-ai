@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["updated_at", "features"],
+  "properties": {
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "features": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]{3}$": {
+          "type": "object",
+          "required": [
+            "lifecycle_state",
+            "implementation_state",
+            "production_readiness",
+            "notes"
+          ],
+          "properties": {
+            "lifecycle_state": {
+              "type": "string",
+              "enum": [
+                "spec-only",
+                "planning",
+                "execution",
+                "done",
+                "blocked",
+                "deprecated"
+              ]
+            },
+            "implementation_state": {
+              "type": "string",
+              "enum": ["none", "scaffolded", "integrated", "validated"]
+            },
+            "production_readiness": {
+              "type": "string",
+              "enum": ["not_ready", "pilot_ready", "production_ready"]
+            },
+            "provider_readiness": {
+              "type": "object",
+              "properties": {
+                "generation_provider": {
+                  "type": "string",
+                  "enum": ["n/a", "placeholder", "configured", "validated"]
+                },
+                "voice_analyzer": {
+                  "type": "string",
+                  "enum": ["n/a", "stub", "configured", "validated"]
+                }
+              },
+              "additionalProperties": false
+            },
+            "notes": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

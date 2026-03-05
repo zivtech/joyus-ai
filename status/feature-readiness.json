@@ -1,0 +1,75 @@
+{
+  "updated_at": "2026-03-06T00:35:00Z",
+  "features": {
+    "001": {
+      "lifecycle_state": "execution",
+      "implementation_state": "integrated",
+      "production_readiness": "not_ready",
+      "notes": "MCP deployment is active work; deployment hardening and rollout evidence still required."
+    },
+    "002": {
+      "lifecycle_state": "done",
+      "implementation_state": "validated",
+      "production_readiness": "pilot_ready",
+      "notes": "Session/context management is shipped with completed work packages and integration tests."
+    },
+    "003": {
+      "lifecycle_state": "spec-only",
+      "implementation_state": "none",
+      "production_readiness": "not_ready",
+      "notes": "Umbrella architecture spec; decomposed execution is carried by downstream features."
+    },
+    "004": {
+      "lifecycle_state": "done",
+      "implementation_state": "validated",
+      "production_readiness": "pilot_ready",
+      "notes": "Workflow enforcement shipped and is consumable by human and automated pipeline paths."
+    },
+    "005": {
+      "lifecycle_state": "done",
+      "implementation_state": "validated",
+      "production_readiness": "pilot_ready",
+      "notes": "Content intelligence foundation shipped with profile and fidelity capabilities."
+    },
+    "006": {
+      "lifecycle_state": "done",
+      "implementation_state": "integrated",
+      "production_readiness": "not_ready",
+      "provider_readiness": {
+        "generation_provider": "placeholder",
+        "voice_analyzer": "stub"
+      },
+      "notes": "Content infrastructure has deterministic content-schema migration, local rollback rehearsal, and local real-provider smoke evidence; named staging migration/smoke records and staging soak evidence are still required before pilot_ready promotion."
+    },
+    "007": {
+      "lifecycle_state": "planning",
+      "implementation_state": "scaffolded",
+      "production_readiness": "not_ready",
+      "notes": "Governance plan/tasks are now execution-grade and moving into CI enforcement rollout."
+    },
+    "008": {
+      "lifecycle_state": "execution",
+      "implementation_state": "integrated",
+      "production_readiness": "not_ready",
+      "notes": "WP01/WP02 execution has started with enforced tenant profile-access checks and denied-access audit events in the mediation/generation path; batch scale controls are still pending."
+    },
+    "009": {
+      "lifecycle_state": "execution",
+      "implementation_state": "scaffolded",
+      "production_readiness": "not_ready",
+      "notes": "Scope locked and execution started for automated pipelines framework and pilot flows."
+    },
+    "010": {
+      "lifecycle_state": "planning",
+      "implementation_state": "none",
+      "production_readiness": "not_ready",
+      "notes": "Multi-location operations module scope established at spec/plan/tasks level."
+    },
+    "011": {
+      "lifecycle_state": "planning",
+      "implementation_state": "none",
+      "production_readiness": "not_ready",
+      "notes": "Compliance policy modules scope established at spec/plan/tasks level."
+    }
+  }
+}

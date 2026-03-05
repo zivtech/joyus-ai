@@ -11,17 +11,100 @@ import type { DrizzleClient } from './types.js';
 import { connectorRegistry } from './connectors/index.js';
 import { PgFtsProvider, SearchService } from './search/index.js';
 import { EntitlementCache, EntitlementService, HttpEntitlementResolver } from './entitlements/index.js';
-import { GenerationService, PlaceholderGenerationProvider, type SearchService as GenSearchService } from './generation/index.js';
+import {
+  GenerationService,
+  PlaceholderGenerationProvider,
+  HttpGenerationProvider,
+  type SearchService as GenSearchService,
+} from './generation/index.js';
 import { SyncEngine, initializeSyncScheduler } from './sync/index.js';
 import { HealthChecker } from './monitoring/health.js';
 import { MetricsCollector } from './monitoring/metrics.js';
 import { DriftMonitor } from './monitoring/drift.js';
-import { StubVoiceAnalyzer } from './monitoring/voice-analyzer.js';
+import { StubVoiceAnalyzer, HttpVoiceAnalyzer } from './monitoring/voice-analyzer.js';
 import { createMonitoringRouter } from './monitoring/routes.js';
 import { createMediationRouter } from './mediation/router.js';
 
 export interface ContentModuleConfig {
   db: DrizzleClient;
+}
+
+type ProviderWiringStatus = {
+  generationProvider: 'real' | 'placeholder';
+  voiceAnalyzer: 'real' | 'stub';
+};
+
+function createGenerationProvider() {
+  const mode = process.env.CONTENT_GENERATION_PROVIDER
+    ?? (process.env.CONTENT_GENERATION_PROVIDER_URL ? 'http' : 'placeholder');
+
+  if (mode === 'http') {
+    const url = process.env.CONTENT_GENERATION_PROVIDER_URL;
+    if (!url) {
+      throw new Error(
+        'CONTENT_GENERATION_PROVIDER=http requires CONTENT_GENERATION_PROVIDER_URL',
+      );
+    }
+    return {
+      provider: new HttpGenerationProvider({
+        url,
+        timeoutMs: Number(process.env.CONTENT_GENERATION_PROVIDER_TIMEOUT_MS ?? 10000),
+        apiKey: process.env.CONTENT_GENERATION_PROVIDER_API_KEY,
+      }),
+      status: 'real' as const,
+    };
+  }
+
+  return {
+    provider: new PlaceholderGenerationProvider(),
+    status: 'placeholder' as const,
+  };
+}
+
+function createVoiceAnalyzer() {
+  const mode = process.env.CONTENT_VOICE_ANALYZER_PROVIDER
+    ?? (process.env.CONTENT_VOICE_ANALYZER_URL ? 'http' : 'stub');
+
+  if (mode === 'http') {
+    const url = process.env.CONTENT_VOICE_ANALYZER_URL;
+    if (!url) {
+      throw new Error(
+        'CONTENT_VOICE_ANALYZER_PROVIDER=http requires CONTENT_VOICE_ANALYZER_URL',
+      );
+    }
+    return {
+      analyzer: new HttpVoiceAnalyzer({
+        url,
+        timeoutMs: Number(process.env.CONTENT_VOICE_ANALYZER_TIMEOUT_MS ?? 10000),
+        apiKey: process.env.CONTENT_VOICE_ANALYZER_API_KEY,
+      }),
+      status: 'real' as const,
+    };
+  }
+
+  return {
+    analyzer: new StubVoiceAnalyzer(),
+    status: 'stub' as const,
+  };
+}
+
+function enforceProviderSafety(wiring: ProviderWiringStatus): void {
+  const strictMode =
+    process.env.NODE_ENV === 'production'
+    || process.env.CONTENT_STRICT_INIT === 'true';
+  const driftEnabled = process.env.CONTENT_DRIFT_ENABLED === 'true';
+
+  if (strictMode && wiring.generationProvider === 'placeholder') {
+    throw new Error(
+      'Content module startup blocked: production/strict mode requires a real generation provider',
+    );
+  }
+
+  if (driftEnabled && wiring.voiceAnalyzer === 'stub') {
+    throw new Error(
+      'Content module startup blocked: CONTENT_DRIFT_ENABLED=true requires a real voice analyzer',
+    );
+  }
 }
 
 export async function initializeContentModule(
@@ -50,23 +133,42 @@ export async function initializeContentModule(
     });
     const entitlementService = new EntitlementService(entitlementResolver, entitlementCache, db);
 
-    // 3. Generation (bridge search service to generation's expected interface)
-    const generationProvider = new PlaceholderGenerationProvider();
+    // 3. Generation + drift analyzer providers
+    const generationProviderConfig = createGenerationProvider();
+    const voiceAnalyzerConfig = createVoiceAnalyzer();
+    const providerWiring: ProviderWiringStatus = {
+      generationProvider: generationProviderConfig.status,
+      voiceAnalyzer: voiceAnalyzerConfig.status,
+    };
+    enforceProviderSafety(providerWiring);
+
+    // 4. Generation (explicitly bridge to retriever contract: query + sourceIds)
+    const generationSearchAdapter: GenSearchService = {
+      search: async (query, accessibleSourceIds, options) => {
+        if (accessibleSourceIds.length === 0) {
+          return [];
+        }
+        return searchProvider.search(query, accessibleSourceIds, {
+          limit: options?.limit ?? 20,
+          offset: 0,
+        });
+      },
+    };
     const generationService = new GenerationService(
-      searchService as unknown as GenSearchService,
-      generationProvider,
+      generationSearchAdapter,
+      generationProviderConfig.provider,
       db,
     );
 
-    // 4. Sync
+    // 5. Sync
     const syncEngine = new SyncEngine(db, connectorRegistry);
 
-    // 5. Monitoring (use module-level db from db/client.js)
-    const healthChecker = new HealthChecker();
+    // 6. Monitoring (use module-level db from db/client.js)
+    const healthChecker = new HealthChecker(providerWiring);
     const metricsCollector = new MetricsCollector();
-    const driftMonitor = new DriftMonitor(new StubVoiceAnalyzer(), db);
+    const driftMonitor = new DriftMonitor(voiceAnalyzerConfig.analyzer, db);
 
-    // 6. Background jobs (gated on env vars)
+    // 7. Background jobs (gated on env vars)
     if (process.env.CONTENT_SYNC_ENABLED === 'true') {
       initializeSyncScheduler(syncEngine);
     }
@@ -74,16 +176,18 @@ export async function initializeContentModule(
       driftMonitor.start();
     }
 
-    // 7. Mount routes
+    // 8. Mount routes
     app.use('/api/content', createMonitoringRouter(healthChecker, metricsCollector));
     app.use(
       '/api/mediation',
       createMediationRouter({ db, entitlementService, generationService, entitlementCache }),
     );
 
-    console.log('[content] Module initialized successfully');
+    console.log(
+      `[content] Module initialized successfully (generation=${providerWiring.generationProvider}, analyzer=${providerWiring.voiceAnalyzer})`,
+    );
   } catch (err) {
-    // Log but do not crash — content module failure must not take down the server
     console.error('[content] Module initialization failed:', err);
+    throw err;
   }
 }

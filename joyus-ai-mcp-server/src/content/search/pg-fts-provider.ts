@@ -69,7 +69,7 @@ export class PgFtsProvider implements SearchProvider {
         metadata,
         is_stale
       FROM content.items
-      WHERE source_id = ANY(${sourceIds})
+      WHERE source_id IN (${sql.join(sourceIds.map((id) => sql`${id}`), sql`, `)})
         AND search_vector @@ plainto_tsquery('english', ${query})
       ORDER BY score DESC
       LIMIT ${options.limit}

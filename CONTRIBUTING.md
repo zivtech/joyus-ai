@@ -111,6 +111,18 @@ Keep the summary line under 72 characters. Use the body to explain _why_, not _w
 - The project constitution at `spec/constitution.md` defines hard constraints. Read it before making architectural decisions.
 - Client-specific content belongs in private deployment repos, not here.
 
+## Status Synchronization Policy
+
+When a PR changes feature or readiness status, keep all status surfaces aligned in the same PR:
+
+- `status/feature-readiness.json` (canonical source)
+- `status/generated/feature-table.md` (generated artifact; run `python scripts/generate-status-snippets.py`)
+- `README.md` status section
+- `ROADMAP.md` lifecycle sections
+- Any affected `kitty-specs/<feature>/meta.json` lifecycle fields
+
+If private planning artifacts also need updates (for example in `joyus-ai-internal`), record that required sync action in the PR description before merge.
+
 ## Questions
 
 Open a [GitHub Discussion](https://github.com/Priivacy-ai/joyus-ai/discussions) for design questions or ideas that aren't yet a concrete issue.

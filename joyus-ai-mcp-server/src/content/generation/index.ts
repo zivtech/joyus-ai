@@ -7,6 +7,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
+import { assertProfileAccessOrAudit } from '../profiles/access.js';
 import { ContentRetriever, type SearchService, type RetrievalResult, type RetrievedItem } from './retriever.js';
 import {
   ContentGenerator,
@@ -15,6 +16,7 @@ import {
   type GenerationOutput,
 } from './generator.js';
 import { CitationManager, type CitationResult } from './citations.js';
+import { HttpGenerationProvider, type HttpGenerationProviderConfig } from './providers.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -48,6 +50,14 @@ export class GenerationService {
     options?: GenerateOptions,
   ): Promise<GenerationResult> {
     const startMs = Date.now();
+
+    await assertProfileAccessOrAudit(this.db, {
+      profileId: options?.profileId,
+      tenantId,
+      userId,
+      entitlements,
+      sessionId: options?.sessionId,
+    });
 
     // 1. Retrieve relevant content
     const retrieval = await this.retriever.retrieve(query, entitlements, {
@@ -120,4 +130,5 @@ export {
   type GenerationProvider,
   type GenerationOutput,
 } from './generator.js';
+export { HttpGenerationProvider, type HttpGenerationProviderConfig } from './providers.js';
 export { CitationManager, type CitationResult } from './citations.js';
