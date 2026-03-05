@@ -7,6 +7,7 @@
 import { readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { getStateDir } from '../state/store.js';
+import { loadProjectConfig } from '../core/config.js';
 import { FileWatcher } from './watcher.js';
 import { EventHandler } from './event-handler.js';
 import { createIpcServer, type IpcServer } from './ipc.js';
@@ -36,14 +37,19 @@ export async function startService(options: ServiceOptions): Promise<void> {
   await writeFile(getPidFilePath(stateDir), pidData, 'utf8');
 
   // Initialize components
+  const projectConfig = await loadProjectConfig(projectRoot);
   const eventHandler = new EventHandler(projectRoot);
-  const watcher = new FileWatcher({ projectRoot });
+  const watcher = new FileWatcher({
+    projectRoot,
+    customTriggers: projectConfig.customTriggers,
+  });
   const ipcServer = createIpcServer(projectRoot, eventHandler);
 
   // Wire watcher events to handler
   watcher.on('git-commit', () => eventHandler.handleEvent('git-commit'));
   watcher.on('git-branch-switch', () => eventHandler.handleEvent('git-branch-switch'));
   watcher.on('file-change', () => eventHandler.handleEvent('file-change'));
+  watcher.on('custom-event', (eventName: string) => eventHandler.handleEvent('custom-event', eventName));
 
   // Start components
   await watcher.start();

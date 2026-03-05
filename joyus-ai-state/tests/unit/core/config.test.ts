@@ -31,12 +31,14 @@ describe('loadProjectConfig', () => {
     mkdirSync(configDir, { recursive: true });
     writeFileSync(join(configDir, 'config.json'), JSON.stringify({
       eventTriggers: { commit: false },
+      customTriggers: [{ pattern: '**/Dockerfile', event: 'docker-build' }],
       periodicIntervalMinutes: 30,
     }));
 
     const config = await loadProjectConfig(projectRoot);
     expect(config.eventTriggers.commit).toBe(false);
     expect(config.eventTriggers.branchSwitch).toBe(true);
+    expect(config.customTriggers).toEqual([{ pattern: '**/Dockerfile', event: 'docker-build' }]);
     expect(config.periodicIntervalMinutes).toBe(30);
   });
 

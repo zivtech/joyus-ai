@@ -1,0 +1,141 @@
+{
+  "$schema": "./feature-readiness.schema.json",
+  "updated_at": "2026-03-05T19:20:00Z",
+  "features": {
+    "001": {
+      "friendly_name": "MCP Server AWS Deployment",
+      "lifecycle_state": "execution",
+      "implementation_state": "integrated",
+      "production_readiness": "not_ready",
+      "provider_readiness": {
+        "generation_provider": "configured",
+        "voice_analyzer": "configured"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/001-mcp-server-aws-deployment/meta.json",
+        "runtime_wiring": [
+          "deploy/docker-compose.yml",
+          "deploy/scripts/setup-ec2.sh",
+          ".github/workflows/deploy-mcp.yml"
+        ],
+        "tests": [
+          "joyus-ai-mcp-server/tests/integration.test.ts"
+        ]
+      }
+    },
+    "002": {
+      "friendly_name": "Session & Context Management",
+      "lifecycle_state": "done",
+      "implementation_state": "validated",
+      "production_readiness": "production_ready",
+      "provider_readiness": {
+        "generation_provider": "configured",
+        "voice_analyzer": "configured"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/002-session-context-management/meta.json",
+        "runtime_wiring": [
+          "joyus-ai-state/src/mcp/server.ts",
+          "joyus-ai-state/src/state/store.ts",
+          "joyus-ai-state/src/service/watcher.ts"
+        ],
+        "tests": [
+          "joyus-ai-state/tests/integration/mcp-tools.test.ts",
+          "joyus-ai-state/tests/unit/mcp/tools.test.ts"
+        ]
+      }
+    },
+    "003": {
+      "friendly_name": "joyus-ai Platform Architecture Overview",
+      "lifecycle_state": "spec-only",
+      "implementation_state": "none",
+      "production_readiness": "not_ready",
+      "provider_readiness": {
+        "generation_provider": "configured",
+        "voice_analyzer": "configured"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/003-platform-architecture-overview/meta.json",
+        "runtime_wiring": [],
+        "tests": []
+      }
+    },
+    "004": {
+      "friendly_name": "Workflow Enforcement",
+      "lifecycle_state": "done",
+      "implementation_state": "validated",
+      "production_readiness": "production_ready",
+      "provider_readiness": {
+        "generation_provider": "configured",
+        "voice_analyzer": "configured"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/004-workflow-enforcement/meta.json",
+        "runtime_wiring": [
+          "joyus-ai-state/src/enforcement/gates/runner.ts",
+          "joyus-ai-state/src/enforcement/events/router.ts"
+        ],
+        "tests": [
+          "joyus-ai-state/tests/integration/gate-execution.test.ts",
+          "joyus-ai-state/tests/unit/enforcement/gate-runner.test.ts"
+        ]
+      }
+    },
+    "005": {
+      "friendly_name": "Content Intelligence",
+      "lifecycle_state": "done",
+      "implementation_state": "validated",
+      "production_readiness": "production_ready",
+      "provider_readiness": {
+        "generation_provider": "validated",
+        "voice_analyzer": "validated"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/005-content-intelligence/meta.json",
+        "runtime_wiring": [
+          "kitty-specs/005-content-intelligence/spec.md"
+        ],
+        "tests": []
+      }
+    },
+    "006": {
+      "friendly_name": "Content Infrastructure",
+      "lifecycle_state": "done",
+      "implementation_state": "integrated",
+      "production_readiness": "not_ready",
+      "provider_readiness": {
+        "generation_provider": "placeholder",
+        "voice_analyzer": "stub"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/006-content-infrastructure/meta.json",
+        "runtime_wiring": [
+          "joyus-ai-mcp-server/src/content/runtime-config.ts",
+          "joyus-ai-mcp-server/src/content/mediation/router.ts",
+          "joyus-ai-mcp-server/src/content/mediation/auth.ts"
+        ],
+        "tests": [
+          "joyus-ai-mcp-server/tests/content/integration/production-provider.test.ts",
+          "joyus-ai-mcp-server/tests/content/integration/mediation-auth.test.ts"
+        ]
+      }
+    },
+    "007": {
+      "friendly_name": "Org-Scale Agentic Governance",
+      "lifecycle_state": "planning",
+      "implementation_state": "none",
+      "production_readiness": "not_ready",
+      "provider_readiness": {
+        "generation_provider": "configured",
+        "voice_analyzer": "configured"
+      },
+      "evidence": {
+        "spec_meta": "kitty-specs/007-org-scale-agentic-governance/meta.json",
+        "runtime_wiring": [
+          "scripts/spec-governance-check.py"
+        ],
+        "tests": []
+      }
+    }
+  }
+}

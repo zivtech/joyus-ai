@@ -31,13 +31,16 @@ export class EventHandler {
     this.projectRoot = projectRoot;
   }
 
-  async handleEvent(eventType: string, _detail?: string): Promise<void> {
+  async handleEvent(eventType: string, detail?: string): Promise<void> {
     // Prevent concurrent captures
     if (this.capturing) return;
     this.capturing = true;
 
     try {
-      const event: EventType = EVENT_MAP[eventType] ?? 'manual';
+      let event: EventType = EVENT_MAP[eventType] ?? 'manual';
+      if (eventType === 'custom-event' && detail && detail in EVENT_MAP) {
+        event = EVENT_MAP[detail];
+      }
       const snapshotsDir = getSnapshotsDir(this.projectRoot);
       const store = new StateStore(snapshotsDir);
 
@@ -75,7 +78,10 @@ export class EventHandler {
       await store.write(snapshot);
 
       this.lastCaptureTime = snapshot.timestamp;
-      console.error(`[joyus-ai-service] Snapshot captured: ${snapshot.timestamp} [${event}]`);
+      const eventLabel = eventType === 'custom-event' && detail
+        ? `${event}:${detail}`
+        : event;
+      console.error(`[joyus-ai-service] Snapshot captured: ${snapshot.timestamp} [${eventLabel}]`);
     } catch (err) {
       console.error('[joyus-ai-service] Error capturing snapshot:', (err as Error).message);
     } finally {

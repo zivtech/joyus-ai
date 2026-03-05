@@ -42,13 +42,23 @@ export function createAuthMiddleware(db: DrizzleClient) {
         return;
       }
 
-      const keyHash = hashApiKey(apiKey);
-      const rows = await db
-        .select()
-        .from(contentApiKeys)
-        .where(eq(contentApiKeys.keyHash, keyHash))
-        .limit(1);
-      const keyRecord = rows[0];
+      let keyRecord: typeof contentApiKeys.$inferSelect | undefined;
+      try {
+        const keyHash = hashApiKey(apiKey);
+        const rows = await db
+          .select()
+          .from(contentApiKeys)
+          .where(eq(contentApiKeys.keyHash, keyHash))
+          .limit(1);
+        keyRecord = rows[0];
+      } catch {
+        // Fail closed: auth lookup error must never allow request flow.
+        res.status(503).json({
+          error: 'auth_service_unavailable',
+          message: 'API key validation service unavailable',
+        });
+        return;
+      }
 
       if (!keyRecord || !keyRecord.isActive) {
         res.status(401).json({ error: 'invalid_api_key', message: 'Invalid or inactive API key' });
@@ -106,6 +116,11 @@ export function createAuthMiddleware(db: DrizzleClient) {
           ...(issuer ? { issuer } : {}),
           ...(audience ? { audience } : {}),
         });
+
+        if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
+          res.status(401).json({ error: 'invalid_user_token', message: 'Invalid user token subject' });
+          return;
+        }
 
         req.userId = payload.sub;
         next();

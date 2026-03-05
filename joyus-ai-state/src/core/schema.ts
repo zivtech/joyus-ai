@@ -120,6 +120,11 @@ export const EventTriggerConfigSchema = z.object({
   sessionEnd: z.boolean().default(true),
 });
 
+export const CustomTriggerSchema = z.object({
+  pattern: z.string().min(1),
+  event: z.string().min(1),
+});
+
 export const GlobalConfigSchema = z.object({
   retentionDays: z.number().int().positive().default(7),
   retentionMaxBytes: z.number().int().positive().default(52_428_800),
@@ -129,7 +134,7 @@ export const GlobalConfigSchema = z.object({
 
 export const ProjectConfigSchema = z.object({
   eventTriggers: EventTriggerConfigSchema.default({}),
-  customTriggers: z.array(z.string()).default([]),
+  customTriggers: z.array(CustomTriggerSchema).default([]),
   periodicIntervalMinutes: z.number().int().positive().default(15),
 });
 
