@@ -1,0 +1,134 @@
+Implement the following plan:
+
+# Issue #5: Persist Export Download Tokens to Database
+
+## Context
+
+GitHub issue #5 (grndlvl): `exports/service.ts` stores export jobs and download tokens in in-memory JavaScript `Map`s. Any server restart wipes active download links, breaking the 15-minute TTL promise to users. Solution: persist to PostgreSQL via Drizzle ORM.
+
+**Current state:** Two Maps in `service.ts`:
+- `exportJobs: Map<string, ExcelExportJob>` — job records
+- `downloadTokenToJob: Map<string, { jobId: string; expiresAtMs: number }>` — token→job lookup
+
+**Existing patterns to follow:**
+- Tables defined in `src/db/schema.ts` (public namespace) with pgEnum, pgTable, index helpers
+- CUID2 IDs via `createId()`, timestamps with `defaultNow()`, `$inferSelect`/`$inferInsert` type exports
+- Relations defined alongside tables; unified in `db/client.ts` via `* as schema`
+
+---
+
+## Task 1: Add `exportJobs` table to schema
+
+**Edit** `joyus-ai-mcp-server/src/db/schema.ts`
+
+Add enums, table, relations, and inferred types:
+
+```typescript
+// Enums
+export const exportStatus = pgEnum('export_status', ['pending', 'completed', 'failed']);
+export const exportScope = pgEnum('export_scope', ['current_view', 'full_period']);
+export const exportLocations = pgEnum('export_locations', ['current', 'all_accessible']);
+
+// Table
+export const exportJobs = pgTable('export_jobs', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').notNull().references(() => users.id),
+  tenantId: text('tenant_id').notNull(),
+  status: exportStatus('status').notNull().default('pending'),
+  scope: exportScope('scope').notNull(),
+  locations: exportLocations('locations').notNull(),
+  dateStart: text('date_start'),
+  dateEnd: text('date_end'),
+  scenarioId: text('scenario_id'),
+  filePath: text('file_path'),
+  fileName: text('file_name'),
+  fileSizeBytes: integer('file_size_bytes'),
+  error: text('error'),
+  downloadToken: text('download_token').unique(),
+  downloadExpiresAt: timestamp('download_expires_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('export_jobs_user_id_idx').on(table.userId),
+  index('export_jobs_tenant_id_idx').on(table.tenantId),
+  index('export_jobs_download_expires_idx').on(table.downloadExpiresAt),
+]);
+```
+
+Add `exportJobs` to existing `usersRelations`. Add new `exportJobsRelations`. Export `ExportJob` and `NewExportJob` types.
+
+No changes needed to `db/client.ts` — it already imports `* as schema`.
+
+---
+
+## Task 2: Rewrite `service.ts` to use database
+
+**Edit** `joyus-ai-mcp-server/src/exports/service.ts`
+
+Remove both `Map` declarations. Replace with Drizzle queries:
+
+| Function | Map operation → DB operation |
+|---|---|
+| `createExcelExportJob()` | `exportJobs.set()` → `db.insert(exportJobs).values({...}).returning()` |
+| `getExcelExportJobForUser()` | `exportJobs.get()` → `db.select()...where(eq(id) AND eq(userId) AND eq(tenantId))` |
+| `resolveDownloadToken()` | `downloadTokenToJob.get()` + manual expiry → `db.select()...where(eq(downloadToken) AND gt(downloadExpiresAt, now()))` |
+
+Excel workbook generation logic stays unchanged — only the storage layer changes.
+
+Add `cleanupExpiredExports()` for future scheduler use:
+```typescript
+export async function cleanupExpiredExports(): Promise<number> {
+  const result = await db.delete(exportJobs)
+    .where(and(isNotNull(exportJobs.downloadExpiresAt), lt(exportJobs.downloadExpiresAt, sql`now()`)))
+    .returning({ id: exportJobs.id });
+  return result.length;
+}
+```
+
+Don't wire to scheduler yet — just export the function.
+
+---
+
+## Task 3: Align types
+
+**Edit** `joyus-ai-mcp-server/src/exports/types.ts`
+
+Keep `ExcelExportJob` interface for API response shape. Re-export `ExportJob` from `db/schema` for internal use so service.ts uses the DB type internally.
+
+---
+
+## Task 4: Tests
+
+**New file** `joyus-ai-mcp-server/tests/exports/service.test.ts`
+
+Mock the `db` module (vi.mock pattern consistent with existing tests):
+- `createExcelExportJob`: inserts row, returns job with downloadToken
+- `getExcelExportJobForUser`: valid user/tenant returns job; wrong user returns null
+- `resolveDownloadToken`: valid token returns filePath; expired token returns null; unknown token returns null
+- `cleanupExpiredExports`: returns count of deleted rows
+
+**Edit** `joyus-ai-mcp-server/tests/exports.test.ts` — update any tests that depend on in-memory behavior.
+
+---
+
+## Files Modified
+
+| File | Action |
+|------|--------|
+| `src/db/schema.ts` | Add exportJobs table, 3 enums, relations, type exports |
+| `src/exports/service.ts` | Replace Maps with Drizzle queries, add cleanup fn |
+| `src/exports/types.ts` | Re-export DB type |
+| `tests/exports/service.test.ts` | **New** — service unit tests |
+| `tests/exports.test.ts` | Update for DB-backed service |
+
+## Verification
+
+1. `npx tsc --noEmit` — zero type errors
+2. `npx vitest run` — all tests pass
+3. Grep for `new Map` in `service.ts` — should find none
+4. Confirm `resolveDownloadToken` rejects expired tokens via SQL `WHERE` (not in-memory TTL)
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+
+If this plan can be broken down into multiple independent tasks, consider using the TeamCreate tool to create a team and parallelize the work.

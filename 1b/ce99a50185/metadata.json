@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "1bce99a50185",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "joyus-ai-mcp-server/src/db/schema.ts",
+    "joyus-ai-mcp-server/src/exports/router.ts",
+    "joyus-ai-mcp-server/src/exports/service.ts",
+    "joyus-ai-mcp-server/src/exports/types.ts",
+    "joyus-ai-mcp-server/tests/exports.test.ts",
+    "joyus-ai-mcp-server/tests/exports/service.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1b/ce99a50185/0/metadata.json",
+      "transcript": "/1b/ce99a50185/0/full.jsonl",
+      "context": "/1b/ce99a50185/0/context.md",
+      "content_hash": "/1b/ce99a50185/0/content_hash.txt",
+      "prompt": "/1b/ce99a50185/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 57,
+    "cache_creation_tokens": 76956,
+    "cache_read_tokens": 1477343,
+    "output_tokens": 38097,
+    "api_call_count": 19
+  }
+}
