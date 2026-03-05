@@ -1,11 +1,20 @@
 # Gitleaks allowlist configuration
 # Compatible with gitleaks v8 schema.
 
+title = "Joyus AI gitleaks configuration"
+
+[extend]
+useDefault = true
+
 [allowlist]
 description = "Known false-positive patterns for Joyus AI"
 regexTarget = "match"
 paths = [
   '''\.env\.example$''',
+  '''^joyus-ai-mcp-server/tests/exports\.test\.ts$''',
+  '''^kitty-specs/006-content-infrastructure/quickstart\.md$''',
+  '''^[0-9a-f]{2}/[0-9a-f]+/[0-9]+/full\.jsonl$''',
+  '''^\.entire/metadata/.+/full\.jsonl$''',
 ]
 regexes = [
   '''AIza[0-9A-Za-z\-_]{35}''',
