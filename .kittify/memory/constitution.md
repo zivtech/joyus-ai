@@ -111,6 +111,12 @@ Monitoring is not optional — it's how we learn and improve. For operational us
   - Proprietary skill sets (competitive differentiation through encoded expertise, not code secrecy)
   - Security-sensitive configurations (API keys, auth secrets, deployment-specific hardening)
 - The boundary is **security and organizational data**, not platform capability — we don't withhold platform features to create artificial scarcity
+- **Commercial distribution is allowed** when it preserves open-core integrity:
+  - A managed Joyus platform offering may be paid
+  - A Joyus desktop companion/runtime may be private or commercial
+  - The open source core must remain self-hostable and complete for mediated AI access through public interfaces
+  - Paid/private desktop value must come from operational convenience (packaging, endpoint management, managed updates, support), not from locking essential platform capability behind closed code
+- Any private/commercial desktop/runtime must use documented, stable control-plane contracts (policy, session, provenance) so organizations can run without the desktop app if they choose
 - **Zivtech's competitive advantage** (as the founding maintainer) is 20 years of consulting expertise, client relationships, and operational know-how — not the source code. Other organizations using the platform build their own competitive advantage through their own encoded knowledge.
 - License selection will balance community freedom with protection against hostile closed-source forks (e.g., AGPL, BSL, or similar copyleft license)
 - **Repository separation model:**
@@ -284,6 +290,7 @@ This list is not exhaustive — the skill and tenant configuration system is des
 - ❌ Tied to one AI model — the mediation layer is model-agnostic; Claude is the initial backend, not the only one
 - ❌ A closed platform — the core is open source; proprietary value lives in skills and encoded organizational knowledge, not code secrecy
 - ❌ A crippled open-source-core with paid features bolted on — the open source repo is a complete, functional product
+- ❌ A desktop lock-in strategy where core mediation or policy enforcement only works with closed binaries
 
 ---
 
@@ -297,9 +304,10 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.6*
+*Constitution Version: 1.7*
 *Established: January 29, 2026*
-*Last Updated: February 19, 2026*
+*Last Updated: March 5, 2026*
+*Changes v1.7: Clarified open-core commercial model in §2.8 — managed platform and private/commercial desktop companion are allowed if open source core remains complete/self-hostable; added anti-lock-in constraint that closed desktop clients cannot be required for core mediation/policy capability*
 *Changes v1.6: Added §2.10 "Client-Informed, Platform-Generic" — client needs inform abstract platform capabilities; no client names, terminology, or domain-specific examples in the public repo; agents must generalize at point of creation*
 *Changes v1.5: Open source audience rewrite — generalized "Zivtech" to "deploying organization" throughout; renamed §2.2 from "Skills as Guardrails" to "Skills as Encoded Knowledge" (skills now include operational context, business rules, report definitions, compliance, not just constraints); renamed §2.6 from "Claude Code Alternative" to "Mediated AI Access" (model-agnostic framing); added single-org and multi-org deployment models; added first validated use case (ice cream manufacturer/distributor/retailer) and early use case breadth (healthcare, legal, higher ed, museum, assessment/credentialing); expanded stakeholders to include open source community and deploying organizations; broadened monitoring to include operational accuracy; added skill ecosystem concept (community packs, archetype packs); added §3.2 Compliance Framework Awareness (HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA) with hard-failure enforcement; updated Section 8 for multi-industry, model-agnostic positioning*
 *Changes v1.4: Added Principle 2.8 (Open Source by Default) with repository separation model; added Principle 2.9 (Assumption Awareness) for proactive tracking of design assumptions; updated Section 8 to reflect open source posture; removed "consumer product" constraint (open source inherently broadens audience)*

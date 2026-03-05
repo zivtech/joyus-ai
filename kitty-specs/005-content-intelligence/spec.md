@@ -757,3 +757,18 @@ Start with Federal Register monitoring for final rules affecting:
 *Updated: February 18, 2026 — Added profile fidelity tiers (§5.6), self-service profile building, build-vs-leverage analysis, and honest caveats on attribution accuracy vs. generation fidelity. Research basis: EMNLP 2025 (Wang et al.), Oxford DSH 2025, MDPI 2024 survey, faststylometry ecosystem analysis.*
 *For: Joyus AI Platform — Feature 005*
 *References: client PoC author-identification-research, spec/profile-engine-spec.md, Constitution v1.5*
+
+## Adoption Plan
+
+- Follow rollout sequencing and ownership in `kitty-specs/007-org-scale-agentic-governance/spec.md`.
+- Track adoption milestones in governance review cadence until feature reaches steady-state operations.
+
+## ROI Metrics
+
+- Measure cycle-time, quality, and reliability deltas defined in governance baseline.
+- Record baseline and post-adoption metrics in periodic governance reports.
+
+## Security + MCP Governance
+
+- Apply MCP integration approval rubric and quarterly review cycle defined in `spec/spec-governance.md`.
+- Document exceptions and remediation in governance backlog before expanding autonomy scope.

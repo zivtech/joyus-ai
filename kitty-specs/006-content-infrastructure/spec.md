@@ -241,3 +241,18 @@ External chat interfaces (web widgets, messaging platforms, AI assistants) conne
 - Sync is batch/scheduled only; real-time streaming (webhooks, CDC) is deferred.
 - Voice profiles are provided by the existing profile engine (Feature 005); this feature consumes them, it does not create them.
 - External entitlement sources (CRM, subscription platforms) expose query-able APIs; the platform does not manage subscriptions directly.
+
+## Adoption Plan
+
+- Follow rollout sequencing and ownership in `kitty-specs/007-org-scale-agentic-governance/spec.md`.
+- Track adoption milestones in governance review cadence until feature reaches steady-state operations.
+
+## ROI Metrics
+
+- Measure cycle-time, quality, and reliability deltas defined in governance baseline.
+- Record baseline and post-adoption metrics in periodic governance reports.
+
+## Security + MCP Governance
+
+- Apply MCP integration approval rubric and quarterly review cycle defined in `spec/spec-governance.md`.
+- Document exceptions and remediation in governance backlog before expanding autonomy scope.

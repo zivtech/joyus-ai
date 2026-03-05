@@ -202,3 +202,18 @@ A team member invokes the PowerPoint MCP server to generate a branded client pre
 - Lando/DDEV container runtimes (remain local-only)
 - Managed database service (PostgreSQL in container for now)
 - Load balancing or auto-scaling (single instance sufficient for team use)
+
+## Adoption Plan
+
+- Follow rollout sequencing and ownership in `kitty-specs/007-org-scale-agentic-governance/spec.md`.
+- Track adoption milestones in governance review cadence until feature reaches steady-state operations.
+
+## ROI Metrics
+
+- Measure cycle-time, quality, and reliability deltas defined in governance baseline.
+- Record baseline and post-adoption metrics in periodic governance reports.
+
+## Security + MCP Governance
+
+- Apply MCP integration approval rubric and quarterly review cycle defined in `spec/spec-governance.md`.
+- Document exceptions and remediation in governance backlog before expanding autonomy scope.
