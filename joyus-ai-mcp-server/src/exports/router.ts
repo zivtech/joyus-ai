@@ -115,7 +115,7 @@ exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, asy
   }
 
   try {
-    const job = getExcelExportJobForUser(user.id, tenantId, exportId);
+    const job = await getExcelExportJobForUser(user.id, tenantId, exportId);
     if (!job) {
       res.status(404).json({ error: 'Export not found' });
       return;
@@ -146,7 +146,7 @@ exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, asy
 
 exportRouter.get('/exports/download/:token', async (req: Request, res: Response) => {
   const token = req.params.token;
-  const resolved = resolveDownloadToken(token);
+  const resolved = await resolveDownloadToken(token);
 
   if (!resolved) {
     res.status(404).json({ error: 'Download link is invalid or expired' });
