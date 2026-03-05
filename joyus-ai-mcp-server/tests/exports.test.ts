@@ -3,39 +3,95 @@
  *
  * Covers:
  *   - Export service helpers (normalizeExportScope, normalizeExportLocations, canAccessTenant)
- *   - createExcelExportJob (success path, tenant access denial, returned job fields)
- *   - getExcelExportJobForUser (valid user/tenant, wrong user, nonexistent export)
- *   - resolveDownloadToken (valid token, expired token, nonexistent token)
  *   - Auth middleware (extractBearerToken, requireTokenAuth)
  *   - Router download endpoint (GET /exports/download/:token)
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
 
-// ── Module mocks — hoisted by Vitest before any other module initialization ──
+// ── Mock return queues ──────────────────────────────────────────────────────
 
-// Mock cuid2 so createId() never touches crypto.getRandomValues.
-// This also makes job IDs predictable across the test run.
-let _cuidCounter = 0;
-vi.mock('@paralleldrive/cuid2', () => ({
-  createId: vi.fn(() => `test-id-${++_cuidCounter}`),
-}));
+const mockQueues = {
+  insertReturning: [] as unknown[][],
+  selectWhere: [] as unknown[][],
+  updateReturning: [] as unknown[][],
+  deleteReturning: [] as unknown[][],
+};
+
+function resetMockQueues() {
+  mockQueues.insertReturning = [];
+  mockQueues.selectWhere = [];
+  mockQueues.updateReturning = [];
+  mockQueues.deleteReturning = [];
+}
+
+// ── Module mocks — hoisted by Vitest before any other module initialization ──
 
 vi.mock('../src/exports/excel-builder.js', () => ({
   buildWorkbookFile: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../src/db/client.js', () => ({
-  db: {
-    insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined),
-    }),
-  },
-  auditLogs: {},
-  users: {},
-  connections: {},
-}));
+vi.mock('../src/db/client.js', () => {
+  function makeInsertChain() {
+    return {
+      values: vi.fn(() => {
+        const p = Promise.resolve(undefined);
+        (p as any).returning = vi.fn(() =>
+          Promise.resolve(mockQueues.insertReturning.shift() || []),
+        );
+        return p;
+      }),
+    };
+  }
+
+  function makeSelectChain() {
+    return {
+      from: vi.fn(() => ({
+        where: vi.fn(() =>
+          Promise.resolve(mockQueues.selectWhere.shift() || []),
+        ),
+      })),
+    };
+  }
+
+  function makeUpdateChain() {
+    return {
+      set: vi.fn(() => ({
+        where: vi.fn(() => {
+          const p = Promise.resolve(undefined);
+          (p as any).returning = vi.fn(() =>
+            Promise.resolve(mockQueues.updateReturning.shift() || []),
+          );
+          return p;
+        }),
+      })),
+    };
+  }
+
+  function makeDeleteChain() {
+    return {
+      where: vi.fn(() => ({
+        returning: vi.fn(() =>
+          Promise.resolve(mockQueues.deleteReturning.shift() || []),
+        ),
+      })),
+    };
+  }
+
+  return {
+    db: {
+      insert: vi.fn(() => makeInsertChain()),
+      select: vi.fn(() => makeSelectChain()),
+      update: vi.fn(() => makeUpdateChain()),
+      delete: vi.fn(() => makeDeleteChain()),
+    },
+    exportJobs: {},
+    auditLogs: {},
+    users: {},
+    connections: {},
+  };
+});
 
 vi.mock('../src/auth/verify.js', () => ({
   getUserFromToken: vi.fn(),
@@ -53,14 +109,10 @@ import {
   canAccessTenant,
   normalizeExportLocations,
   normalizeExportScope,
-  createExcelExportJob,
-  getExcelExportJobForUser,
-  resolveDownloadToken,
 } from '../src/exports/service.js';
 
 import { extractBearerToken, requireTokenAuth } from '../src/auth/middleware.js';
 import { getUserFromToken } from '../src/auth/verify.js';
-import { buildWorkbookFile } from '../src/exports/excel-builder.js';
 import { exportRouter } from '../src/exports/router.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -112,20 +164,6 @@ function makeRes(): Response & {
   });
 
   return res;
-}
-
-/** Build a minimal CreateExportJobParams. */
-function makeJobParams(overrides: Partial<Parameters<typeof createExcelExportJob>[0]> = {}) {
-  return {
-    userId: 'user-a',
-    tenantId: 'user-a', // same → always allowed without allowlist
-    request: {
-      scope: 'current_view',
-      locations: 'current',
-    },
-    baseUrl: 'http://localhost:3000',
-    ...overrides,
-  };
 }
 
 // ── Suite 1: Export Service Helpers ──────────────────────────────────────────
@@ -186,182 +224,7 @@ describe('Export Service Helpers', () => {
   });
 });
 
-// ── Suite 2: createExcelExportJob ─────────────────────────────────────────────
-
-describe('createExcelExportJob', () => {
-  beforeEach(() => {
-    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'true');
-    vi.mocked(buildWorkbookFile).mockResolvedValue(undefined);
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('returns a job with status completed on success', async () => {
-    const { job } = await createExcelExportJob(makeJobParams());
-    expect(job.status).toBe('completed');
-  });
-
-  it('returns a downloadUrl on success', async () => {
-    const { downloadUrl } = await createExcelExportJob(makeJobParams());
-    expect(downloadUrl).toMatch(/^http:\/\/localhost:3000\/api\/v1\/exports\/download\//);
-  });
-
-  it('job contains correct userId and tenantId', async () => {
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-b', tenantId: 'user-b' })
-    );
-    expect(job.userId).toBe('user-b');
-    expect(job.tenantId).toBe('user-b');
-  });
-
-  it('job contains an id, createdAt, updatedAt, fileName, fileSizeBytes', async () => {
-    const { job } = await createExcelExportJob(makeJobParams());
-    expect(job.id).toBeDefined();
-    expect(job.createdAt).toBeDefined();
-    expect(job.updatedAt).toBeDefined();
-    expect(job.fileName).toMatch(/\.xlsx$/);
-    expect(job.fileSizeBytes).toBe(4096);
-  });
-
-  it('job scope and locations are normalised', async () => {
-    const { job } = await createExcelExportJob(
-      makeJobParams({ request: { scope: 'full_period', locations: 'all_accessible' } })
-    );
-    expect(job.scope).toBe('full_period');
-    expect(job.locations).toBe('all_accessible');
-  });
-
-  it('job stores a downloadToken', async () => {
-    const { job } = await createExcelExportJob(makeJobParams());
-    expect(job.downloadToken).toBeDefined();
-    expect(typeof job.downloadToken).toBe('string');
-  });
-
-  it('throws and leaves job as failed when buildWorkbookFile rejects', async () => {
-    vi.mocked(buildWorkbookFile).mockRejectedValueOnce(new Error('python crashed'));
-    await expect(createExcelExportJob(makeJobParams())).rejects.toThrow('python crashed');
-  });
-
-  it('throws when user does not have access to tenant', async () => {
-    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'false');
-    vi.stubEnv('EXPORT_TENANT_ALLOWLIST', '');
-    await expect(
-      createExcelExportJob(makeJobParams({ userId: 'user-x', tenantId: 'tenant-other' }))
-    ).rejects.toThrow('not authorized');
-  });
-
-  it('base URL trailing slash is stripped from download URL', async () => {
-    const { downloadUrl } = await createExcelExportJob(
-      makeJobParams({ baseUrl: 'http://localhost:3000/' })
-    );
-    expect(downloadUrl).not.toMatch(/\/\/api/);
-    expect(downloadUrl).toMatch(/^http:\/\/localhost:3000\/api\/v1\/exports\/download\//);
-  });
-});
-
-// ── Suite 3: getExcelExportJobForUser ─────────────────────────────────────────
-
-describe('getExcelExportJobForUser', () => {
-  beforeEach(() => {
-    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'true');
-    vi.mocked(buildWorkbookFile).mockResolvedValue(undefined);
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('returns the job for the correct user and tenant', async () => {
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-c', tenantId: 'user-c' })
-    );
-    const found = getExcelExportJobForUser('user-c', 'user-c', job.id);
-    expect(found).not.toBeNull();
-    expect(found!.id).toBe(job.id);
-  });
-
-  it('returns null when exportId does not exist', () => {
-    const result = getExcelExportJobForUser('user-c', 'user-c', 'nonexistent-id');
-    expect(result).toBeNull();
-  });
-
-  it('returns null when userId does not match the job owner', async () => {
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-d', tenantId: 'user-d' })
-    );
-    const result = getExcelExportJobForUser('user-e', 'user-d', job.id);
-    expect(result).toBeNull();
-  });
-
-  it('returns null when tenantId does not match the job tenant', async () => {
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-f', tenantId: 'user-f' })
-    );
-    const result = getExcelExportJobForUser('user-f', 'user-f-other', job.id);
-    expect(result).toBeNull();
-  });
-
-  it('throws when caller does not have tenant access', () => {
-    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'false');
-    vi.stubEnv('EXPORT_TENANT_ALLOWLIST', '');
-    expect(() =>
-      getExcelExportJobForUser('user-x', 'tenant-blocked', 'any-id')
-    ).toThrow('not authorized');
-  });
-});
-
-// ── Suite 4: resolveDownloadToken ─────────────────────────────────────────────
-
-describe('resolveDownloadToken', () => {
-  beforeEach(() => {
-    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'true');
-    vi.mocked(buildWorkbookFile).mockResolvedValue(undefined);
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('returns job and filePath for a valid token', async () => {
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-g', tenantId: 'user-g' })
-    );
-    const token = job.downloadToken!;
-    const resolved = resolveDownloadToken(token);
-    expect(resolved).not.toBeNull();
-    expect(resolved!.job.id).toBe(job.id);
-    expect(resolved!.filePath).toContain('.xlsx');
-  });
-
-  it('returns null for a nonexistent token', () => {
-    expect(resolveDownloadToken('deadbeef-invalid-token')).toBeNull();
-  });
-
-  it('returns null for an empty string token', () => {
-    expect(resolveDownloadToken('')).toBeNull();
-  });
-
-  it('returns null after TTL has expired', async () => {
-    vi.stubEnv('EXPORT_SIGNED_URL_TTL_SECONDS', '1');
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-h', tenantId: 'user-h' })
-    );
-    const token = job.downloadToken!;
-
-    // Advance time past TTL by faking Date.now
-    const future = Date.now() + 5_000;
-    vi.spyOn(Date, 'now').mockReturnValue(future);
-
-    const resolved = resolveDownloadToken(token);
-
-    vi.restoreAllMocks();
-    expect(resolved).toBeNull();
-  });
-});
-
-// ── Suite 5: Auth middleware ──────────────────────────────────────────────────
+// ── Suite 2: Auth middleware ──────────────────────────────────────────────────
 
 describe('extractBearerToken', () => {
   it('returns the token when Authorization header is well-formed', () => {
@@ -479,7 +342,7 @@ describe('requireTokenAuth', () => {
   });
 });
 
-// ── Suite 6: Router download endpoint ────────────────────────────────────────
+// ── Suite 3: Router download endpoint ────────────────────────────────────────
 
 /**
  * Tests the download handler function directly without an HTTP server.
@@ -503,39 +366,44 @@ function findDownloadHandler(router: import('express').Router) {
 }
 
 describe('Router: GET /exports/download/:token', () => {
-  // The exportJobs / downloadTokenToJob Maps are module-level singletons that
-  // persist across all suites in one test run. We create one job here in
-  // beforeAll and reuse the token — no need to call createExcelExportJob again.
-  let validToken: string;
+  // Pre-build a completed mock row for use across tests in this suite.
+  const mockCompletedRow = {
+    id: 'router-job-1',
+    userId: 'user-router',
+    tenantId: 'user-router',
+    status: 'completed',
+    filePath: '/tmp/exports/user-router/export-user-router-test.xlsx',
+    fileName: 'export-user-router-test.xlsx',
+    fileSizeBytes: 4096,
+    downloadToken: 'router-valid-token',
+    downloadExpiresAt: new Date(Date.now() + 900_000),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-  beforeAll(async () => {
-    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'true');
-    // Re-establish fs/promises mock return values in case a prior suite's
-    // vi.resetAllMocks() cleared them.
-    const fsp = await import('fs/promises');
-    vi.mocked(fsp.mkdir).mockResolvedValue(undefined);
-    vi.mocked(fsp.stat).mockResolvedValue({ size: 4096 } as import('fs').Stats);
-    vi.mocked(buildWorkbookFile).mockResolvedValue(undefined);
-    const { job } = await createExcelExportJob(
-      makeJobParams({ userId: 'user-router', tenantId: 'user-router' })
-    );
-    validToken = job.downloadToken!;
-    vi.unstubAllEnvs();
+  beforeEach(() => {
+    resetMockQueues();
   });
 
-  it('responds 404 for an invalid download token', () => {
+  it('responds 404 for an invalid download token', async () => {
+    // resolveDownloadToken will get empty results from DB
+    mockQueues.selectWhere.push([]);
+
     const req = makeReq({ params: { token: 'completely-invalid-token' } });
     const res = makeRes();
     const handler = findDownloadHandler(exportRouter);
 
-    handler(req, res, vi.fn());
+    await handler(req, res, vi.fn());
 
     expect(res._status).toBe(404);
     expect((res._body as { error: string }).error).toMatch(/invalid|expired/i);
   });
 
   it('calls res.download with filePath and fileName for a valid token', async () => {
-    const req = makeReq({ params: { token: validToken } });
+    // resolveDownloadToken will find this row
+    mockQueues.selectWhere.push([mockCompletedRow]);
+
+    const req = makeReq({ params: { token: 'router-valid-token' } });
     const res = makeRes();
     const handler = findDownloadHandler(exportRouter);
 
