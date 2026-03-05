@@ -50,3 +50,5 @@ export interface CreateExportJobParams {
   baseUrl: string;
 }
 
+export type { ExportJob, NewExportJob } from '../db/schema.js';
+

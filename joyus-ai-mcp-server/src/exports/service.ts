@@ -3,6 +3,10 @@ import { mkdir, stat } from 'fs/promises';
 import path from 'path';
 
 import { createId } from '@paralleldrive/cuid2';
+import { and, eq, gt, isNotNull, lt, sql } from 'drizzle-orm';
+
+import { db, exportJobs as exportJobsTable } from '../db/client.js';
+import type { ExportJob } from '../db/schema.js';
 
 import { buildWorkbookFile } from './excel-builder.js';
 import {
@@ -14,13 +18,6 @@ import {
   WorkbookPayload,
   WorkbookSheetDefinition,
 } from './types.js';
-
-const exportJobs = new Map<string, ExcelExportJob>();
-const downloadTokenToJob = new Map<string, { jobId: string; expiresAtMs: number }>();
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
 
 function sanitizeBaseUrl(baseUrl: string): string {
   return baseUrl.replace(/\/+$/, '');
@@ -94,7 +91,7 @@ function defaultWorkbookPayload(
   req: ExcelExportRequest
 ): WorkbookPayload {
   const period = monthlyPeriodLabel(req, scope);
-  const created = nowIso();
+  const created = new Date().toISOString();
   const locationLabel = locations === 'all_accessible' ? 'all_accessible' : 'current';
 
   const sheets: WorkbookSheetDefinition[] = [
@@ -146,21 +143,31 @@ function defaultWorkbookPayload(
   return { sheets };
 }
 
-function cleanupExpiredDownloadTokens(): void {
-  const now = Date.now();
-  for (const [token, value] of downloadTokenToJob.entries()) {
-    if (value.expiresAtMs <= now) {
-      downloadTokenToJob.delete(token);
-      const job = exportJobs.get(value.jobId);
-      if (job) {
-        job.downloadToken = undefined;
-      }
-    }
-  }
-}
-
 function buildDownloadUrl(baseUrl: string, token: string): string {
   return `${sanitizeBaseUrl(baseUrl)}/api/v1/exports/download/${token}`;
+}
+
+/** Convert a DB row to the ExcelExportJob API shape. */
+function toExcelExportJob(row: ExportJob): ExcelExportJob {
+  return {
+    id: row.id,
+    userId: row.userId,
+    tenantId: row.tenantId,
+    status: row.status,
+    scope: row.scope,
+    locations: row.locations,
+    dateStart: row.dateStart ?? undefined,
+    dateEnd: row.dateEnd ?? undefined,
+    scenarioId: row.scenarioId ?? undefined,
+    filePath: row.filePath ?? undefined,
+    fileName: row.fileName ?? undefined,
+    fileSizeBytes: row.fileSizeBytes ?? undefined,
+    error: row.error ?? undefined,
+    downloadToken: row.downloadToken ?? undefined,
+    downloadExpiresAt: row.downloadExpiresAt?.toISOString(),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
 export async function createExcelExportJob(params: CreateExportJobParams): Promise<{ job: ExcelExportJob; downloadUrl: string }> {
@@ -168,14 +175,12 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
 
   const scope = normalizeExportScope(params.request.scope);
   const locations = normalizeExportLocations(params.request.locations);
-  const now = nowIso();
-  const jobId = createId();
-  const fileName = `export-${params.tenantId}-${jobId}.xlsx`;
+  const fileId = createId();
+  const fileName = `export-${params.tenantId}-${fileId}.xlsx`;
   const outputDir = path.join(exportRootDir(), params.tenantId);
   const outputPath = path.join(outputDir, fileName);
 
-  const initialJob: ExcelExportJob = {
-    id: jobId,
+  const [insertedJob] = await db.insert(exportJobsTable).values({
     userId: params.userId,
     tenantId: params.tenantId,
     status: 'pending',
@@ -186,10 +191,7 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
     scenarioId: params.request.scenario_id,
     filePath: outputPath,
     fileName,
-    createdAt: now,
-    updatedAt: now,
-  };
-  exportJobs.set(jobId, initialJob);
+  }).returning();
 
   try {
     await mkdir(outputDir, { recursive: true });
@@ -204,54 +206,67 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
 
     const fileStats = await stat(outputPath);
     const token = randomBytes(24).toString('hex');
-    const expiresAtMs = Date.now() + signedUrlTtlSeconds() * 1000;
-    const expiresAtIso = new Date(expiresAtMs).toISOString();
+    const ttlMs = signedUrlTtlSeconds() * 1000;
+    const downloadExpiresAt = new Date(Date.now() + ttlMs);
     const downloadUrl = buildDownloadUrl(params.baseUrl, token);
 
-    downloadTokenToJob.set(token, { jobId, expiresAtMs });
-    exportJobs.set(jobId, {
-      ...initialJob,
-      status: 'completed',
-      fileSizeBytes: fileStats.size,
-      downloadToken: token,
-      downloadExpiresAt: expiresAtIso,
-      updatedAt: nowIso(),
-    });
+    const [completedJob] = await db.update(exportJobsTable)
+      .set({
+        status: 'completed' as const,
+        fileSizeBytes: fileStats.size,
+        downloadToken: token,
+        downloadExpiresAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(exportJobsTable.id, insertedJob.id))
+      .returning();
 
-    const completedJob = exportJobs.get(jobId);
-    if (!completedJob) {
-      throw new Error('Export job was not persisted.');
-    }
-
-    return { job: completedJob, downloadUrl };
+    return { job: toExcelExportJob(completedJob), downloadUrl };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    exportJobs.set(jobId, {
-      ...initialJob,
-      status: 'failed',
-      error: message,
-      updatedAt: nowIso(),
-    });
+    await db.update(exportJobsTable)
+      .set({
+        status: 'failed' as const,
+        error: message,
+        updatedAt: new Date(),
+      })
+      .where(eq(exportJobsTable.id, insertedJob.id));
     throw error;
   }
 }
 
-export function getExcelExportJobForUser(userId: string, tenantId: string, exportId: string): ExcelExportJob | null {
+export async function getExcelExportJobForUser(userId: string, tenantId: string, exportId: string): Promise<ExcelExportJob | null> {
   assertTenantAccess(userId, tenantId);
-  const job = exportJobs.get(exportId);
-  if (!job) return null;
-  if (job.userId !== userId || job.tenantId !== tenantId) return null;
-  return job;
+
+  const [row] = await db.select().from(exportJobsTable)
+    .where(and(
+      eq(exportJobsTable.id, exportId),
+      eq(exportJobsTable.userId, userId),
+      eq(exportJobsTable.tenantId, tenantId),
+    ));
+
+  if (!row) return null;
+  return toExcelExportJob(row);
 }
 
-export function resolveDownloadToken(token: string): { job: ExcelExportJob; filePath: string } | null {
-  cleanupExpiredDownloadTokens();
+export async function resolveDownloadToken(token: string): Promise<{ job: ExcelExportJob; filePath: string } | null> {
+  const [row] = await db.select().from(exportJobsTable)
+    .where(and(
+      eq(exportJobsTable.downloadToken, token),
+      eq(exportJobsTable.status, 'completed'),
+      gt(exportJobsTable.downloadExpiresAt, sql`now()`),
+    ));
 
-  const tokenRecord = downloadTokenToJob.get(token);
-  if (!tokenRecord) return null;
-
-  const job = exportJobs.get(tokenRecord.jobId);
-  if (!job || !job.filePath || job.status !== 'completed') return null;
-  return { job, filePath: job.filePath };
+  if (!row || !row.filePath) return null;
+  return { job: toExcelExportJob(row), filePath: row.filePath };
 }
 
+export async function cleanupExpiredExports(): Promise<number> {
+  const result = await db.delete(exportJobsTable)
+    .where(and(
+      isNotNull(exportJobsTable.downloadExpiresAt),
+      lt(exportJobsTable.downloadExpiresAt, sql`now()`),
+    ))
+    .returning({ id: exportJobsTable.id });
+  return result.length;
+}
