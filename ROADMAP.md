@@ -4,6 +4,26 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 
 ---
 
+## Canonical Status Snapshot
+
+Status source of truth:
+- `status/feature-readiness.json`
+- `status/generated/feature-table.md`
+- `status/generated/phase-summary.md`
+
+<!-- GENERATED: status/feature-readiness.json -->
+Updated: 2026-03-05T19:20:00Z
+
+Lifecycle counts:
+- done: 4
+- execution: 1
+- planning: 1
+- spec-only: 1
+
+Production-readiness counts:
+- not_ready: 4
+- production_ready: 3
+
 ## Shipped
 
 - **MCP Server Core** - OAuth authentication, tool executors for project management, chat, code hosting, and productivity integrations. Dockerized runtime available.

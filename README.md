@@ -96,17 +96,22 @@ Production deployment configuration is maintained in a separate private reposito
 
 This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`.
 
-Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23):
+Status is canonicalized in `status/feature-readiness.json` and verified in CI via:
+- `node scripts/verify-status-consistency.mjs`
+- `.github/workflows/status-consistency.yml`
 
-| Spec | Description | Status |
-|------|-------------|--------|
-| `001` | MCP Server AWS Deployment | Complete |
-| `002` | Session Context Management | Complete |
-| `003` | Platform Architecture Overview | Spec-Only |
-| `004` | Workflow Enforcement | Complete |
-| `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
-| `006` | Content Infrastructure | Complete (WP01–WP12) |
-| `007` | Org-Scale Agentic Governance | Planning |
+Generated feature status table:
+
+<!-- GENERATED: status/feature-readiness.json -->
+| Feature | Name | Lifecycle | Implementation | Production |
+|---|---|---|---|---|
+| `001` | MCP Server AWS Deployment | `execution` | `integrated` | `not_ready` |
+| `002` | Session & Context Management | `done` | `validated` | `production_ready` |
+| `003` | joyus-ai Platform Architecture Overview | `spec-only` | `none` | `not_ready` |
+| `004` | Workflow Enforcement | `done` | `validated` | `production_ready` |
+| `005` | Content Intelligence | `done` | `validated` | `production_ready` |
+| `006` | Content Infrastructure | `done` | `integrated` | `not_ready` |
+| `007` | Org-Scale Agentic Governance | `planning` | `none` | `not_ready` |
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 
