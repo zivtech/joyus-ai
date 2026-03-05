@@ -310,3 +310,18 @@ Session & Context Management is foundational — this spec depends on the state 
 *Discovery conducted with: project leadership*
 *Evidence source: 003-platform-architecture-overview (Domains 2-4), joyus-ai-requirements-brief.md, 002 deferred items*
 *For: joyus-ai — Mediator Layer, Spec 2 of 2*
+
+## Adoption Plan
+
+- Follow rollout sequencing and ownership in `kitty-specs/007-org-scale-agentic-governance/spec.md`.
+- Track adoption milestones in governance review cadence until feature reaches steady-state operations.
+
+## ROI Metrics
+
+- Measure cycle-time, quality, and reliability deltas defined in governance baseline.
+- Record baseline and post-adoption metrics in periodic governance reports.
+
+## Security + MCP Governance
+
+- Apply MCP integration approval rubric and quarterly review cycle defined in `spec/spec-governance.md`.
+- Document exceptions and remediation in governance backlog before expanding autonomy scope.
