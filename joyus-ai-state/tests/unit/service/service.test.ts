@@ -86,6 +86,33 @@ describe('FileWatcher', () => {
 
     expect(events).toContain('git-branch-switch');
   });
+
+  it('emits custom-event when file matches configured trigger', async () => {
+    const gitDir = path.join(tmpDir, '.git');
+    fs.mkdirSync(path.join(gitDir, 'refs', 'heads'), { recursive: true });
+    fs.writeFileSync(path.join(gitDir, 'HEAD'), 'ref: refs/heads/main\n');
+
+    const dockerfilePath = path.join(tmpDir, 'Dockerfile');
+    fs.writeFileSync(dockerfilePath, 'FROM node:20\n');
+
+    const watcher = new FileWatcher({
+      projectRoot: tmpDir,
+      customTriggers: [{ pattern: '**/Dockerfile', event: 'docker-build' }],
+      debounce: { gitEvents: 50, fileChanges: 50 },
+      usePolling: true,
+    });
+
+    const events: string[] = [];
+    watcher.on('custom-event', (eventName: string) => events.push(eventName));
+
+    await watcher.start();
+    fs.writeFileSync(dockerfilePath, 'FROM node:20-alpine\n');
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await watcher.stop();
+
+    expect(events).toContain('docker-build');
+  });
 });
 
 // --- EventHandler (T031) ---

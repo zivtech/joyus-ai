@@ -20,6 +20,7 @@ export type {
   GlobalConfig,
   ProjectConfig,
   EventTriggerConfig,
+  CustomTrigger,
   CanonicalDeclaration,
   CanonicalDocument,
 } from './core/types.js';
@@ -40,6 +41,7 @@ export {
   GlobalConfigSchema,
   ProjectConfigSchema,
   EventTriggerConfigSchema,
+  CustomTriggerSchema,
   CanonicalDeclarationSchema,
   CanonicalDocumentSchema,
 } from './core/schema.js';
@@ -104,6 +106,7 @@ export { saveStateToolDef, handleSaveState } from './mcp/tools/save-state.js';
 export { verifyActionToolDef, handleVerifyAction } from './mcp/tools/verify-action.js';
 export { checkCanonicalToolDef, handleCheckCanonical } from './mcp/tools/check-canonical.js';
 export { shareStateToolDef, handleShareState } from './mcp/tools/share-state.js';
+export { querySnapshotsToolDef, handleQuerySnapshots } from './mcp/tools/query-snapshots.js';
 
 // --- MCP tool utilities ---
 export {
@@ -115,6 +118,7 @@ export {
   VerifyActionInputSchema,
   CheckCanonicalInputSchema,
   ShareStateInputSchema,
+  QuerySnapshotsInputSchema,
 } from './mcp/tools/utils.js';
 
 // --- Companion service ---

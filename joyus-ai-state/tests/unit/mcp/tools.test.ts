@@ -4,6 +4,7 @@ import { handleSaveState } from '../../../src/mcp/tools/save-state.js';
 import { handleVerifyAction } from '../../../src/mcp/tools/verify-action.js';
 import { handleCheckCanonical } from '../../../src/mcp/tools/check-canonical.js';
 import { handleShareState } from '../../../src/mcp/tools/share-state.js';
+import { handleQuerySnapshots } from '../../../src/mcp/tools/query-snapshots.js';
 import {
   validateInput,
   createErrorResponse,
@@ -11,6 +12,7 @@ import {
   SaveStateInputSchema,
   CheckCanonicalInputSchema,
   ShareStateInputSchema,
+  QuerySnapshotsInputSchema,
 } from '../../../src/mcp/tools/utils.js';
 import { StateStore, getSnapshotsDir, initStateDirectory } from '../../../src/state/store.js';
 import { saveCanonical, addDeclaration } from '../../../src/state/canonical.js';
@@ -67,6 +69,12 @@ describe('utils', () => {
 
     it('throws on invalid input', () => {
       expect(() => validateInput(CheckCanonicalInputSchema, { action: 'check' })).toThrow('Invalid input');
+    });
+
+    it('validates query_snapshots input schema', () => {
+      const result = validateInput(QuerySnapshotsInputSchema, { event: 'manual', limit: 20 });
+      expect(result.event).toBe('manual');
+      expect(result.limit).toBe(20);
     });
 
     it('includes field names in error message', () => {
@@ -325,6 +333,64 @@ describe('share_state', () => {
 
   it('returns error for invalid action', async () => {
     const result = await handleShareState({ action: 'invalid' }, tmpDir);
+    expect(result.isError).toBe(true);
+  });
+});
+
+// --- query_snapshots (T039) ---
+
+describe('query_snapshots', () => {
+  it('returns snapshot summaries and respects filters', async () => {
+    const snapshotsDir = getSnapshotsDir(tmpDir);
+    fs.mkdirSync(snapshotsDir, { recursive: true });
+    const store = new StateStore(snapshotsDir);
+
+    await store.write(makeSnapshot({
+      id: 'snap-a',
+      timestamp: '2026-01-15T10:00:00.000Z',
+      event: 'manual',
+      git: {
+        branch: 'main',
+        commitHash: 'abc1234',
+        commitMessage: 'manual snapshot',
+        isDetached: false,
+        hasUncommittedChanges: false,
+        remoteBranch: null,
+        aheadBehind: { ahead: 0, behind: 0 },
+      },
+      project: { rootPath: tmpDir, hash: 'test', name: 'test' },
+    }));
+    await store.write(makeSnapshot({
+      id: 'snap-b',
+      timestamp: '2026-01-16T10:00:00.000Z',
+      event: 'commit',
+      git: {
+        branch: 'feature/x',
+        commitHash: 'def5678',
+        commitMessage: 'commit snapshot',
+        isDetached: false,
+        hasUncommittedChanges: false,
+        remoteBranch: null,
+        aheadBehind: { ahead: 0, behind: 0 },
+      },
+      project: { rootPath: tmpDir, hash: 'test', name: 'test' },
+    }));
+
+    const result = await handleQuerySnapshots(
+      { event: 'commit', branch: 'feature/x', limit: 10 },
+      tmpDir,
+    );
+    const data = JSON.parse((result.content[0] as { text: string }).text);
+
+    expect(data.total).toBe(1);
+    expect(data.snapshots).toHaveLength(1);
+    expect(data.snapshots[0].event).toBe('commit');
+    expect(data.snapshots[0].branch).toBe('feature/x');
+    expect(data.snapshots[0].id).toBe('snap-b');
+  });
+
+  it('returns validation error for invalid limit', async () => {
+    const result = await handleQuerySnapshots({ limit: 0 }, tmpDir);
     expect(result.isError).toBe(true);
   });
 });

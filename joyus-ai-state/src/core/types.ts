@@ -20,6 +20,7 @@ import type {
   GlobalConfigSchema,
   ProjectConfigSchema,
   EventTriggerConfigSchema,
+  CustomTriggerSchema,
   CanonicalDeclarationSchema,
   CanonicalDocumentSchema,
   AheadBehindSchema,
@@ -56,6 +57,8 @@ export type GlobalConfig = z.infer<typeof GlobalConfigSchema>;
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 
 export type EventTriggerConfig = z.infer<typeof EventTriggerConfigSchema>;
+
+export type CustomTrigger = z.infer<typeof CustomTriggerSchema>;
 
 export type CanonicalDeclaration = z.infer<typeof CanonicalDeclarationSchema>;
 

@@ -134,4 +134,13 @@ describe('ProjectConfigSchema', () => {
     expect(result.eventTriggers.commit).toBe(false);
     expect(result.eventTriggers.branchSwitch).toBe(true);
   });
+
+  it('accepts structured custom triggers', () => {
+    const result = ProjectConfigSchema.parse({
+      customTriggers: [{ pattern: '**/Dockerfile', event: 'docker-build' }],
+    });
+    expect(result.customTriggers).toEqual([
+      { pattern: '**/Dockerfile', event: 'docker-build' },
+    ]);
+  });
 });

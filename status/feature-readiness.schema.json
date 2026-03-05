@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "updated_at",
+    "features"
+  ],
+  "properties": {
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "features": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]{3}$": {
+          "type": "object",
+          "required": [
+            "friendly_name",
+            "lifecycle_state",
+            "implementation_state",
+            "production_readiness",
+            "provider_readiness",
+            "evidence"
+          ],
+          "properties": {
+            "friendly_name": {
+              "type": "string"
+            },
+            "lifecycle_state": {
+              "type": "string",
+              "enum": [
+                "spec-only",
+                "planning",
+                "execution",
+                "done",
+                "blocked",
+                "deprecated"
+              ]
+            },
+            "implementation_state": {
+              "type": "string",
+              "enum": [
+                "none",
+                "scaffolded",
+                "integrated",
+                "validated"
+              ]
+            },
+            "production_readiness": {
+              "type": "string",
+              "enum": [
+                "not_ready",
+                "pilot_ready",
+                "production_ready"
+              ]
+            },
+            "provider_readiness": {
+              "type": "object",
+              "required": [
+                "generation_provider",
+                "voice_analyzer"
+              ],
+              "properties": {
+                "generation_provider": {
+                  "type": "string",
+                  "enum": [
+                    "placeholder",
+                    "configured",
+                    "validated"
+                  ]
+                },
+                "voice_analyzer": {
+                  "type": "string",
+                  "enum": [
+                    "stub",
+                    "configured",
+                    "validated"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "evidence": {
+              "type": "object",
+              "required": [
+                "spec_meta",
+                "runtime_wiring",
+                "tests"
+              ],
+              "properties": {
+                "spec_meta": {
+                  "type": "string"
+                },
+                "runtime_wiring": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "tests": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
