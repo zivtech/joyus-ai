@@ -14,10 +14,12 @@ import { Router, Request, Response } from 'express';
 
 import { HealthChecker } from './health.js';
 import { MetricsCollector } from './metrics.js';
+import type { ProfileQueueMetrics } from '../profiles/ingestion-queue.js';
 
 export function createMonitoringRouter(
   healthChecker: HealthChecker,
   metricsCollector: MetricsCollector,
+  getProfileQueueMetrics?: () => ProfileQueueMetrics,
 ): Router {
   const router = Router();
 
@@ -44,6 +46,17 @@ export function createMonitoringRouter(
         error: err instanceof Error ? err.message : 'internal error',
       });
     }
+  });
+
+  router.get('/profiles/queue/metrics', (_req: Request, res: Response) => {
+    if (!getProfileQueueMetrics) {
+      res.status(404).json({ error: 'profile_queue_not_configured' });
+      return;
+    }
+    res.json({
+      queue: getProfileQueueMetrics(),
+      collectedAt: new Date().toISOString(),
+    });
   });
 
   return router;

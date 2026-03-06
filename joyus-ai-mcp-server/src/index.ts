@@ -23,6 +23,7 @@ import { authRouter } from './auth/routes.js';
 import { requireBearerToken } from './auth/middleware.js';
 import { db, auditLogs } from './db/client.js';
 import { initializeContentModule } from './content/index.js';
+import { createPipelineRouter } from './pipelines/routes.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
 import { executeTool } from './tools/executor.js';
@@ -160,6 +161,9 @@ app.use('/auth', authRouter);
 
 // Task management routes (scheduled tasks)
 app.use('/tasks', taskRouter);
+
+// Automated pipeline pilot routes (auth required)
+app.use('/pipelines', requireBearerToken, createPipelineRouter());
 
 // MCP endpoint with Bearer token auth
 app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {

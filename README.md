@@ -99,7 +99,7 @@ Current status snapshot (canonical source: `status/feature-readiness.json`; gene
 | `006` | Content Infrastructure | Lifecycle: done, implementation: integrated, readiness: not_ready |
 | `007` | Org-Scale Agentic Governance | Lifecycle: planning, implementation: scaffolded, readiness: not_ready |
 | `008` | Profile Isolation and Scale | Lifecycle: execution, implementation: integrated, readiness: not_ready |
-| `009` | Automated Pipelines Framework | Lifecycle: execution, implementation: scaffolded, readiness: not_ready |
+| `009` | Automated Pipelines Framework | Lifecycle: execution, implementation: integrated, readiness: not_ready |
 | `010` | Multi-Location Operations Module | Lifecycle: planning, implementation: none, readiness: not_ready |
 | `011` | Compliance Policy Modules | Lifecycle: planning, implementation: none, readiness: not_ready |
 

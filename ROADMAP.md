@@ -18,8 +18,8 @@ Canonical readiness source: `status/feature-readiness.json` (rendered summary: `
 
 - **Content Infrastructure** — Lifecycle: done, implementation: integrated, production_readiness: not_ready (staging/data-schema validation and soak/rollback gates pending).
 - **Org-Scale Agentic Governance** — Maturity scoring, spec lifecycle enforcement, CI-integrated governance gates, remediation tracking.
-- **Profile Isolation and Scale** — Lifecycle: execution, implementation: integrated (WP01/WP02 enforcement path), production_readiness: not_ready.
-- **Automated Pipelines Framework** — Lifecycle: execution, implementation: scaffolded, production_readiness: not_ready.
+- **Profile Isolation and Scale** — Lifecycle: execution, implementation: integrated (WP01/WP02 enforcement + WP03 queue/backpressure primitives), production_readiness: not_ready.
+- **Automated Pipelines Framework** — Lifecycle: execution, implementation: integrated (core stage contract + orchestrator), production_readiness: not_ready.
 
 ## Planned
 

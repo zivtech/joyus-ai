@@ -24,6 +24,7 @@ import { DriftMonitor } from './monitoring/drift.js';
 import { StubVoiceAnalyzer, HttpVoiceAnalyzer } from './monitoring/voice-analyzer.js';
 import { createMonitoringRouter } from './monitoring/routes.js';
 import { createMediationRouter } from './mediation/router.js';
+import { ProfileIngestionQueue } from './profiles/ingestion-queue.js';
 
 export interface ContentModuleConfig {
   db: DrizzleClient;
@@ -164,7 +165,22 @@ export async function initializeContentModule(
     const syncEngine = new SyncEngine(db, connectorRegistry);
 
     // 6. Monitoring (use module-level db from db/client.js)
-    const healthChecker = new HealthChecker(providerWiring);
+    const profileIngestionQueue = new ProfileIngestionQueue(
+      async () => {
+        // Queue skeleton for WP03: actual profile-engine processing is injected in later milestones.
+      },
+      {
+        maxQueueDepth: Number(process.env.CONTENT_PROFILE_QUEUE_MAX_DEPTH ?? 500),
+        concurrency: Number(process.env.CONTENT_PROFILE_QUEUE_CONCURRENCY ?? 2),
+        maxRetries: Number(process.env.CONTENT_PROFILE_QUEUE_MAX_RETRIES ?? 2),
+        retryDelayMs: Number(process.env.CONTENT_PROFILE_QUEUE_RETRY_DELAY_MS ?? 250),
+      },
+    );
+
+    const healthChecker = new HealthChecker(
+      providerWiring,
+      () => profileIngestionQueue.getMetrics(),
+    );
     const metricsCollector = new MetricsCollector();
     const driftMonitor = new DriftMonitor(voiceAnalyzerConfig.analyzer, db);
 
@@ -177,7 +193,14 @@ export async function initializeContentModule(
     }
 
     // 8. Mount routes
-    app.use('/api/content', createMonitoringRouter(healthChecker, metricsCollector));
+    app.use(
+      '/api/content',
+      createMonitoringRouter(
+        healthChecker,
+        metricsCollector,
+        () => profileIngestionQueue.getMetrics(),
+      ),
+    );
     app.use(
       '/api/mediation',
       createMediationRouter({ db, entitlementService, generationService, entitlementCache }),

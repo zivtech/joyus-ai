@@ -18,7 +18,13 @@ export type SyncRunStatus = 'pending' | 'running' | 'completed' | 'failed';
 
 export type SyncTrigger = 'scheduled' | 'manual';
 
-export type ContentOperationType = 'sync' | 'search' | 'resolve' | 'generate' | 'mediate';
+export type ContentOperationType =
+  | 'sync'
+  | 'search'
+  | 'resolve'
+  | 'generate'
+  | 'mediate'
+  | 'profile_access_denied';
 
 // ============================================================
 // CONNECTOR CONFIGURATION TYPES

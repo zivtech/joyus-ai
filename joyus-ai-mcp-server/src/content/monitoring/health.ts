@@ -12,6 +12,7 @@
 import { sql } from 'drizzle-orm';
 
 import { db, contentSources } from '../../db/client.js';
+import type { ProfileQueueMetrics } from '../profiles/ingestion-queue.js';
 
 // ============================================================
 // TYPES
@@ -54,15 +55,19 @@ function withTimeout<T>(
 }
 
 export class HealthChecker {
-  constructor(private readonly providerWiring?: ProviderWiringStatus) {}
+  constructor(
+    private readonly providerWiring?: ProviderWiringStatus,
+    private readonly profileQueueMetricsProvider?: () => ProfileQueueMetrics,
+  ) {}
 
   async check(): Promise<HealthReport> {
-    const [database, connectors, searchProvider, entitlementResolver] =
+    const [database, connectors, searchProvider, entitlementResolver, profileQueue] =
       await Promise.all([
         withTimeout(this.checkDatabase(), { status: 'unhealthy' as HealthStatus, detail: 'timeout' }),
         withTimeout(this.checkConnectors(), { status: 'unhealthy' as HealthStatus, detail: 'timeout' }),
         withTimeout(this.checkSearchProvider(), { status: 'degraded' as HealthStatus, detail: 'timeout' }),
         withTimeout(this.checkEntitlementResolver(), { status: 'degraded' as HealthStatus, detail: 'timeout' }),
+        withTimeout(this.checkProfileQueue(), { status: 'degraded' as HealthStatus, detail: 'timeout' }),
       ]);
 
     const components: Record<string, ComponentHealth> = {
@@ -70,6 +75,7 @@ export class HealthChecker {
       connectors,
       searchProvider,
       entitlementResolver,
+      profileQueue,
     };
 
     if (this.providerWiring) {
@@ -163,6 +169,37 @@ export class HealthChecker {
     } catch (err) {
       const detail = err instanceof Error ? err.message : 'unknown error';
       return { status: 'unhealthy', detail };
+    }
+  }
+
+  private async checkProfileQueue(): Promise<ComponentHealth> {
+    if (!this.profileQueueMetricsProvider) {
+      return { status: 'healthy', detail: 'not configured' };
+    }
+
+    try {
+      const metrics = this.profileQueueMetricsProvider();
+      if (metrics.saturation >= 1) {
+        return {
+          status: 'unhealthy',
+          detail: `queue saturated depth=${metrics.depth} inFlight=${metrics.inFlight}`,
+        };
+      }
+
+      if (metrics.saturation >= 0.8 || metrics.rejected > 0) {
+        return {
+          status: 'degraded',
+          detail: `queue pressure depth=${metrics.depth} rejected=${metrics.rejected}`,
+        };
+      }
+
+      return {
+        status: 'healthy',
+        detail: `depth=${metrics.depth} inFlight=${metrics.inFlight}`,
+      };
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : 'unknown error';
+      return { status: 'degraded', detail };
     }
   }
 }
