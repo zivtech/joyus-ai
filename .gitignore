@@ -109,3 +109,7 @@ deploy/.env
 kitty-specs/**/.kittify/dossiers/
 .kittify/derived/
 .kittify/.migration-backup/
+
+# Vitest timestamp/cache artifacts
+vitest.config.ts.timestamp-*
+.vitest-cache/
