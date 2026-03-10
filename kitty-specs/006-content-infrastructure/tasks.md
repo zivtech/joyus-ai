@@ -247,3 +247,15 @@ Wire the content module into server startup and create integration tests coverin
 - WP11: done
 - WP12: done
 <!-- status-model:end -->
+
+---
+
+## Known Edge Case Gaps (Post-Completion)
+
+*Identified during cross-artifact analysis (2026-03-10). These spec edge cases (spec.md §Edge Cases) lack explicit test coverage in the completed integration tests. Recommended as regression test additions in a future pass.*
+
+1. **Schema change between syncs**: Content source schema changes mid-sync — system should detect incompatible changes and alert operator rather than silently producing incorrect results.
+2. **Permanent source unavailability**: Source becomes permanently unavailable — content state should reflect disconnection, previously indexed content remains searchable with staleness warning.
+3. **Conflicting entitlement grants**: Entitlement resolver returns conflicting access (subscription yes, CRM no) — most restrictive interpretation applied, conflict logged for operator review.
+4. **Mid-session entitlement change**: User entitlements change during active session — current session continues with resolved entitlements; updated entitlements take effect next session.
+5. **Search during mid-sync**: Source is mid-sync when search executes — results from last completed sync only; partial sync results not visible.

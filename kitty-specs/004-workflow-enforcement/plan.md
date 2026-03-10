@@ -28,7 +28,7 @@ Build the workflow enforcement layer for joyus-ai — a structured mediation sys
 | Principle | Status | Notes |
 |-----------|--------|-------|
 | Multi-Tenant from Day One | PASS | Enforcement config is per-project + per-developer. Same codebase supports different clients with different gate/skill configurations. Tier assignment is per-developer. |
-| Skills as Guardrails | PASS | This IS the skills-as-guardrails implementation. Skills auto-load based on file patterns. Layered enforcement: context injection for generation guidance + validation tools for post-generation verification. |
+| Skills as Encoded Knowledge (§2.2) | PASS | This IS the skills-as-encoded-knowledge implementation. Skills auto-load based on file patterns. Layered enforcement: context injection for generation guidance + validation tools for post-generation verification. |
 | Sandbox by Default | PASS | Enforcement is local per-developer. Audit data is local. No data crosses developer boundaries. Kill switch is session-scoped and audit-logged. |
 | Monitor Everything | PASS | Audit trail captures 100% of enforcement actions (SC-006). Four audit dimensions: gate results, skill activity, branch checks, overrides. Claude Enterprise handles general monitoring; this handles enforcement-specific audit. |
 | Feedback Loops | PASS | FR-030/031 capture user corrections when Claude's output doesn't meet skill constraints. Corrections stored locally for future aggregation into skill updates. |
