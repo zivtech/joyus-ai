@@ -397,6 +397,8 @@ Attribution accuracy (97.9%) and generation fidelity are related but distinct me
 
 ## 6. System 3: Fidelity Monitoring & Repair
 
+> **Cross-feature consumer**: Feature 006 (Content Infrastructure) consumes this system's analysis engine via a `VoiceAnalyzer` interface for background drift monitoring (006 FR-018/FR-019). This system provides the 5 drift signals, diagnosis engine, and repair framework; 006 defines scheduling and integration. See `006-content-infrastructure/spec.md` Drift Monitoring section.
+
 ### 6.1 Purpose
 
 Answer: "Is System 2 still working correctly?" — and if not, fix it.

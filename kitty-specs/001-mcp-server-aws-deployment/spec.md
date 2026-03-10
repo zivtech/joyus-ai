@@ -67,7 +67,7 @@ The deployment must include a runtime environment that supports all platform Cla
 **Excluded from server deployment:**
 - Lando, DDEV — local-only container runtimes (local-drupal-development and drupal-setup skills remain workstation-only)
 
-### FR3: Web Accessibility
+### FR3: Network Accessibility
 
 - The MCP server must be reachable over HTTPS from any device
 - Supports Claude Desktop MCP client connections

@@ -287,6 +287,21 @@ This list is not exhaustive — the skill and tenant configuration system is des
 
 ---
 
+## Appendix A: Cross-Feature Terminology
+
+*Added 2026-03-10 during cross-artifact analysis. Clarifies terms that are used differently across feature specs.*
+
+| Term | Feature | Meaning |
+|------|---------|---------|
+| **Skill** (enforcement) | 004-workflow-enforcement | A constraint document (markdown + YAML frontmatter) that defines coding standards, quality rules, or workflow guardrails. Auto-loaded by file pattern. Guides and validates AI agent behavior. |
+| **Skill** (profile) | 005-content-intelligence | An emitted profile artifact (`SKILL.md` + `markers.json` + `stylometrics.json`) that captures an author's or organization's writing style. Output of the profile engine. |
+| **Voice profile** | 006-content-infrastructure | The consumed output of 005's profile engine, applied to generated content via the `VoiceAnalyzer` interface. 006 is the consumer; 005 is the producer. |
+| **Drift monitoring** | 005 (provider), 006 (consumer) | 005 System 3 provides a comprehensive fidelity monitoring engine (5 drift signals, diagnosis, repair). 006 FR-018/FR-019 define scheduling and integration via `VoiceAnalyzer`. Not independent systems — 006 delegates analysis to 005. |
+| **Session** | 002-session-context-management | A Claude Code or Claude Desktop interaction span. State is captured per-session and survives compaction/restart. |
+| **Mediation** | 003-platform-architecture, 006 | The platform layer between users and AI agents. Enriches prompts with context, enforces skills, resolves entitlements. Not prompt rewriting alone — includes MCP tool injection, skill loading, and entitlement filtering. |
+
+---
+
 ## 9. Amendment Process
 
 This constitution can be amended by:

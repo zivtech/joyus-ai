@@ -28,11 +28,11 @@ Deploy the joyus-ai MCP server and a full suite of MCP servers to AWS EC2 with D
 | Principle | Status | Notes |
 |-----------|--------|-------|
 | 2.1 Multi-Tenant from Day One | **PASS** | Consolidated containers now; architecture notes future split per client. No single-tenant shortcuts. |
-| 2.2 Skills as Guardrails | **PASS** | Skill runtime deployed with all dependencies; skills loaded per context. |
+| 2.2 Skills as Encoded Knowledge | **PASS** | Skill runtime deployed with all dependencies; skills loaded per context. |
 | 2.3 Sandbox by Default | **PASS** | Internal-only access at launch. MCP bearer tokens revocable. SSH restricted. |
 | 2.4 Monitor Everything | **PARTIAL** | Phase 2 covers operational monitoring (health checks, log aggregation, Slack alerts). Full 4-layer monitoring (usage, content fidelity, guardrails, insights) is Phase 3 scope. |
 | 2.5 Feedback Loops | **DEFERRED** | Full feedback system is Phase 3. Phase 2 has logging for manual review. |
-| 2.6 Claude Code Alternative | **PASS** | Web chat UI provides access for users without Claude Desktop. |
+| 2.6 Mediated AI Access | **PASS** | Web chat UI provides access for users without Claude Desktop. |
 | 3.2 Data Governance | **PASS** | OAuth tokens encrypted AES-256. No client data at this phase. HTTPS everywhere. |
 | 4.1 Sharing First | **PASS** | Phase 1 (sharing) complete/in-progress. Phase 2 follows correctly. |
 | 5.1 Technology Choices | **PASS** | AWS EC2 + Docker Compose matches constitution decision. |

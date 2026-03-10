@@ -196,6 +196,8 @@ External chat interfaces (web widgets, messaging platforms, AI assistants) conne
 
 **Drift Monitoring**
 
+> **Cross-feature dependency**: Drift monitoring delegates analysis to the profile engine's fidelity monitoring service (Feature 005, System 3). This feature defines the integration interface (`VoiceAnalyzer`) and scheduling; Feature 005 provides the analysis engine with 5 drift signals, diagnosis, and repair. See `005-content-intelligence/spec.md` §6.
+
 - **FR-018**: System MUST monitor voice consistency of generated content as a background process, not as a per-generation gate.
 - **FR-019**: Drift reports MUST be available to operators showing which voice dimensions have deviated and by how much.
 

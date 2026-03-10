@@ -37,7 +37,7 @@ Build the session state management layer for joyus-ai — an invisible mediator 
 | Principle | Status | Notes |
 |-----------|--------|-------|
 | Multi-Tenant from Day One | PASS | State is per-developer, per-project. Multi-tenant isolation is inherent — each developer's state is private by default. Share action is explicit. |
-| Skills as Guardrails | N/A | Skills enforcement is Spec 2. This spec provides the state infrastructure that skills enforcement will build on. |
+| Skills as Encoded Knowledge (§2.2) | N/A | Skills enforcement is Feature 004. This spec provides the state infrastructure that skills enforcement will build on. |
 | Sandbox by Default | PASS | Per-developer storage is sandboxed. Sharing requires explicit action with a note. No data leaks between developers by default. |
 | Monitor Everything | PASS | Claude Enterprise handles observability (OpenTelemetry, audit logs, Compliance API). State files are structured and queryable via MCP tools. |
 | Feedback Loops | PASS | State snapshots capture decisions and reasoning, enabling feedback loop analysis. |
