@@ -1,13 +1,13 @@
 ---
 work_package_id: "WP01"
 title: "Schema & Foundation"
-lane: "planned"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
 phase: "Phase A - Foundation"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude-opus"
+shell_pid: "28669"
 review_status: ""
 reviewed_by: ""
 history:
@@ -311,3 +311,4 @@ This WP adds a third schema spread: `...pipelinesSchema`.
 - Verify no changes to existing `src/db/schema.ts` or `src/content/schema.ts`
 
 ## Activity Log
+- 2026-03-10T16:14:28Z – claude-opus – shell_pid=28669 – lane=doing – Started implementation via workflow command
