@@ -1,540 +1,365 @@
 ---
-work_package_id: "WP09"
-title: "Analytics & Quality Signals"
-lane: "planned"
-dependencies: ["WP08"]
-subtasks: ["T049", "T050", "T051", "T052", "T053", "T054"]
+work_package_id: WP09
+title: Analytics & Quality Signals
+lane: planned
+dependencies: []
+subtasks: [T049, T050, T051, T052, T053, T054]
+phase: Phase F - Analytics
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP09: Analytics & Quality Signals
 
-**Implementation command**: `spec-kitty implement WP09 --base WP08`
-**Target repo**: `joyus-ai`
-**Dependencies**: WP08 (Pipeline API & MCP Tools)
-**Priority**: P3 (Additive — does not block any other WP)
-
 ## Objective
 
-Build the metrics aggregation system (`MetricsAggregator`), materialized metrics refresh on execution completion, quality signal emission with configurable rejection-rate thresholds, analytics Express routes, and the `pipeline_analytics` MCP tool.
+Build execution metrics aggregation, materialized metrics refresh, quality signal emission (rejection rate monitoring), analytics API routes, and an analytics MCP tool. This delivers FR-013 (execution metrics) and the feedback loop required by Constitution §2.5.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP09 --base WP08
+```
 
 ## Context
 
-Analytics serve two purposes:
-1. **Operational visibility**: tenants can see how their pipelines are performing (success rate, p95 duration, average steps completed).
-2. **Governance signaling**: if a pipeline's review rejection rate exceeds 30% over the last 10 executions, the system emits a `quality_signal` row indicating potential issues with the pipeline configuration or the content it is processing.
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (FR-013: metrics, User Story 6)
+- **Plan**: `kitty-specs/009-automated-pipelines-framework/plan.md` (WP-19, WP-20, WP-21: Analytics)
+- **Data Model**: `kitty-specs/009-automated-pipelines-framework/data-model.md` (PipelineMetrics table)
 
-The `pipeline_metrics` table (WP01) stores pre-computed aggregate metrics per pipeline. These are refreshed asynchronously after each execution completes — not computed on the fly for every API request. The `MetricsAggregator` computes the aggregates and writes them. The `QualitySignalEmitter` reads the aggregates and emits signals when thresholds are breached.
+Pipeline analytics transform raw execution history into actionable insights. The MetricsAggregator computes per-pipeline statistics. The QualitySignalEmitter monitors rejection patterns and alerts the governance layer (Spec 007) when quality degrades.
 
-**p95 computation**: Fetch the last N `completed` execution durations for the pipeline, sort ascending, and take the value at index `floor(N * 0.95)`. N should be at least 20 for meaningful p95. If fewer than 20 executions exist, report `null` for p95.
+**Target metrics** (per data-model.md PipelineMetrics table):
+- totalExecutions, successCount, failureCount, cancelledCount
+- meanDurationMs, p95DurationMs
+- failureBreakdown (by step and error type)
+- reviewApprovalRate, reviewRejectionRate
+- meanTimeToReviewMs
+
+**Quality signal threshold**: >30% rejection rate over 10 executions emits a signal to governance.
 
 ---
 
-## Subtasks
+## Subtask T049: Implement MetricsAggregator
 
-### T049: Implement MetricsAggregator (`src/pipelines/analytics/aggregator.ts`)
-
-**Purpose**: Compute per-pipeline aggregate metrics from the `pipeline_executions` table and upsert the results into `pipeline_metrics`.
+**Purpose**: Compute per-pipeline metrics from execution history data.
 
 **Steps**:
-1. Create `src/pipelines/analytics/aggregator.ts`
-2. Define `MetricsAggregator` class with `refreshMetrics(pipelineId, tenantId)` method
-3. Compute: `totalExecutions`, `successfulExecutions`, `failedExecutions`, `avgDurationMs`, `p95DurationMs`, `reviewRejectionRate` (basis points)
-4. Upsert into `pipeline_metrics` using `onConflictDoUpdate`
+1. Create `joyus-ai-mcp-server/src/pipelines/analytics/aggregator.ts`
+2. Implement `MetricsAggregator` class:
+   ```typescript
+   export class MetricsAggregator {
+     constructor(private db: DrizzleClient) {}
 
-```typescript
-// src/pipelines/analytics/aggregator.ts
-import { eq, and, sql, count, avg } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { pipelineExecutions, pipelineMetrics, reviewDecisions } from '../schema';
+     /**
+      * Compute metrics for a single pipeline over a time window.
+      */
+     async computeMetrics(
+       pipelineId: string,
+       tenantId: string,
+       windowStart: Date,
+       windowEnd: Date,
+     ): Promise<PipelineMetricsData>;
 
-export class MetricsAggregator {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
-
-  /**
-   * Recomputes and upserts aggregate metrics for a single pipeline.
-   * Called after each execution completes.
-   */
-  async refreshMetrics(pipelineId: string, tenantId: string): Promise<void> {
-    // Fetch all completed/failed executions for this pipeline
-    const executions = await this.db
-      .select({
-        status: pipelineExecutions.status,
-        startedAt: pipelineExecutions.startedAt,
-        completedAt: pipelineExecutions.completedAt,
-      })
-      .from(pipelineExecutions)
-      .where(
-        and(
-          eq(pipelineExecutions.pipelineId, pipelineId),
-          eq(pipelineExecutions.tenantId, tenantId),
-          sql`status IN ('completed', 'failed', 'cancelled')`,
-        ),
-      );
-
-    if (executions.length === 0) return;
-
-    const total = executions.length;
-    const successful = executions.filter((e) => e.status === 'completed').length;
-    const failed = executions.filter((e) => e.status !== 'completed').length;
-
-    // Compute durations for completed executions
-    const durations = executions
-      .filter((e) => e.status === 'completed' && e.startedAt && e.completedAt)
-      .map((e) => e.completedAt!.getTime() - e.startedAt!.getTime())
-      .sort((a, b) => a - b);
-
-    const avgDurationMs = durations.length > 0
-      ? Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length)
-      : null;
-
-    const p95DurationMs = durations.length >= 20
-      ? durations[Math.floor(durations.length * 0.95)]
-      : null;
-
-    // Rejection rate from review decisions
-    const reviewRejectionRateBp = await this.computeRejectionRate(pipelineId, tenantId);
-
-    await this.db
-      .insert(pipelineMetrics)
-      .values({
-        pipelineId,
-        tenantId,
-        totalExecutions: total,
-        successfulExecutions: successful,
-        failedExecutions: failed,
-        avgDurationMs,
-        p95DurationMs,
-        reviewRejectionRate: reviewRejectionRateBp,
-        lastRefreshedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: pipelineMetrics.pipelineId,
-        set: {
-          totalExecutions: total,
-          successfulExecutions: successful,
-          failedExecutions: failed,
-          avgDurationMs,
-          p95DurationMs,
-          reviewRejectionRate: reviewRejectionRateBp,
-          lastRefreshedAt: new Date(),
-        },
-      });
-  }
-
-  private async computeRejectionRate(pipelineId: string, tenantId: string): Promise<number | null> {
-    // Look at the last 10 decided review decisions for this pipeline
-    const decisions = await this.db
-      .select({ decision: reviewDecisions.decision })
-      .from(reviewDecisions)
-      .where(
-        and(
-          eq(reviewDecisions.tenantId, tenantId),
-          sql`pipeline_id = ${pipelineId}`,  // join through execution
-          sql`decided_at IS NOT NULL`,
-        ),
-      )
-      .limit(10);
-
-    if (decisions.length === 0) return null;
-
-    const rejected = decisions.filter((d) => d.decision === 'rejected').length;
-    return Math.round((rejected / decisions.length) * 10_000);  // basis points
-  }
-}
-```
+     /**
+      * Compute metrics for all pipelines of a tenant.
+      */
+     async computeTenantMetrics(
+       tenantId: string,
+       windowStart: Date,
+       windowEnd: Date,
+     ): Promise<PipelineMetricsData[]>;
+   }
+   ```
+3. **computeMetrics(pipelineId, tenantId, windowStart, windowEnd)**:
+   - Query pipeline_executions WHERE pipelineId AND tenantId AND startedAt BETWEEN windowStart AND windowEnd
+   - Compute:
+     - `totalExecutions`: count of all executions
+     - `successCount`: count WHERE status = 'completed'
+     - `failureCount`: count WHERE status = 'failed'
+     - `cancelledCount`: count WHERE status = 'cancelled'
+     - `meanDurationMs`: average of (completedAt - startedAt) for completed executions, in milliseconds
+     - `p95DurationMs`: 95th percentile of duration for completed executions
+       - Sort durations ascending, take value at index `Math.ceil(0.95 * count) - 1`
+     - `failureBreakdown`: group failed execution_steps by (stepType, errorType), count per group
+       - Query execution_steps WHERE executionId IN (failed executions) AND status = 'failed'
+       - Extract errorDetail.type, group by stepType + errorType
+     - `reviewApprovalRate`: approved / total review decisions in this window
+     - `reviewRejectionRate`: rejected / total review decisions in this window
+     - `meanTimeToReviewMs`: average of (decidedAt - createdAt) for decided review_decisions
+4. Define `PipelineMetricsData` type matching the pipeline_metrics table shape
+5. Handle edge cases:
+   - Zero executions: all counts = 0, rates = null, durations = null
+   - Zero completed executions: mean/p95 duration = null
+   - Zero review decisions: approval/rejection rates = null
 
 **Files**:
-- `src/pipelines/analytics/aggregator.ts` (new, ~80 lines)
+- `joyus-ai-mcp-server/src/pipelines/analytics/aggregator.ts` (new, ~150 lines)
 
 **Validation**:
-- [ ] `avgDurationMs` is `null` when no completed executions exist
-- [ ] `p95DurationMs` is `null` when fewer than 20 completed executions exist
-- [ ] `p95DurationMs` correctly computes the 95th percentile from a sorted duration array
-- [ ] Rejection rate is stored as basis points (30% = 3000)
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `computeRejectionRate` needs to join `reviewDecisions` to `pipelineExecutions` to filter by `pipelineId`. The current implementation uses a raw SQL fragment — verify the join logic is correct or use Drizzle's relational query API.
-- Sorting durations in JavaScript is fine for < 10,000 executions. For very long-running pipelines, consider computing p95 in SQL using `percentile_disc(0.95) WITHIN GROUP (ORDER BY duration)` instead.
+- [ ] Correct counts for success, failure, cancelled executions
+- [ ] Mean duration computed correctly (only from completed executions)
+- [ ] p95 duration computed correctly
+- [ ] Failure breakdown groups by step type and error type
+- [ ] Review rates computed correctly
+- [ ] Edge cases (zero data) return null, not NaN or errors
 
 ---
 
-### T050: Implement materialized metrics refresh on execution completion events
+## Subtask T050: Implement Materialized Metrics Refresh
 
-**Purpose**: Trigger `MetricsAggregator.refreshMetrics` automatically after every pipeline execution completes (success or failure), so metrics stay current without a separate cron job.
+**Purpose**: Refresh the pipeline_metrics table when executions complete, keeping analytics queries fast.
 
 **Steps**:
-1. Modify `src/pipelines/engine/executor.ts` (WP04) to call `aggregator.refreshMetrics` at the end of `runExecution`
-2. `MetricsAggregator` is injected into `PipelineExecutor` at construction time (or via a completion callback)
-3. Refresh is fire-and-forget — do not await in the main execution path (metrics are non-critical)
-
-```typescript
-// Modification to PipelineExecutor.runExecution() in executor.ts:
-// After setting status to 'completed' or 'failed':
-
-    // Refresh metrics asynchronously (non-blocking)
-    void this.aggregator?.refreshMetrics(execution.pipelineId, execution.tenantId).catch((err) => {
-      console.error('[Executor] Metrics refresh failed:', err);
-    });
-```
-
-Update `PipelineExecutor` constructor to accept optional `MetricsAggregator`:
-
-```typescript
-constructor(
-  private readonly db: NodePgDatabase<Record<string, unknown>>,
-  private readonly eventBus: EventBus,
-  private readonly triggerRegistry: TriggerRegistry,
-  private readonly stepHandlerRegistry: StepHandlerRegistry,
-  private readonly options: ExecutorOptions = {},
-  private readonly aggregator?: MetricsAggregator,
-) { ... }
-```
+1. In `aggregator.ts`, add a refresh method:
+   ```typescript
+   /**
+    * Refresh materialized metrics for a pipeline after execution completion.
+    * Called by the executor when an execution transitions to a terminal state.
+    */
+   async refreshMetrics(pipelineId: string, tenantId: string): Promise<void>;
+   ```
+2. **refreshMetrics(pipelineId, tenantId)**:
+   - Define the window: last 90 days (platform default for NFR-003)
+   - Call `computeMetrics(pipelineId, tenantId, 90daysAgo, now)`
+   - Upsert into `pipeline_metrics` table:
+     - Look for existing row with same pipelineId and overlapping window
+     - If exists: UPDATE with new computed values, set refreshedAt = now()
+     - If not: INSERT new row
+   - Use a single window per pipeline (not multiple time buckets for MVP)
+3. Hook into the executor:
+   - After pipeline execution completes (any terminal status: completed, failed, cancelled):
+     - Call `aggregator.refreshMetrics(pipelineId, tenantId)`
+   - This is a fire-and-forget operation — don't block execution completion
+4. Consider: add a periodic refresh cron job for consistency (e.g., daily at midnight):
+   ```typescript
+   export function scheduleMetricsRefresh(aggregator: MetricsAggregator, db: DrizzleClient): cron.ScheduledTask;
+   ```
+   - Query all distinct pipelineIds with executions in the last 90 days
+   - Refresh metrics for each
 
 **Files**:
-- `src/pipelines/engine/executor.ts` (modified — add optional `MetricsAggregator` parameter)
-- `src/pipelines/analytics/aggregator.ts` (no change)
+- `joyus-ai-mcp-server/src/pipelines/analytics/aggregator.ts` (extend from T049, ~50 additional lines)
 
 **Validation**:
-- [ ] `PipelineExecutor` constructor accepts optional `aggregator` (no breaking change for callers that don't pass it)
-- [ ] `refreshMetrics` is called with `void` — errors are caught and logged, not propagated
-- [ ] `tsc --noEmit` passes on modified `executor.ts`
-
-**Edge Cases**:
-- If `executor.ts` is modified and WP04 unit tests break, fix the test mocks to account for the optional constructor parameter. Tests that create `PipelineExecutor` without an aggregator should continue to work.
+- [ ] Metrics are refreshed after execution completion
+- [ ] Upsert works correctly (update existing, create new)
+- [ ] Refresh is non-blocking (doesn't delay execution completion reporting)
+- [ ] 90-day window matches NFR-003 requirement
 
 ---
 
-### T051: Implement QualitySignalEmitter (`src/pipelines/analytics/quality-signals.ts`)
+## Subtask T051: Implement QualitySignalEmitter
 
-**Purpose**: Monitor rejection rates and emit `quality_signal` rows when thresholds are breached. Signals are informational — they do not block execution.
+**Purpose**: Monitor rejection patterns across pipeline executions and emit quality signals to the governance layer when thresholds are exceeded.
 
 **Steps**:
-1. Create `src/pipelines/analytics/quality-signals.ts`
-2. Define `QualitySignalEmitter` with `checkAndEmit(pipelineId, tenantId)` method
-3. Read current `pipeline_metrics.reviewRejectionRate` for the pipeline
-4. If rate > `QUALITY_SIGNAL_REJECTION_THRESHOLD_BP` (3000 = 30%), insert a `quality_signals` row
-5. Deduplication: only emit one unacknowledged signal per pipeline per signal type
+1. Create `joyus-ai-mcp-server/src/pipelines/analytics/quality-signals.ts`
+2. Implement `QualitySignalEmitter` class:
+   ```typescript
+   export class QualitySignalEmitter {
+     constructor(
+       private db: DrizzleClient,
+       private config?: QualitySignalConfig,
+     ) {}
 
-```typescript
-// src/pipelines/analytics/quality-signals.ts
-import { eq, and, isNull } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { pipelineMetrics, qualitySignals } from '../schema';
-import {
-  QUALITY_SIGNAL_REJECTION_THRESHOLD_BP,
-  QUALITY_SIGNAL_MIN_EXECUTIONS,
-} from '../types';
+     /**
+      * Check a pipeline's recent review decisions for quality degradation.
+      * Called after each review decision is recorded.
+      */
+     async checkAndEmit(pipelineId: string, tenantId: string): Promise<QualitySignal | null>;
 
-const SIGNAL_TYPE_HIGH_REJECTION = 'high_rejection_rate';
-
-export class QualitySignalEmitter {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
-
-  /**
-   * Checks the current metrics for a pipeline and emits a quality signal
-   * if the rejection rate exceeds the threshold.
-   * Deduplicates: will not emit if an unacknowledged signal already exists.
-   */
-  async checkAndEmit(pipelineId: string, tenantId: string): Promise<void> {
-    const metricsRows = await this.db
-      .select()
-      .from(pipelineMetrics)
-      .where(eq(pipelineMetrics.pipelineId, pipelineId))
-      .limit(1);
-
-    if (metricsRows.length === 0) return;
-    const metrics = metricsRows[0];
-
-    // Only check if we have enough executions for meaningful signal
-    if (metrics.totalExecutions < QUALITY_SIGNAL_MIN_EXECUTIONS) return;
-    if (metrics.reviewRejectionRate === null) return;
-    if (metrics.reviewRejectionRate <= QUALITY_SIGNAL_REJECTION_THRESHOLD_BP) return;
-
-    // Check for existing unacknowledged signal
-    const existing = await this.db
-      .select({ id: qualitySignals.id })
-      .from(qualitySignals)
-      .where(
-        and(
-          eq(qualitySignals.pipelineId, pipelineId),
-          eq(qualitySignals.signalType, SIGNAL_TYPE_HIGH_REJECTION),
-          isNull(qualitySignals.acknowledgedAt),
-        ),
-      )
-      .limit(1);
-
-    if (existing.length > 0) return;  // Already have an active signal
-
-    const rejectionPct = (metrics.reviewRejectionRate / 100).toFixed(1);
-
-    await this.db.insert(qualitySignals).values({
-      pipelineId,
-      tenantId,
-      signalType: SIGNAL_TYPE_HIGH_REJECTION,
-      severity: 'warning',
-      message: `Pipeline rejection rate is ${rejectionPct}% over the last ${QUALITY_SIGNAL_MIN_EXECUTIONS} executions (threshold: ${QUALITY_SIGNAL_REJECTION_THRESHOLD_BP / 100}%). Review pipeline configuration or step outputs.`,
-      metadata: {
-        rejectionRateBp: metrics.reviewRejectionRate,
-        totalExecutions: metrics.totalExecutions,
-        threshold: QUALITY_SIGNAL_REJECTION_THRESHOLD_BP,
-      },
-    });
-
-    console.warn(`[QualitySignal] High rejection rate signal emitted for pipeline ${pipelineId}`);
-  }
-
-  async acknowledgeSignal(signalId: string, tenantId: string): Promise<void> {
-    await this.db
-      .update(qualitySignals)
-      .set({ acknowledgedAt: new Date() })
-      .where(
-        and(
-          eq(qualitySignals.id, signalId),
-          eq(qualitySignals.tenantId, tenantId),
-        ),
-      );
-  }
-
-  async listUnacknowledged(tenantId: string) {
-    return this.db
-      .select()
-      .from(qualitySignals)
-      .where(
-        and(
-          eq(qualitySignals.tenantId, tenantId),
-          isNull(qualitySignals.acknowledgedAt),
-        ),
-      );
-  }
-}
-```
+     /**
+      * Scan all pipelines for quality signals (periodic check).
+      */
+     async scanAll(): Promise<QualitySignal[]>;
+   }
+   ```
+3. **checkAndEmit(pipelineId, tenantId)**:
+   - Load the last N review decisions for this pipeline (N = config.windowSize, default: 10)
+   - Count rejected decisions
+   - Compute rejection rate = rejected / total
+   - If rejection rate > config.threshold (default: 0.3 / 30%):
+     - Build a QualitySignal:
+       ```typescript
+       {
+         type: 'pipeline_quality_degradation',
+         pipelineId,
+         tenantId,
+         rejectionRate,
+         windowSize: N,
+         sampleRejectionReasons: [/* top 3 rejection categories */],
+         detectedAt: new Date(),
+       }
+       ```
+     - Emit the signal:
+       - For MVP: log the signal at WARN level with structured data
+       - If governance layer API is available (Spec 007): POST the signal
+       - Store the signal emission in a lightweight audit trail (optional: add to pipeline_metrics or a separate signals table)
+     - Return the signal
+   - If within threshold: return null
+4. **QualitySignalConfig**:
+   ```typescript
+   export interface QualitySignalConfig {
+     threshold: number;    // Default: 0.3 (30%)
+     windowSize: number;   // Default: 10 (last 10 decisions)
+     cooldownMs: number;   // Default: 86400000 (24h) — don't re-emit within cooldown
+   }
+   ```
+5. Cooldown: track last emission time per pipeline. Don't emit duplicate signals within the cooldown window.
+6. **scanAll()**: iterate all pipelines with recent review decisions, call checkAndEmit for each. Can be run on a cron schedule.
 
 **Files**:
-- `src/pipelines/analytics/quality-signals.ts` (new, ~75 lines)
+- `joyus-ai-mcp-server/src/pipelines/analytics/quality-signals.ts` (new, ~120 lines)
 
 **Validation**:
-- [ ] No signal emitted when `totalExecutions < QUALITY_SIGNAL_MIN_EXECUTIONS` (10)
-- [ ] No signal emitted when rejection rate ≤ 3000 bp (30%)
-- [ ] Signal emitted when rejection rate > 3000 bp and no unacknowledged signal exists
-- [ ] Duplicate signal suppressed when unacknowledged signal already exists
-- [ ] `acknowledgeSignal` correctly scopes to tenant
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `QUALITY_SIGNAL_REJECTION_THRESHOLD_BP` is imported from `types.ts` — the threshold is configurable per the spec. If per-pipeline configuration is needed in the future, add a `rejectionThresholdBp` column to the `pipelines` table.
+- [ ] Detects rejection rate exceeding threshold
+- [ ] Includes sample rejection reasons in the signal
+- [ ] Cooldown prevents duplicate signals within window
+- [ ] Within-threshold returns null (no signal)
+- [ ] Handles pipelines with fewer than windowSize decisions
 
 ---
 
-### T052: Add analytics Express routes and MCP tool (`pipeline_analytics`)
+## Subtask T052: Add Analytics Express Routes and MCP Tool
 
-**Purpose**: Expose pipeline metrics and quality signals through REST API and update the `pipeline_analytics` MCP tool stub from WP08 to use the real `MetricsAggregator`.
+**Purpose**: Expose analytics data via REST API and MCP tool.
 
 **Steps**:
-1. Add analytics routes to `src/pipelines/routes.ts` (or create `src/pipelines/analytics-routes.ts`)
-2. GET `/pipelines/:id/metrics` — returns current `pipeline_metrics` row for the pipeline
-3. GET `/pipelines/:id/quality-signals` — returns unacknowledged `quality_signals` for the pipeline
-4. POST `/quality-signals/:signalId/acknowledge` — acknowledge a signal
-5. Update `pipeline_analytics` MCP tool in `src/tools/pipeline-tools.ts` to return rich metrics
-
-```typescript
-// Addition to routes.ts or new analytics-routes.ts:
-
-  // GET /pipelines/:id/metrics
-  router.get('/:id/metrics', async (req, res) => {
-    const rows = await db
-      .select()
-      .from(pipelineMetrics)
-      .where(
-        and(
-          eq(pipelineMetrics.pipelineId, req.params.id),
-          eq(pipelineMetrics.tenantId, req.tenantId),
-        ),
-      )
-      .limit(1);
-
-    if (rows.length === 0) {
-      return res.json({
-        pipelineId: req.params.id,
-        totalExecutions: 0,
-        message: 'No metrics available yet',
-      });
-    }
-
-    const m = rows[0];
-    return res.json({
-      pipelineId: m.pipelineId,
-      totalExecutions: m.totalExecutions,
-      successfulExecutions: m.successfulExecutions,
-      failedExecutions: m.failedExecutions,
-      successRate: m.totalExecutions > 0
-        ? ((m.successfulExecutions / m.totalExecutions) * 100).toFixed(1) + '%'
-        : null,
-      avgDurationMs: m.avgDurationMs,
-      p95DurationMs: m.p95DurationMs,
-      reviewRejectionRatePct: m.reviewRejectionRate !== null
-        ? (m.reviewRejectionRate / 100).toFixed(1) + '%'
-        : null,
-      lastRefreshedAt: m.lastRefreshedAt,
-    });
-  });
-
-  // GET /pipelines/:id/quality-signals
-  router.get('/:id/quality-signals', async (req, res) => {
-    const signals = await qualitySignalEmitter.listUnacknowledged(req.tenantId);
-    const filtered = signals.filter((s) => s.pipelineId === req.params.id);
-    return res.json(filtered);
-  });
-
-  // POST /quality-signals/:signalId/acknowledge
-  router.post('/quality-signals/:signalId/acknowledge', async (req, res) => {
-    await qualitySignalEmitter.acknowledgeSignal(req.params.signalId, req.tenantId);
-    return res.json({ acknowledged: true });
-  });
-```
+1. In `joyus-ai-mcp-server/src/pipelines/routes.ts`, add analytics endpoints:
+2. **GET /api/pipelines/:id/analytics** — Per-pipeline analytics:
+   - Query params: `windowDays` (optional, default 90, max 365)
+   - Verify tenant ownership
+   - Return pipeline_metrics data for the specified window
+   - If no metrics exist yet: compute on-the-fly via aggregator
+3. **GET /api/analytics/pipelines** — Tenant-wide analytics:
+   - Query params: `windowDays` (optional, default 90)
+   - Return metrics for all tenant's pipelines
+   - Include summary: total executions, overall success rate, most failed pipeline, best pipeline
+4. In `joyus-ai-mcp-server/src/tools/pipeline-tools.ts`, add analytics tool:
+5. **pipeline_analytics** MCP tool:
+   - Input: optional pipelineId (if omitted, returns tenant-wide), optional windowDays
+   - Handler: queries metrics, formats for Claude readability
+   - Output should include natural language summary: "Pipeline X has 95% success rate over 90 days. 3 failures, all in the profile_generation step due to timeouts."
 
 **Files**:
-- `src/pipelines/routes.ts` (modified — add analytics routes)
+- `joyus-ai-mcp-server/src/pipelines/routes.ts` (extend, ~60 additional lines)
+- `joyus-ai-mcp-server/src/tools/pipeline-tools.ts` (extend, ~40 additional lines)
 
 **Validation**:
-- [ ] GET `/pipelines/:id/metrics` returns formatted metrics object (not raw DB row)
-- [ ] GET `/pipelines/:id/metrics` returns `{ totalExecutions: 0 }` for pipelines with no history
-- [ ] POST `/quality-signals/:signalId/acknowledge` scopes to tenant (wrong tenant → no-op, not error)
-- [ ] `tsc --noEmit` passes
+- [ ] Per-pipeline analytics returns correct metrics
+- [ ] Tenant-wide analytics aggregates across pipelines
+- [ ] Query performance is sub-second for 90-day window (NFR-003)
+- [ ] MCP tool produces readable output
+- [ ] Tenant isolation enforced
 
 ---
 
-### T053: Create analytics barrel export (`src/pipelines/analytics/index.ts`)
+## Subtask T053: Create Analytics Barrel Export
 
-**Purpose**: Single import point for the analytics module.
-
-```typescript
-// src/pipelines/analytics/index.ts
-export { MetricsAggregator } from './aggregator';
-export { QualitySignalEmitter } from './quality-signals';
-```
-
-**Files**:
-- `src/pipelines/analytics/index.ts` (new, ~5 lines)
-
-**Validation**:
-- [ ] `import { MetricsAggregator, QualitySignalEmitter } from '../analytics'` resolves
-- [ ] `tsc --noEmit` passes
-
----
-
-### T054: Unit tests for aggregator and quality signals (`tests/pipelines/analytics/`)
-
-**Purpose**: Verify p95 computation, rejection rate calculation, signal deduplication, and threshold enforcement without a real database.
+**Purpose**: Provide module exports for the analytics subsystem.
 
 **Steps**:
-1. Create `tests/pipelines/analytics/aggregator.test.ts` — pure logic tests (p95, avg, basis points)
-2. Create `tests/pipelines/analytics/quality-signals.test.ts` — threshold and dedup logic
-
-```typescript
-// tests/pipelines/analytics/aggregator.test.ts
-import { describe, it, expect } from 'vitest';
-
-// Test the p95 computation as a pure function (extracted for testability)
-function computeP95(durations: number[]): number | null {
-  if (durations.length < 20) return null;
-  const sorted = [...durations].sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length * 0.95)];
-}
-
-describe('p95 computation', () => {
-  it('returns null when fewer than 20 data points', () => {
-    expect(computeP95([100, 200, 300])).toBeNull();
-  });
-
-  it('returns null for exactly 19 data points', () => {
-    expect(computeP95(Array.from({ length: 19 }, (_, i) => i * 100))).toBeNull();
-  });
-
-  it('computes correctly for 20 data points', () => {
-    const durations = Array.from({ length: 20 }, (_, i) => (i + 1) * 100);
-    // Sorted: 100, 200, ..., 2000. index floor(20 * 0.95) = floor(19) = 19 → 2000
-    expect(computeP95(durations)).toBe(2000);
-  });
-
-  it('is not affected by input order', () => {
-    const sorted = Array.from({ length: 20 }, (_, i) => (i + 1) * 100);
-    const shuffled = [...sorted].reverse();
-    expect(computeP95(sorted)).toBe(computeP95(shuffled));
-  });
-});
-
-describe('rejection rate basis points', () => {
-  it('30% rejection = 3000 basis points', () => {
-    const rejected = 3;
-    const total = 10;
-    const basisPoints = Math.round((rejected / total) * 10_000);
-    expect(basisPoints).toBe(3000);
-  });
-
-  it('0% rejection = 0 basis points', () => {
-    expect(Math.round((0 / 10) * 10_000)).toBe(0);
-  });
-});
-```
-
-```typescript
-// tests/pipelines/analytics/quality-signals.test.ts
-import { describe, it, expect } from 'vitest';
-import {
-  QUALITY_SIGNAL_REJECTION_THRESHOLD_BP,
-  QUALITY_SIGNAL_MIN_EXECUTIONS,
-} from '../../../src/pipelines/types';
-
-describe('quality signal constants', () => {
-  it('threshold is 30% (3000 basis points)', () => {
-    expect(QUALITY_SIGNAL_REJECTION_THRESHOLD_BP).toBe(3000);
-  });
-
-  it('minimum executions is 10', () => {
-    expect(QUALITY_SIGNAL_MIN_EXECUTIONS).toBe(10);
-  });
-});
-```
+1. Create `joyus-ai-mcp-server/src/pipelines/analytics/index.ts`
+2. Re-export all types and classes:
+   ```typescript
+   export { MetricsAggregator } from './aggregator.js';
+   export type { PipelineMetricsData } from './aggregator.js';
+   export { QualitySignalEmitter } from './quality-signals.js';
+   export type { QualitySignal, QualitySignalConfig } from './quality-signals.js';
+   ```
+3. Update `src/pipelines/index.ts` to export from analytics module
+4. Wire MetricsAggregator and QualitySignalEmitter into the module initialization (T046):
+   - Create instances in `initializePipelineModule`
+   - Hook `refreshMetrics` call into the executor's execution completion path
+   - Hook `checkAndEmit` call into the DecisionRecorder's post-decision path
+   - Optionally schedule periodic `scanAll` cron job
 
 **Files**:
-- `tests/pipelines/analytics/aggregator.test.ts` (new, ~45 lines)
-- `tests/pipelines/analytics/quality-signals.test.ts` (new, ~20 lines)
+- `joyus-ai-mcp-server/src/pipelines/analytics/index.ts` (new, ~10 lines)
+- `joyus-ai-mcp-server/src/pipelines/index.ts` (modify — add analytics export and initialization wiring)
 
 **Validation**:
-- [ ] `npm test tests/pipelines/analytics/` exits 0
-- [ ] p95 tests: null for < 20 points, correct index for exactly 20 points
-- [ ] Basis points conversion: 30% = 3000, 0% = 0
-- [ ] Constant values verified
+- [ ] All analytics exports accessible
+- [ ] Metrics refresh is hooked into executor
+- [ ] Quality signal check is hooked into decision recording
+- [ ] `npm run typecheck` passes
 
-**Edge Cases**:
-- The p95 function in the test is a pure reimplementation for testability. The actual `MetricsAggregator` uses inline code. If the logic diverges, the tests won't catch it. Consider extracting `computeP95` as a named export from `aggregator.ts` for direct testing.
+---
+
+## Subtask T054: Unit Tests for Aggregator and Quality Signals
+
+**Purpose**: Verify metrics computation accuracy and quality signal detection.
+
+**Steps**:
+1. Create `joyus-ai-mcp-server/tests/pipelines/analytics/aggregator.test.ts`
+2. Aggregator test cases:
+   - **All successful**: 10 executions all completed, success rate = 100%, failure count = 0
+   - **Mixed outcomes**: 15 success, 3 failed, 2 cancelled = 75% success rate, 15% failure rate
+   - **Duration computation**: 5 completed executions with known durations, verify mean and p95
+   - **p95 edge case**: 1 execution, p95 = its duration. 2 executions, p95 = the longer one.
+   - **Failure breakdown**: 3 failures in profile_generation (timeout), 1 in content_generation (auth), verify grouped correctly
+   - **Review rates**: 8 approved, 2 rejected = 80% approval, 20% rejection
+   - **Mean time to review**: 3 decisions with known timings, verify average
+   - **Empty window**: No executions in window, all counts = 0, rates = null
+   - **Refresh upsert**: Refresh twice for same pipeline, verify single row updated (not duplicated)
+3. Create `joyus-ai-mcp-server/tests/pipelines/analytics/quality-signals.test.ts`
+4. Quality signal test cases:
+   - **Below threshold**: 7 approved, 3 rejected (30%), threshold 30% — NO signal (not strictly greater)
+   - **Above threshold**: 6 approved, 4 rejected (40%), threshold 30% — signal emitted
+   - **Exactly at threshold**: Confirm boundary behavior (>30% means 31%+ triggers)
+   - **Cooldown prevents re-emit**: Signal emitted, check again within 24h — no new signal
+   - **Cooldown expired re-emit**: Signal emitted, check again after 24h — new signal if still above threshold
+   - **Small sample**: Only 3 decisions (less than windowSize of 10) — include all 3 in computation
+   - **Sample rejection reasons**: Verify top rejection categories are included in signal
+   - **No review decisions**: Pipeline with no review gates — checkAndEmit returns null
+
+**Files**:
+- `joyus-ai-mcp-server/tests/pipelines/analytics/aggregator.test.ts` (new, ~200 lines)
+- `joyus-ai-mcp-server/tests/pipelines/analytics/quality-signals.test.ts` (new, ~150 lines)
+
+**Validation**:
+- [ ] All tests pass via `npm run test`
+- [ ] p95 computation verified with known distributions
+- [ ] Quality signal threshold boundary verified
+- [ ] Cooldown behavior verified
 
 ---
 
 ## Definition of Done
 
-- [ ] `src/pipelines/analytics/aggregator.ts` — `MetricsAggregator` with `refreshMetrics`
-- [ ] `src/pipelines/engine/executor.ts` — modified to call `aggregator.refreshMetrics` on completion
-- [ ] `src/pipelines/analytics/quality-signals.ts` — `QualitySignalEmitter` with emit, dedup, acknowledge
-- [ ] `src/pipelines/routes.ts` — analytics routes: metrics, quality signals, acknowledge
-- [ ] `src/pipelines/analytics/index.ts` — barrel export
-- [ ] Tests passing: p95 computation (null for <20, correct index), basis points conversion, constant values
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm test` exits 0 with no regressions
+- [ ] MetricsAggregator computes all required metrics: counts, duration stats, failure breakdown, review rates
+- [ ] Metrics are materialized into pipeline_metrics table and refreshed on execution completion
+- [ ] QualitySignalEmitter detects rejection rate >30% and emits structured quality signals
+- [ ] Quality signal cooldown prevents duplicate emissions
+- [ ] Analytics routes return per-pipeline and tenant-wide metrics
+- [ ] pipeline_analytics MCP tool produces readable output
+- [ ] Metrics refresh hooked into executor, quality check hooked into decision recorder
+- [ ] Unit tests verify aggregation accuracy and signal thresholds
+- [ ] `npm run validate` passes with zero errors
 
 ## Risks
 
-- **Metrics staleness**: Metrics are computed after each execution but are not real-time. If 100 executions complete simultaneously, only the last refresh persists. For high-throughput pipelines, debounce the refresh (e.g., at most once per 30s per pipeline) or use a dedicated background aggregation job.
-- **Rejection rate join**: `computeRejectionRate` in `MetricsAggregator` joins `reviewDecisions` to `pipelineExecutions` via `pipelineId`. The current implementation uses a raw SQL fragment — verify the join produces the correct tenant-scoped results, especially when two tenants have executions with the same pipeline structure.
-- **p95 in application code**: Sorting all execution durations in JavaScript works for pipelines with < 10,000 executions. For very active pipelines, computing p95 in PostgreSQL using `percentile_disc` is more efficient. Track this as a future optimization.
+- **p95 computation with large datasets**: Sorting all execution durations for p95 may be slow with many executions. Mitigation: the 90-day window and per-pipeline scoping limits the dataset. For production scale, consider approximate quantile algorithms (e.g., t-digest).
+- **Quality signal noise**: A pipeline with very few executions (e.g., 3 in 10 days) may have a high rejection rate due to small sample size. Mitigation: include `windowSize` in the signal so consumers can weight it appropriately.
+- **Governance layer integration**: The Spec 007 governance API may not be available. Mitigation: for MVP, log the signal at WARN level. The integration point is a single function call that can be wired later.
 
 ## Reviewer Guidance
 
-- Verify `refreshMetrics` uses `onConflictDoUpdate` on `pipeline_metrics.pipelineId` — if the upsert target is wrong, every refresh will insert a new row instead of updating.
-- Check that `QualitySignalEmitter.checkAndEmit` is called from `executor.ts` after `refreshMetrics`, not before — the signal check reads `pipeline_metrics`, which must be current.
-- Confirm the analytics routes add the `tenantId` filter to `pipelineMetrics` queries — the table has a `tenant_id` column for exactly this purpose.
+- Verify p95 computation: sort ascending, take index `Math.ceil(0.95 * n) - 1`
+- Check that mean duration only includes completed executions (not failed/cancelled)
+- Verify rejection rate threshold is strictly greater than (>30%, not >=30%)
+- Check cooldown tracks per-pipeline, not globally
+- Verify refreshMetrics is fire-and-forget (non-blocking)
+- Confirm analytics queries include tenantId (Leash pattern)
+- Check that the MCP tool output is human-readable (not just raw JSON)
+
+## Activity Log

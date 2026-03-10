@@ -1,798 +1,345 @@
 ---
-work_package_id: "WP10"
-title: "Integration & Validation"
-lane: "planned"
-dependencies: ["WP01", "WP02", "WP03", "WP04", "WP05", "WP06", "WP07", "WP08", "WP09"]
-subtasks: ["T055", "T056", "T057", "T058", "T059", "T060"]
+work_package_id: WP10
+title: Integration & Validation
+lane: planned
+dependencies: []
+subtasks: [T055, T056, T057, T058, T059, T060]
+phase: Phase G - Integration
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP10: Integration & Validation
 
-**Implementation command**: `spec-kitty implement WP10 --base WP01,WP02,WP03,WP04,WP05,WP06,WP07,WP08,WP09`
-**Target repo**: `joyus-ai`
-**Dependencies**: All previous WPs (WP01–WP09)
-**Priority**: P2 (Final gate — confirms the whole feature works end-to-end)
-
 ## Objective
 
-Write end-to-end integration tests that exercise the complete pipeline execution lifecycle, the review gate pause/resume/reject flow, scheduled execution with overlap detection, analytics accuracy, and tenant isolation. Run a full validation sweep (`npm run validate`) to confirm zero regressions.
+Create end-to-end integration tests that verify the complete pipeline framework works as a system, plus a full validation sweep confirming zero regressions. These tests exercise the entire flow from event publication through pipeline execution to analytics, crossing all module boundaries built in WP01-WP09.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP10 --base WP09
+```
 
 ## Context
 
-Unit tests in WP02–WP09 verify individual components in isolation. This WP verifies that the components work together correctly. Integration tests require:
-- A real PostgreSQL test database (the project's existing test DB setup from `tests/setup.ts`)
-- Mock platform service clients (null clients from WP05 are sufficient — integration tests do not need real profile/content services)
-- Clock manipulation for schedule tests (`vi.useFakeTimers()`)
-- DB fixtures (helper functions to seed test pipelines, executions, and decisions)
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (all acceptance scenarios, exit criteria)
+- **Plan**: `kitty-specs/009-automated-pipelines-framework/plan.md` (WP-10, WP-18, WP-22: all test work items)
+- **Exit Criteria**: plan.md Exit Criteria table — every criterion must have a corresponding test
 
-T055–T059 are independent test suites and can be written in parallel. T060 is the final sweep and must run after all other tasks are complete.
+Integration tests are the final verification that the pipeline framework delivers on its spec promises. They test module interactions, not individual units (those were tested in each WP). Integration tests use mock platform services (profile engine, content infrastructure) but real pipeline framework code.
 
-**Test database assumptions**: The test database runs `CREATE SCHEMA IF NOT EXISTS pipelines` and the Drizzle migration before tests. If the project uses a migration runner in `tests/setup.ts`, verify that the pipelines migration (WP01, T006) is included.
+**Test infrastructure**:
+- Vitest 1.x for test runner
+- Database: use in-memory SQLite or mock Drizzle client for fast tests, OR use a test PostgreSQL database for true integration tests (depending on CI environment)
+- Mock platform services: mock implementations of ProfileEngineClient, ContentIntelClient, ContentInfraClient, NotificationService
+- Clock manipulation: Vitest's `vi.useFakeTimers()` for schedule and timeout tests
 
 ---
 
-## Subtasks
+## Subtask T055: End-to-End Pipeline Execution Test
 
-### T055: Integration test — end-to-end pipeline execution
-
-**Purpose**: Verify the complete happy path: event published → trigger matched → execution created → steps run in sequence → execution marked completed → metrics refreshed.
+**Purpose**: Verify the complete execution path from corpus-change trigger through step execution to completion.
 
 **Steps**:
-1. Create `tests/pipelines/integration/e2e-execution.test.ts`
-2. Set up test fixtures: create a tenant, create a manual-trigger pipeline with 2 steps (source_query → notification)
-3. Publish a `manual` event via `InMemoryEventBus`
-4. Call `executor.handleEvent` directly (bypassing the LISTEN connection for test simplicity)
-5. Wait for execution to complete (poll `pipeline_executions` table)
-6. Assert: execution `status = 'completed'`, both step executions exist with `status = 'completed'`, `pipeline_metrics` row created
-
-```typescript
-// tests/pipelines/integration/e2e-execution.test.ts
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { db } from '../../../src/db/client';  // test DB
-import { InMemoryEventBus } from '../../../src/pipelines/event-bus';
-import { defaultTriggerRegistry } from '../../../src/pipelines/triggers/registry';
-import { createDefaultStepHandlerRegistry } from '../../../src/pipelines/steps/registry';
-import { PipelineExecutor } from '../../../src/pipelines/engine/executor';
-import { MetricsAggregator } from '../../../src/pipelines/analytics/aggregator';
-import { pipelines, pipelineExecutions, stepExecutions, pipelineMetrics } from '../../../src/pipelines/schema';
-import { eq } from 'drizzle-orm';
-import { createTestTenant, cleanupTestData } from '../helpers';  // test helpers
-
-describe('E2E: Pipeline Execution', () => {
-  let tenantId: string;
-  let eventBus: InMemoryEventBus;
-  let executor: PipelineExecutor;
-  let aggregator: MetricsAggregator;
-
-  beforeAll(async () => {
-    tenantId = await createTestTenant(db);
-    eventBus = new InMemoryEventBus();
-    const stepHandlerRegistry = createDefaultStepHandlerRegistry();  // null clients
-    aggregator = new MetricsAggregator(db);
-    executor = new PipelineExecutor(db, eventBus, defaultTriggerRegistry, stepHandlerRegistry, {}, aggregator);
-    await executor.start();
-  });
-
-  afterAll(async () => {
-    await executor.stop();
-    await cleanupTestData(db, tenantId);
-  });
-
-  it('manual trigger creates and completes a 2-step execution', async () => {
-    // Create pipeline
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'E2E Test Pipeline',
-      triggerType: 'manual',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [
-        { stepType: 'source_query', name: 'Query', config: { query: 'test' }, requiresReview: false },
-        { stepType: 'notification', name: 'Notify', config: { channel: 'slack', recipient: '#test', message: 'done' }, requiresReview: false },
-      ],
-      concurrencyPolicy: 'skip',
-      retryPolicy: {},
-      status: 'active',
-    }).returning();
-
-    // Publish manual trigger event
-    await eventBus.publish(tenantId, 'manual', { pipelineId: pipeline.id });
-
-    // Wait for completion (up to 5s)
-    let execution = null;
-    for (let i = 0; i < 50; i++) {
-      const rows = await db.select().from(pipelineExecutions)
-        .where(eq(pipelineExecutions.pipelineId, pipeline.id));
-      if (rows[0]?.status === 'completed' || rows[0]?.status === 'failed') {
-        execution = rows[0];
-        break;
-      }
-      await new Promise(r => setTimeout(r, 100));
-    }
-
-    expect(execution).not.toBeNull();
-    expect(execution!.status).toBe('completed');
-
-    // Verify step executions
-    const steps = await db.select().from(stepExecutions)
-      .where(eq(stepExecutions.executionId, execution!.id));
-    expect(steps).toHaveLength(2);
-    expect(steps.every(s => s.status === 'completed')).toBe(true);
-
-    // Verify metrics refreshed
-    const metrics = await db.select().from(pipelineMetrics)
-      .where(eq(pipelineMetrics.pipelineId, pipeline.id));
-    expect(metrics).toHaveLength(1);
-    expect(metrics[0].totalExecutions).toBe(1);
-    expect(metrics[0].successfulExecutions).toBe(1);
-  });
-
-  it('failed step marks execution as failed', async () => {
-    // Create pipeline with an invalid step config that will cause NonTransientError
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'Failing Pipeline',
-      triggerType: 'manual',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [
-        // notification step missing required 'channel' — will throw NonTransientError
-        { stepType: 'notification', name: 'Bad Notify', config: {}, requiresReview: false },
-      ],
-      concurrencyPolicy: 'skip',
-      retryPolicy: { maxAttempts: 1, initialDelayMs: 0, backoffMultiplier: 1, maxDelayMs: 0 },
-      status: 'active',
-    }).returning();
-
-    await eventBus.publish(tenantId, 'manual', { pipelineId: pipeline.id });
-
-    let execution = null;
-    for (let i = 0; i < 50; i++) {
-      const rows = await db.select().from(pipelineExecutions)
-        .where(eq(pipelineExecutions.pipelineId, pipeline.id));
-      if (rows[0]?.status === 'failed' || rows[0]?.status === 'completed') {
-        execution = rows[0];
-        break;
-      }
-      await new Promise(r => setTimeout(r, 100));
-    }
-
-    expect(execution?.status).toBe('failed');
-    expect(execution?.errorMessage).toContain('notification step requires config.channel');
-  });
-});
-```
+1. Create `joyus-ai-mcp-server/tests/pipelines/integration/e2e-execution.test.ts`
+2. Test scenario — **User Story 1**: Event-Triggered Pipeline Execution
+   - Setup:
+     - Create a pipeline for tenant "test-tenant-a" with trigger type `corpus_change`
+     - Pipeline has 3 steps: source_query -> profile_generation -> notification
+     - Mock step handlers to return success with test output data
+   - Execute:
+     - Publish a corpus_change event for tenant "test-tenant-a" with payload `{ sourceIds: ['source-1'], changeType: 'added' }`
+     - Wait for executor to process the event (poll cycle)
+   - Verify:
+     - trigger_event row created with status `processed`
+     - pipeline_execution row created with status `completed`, completedAt set
+     - 3 execution_step rows, all with status `completed`, correct position order
+     - Each step's outputData matches mock handler output
+     - Pipeline's stepsCompleted = 3, stepsTotal = 3
+     - trigger_event.pipelinesTriggered includes the pipeline ID
+3. Test scenario — **No-op execution**:
+   - Publish corpus_change event with empty payload (no affected authors)
+   - First step (source_query) returns no-op
+   - Pipeline still completes (with a no-op execution) — it does NOT fail
+4. Test scenario — **Multiple pipelines triggered**:
+   - Create 2 pipelines for same tenant, both triggered by corpus_change
+   - Publish one event
+   - Both pipelines execute independently
+5. Test scenario — **User Story 2**: Failure and recovery
+   - Create a pipeline with 5 steps
+   - Mock step 3 to fail with a transient error, then succeed on retry
+   - Verify: step 3 has attempts = 2, pipeline completes successfully
+   - Create another pipeline where step 3 exhausts retries
+   - Verify: execution status = paused_on_failure, steps 4-5 not executed
 
 **Files**:
-- `tests/pipelines/integration/e2e-execution.test.ts` (new, ~90 lines)
-- `tests/pipelines/helpers.ts` (new, ~30 lines — `createTestTenant`, `cleanupTestData`)
+- `joyus-ai-mcp-server/tests/pipelines/integration/e2e-execution.test.ts` (new, ~300 lines)
 
 **Validation**:
-- [ ] Happy path test passes: execution `completed`, 2 step executions `completed`, metrics row created
-- [ ] Failure path test passes: execution `failed`, `errorMessage` contains the NonTransientError message
-- [ ] No test data leaks between tests (each test creates a new pipeline, `cleanupTestData` removes all)
-
-**Edge Cases**:
-- `InMemoryEventBus` dispatches synchronously in-process. The executor's `handleEvent` is called immediately when the event is published. Wait logic in the test is a safety net for async step execution.
-- `cleanupTestData` must use `CASCADE` or delete in foreign key order: `step_executions` → `pipeline_executions` → `quality_signals` → `pipeline_metrics` → `pipelines`.
+- [ ] Full lifecycle: event -> trigger -> execution -> step completion
+- [ ] No-op handling: step returns no-op, pipeline completes
+- [ ] Multiple pipelines: both execute from one event
+- [ ] Retry: transient failure retried and succeeds
+- [ ] Exhausted retries: pipeline pauses on failure
 
 ---
 
-### T056: Integration test — review gate flow
+## Subtask T056: Review Gate Flow Test
 
-**Purpose**: Verify the full review gate cycle: execution pauses at gate → reviewer approves → execution resumes from next step. Also test rejection and partial approval.
+**Purpose**: Verify the complete review gate lifecycle: pause, decide, resume, including partial approval and all-rejected scenarios.
 
 **Steps**:
-1. Create `tests/pipelines/integration/review-gate.test.ts`
-2. Create a pipeline with a step that has `requiresReview: true`
-3. Start execution, verify it pauses at `waiting_review`
-4. Submit approval via `DecisionService.recordDecision`
-5. Verify execution resumes and completes
-6. Test rejection: execution moves to `cancelled`
-7. Test partial: treated as approved (execution continues)
-
-```typescript
-// tests/pipelines/integration/review-gate.test.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { db } from '../../../src/db/client';
-import { InMemoryEventBus } from '../../../src/pipelines/event-bus';
-import { defaultTriggerRegistry } from '../../../src/pipelines/triggers/registry';
-import { createDefaultStepHandlerRegistry } from '../../../src/pipelines/steps/registry';
-import { PipelineExecutor } from '../../../src/pipelines/engine/executor';
-import { ReviewGate } from '../../../src/pipelines/review/gate';
-import { DecisionService } from '../../../src/pipelines/review/decision';
-import { pipelines, pipelineExecutions, reviewDecisions } from '../../../src/pipelines/schema';
-import { eq } from 'drizzle-orm';
-import { createTestTenant, cleanupTestData, waitForStatus } from '../helpers';
-
-describe('Review Gate Flow', () => {
-  let tenantId: string;
-  let eventBus: InMemoryEventBus;
-  let executor: PipelineExecutor;
-  let reviewGate: ReviewGate;
-  let decisionService: DecisionService;
-
-  beforeAll(async () => {
-    tenantId = await createTestTenant(db);
-    eventBus = new InMemoryEventBus();
-    executor = new PipelineExecutor(db, eventBus, defaultTriggerRegistry, createDefaultStepHandlerRegistry());
-    await executor.start();
-    reviewGate = new ReviewGate(db);
-    decisionService = new DecisionService(db);
-  });
-
-  afterAll(async () => {
-    await executor.stop();
-    await cleanupTestData(db, tenantId);
-  });
-
-  it('execution pauses at review gate and resumes after approval', async () => {
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'Review Gate Pipeline',
-      triggerType: 'manual',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [
-        { stepType: 'source_query', name: 'Query', config: { query: 'test' }, requiresReview: false },
-        { stepType: 'notification', name: 'Gate Step', config: { channel: 'slack', recipient: '#review', message: 'Please review' }, requiresReview: true, reviewTimeoutHours: 1 },
-        { stepType: 'notification', name: 'Post-gate', config: { channel: 'slack', recipient: '#done', message: 'Approved!' }, requiresReview: false },
-      ],
-      concurrencyPolicy: 'allow',  // allow in test to avoid skip blocking
-      retryPolicy: {},
-      status: 'active',
-    }).returning();
-
-    await eventBus.publish(tenantId, 'manual', { pipelineId: pipeline.id });
-
-    // Wait for waiting_review
-    const pausedExecution = await waitForStatus(db, pipeline.id, 'waiting_review', 5000);
-    expect(pausedExecution).not.toBeNull();
-    expect(pausedExecution!.status).toBe('waiting_review');
-
-    // Find the pending review decision
-    const decisions = await db.select().from(reviewDecisions)
-      .where(eq(reviewDecisions.executionId, pausedExecution!.id));
-    expect(decisions).toHaveLength(1);
-    expect(decisions[0].decision).toBeNull();  // not yet decided
-
-    // Submit approval
-    await decisionService.recordDecision(decisions[0].id, 'reviewer-user-id', { decision: 'approved' }, executor);
-
-    // Wait for completion
-    const completedExecution = await waitForStatus(db, pipeline.id, 'completed', 5000);
-    expect(completedExecution!.status).toBe('completed');
-  });
-
-  it('execution is cancelled on rejection', async () => {
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'Rejection Pipeline',
-      triggerType: 'manual',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [
-        { stepType: 'notification', name: 'Gate', config: { channel: 'slack', recipient: '#test', message: 'review me' }, requiresReview: true, reviewTimeoutHours: 1 },
-      ],
-      concurrencyPolicy: 'allow',
-      retryPolicy: {},
-      status: 'active',
-    }).returning();
-
-    await eventBus.publish(tenantId, 'manual', { pipelineId: pipeline.id });
-    const pausedExecution = await waitForStatus(db, pipeline.id, 'waiting_review', 5000);
-
-    const decisions = await db.select().from(reviewDecisions)
-      .where(eq(reviewDecisions.executionId, pausedExecution!.id));
-
-    await decisionService.recordDecision(decisions[0].id, 'reviewer-id', {
-      decision: 'rejected',
-      feedback: 'Output quality too low',
-    }, executor);
-
-    const finalExecution = await waitForStatus(db, pipeline.id, 'cancelled', 5000);
-    expect(finalExecution!.status).toBe('cancelled');
-    expect(finalExecution!.errorMessage).toContain('Output quality too low');
-  });
-});
-```
+1. Create `joyus-ai-mcp-server/tests/pipelines/integration/review-gate-flow.test.ts`
+2. Test scenario — **User Story 3**: Full approval flow
+   - Setup: pipeline with steps: content_generation -> review_gate -> notification
+   - Mock content_generation to produce 2 artifacts
+   - Execute pipeline, verify:
+     - Execution pauses at review_gate (status = paused_at_gate)
+     - 2 ReviewDecision rows created (status = pending)
+   - Submit approval for both artifacts
+   - Verify:
+     - Both decisions status = approved
+     - Execution resumes (status = running, then completed)
+     - Notification step executes with both approved artifacts
+3. Test scenario — **Partial approval**:
+   - Same setup, 3 artifacts
+   - Approve 2, reject 1 with feedback: `{ reason: "Off-brand tone", category: "tone" }`
+   - Verify:
+     - Pipeline resumes
+     - Notification step receives only 2 approved artifacts
+     - Rejected artifact has feedback stored
+     - reviewGateResults in execution context has correct approvalRate (0.667)
+4. Test scenario — **All rejected**:
+   - Reject all artifacts
+   - Verify:
+     - Pipeline resumes
+     - Next step receives empty artifact set
+     - Next step executes as no-op (or completes with zero artifacts to process)
+5. Test scenario — **Partial decisions (no resume)**:
+   - 3 artifacts, decide on 2 only
+   - Verify execution stays paused_at_gate
+6. Test scenario — **Cross-tenant decision rejected**:
+   - Create decision for tenant A's pipeline
+   - Attempt to decide as tenant B
+   - Verify: decision rejected (error, not updated)
 
 **Files**:
-- `tests/pipelines/integration/review-gate.test.ts` (new, ~90 lines)
-- `tests/pipelines/helpers.ts` (modified — add `waitForStatus` helper)
+- `joyus-ai-mcp-server/tests/pipelines/integration/review-gate-flow.test.ts` (new, ~250 lines)
 
 **Validation**:
-- [ ] Pause test: execution reaches `waiting_review`, `review_decisions` row created
-- [ ] Approval test: execution transitions to `completed` after approval
-- [ ] Rejection test: execution transitions to `cancelled` with feedback in `errorMessage`
-- [ ] `npm test tests/pipelines/integration/review-gate.test.ts` exits 0
-
-**Edge Cases**:
-- `waitForStatus` helper must poll with a timeout and throw a descriptive error on timeout. Flaky tests are worse than slow tests — use a 5s timeout with 100ms polling.
-- The executor's `runExecution` is called asynchronously after `recordDecision`. There may be a brief period where the execution is still `waiting_review` after the decision is recorded. The `waitForStatus` helper handles this with polling.
+- [ ] Full approval -> resume -> complete
+- [ ] Partial approval -> only approved artifacts forwarded
+- [ ] All rejected -> next step gets empty set
+- [ ] Incomplete decisions -> stays paused
+- [ ] Cross-tenant -> rejected
 
 ---
 
-### T057: Integration test — scheduled pipeline execution with overlap detection
+## Subtask T057: Scheduled Pipeline Execution Test
 
-**Purpose**: Verify that schedule-triggered pipelines fire at the correct time and that overlap detection prevents concurrent runs when `allowOverlap: false`.
+**Purpose**: Verify scheduled pipelines fire on time and handle overlap correctly.
 
 **Steps**:
-1. Create `tests/pipelines/integration/schedule.test.ts`
-2. Use `vi.useFakeTimers()` to control the clock without real waiting
-3. Create a schedule-triggered pipeline with a cron that fires every minute
-4. Advance the fake clock by 1 minute, verify the execution was created
-5. Advance the clock again while the first execution is still running, verify overlap is skipped
+1. Create `joyus-ai-mcp-server/tests/pipelines/integration/scheduled-execution.test.ts`
+2. Test scenario — **Scheduled execution fires**:
+   - Use Vitest fake timers
+   - Create a pipeline with schedule trigger, cron = `*/5 * * * *` (every 5 minutes)
+   - Register the schedule
+   - Advance fake timer by 5 minutes
+   - Verify: trigger_event created with type schedule_tick, pipeline executes
+3. Test scenario — **Overlap skip**:
+   - Create pipeline with skip_if_running concurrency policy
+   - Start a slow execution (mock step handler with delay)
+   - Advance timer to next cron tick while execution is still running
+   - Verify: second execution is NOT created, skip warning is logged
+4. Test scenario — **Disabled pipeline skip**:
+   - Create pipeline with schedule, set status = disabled
+   - Advance timer past cron tick
+   - Verify: no execution created
+5. Test scenario — **Dynamic schedule update**:
+   - Create pipeline with cron every 5 minutes
+   - Update to cron every 10 minutes
+   - Advance timer by 5 minutes
+   - Verify: no execution (old schedule removed, new schedule hasn't fired yet)
+   - Advance timer by another 5 minutes (total 10)
+   - Verify: execution created (new schedule fires)
 
-```typescript
-// tests/pipelines/integration/schedule.test.ts
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
-import { db } from '../../../src/db/client';
-import { InMemoryEventBus } from '../../../src/pipelines/event-bus';
-import { defaultTriggerRegistry } from '../../../src/pipelines/triggers/registry';
-import { ScheduleTriggerHandler } from '../../../src/pipelines/triggers/schedule';
-import { createDefaultStepHandlerRegistry } from '../../../src/pipelines/steps/registry';
-import { PipelineExecutor } from '../../../src/pipelines/engine/executor';
-import { pipelines, pipelineExecutions } from '../../../src/pipelines/schema';
-import { eq } from 'drizzle-orm';
-import { createTestTenant, cleanupTestData } from '../helpers';
-
-describe('Schedule Trigger', () => {
-  let tenantId: string;
-  let eventBus: InMemoryEventBus;
-  let executor: PipelineExecutor;
-  let scheduleHandler: ScheduleTriggerHandler;
-
-  beforeAll(async () => {
-    tenantId = await createTestTenant(db);
-  });
-
-  afterAll(async () => {
-    await cleanupTestData(db, tenantId);
-  });
-
-  beforeEach(() => {
-    vi.useFakeTimers();
-    eventBus = new InMemoryEventBus();
-    scheduleHandler = new ScheduleTriggerHandler();
-    defaultTriggerRegistry.register(scheduleHandler);
-    executor = new PipelineExecutor(db, eventBus, defaultTriggerRegistry, createDefaultStepHandlerRegistry());
-  });
-
-  afterEach(async () => {
-    scheduleHandler.stopAll();
-    await executor.stop();
-    vi.useRealTimers();
-  });
-
-  it('schedule fires and creates an execution after cron interval', async () => {
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'Scheduled Pipeline',
-      triggerType: 'schedule',
-      triggerConfig: { type: 'schedule', cronExpression: '* * * * *', timezone: 'UTC', allowOverlap: false },
-      stepConfigs: [
-        { stepType: 'notification', name: 'Alert', config: { channel: 'slack', recipient: '#test', message: 'tick' }, requiresReview: false },
-      ],
-      concurrencyPolicy: 'skip',
-      retryPolicy: {},
-      status: 'active',
-    }).returning();
-
-    // Start schedule handler
-    await scheduleHandler.startAllSchedules([pipeline as any], eventBus);
-    await executor.start();
-
-    // Advance clock by 65 seconds (past next cron fire)
-    await vi.advanceTimersByTimeAsync(65_000);
-
-    // Verify an execution was created
-    const executions = await db.select().from(pipelineExecutions)
-      .where(eq(pipelineExecutions.pipelineId, pipeline.id));
-    expect(executions.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('overlap detection skips second fire when first is still running', async () => {
-    // This test verifies the concurrency policy skip behavior
-    // with schedule triggers — covered by executor concurrency policy check
-    // For deep overlap tests, use allowOverlap: false + manual inspection of skip log
-    expect(true).toBe(true);  // placeholder — full overlap test in WP10 review
-  });
-});
-```
+**Important**: Use Vitest's `vi.useFakeTimers()` and `vi.advanceTimersByTime()` for all timing tests. Do NOT use real timers in tests.
 
 **Files**:
-- `tests/pipelines/integration/schedule.test.ts` (new, ~75 lines)
+- `joyus-ai-mcp-server/tests/pipelines/integration/scheduled-execution.test.ts` (new, ~200 lines)
 
 **Validation**:
-- [ ] `vi.useFakeTimers()` + `vi.advanceTimersByTimeAsync` causes schedule to fire
-- [ ] Execution created in DB after clock advance
-- [ ] `scheduleHandler.stopAll()` in `afterEach` prevents timer leaks
-- [ ] `npm test tests/pipelines/integration/schedule.test.ts` exits 0
-
-**Edge Cases**:
-- `vi.useFakeTimers()` intercepts `setTimeout` globally. The `PipelineExecutor` poll loop also uses `setInterval`. Advancing the clock may trigger both. Ensure the poll interval fires are safe with a test DB.
-- `cronParser.parseExpression` uses `new Date()` internally. With fake timers, `Date.now()` is mocked, so cron calculations should work correctly. Verify this with the actual cron-parser version in the project.
+- [ ] Scheduled pipeline fires at correct time
+- [ ] Overlap is detected and skipped (skip_if_running)
+- [ ] Disabled pipelines don't fire
+- [ ] Schedule updates take effect
 
 ---
 
-### T058: Integration test — analytics accuracy
+## Subtask T058: Analytics Accuracy Test
 
-**Purpose**: Verify that after 20 executions, aggregate metrics are computed correctly: total, success/failure counts, avg duration, and p95.
+**Purpose**: Verify that analytics metrics accurately reflect execution outcomes after multiple runs.
 
 **Steps**:
-1. Create `tests/pipelines/integration/analytics.test.ts`
-2. Create a pipeline, run it 20 times (mix of successes and 2 failures)
-3. Call `aggregator.refreshMetrics` directly
-4. Assert: `totalExecutions = 20`, `successfulExecutions = 18`, `failedExecutions = 2`, `p95DurationMs` is not null
-
-```typescript
-// tests/pipelines/integration/analytics.test.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { db } from '../../../src/db/client';
-import { MetricsAggregator } from '../../../src/pipelines/analytics/aggregator';
-import { pipelines, pipelineExecutions, pipelineMetrics } from '../../../src/pipelines/schema';
-import { eq } from 'drizzle-orm';
-import { createTestTenant, cleanupTestData } from '../helpers';
-
-describe('Analytics Accuracy', () => {
-  let tenantId: string;
-  let aggregator: MetricsAggregator;
-
-  beforeAll(async () => {
-    tenantId = await createTestTenant(db);
-    aggregator = new MetricsAggregator(db);
-  });
-
-  afterAll(async () => {
-    await cleanupTestData(db, tenantId);
-  });
-
-  it('computes correct metrics after 20 executions (18 success, 2 failed)', async () => {
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'Analytics Test Pipeline',
-      triggerType: 'manual',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [],
-      concurrencyPolicy: 'allow',
-      retryPolicy: {},
-      status: 'active',
-    }).returning();
-
-    const now = new Date();
-
-    // Insert 18 completed executions with varying durations (100ms to 1800ms)
-    for (let i = 0; i < 18; i++) {
-      const startedAt = new Date(now.getTime() - (i + 1) * 60_000);
-      const completedAt = new Date(startedAt.getTime() + (i + 1) * 100);  // 100ms to 1800ms
-      await db.insert(pipelineExecutions).values({
-        pipelineId: pipeline.id,
-        tenantId,
-        triggerType: 'manual',
-        triggerPayload: {},
-        status: 'completed',
-        startedAt,
-        completedAt,
-      });
-    }
-
-    // Insert 2 failed executions
-    for (let i = 0; i < 2; i++) {
-      await db.insert(pipelineExecutions).values({
-        pipelineId: pipeline.id,
-        tenantId,
-        triggerType: 'manual',
-        triggerPayload: {},
-        status: 'failed',
-        startedAt: now,
-        completedAt: now,
-        errorMessage: 'Test failure',
-      });
-    }
-
-    await aggregator.refreshMetrics(pipeline.id, tenantId);
-
-    const metricsRows = await db.select().from(pipelineMetrics)
-      .where(eq(pipelineMetrics.pipelineId, pipeline.id));
-
-    expect(metricsRows).toHaveLength(1);
-    const m = metricsRows[0];
-
-    expect(m.totalExecutions).toBe(20);
-    expect(m.successfulExecutions).toBe(18);
-    expect(m.failedExecutions).toBe(2);
-    expect(m.avgDurationMs).not.toBeNull();
-    // With 18 completed executions (< 20), p95 should still be null
-    expect(m.p95DurationMs).toBeNull();
-  });
-
-  it('p95 is computed when at least 20 completed executions exist', async () => {
-    const [pipeline] = await db.insert(pipelines).values({
-      tenantId,
-      name: 'P95 Test Pipeline',
-      triggerType: 'manual',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [],
-      concurrencyPolicy: 'allow',
-      retryPolicy: {},
-      status: 'active',
-    }).returning();
-
-    const now = new Date();
-    for (let i = 0; i < 20; i++) {
-      const startedAt = new Date(now.getTime() - (i + 1) * 60_000);
-      const completedAt = new Date(startedAt.getTime() + (i + 1) * 100);
-      await db.insert(pipelineExecutions).values({
-        pipelineId: pipeline.id, tenantId,
-        triggerType: 'manual', triggerPayload: {},
-        status: 'completed', startedAt, completedAt,
-      });
-    }
-
-    await aggregator.refreshMetrics(pipeline.id, tenantId);
-
-    const metricsRows = await db.select().from(pipelineMetrics)
-      .where(eq(pipelineMetrics.pipelineId, pipeline.id));
-
-    expect(metricsRows[0].p95DurationMs).not.toBeNull();
-    expect(metricsRows[0].p95DurationMs).toBeGreaterThan(0);
-  });
-});
-```
+1. Create `joyus-ai-mcp-server/tests/pipelines/integration/analytics-accuracy.test.ts`
+2. Test scenario — **SC-007**: 20 executions with varying outcomes
+   - Create a pipeline for tenant
+   - Simulate 20 executions:
+     - 15 completed successfully (varying durations: 100ms, 200ms, ..., 1500ms)
+     - 3 completed after retry on step 2 (transient failure then success)
+     - 2 failed (exhausted retries on step 3)
+   - Refresh metrics
+   - Verify:
+     - totalExecutions = 20
+     - successCount = 18 (15 direct success + 3 retry-then-success)
+     - failureCount = 2
+     - cancelledCount = 0
+     - meanDurationMs is within expected range (average of 18 completed execution durations)
+     - p95DurationMs is the correct 95th percentile value
+     - failureBreakdown shows step 3 with correct error type and count
+3. Test scenario — **Review analytics**:
+   - Simulate 10 review decisions: 7 approved, 3 rejected
+   - Verify:
+     - reviewApprovalRate = 0.7
+     - reviewRejectionRate = 0.3
+     - meanTimeToReviewMs is within expected range
+4. Test scenario — **Quality signal emission**:
+   - Simulate 10 decisions with 4 rejections (40% rejection rate)
+   - Verify: quality signal emitted (rejectionRate = 0.4)
+   - Simulate 10 more decisions with 2 rejections (20% cumulative)
+   - Verify: no new signal (within threshold when looking at last 10)
+5. Test scenario — **Staleness** (SC-007: within 5 minutes):
+   - Complete an execution
+   - Verify metrics are refreshed within the same test (not delayed)
 
 **Files**:
-- `tests/pipelines/integration/analytics.test.ts` (new, ~80 lines)
+- `joyus-ai-mcp-server/tests/pipelines/integration/analytics-accuracy.test.ts` (new, ~200 lines)
 
 **Validation**:
-- [ ] 20 executions (18 success, 2 failed): total=20, success=18, failed=2
-- [ ] p95 is null for 18 completed executions
-- [ ] p95 is not null for exactly 20 completed executions
-- [ ] `npm test tests/pipelines/integration/analytics.test.ts` exits 0
+- [ ] Counts match exactly
+- [ ] Duration statistics are mathematically correct
+- [ ] Review rates computed correctly
+- [ ] Quality signal threshold triggers correctly
+- [ ] Metrics refresh is timely
 
 ---
 
-### T059: Integration test — tenant isolation
+## Subtask T059: Tenant Isolation Test
 
-**Purpose**: Verify that no pipeline data leaks across tenant boundaries on any access path: API routes, MCP tools, and direct DB service calls.
+**Purpose**: Verify that no pipeline data leaks across tenants in any operation.
 
 **Steps**:
-1. Create `tests/pipelines/integration/tenant-isolation.test.ts`
-2. Create two tenants (`tenant-A`, `tenant-B`) each with one pipeline
-3. Query pipelines for tenant-A — verify tenant-B's pipeline is not returned
-4. Attempt to access tenant-B's pipeline ID using tenant-A's credentials — verify 404 or empty result
-5. Test review decision isolation: tenant-A cannot see or decide on tenant-B's review decisions
-6. Test metrics isolation: tenant-A's metrics call returns only tenant-A data
-
-```typescript
-// tests/pipelines/integration/tenant-isolation.test.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { db } from '../../../src/db/client';
-import { pipelines, pipelineExecutions, reviewDecisions } from '../../../src/pipelines/schema';
-import { and, eq } from 'drizzle-orm';
-import { createTestTenant, cleanupTestData } from '../helpers';
-
-describe('Tenant Isolation', () => {
-  let tenantA: string;
-  let tenantB: string;
-  let pipelineA: string;
-  let pipelineB: string;
-
-  beforeAll(async () => {
-    tenantA = await createTestTenant(db);
-    tenantB = await createTestTenant(db);
-
-    const [pA] = await db.insert(pipelines).values({
-      tenantId: tenantA, name: 'Pipeline A',
-      triggerType: 'manual', triggerConfig: { type: 'manual' },
-      stepConfigs: [], concurrencyPolicy: 'skip', retryPolicy: {}, status: 'active',
-    }).returning();
-    pipelineA = pA.id;
-
-    const [pB] = await db.insert(pipelines).values({
-      tenantId: tenantB, name: 'Pipeline B',
-      triggerType: 'manual', triggerConfig: { type: 'manual' },
-      stepConfigs: [], concurrencyPolicy: 'skip', retryPolicy: {}, status: 'active',
-    }).returning();
-    pipelineB = pB.id;
-  });
-
-  afterAll(async () => {
-    await cleanupTestData(db, tenantA);
-    await cleanupTestData(db, tenantB);
-  });
-
-  it('listing pipelines for tenant-A does not return tenant-B pipelines', async () => {
-    const rows = await db.select().from(pipelines).where(eq(pipelines.tenantId, tenantA));
-    const ids = rows.map(r => r.id);
-    expect(ids).toContain(pipelineA);
-    expect(ids).not.toContain(pipelineB);
-  });
-
-  it('fetching pipeline-B using tenant-A returns no results', async () => {
-    const rows = await db.select().from(pipelines)
-      .where(and(eq(pipelines.id, pipelineB), eq(pipelines.tenantId, tenantA)));
-    expect(rows).toHaveLength(0);
-  });
-
-  it('execution history for tenant-A excludes tenant-B executions', async () => {
-    // Insert one execution for each tenant
-    await db.insert(pipelineExecutions).values({
-      pipelineId: pipelineA, tenantId: tenantA,
-      triggerType: 'manual', triggerPayload: {}, status: 'completed',
-    });
-    await db.insert(pipelineExecutions).values({
-      pipelineId: pipelineB, tenantId: tenantB,
-      triggerType: 'manual', triggerPayload: {}, status: 'completed',
-    });
-
-    const rows = await db.select().from(pipelineExecutions)
-      .where(eq(pipelineExecutions.tenantId, tenantA));
-
-    expect(rows.every(r => r.tenantId === tenantA)).toBe(true);
-    expect(rows.some(r => r.tenantId === tenantB)).toBe(false);
-  });
-
-  it('review decision for tenant-B is not accessible using tenant-A scoping', async () => {
-    // Insert a fake execution + decision for tenant-B
-    const [exec] = await db.insert(pipelineExecutions).values({
-      pipelineId: pipelineB, tenantId: tenantB,
-      triggerType: 'manual', triggerPayload: {}, status: 'waiting_review',
-    }).returning();
-
-    await db.insert(reviewDecisions).values({
-      executionId: exec.id, stepIndex: 0, tenantId: tenantB,
-      escalationStatus: 'pending',
-    });
-
-    // Query with tenant-A scope — should return nothing
-    const rows = await db.select().from(reviewDecisions)
-      .where(eq(reviewDecisions.tenantId, tenantA));
-
-    expect(rows.some(r => r.executionId === exec.id)).toBe(false);
-  });
-});
-```
+1. Create `joyus-ai-mcp-server/tests/pipelines/integration/tenant-isolation.test.ts`
+2. Setup: create pipelines, executions, and review decisions for two tenants: "tenant-alpha" and "tenant-beta"
+3. Test cases:
+   - **Pipeline listing**: tenant-alpha lists pipelines, sees only their own
+   - **Pipeline get**: tenant-alpha requests tenant-beta's pipeline by ID, gets 404
+   - **Execution history**: tenant-alpha queries execution history, sees only their own
+   - **Execution detail**: tenant-alpha requests tenant-beta's execution by ID, gets 404
+   - **Trigger event**: corpus_change event for tenant-alpha does NOT trigger tenant-beta's pipelines
+   - **Review decision**: tenant-alpha attempts to decide on tenant-beta's review decision, rejected
+   - **Manual trigger**: tenant-alpha attempts to manually trigger tenant-beta's pipeline, rejected
+   - **Template instantiation**: both tenants can instantiate same template, each gets independent pipeline
+   - **Analytics**: tenant-alpha sees only their metrics, not tenant-beta's
+   - **Pipeline limit**: tenant-alpha at limit (20 pipelines), tenant-beta can still create pipelines
+4. Each test creates data for both tenants and verifies isolation from the other tenant's perspective
 
 **Files**:
-- `tests/pipelines/integration/tenant-isolation.test.ts` (new, ~80 lines)
+- `joyus-ai-mcp-server/tests/pipelines/integration/tenant-isolation.test.ts` (new, ~200 lines)
 
 **Validation**:
-- [ ] All 4 isolation assertions pass
-- [ ] No tenant-B data appears in any tenant-A query
-- [ ] `npm test tests/pipelines/integration/tenant-isolation.test.ts` exits 0
-
-**Edge Cases**:
-- These tests verify the service layer (direct DB queries) not the HTTP layer. HTTP layer isolation is implicitly covered by T042/T045 tenant middleware tests. If time permits, add a supertest-based HTTP integration test for cross-tenant 404 responses.
+- [ ] All data access paths enforce tenant isolation
+- [ ] Cross-tenant access returns 404 (not 403)
+- [ ] Events only trigger same-tenant pipelines
+- [ ] Review decisions only accessible to same tenant
+- [ ] Metrics are tenant-scoped
 
 ---
 
-### T060: Validation sweep — `npm run validate`, zero regressions
+## Subtask T060: Full Validation Sweep
 
-**Purpose**: Final confirmation that the entire test suite passes, typecheck is clean, lint is clean, and no pre-existing tests were broken by the pipelines feature.
+**Purpose**: Run the complete validation suite and confirm zero regressions across the entire codebase.
 
 **Steps**:
-1. Run `npm run validate` (or the project's equivalent: `typecheck + lint + test`)
-2. If any tests fail, diagnose and fix in production code (not by skipping or adjusting test expectations)
-3. If typecheck errors remain, fix them — do not suppress with `@ts-ignore`
-4. Record the final test count and confirm it is higher than the count before this feature
+1. Run `npm run validate` (typecheck + lint + test)
+2. Verify:
+   - TypeScript compilation: zero errors
+   - ESLint: zero errors (warnings acceptable)
+   - All tests pass: existing tests + all new pipeline tests
+   - No skipped tests (all .skip or .todo removed)
+3. Check for common issues:
+   - Import path errors (missing `.js` extensions for ESM)
+   - Circular imports between pipeline modules
+   - Type mismatches between schema types and runtime types
+   - Missing barrel exports
+4. Count new test files and verify coverage:
+   - WP01: no tests (schema only, validated by typecheck)
+   - WP02: `pg-notify-bus.test.ts`
+   - WP03: `cycle-detector.test.ts`, `corpus-change.test.ts`
+   - WP04: `executor.test.ts`, `step-runner.test.ts`, `retry.test.ts`
+   - WP06: `gate.test.ts`, `escalation.test.ts`
+   - WP07: `schedule.test.ts`, `store.test.ts`
+   - WP08: `routes.test.ts`
+   - WP09: `aggregator.test.ts`, `quality-signals.test.ts`
+   - WP10: `e2e-execution.test.ts`, `review-gate-flow.test.ts`, `scheduled-execution.test.ts`, `analytics-accuracy.test.ts`, `tenant-isolation.test.ts`
+   - Total: ~19 test files
+5. If any tests fail: diagnose, fix, and re-run until clean
 
-```bash
-# Commands to run (adjust to project's actual scripts):
-npm run typecheck          # Must exit 0, zero errors
-npm run lint               # Must exit 0, zero lint errors
-npm test                   # Must exit 0, all tests pass
-npm run validate           # Combined — must exit 0
-```
-
-**Expected outcomes**:
-- All existing tests continue to pass (zero regressions)
-- New tests added in WP02–WP10 all pass
-- `tsc --noEmit` exits 0 across the entire codebase
-- No `@ts-ignore` or `// eslint-disable` suppressions added by this feature
-
-**Files**:
-- No new files. May require minor fixes to production code if late-discovered type errors surface.
+**Files**: None (verification only)
 
 **Validation**:
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm run lint` exits 0
-- [ ] `npm test` exits 0 with final test count recorded
-- [ ] Test count is higher than before WP01 (new tests added, none removed)
-
-**Edge Cases**:
-- If the test DB does not have the pipelines migration applied, all integration tests will fail with "relation does not exist" errors. Verify `tests/setup.ts` runs the Drizzle migration before tests. If not, add the migration step.
-- Some tests in WP02-WP09 may have been written before the full schema/types were finalized (WP01). If those tests use `as any` casts that mask real type errors, the final typecheck sweep is the moment to discover and fix them.
-
----
-
-## Test Helper: `tests/pipelines/helpers.ts`
-
-**Purpose**: Shared utilities for all integration tests. Created in T055, extended by T056.
-
-```typescript
-// tests/pipelines/helpers.ts
-import { eq, inArray } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import {
-  pipelines, pipelineExecutions, stepExecutions,
-  reviewDecisions, pipelineMetrics, qualitySignals, triggerEvents,
-} from '../../src/pipelines/schema';
-
-let tenantCounter = 0;
-
-export async function createTestTenant(db: NodePgDatabase<any>): Promise<string> {
-  // Generate a unique tenant ID for test isolation
-  return `test-tenant-${++tenantCounter}-${Date.now()}`;
-}
-
-export async function cleanupTestData(db: NodePgDatabase<any>, tenantId: string): Promise<void> {
-  // Delete in FK order
-  const executionIds = await db
-    .select({ id: pipelineExecutions.id })
-    .from(pipelineExecutions)
-    .where(eq(pipelineExecutions.tenantId, tenantId));
-
-  if (executionIds.length > 0) {
-    const ids = executionIds.map(r => r.id);
-    await db.delete(stepExecutions).where(inArray(stepExecutions.executionId, ids));
-    await db.delete(reviewDecisions).where(inArray(reviewDecisions.executionId, ids));
-  }
-
-  await db.delete(pipelineExecutions).where(eq(pipelineExecutions.tenantId, tenantId));
-  await db.delete(pipelineMetrics).where(eq(pipelineMetrics.tenantId, tenantId));
-  await db.delete(qualitySignals).where(eq(qualitySignals.tenantId, tenantId));
-  await db.delete(triggerEvents).where(eq(triggerEvents.tenantId, tenantId));
-  await db.delete(pipelines).where(eq(pipelines.tenantId, tenantId));
-}
-
-export async function waitForStatus(
-  db: NodePgDatabase<any>,
-  pipelineId: string,
-  status: string,
-  timeoutMs: number,
-): Promise<typeof pipelineExecutions.$inferSelect | null> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const rows = await db
-      .select()
-      .from(pipelineExecutions)
-      .where(eq(pipelineExecutions.pipelineId, pipelineId));
-    const match = rows.find(r => r.status === status);
-    if (match) return match;
-    await new Promise(r => setTimeout(r, 100));
-  }
-  throw new Error(`waitForStatus: execution did not reach '${status}' within ${timeoutMs}ms`);
-}
-```
-
-**Files**:
-- `tests/pipelines/helpers.ts` (new, ~45 lines)
+- [ ] `npm run typecheck` passes with zero errors
+- [ ] `npm run lint` passes with zero errors
+- [ ] `npm run test` passes — ALL tests (existing + new)
+- [ ] `npm run validate` passes (combined command)
+- [ ] No circular imports
+- [ ] No missing exports
+- [ ] Zero regressions to existing functionality
 
 ---
 
 ## Definition of Done
 
-- [ ] `tests/pipelines/integration/e2e-execution.test.ts` — happy path, failure path
-- [ ] `tests/pipelines/integration/review-gate.test.ts` — pause, approve, reject
-- [ ] `tests/pipelines/integration/schedule.test.ts` — schedule fires with fake timers
-- [ ] `tests/pipelines/integration/analytics.test.ts` — metrics accuracy (20 executions, p95)
-- [ ] `tests/pipelines/integration/tenant-isolation.test.ts` — 4 isolation assertions
-- [ ] `tests/pipelines/helpers.ts` — `createTestTenant`, `cleanupTestData`, `waitForStatus`
-- [ ] `npm run validate` exits 0 with zero errors, zero lint warnings, all tests passing
-- [ ] Final test count is higher than pre-WP01 baseline
-- [ ] No `@ts-ignore` or `eslint-disable` suppressions introduced by this feature
+- [ ] End-to-end pipeline execution test passes (corpus-change -> steps -> completion)
+- [ ] Review gate flow test passes (pause -> decide -> resume, partial approval, all-rejected)
+- [ ] Scheduled execution test passes (fires on time, overlap skip, disabled skip)
+- [ ] Analytics accuracy test passes (20 executions, correct aggregates, quality signals)
+- [ ] Tenant isolation test passes (all data access paths verified)
+- [ ] `npm run validate` passes with zero errors and zero regressions
+- [ ] All exit criteria from plan.md have corresponding test coverage:
+  - SC-001: Pipeline executes end-to-end from trigger to completion
+  - SC-002: Retry policy correct across failure scenarios
+  - SC-003: Review gate pauses and routes within target latency
+  - SC-004: Cycle detection catches all cycles (covered in WP03 unit tests)
+  - SC-005: Execution history queryable within target latency
+  - SC-007: Analytics reflect outcomes within 5 minutes
+- [ ] All acceptance scenarios from spec.md User Stories 1-6 are covered
 
 ## Risks
 
-- **Test database migration**: Integration tests require the `pipelines` PostgreSQL schema and all 8 tables to exist in the test DB. If `tests/setup.ts` does not run the Drizzle migration, every integration test will fail immediately. Check this first before running tests.
-- **Fake timer interaction with DB**: `vi.useFakeTimers()` replaces `setTimeout`/`setInterval` globally, which may interfere with the DB connection pool's keep-alive timers. If the DB connection goes stale during a fake-timer test, use `vi.useFakeTimers({ toFake: ['setTimeout'] })` to limit what gets faked.
-- **Test isolation between WPs**: Tests from WP02–WP09 use `InMemoryEventBus` and avoid DB side effects. Integration tests in WP10 use the real DB. If the same global `defaultTriggerRegistry` is mutated by WP07's schedule handler registration, parallel test runs may interfere. Reset the registry in `beforeEach` or use isolated registry instances per test.
-- **Execution timing in CI**: Integration tests that wait for async execution (T055, T056) may be flaky in slow CI environments. Increase timeout multipliers in CI (`VITEST_TIMEOUT=30000`) or use explicit `waitForStatus` with generous timeouts.
+- **Test database setup**: Integration tests need a PostgreSQL database with the `pipelines` schema created. If CI does not provide a test database, tests may need to use mocked Drizzle operations (less realistic but still valuable).
+- **Fake timer compatibility**: node-cron may not work with Vitest's fake timers. Mitigation: use `vi.spyOn` to mock cron.schedule and manually invoke callbacks, rather than relying on real timer advancement.
+- **Test execution time**: 19 test files with integration tests could be slow. Mitigation: use parallel test execution (Vitest default), mock expensive operations, use fast-returning mock handlers.
 
 ## Reviewer Guidance
 
-- Verify `cleanupTestData` deletes all rows in correct FK order — if it fails, subsequent tests will see leftover data and fail in confusing ways.
-- Check that integration tests use unique tenant IDs per test (via `createTestTenant`) — never use hardcoded UUIDs that could collide between test runs.
-- Confirm `waitForStatus` throws a descriptive error on timeout rather than returning null silently — a null return would make assertions pass vacuously.
-- Verify T060 is a real run of `npm run validate`, not just a placeholder check. The final output (test count, zero errors) should be included in the PR description.
+- Verify each spec exit criterion has at least one test
+- Check that integration tests cross module boundaries (not just testing individual modules again)
+- Verify tenant isolation tests cover ALL data access paths (not just the obvious ones)
+- Confirm review gate tests cover the full decision matrix (all approved, partial, all rejected, incomplete)
+- Check that scheduled execution tests use fake timers (no real setTimeout in tests)
+- Verify analytics tests use exact numerical verification (not approximate)
+- Confirm the validation sweep runs the FULL `npm run validate` command (not just tests)
+- Check that no test files are `.skip`-ed or `.todo`-ed
+
+## Activity Log

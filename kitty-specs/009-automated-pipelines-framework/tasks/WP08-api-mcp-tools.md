@@ -1,711 +1,437 @@
 ---
-work_package_id: "WP08"
-title: "Pipeline API & MCP Tools"
-lane: "planned"
-dependencies: ["WP05", "WP06", "WP07"]
-subtasks: ["T042", "T043", "T044", "T045", "T046", "T047", "T048"]
+work_package_id: WP08
+title: Pipeline API & MCP Tools
+lane: planned
+dependencies: []
+subtasks: [T042, T043, T044, T045, T046, T047, T048]
+phase: Phase E - API & Tools
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP08: Pipeline API & MCP Tools
 
-**Implementation command**: `spec-kitty implement WP08 --base WP05,WP06,WP07`
-**Target repo**: `joyus-ai`
-**Dependencies**: WP05 (Step Handlers), WP06 (Review Gates), WP07 (Schedule Triggers & Templates)
-**Priority**: P2 (Enables WP09 analytics and WP10 integration tests)
-
 ## Objective
 
-Implement the Express REST API routes for full pipeline CRUD, execution history, review decisions, and template management. Define all 8 MCP tool definitions so Claude agents can manage pipelines conversationally. Wire the module into the server entry point. Enforce tenant scoping on every route and tool.
+Implement the Express REST API routes for pipeline management, the MCP tool definitions for agent-facing pipeline operations, tenant-scoped route enforcement, the module initialization entry point, and server-level wiring.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP08 --base WP05 --base WP06 --base WP07
+```
 
 ## Context
 
-The `joyus-ai` platform uses Express.js with tenant-scoped middleware. All routes that handle tenant data must verify the requesting user belongs to the correct tenant. The existing pattern (from Spec 005 and Spec 006 routes) uses a `requireTenant` middleware that attaches `req.tenantId` from the authenticated session.
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (all FRs surface through API/tools)
+- **Plan**: `kitty-specs/009-automated-pipelines-framework/plan.md` (WP-16: API, WP-17: MCP tools)
+- **Existing patterns**: `src/tools/content-tools.ts` (MCP tool registration), `src/content/routes.ts` (Express route pattern — if exists), `src/tools/index.ts` and `src/tools/executor.ts` (tool registration)
 
-MCP tools follow the `ToolDefinition` interface already used by other Spec tools. They must use the existing registration pattern in `src/tools/` and be prefixed with `pipeline_` to namespace them correctly.
+This WP is the external surface of the pipeline framework — everything built in WP01-WP07 is exposed through REST routes and MCP tools here. Routes handle HTTP requests from the mediation API and admin interfaces. MCP tools handle agent requests from Claude sessions.
 
-Cycle detection (WP03, T016) must run before persisting any pipeline create or update that changes `stepConfigs` or `triggerConfig`. The route handler calls `validateNoCycle` before the INSERT/UPDATE.
-
----
-
-## Subtasks
-
-### T042: Implement pipeline CRUD routes (`src/pipelines/routes.ts`)
-
-**Purpose**: Express router covering create, list, get, update, delete, and manual trigger for pipelines. All routes are tenant-scoped.
-
-**Steps**:
-1. Create `src/pipelines/routes.ts`
-2. Use `express.Router()` with `requireTenant` middleware applied to all routes
-3. POST `/pipelines` — create pipeline (with cycle detection)
-4. GET `/pipelines` — list pipelines for tenant
-5. GET `/pipelines/:id` — get single pipeline
-6. PATCH `/pipelines/:id` — update pipeline (with cycle detection if stepConfigs changed)
-7. DELETE `/pipelines/:id` — delete pipeline (also removes schedule if applicable)
-8. POST `/pipelines/:id/trigger` — manual trigger (fires a `manual` event via event bus)
-
-```typescript
-// src/pipelines/routes.ts
-import { Router } from 'express';
-import { eq, and } from 'drizzle-orm';
-import { pipelines } from './schema';
-import { createPipelineSchema, updatePipelineSchema, manualTriggerRequestSchema } from './validation';
-import { validateNoCycle } from './graph/cycle-detector';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { EventBus } from './event-bus';
-import type { ScheduleTriggerHandler } from './triggers/schedule';
-import { TemplateStore } from './templates/store';
-
-export function createPipelineRouter(
-  db: NodePgDatabase<Record<string, unknown>>,
-  eventBus: EventBus,
-  scheduleHandler: ScheduleTriggerHandler,
-): Router {
-  const router = Router();
-
-  // POST /pipelines — create pipeline
-  router.post('/', async (req, res) => {
-    const tenantId = req.tenantId;  // set by requireTenant middleware
-    const parsed = createPipelineSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-
-    const input = parsed.data;
-
-    // Cycle detection before persist
-    const existing = await db.select().from(pipelines).where(eq(pipelines.tenantId, tenantId));
-    try {
-      validateNoCycle(
-        { id: 'new', triggerType: input.triggerConfig.type, stepConfigs: input.stepConfigs as any },
-        existing as any,
-      );
-    } catch (err) {
-      return res.status(422).json({ error: (err as Error).message });
-    }
-
-    const [pipeline] = await db
-      .insert(pipelines)
-      .values({
-        tenantId,
-        name: input.name,
-        description: input.description,
-        triggerType: input.triggerConfig.type as any,
-        triggerConfig: input.triggerConfig,
-        stepConfigs: input.stepConfigs,
-        concurrencyPolicy: input.concurrencyPolicy as any,
-        retryPolicy: input.retryPolicy ?? {},
-        status: 'active',
-      })
-      .returning();
-
-    // Register schedule if applicable
-    if (pipeline.triggerType === 'schedule') {
-      scheduleHandler.updateSchedule(pipeline as any, eventBus);
-    }
-
-    return res.status(201).json(pipeline);
-  });
-
-  // GET /pipelines — list
-  router.get('/', async (req, res) => {
-    const rows = await db
-      .select()
-      .from(pipelines)
-      .where(eq(pipelines.tenantId, req.tenantId));
-    return res.json(rows);
-  });
-
-  // GET /pipelines/:id — get one
-  router.get('/:id', async (req, res) => {
-    const rows = await db
-      .select()
-      .from(pipelines)
-      .where(and(eq(pipelines.id, req.params.id), eq(pipelines.tenantId, req.tenantId)))
-      .limit(1);
-    if (rows.length === 0) return res.status(404).json({ error: 'Pipeline not found' });
-    return res.json(rows[0]);
-  });
-
-  // PATCH /pipelines/:id — update
-  router.patch('/:id', async (req, res) => {
-    const parsed = updatePipelineSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-
-    const existing = await db
-      .select()
-      .from(pipelines)
-      .where(and(eq(pipelines.id, req.params.id), eq(pipelines.tenantId, req.tenantId)))
-      .limit(1);
-    if (existing.length === 0) return res.status(404).json({ error: 'Pipeline not found' });
-
-    const input = parsed.data;
-
-    // Re-run cycle detection only if triggerConfig or stepConfigs changed
-    if (input.triggerConfig || input.stepConfigs) {
-      const allPipelines = await db.select().from(pipelines).where(eq(pipelines.tenantId, req.tenantId));
-      try {
-        validateNoCycle(
-          {
-            id: req.params.id,
-            triggerType: (input.triggerConfig?.type ?? existing[0].triggerType) as any,
-            stepConfigs: (input.stepConfigs ?? existing[0].stepConfigs) as any,
-          },
-          allPipelines as any,
-        );
-      } catch (err) {
-        return res.status(422).json({ error: (err as Error).message });
-      }
-    }
-
-    const [updated] = await db
-      .update(pipelines)
-      .set({
-        ...(input.name && { name: input.name }),
-        ...(input.description !== undefined && { description: input.description }),
-        ...(input.triggerConfig && { triggerConfig: input.triggerConfig, triggerType: input.triggerConfig.type as any }),
-        ...(input.stepConfigs && { stepConfigs: input.stepConfigs }),
-        ...(input.concurrencyPolicy && { concurrencyPolicy: input.concurrencyPolicy as any }),
-        ...(input.status && { status: input.status as any }),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(pipelines.id, req.params.id), eq(pipelines.tenantId, req.tenantId)))
-      .returning();
-
-    // Update schedule registration
-    if (updated.triggerType === 'schedule' || existing[0].triggerType === 'schedule') {
-      scheduleHandler.updateSchedule(updated as any, eventBus);
-    }
-
-    return res.json(updated);
-  });
-
-  // DELETE /pipelines/:id
-  router.delete('/:id', async (req, res) => {
-    const rows = await db
-      .select({ id: pipelines.id, triggerType: pipelines.triggerType })
-      .from(pipelines)
-      .where(and(eq(pipelines.id, req.params.id), eq(pipelines.tenantId, req.tenantId)))
-      .limit(1);
-
-    if (rows.length === 0) return res.status(404).json({ error: 'Pipeline not found' });
-
-    if (rows[0].triggerType === 'schedule') {
-      scheduleHandler.removeSchedule(req.params.id);
-    }
-
-    await db
-      .delete(pipelines)
-      .where(and(eq(pipelines.id, req.params.id), eq(pipelines.tenantId, req.tenantId)));
-
-    return res.status(204).send();
-  });
-
-  // POST /pipelines/:id/trigger — manual trigger
-  router.post('/:id/trigger', async (req, res) => {
-    const parsed = manualTriggerRequestSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-
-    const pipeline = await db.query.pipelines.findFirst({
-      where: and(eq(pipelines.id, req.params.id), eq(pipelines.tenantId, req.tenantId)),
-    });
-    if (!pipeline) return res.status(404).json({ error: 'Pipeline not found' });
-    if (pipeline.triggerType !== 'manual') {
-      return res.status(400).json({ error: 'Pipeline does not support manual triggering' });
-    }
-
-    const eventId = await eventBus.publish(req.tenantId, 'manual', {
-      pipelineId: pipeline.id,
-      requestorRole: req.user?.role,
-      ...parsed.data.payload,
-    });
-
-    return res.status(202).json({ eventId, message: 'Pipeline trigger queued' });
-  });
-
-  return router;
-}
-```
-
-**Files**:
-- `src/pipelines/routes.ts` (new, ~120 lines)
-
-**Validation**:
-- [ ] POST `/pipelines` with cycle returns 422 with descriptive error message
-- [ ] POST `/pipelines` with valid input returns 201 with pipeline row
-- [ ] GET `/pipelines` only returns pipelines for the authenticated tenant
-- [ ] DELETE `/pipelines/:id` removes the schedule job if `triggerType === 'schedule'`
-- [ ] POST `/pipelines/:id/trigger` on a non-manual pipeline returns 400
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `req.tenantId` and `req.user` are set by existing `requireTenant` middleware. If this middleware is not applied to the pipeline router when it is mounted in `src/index.ts` (T047), all tenant checks will fail. Verify the middleware chain during T047.
+**Existing tool registration pattern** (from `src/tools/index.ts` and `src/tools/executor.ts`):
+- Tools are defined as `ToolDefinition` objects with name, description, inputSchema (Zod), and handler
+- Tools are registered in a tool index and dispatched by the executor
+- Tool names use underscore-separated prefixes (e.g., `content_search`, `content_generate`)
+- Pipeline tools should use prefix `pipeline_`
 
 ---
 
-### T043: Implement execution history and review decision routes
+## Subtask T042: Implement Pipeline CRUD Routes
 
-**Purpose**: API endpoints for reading execution history, individual step details, and submitting review decisions.
+**Purpose**: Express routes for creating, listing, reading, updating, and deleting pipelines, plus manual trigger.
 
 **Steps**:
-1. Add to `src/pipelines/routes.ts` (or create `src/pipelines/review-routes.ts` if preferred)
-2. GET `/pipelines/:id/executions` — list executions for a pipeline (paginated)
-3. GET `/executions/:executionId/steps` — list step executions
-4. GET `/review-decisions/:decisionId` — get a pending review decision
-5. POST `/review-decisions/:decisionId/decide` — submit a review decision
+1. Create `joyus-ai-mcp-server/src/pipelines/routes.ts`
+2. Implement an Express Router with the following endpoints:
+3. **POST /api/pipelines** — Create pipeline:
+   - Validate request body with `CreatePipelineInput` Zod schema (WP01 T003)
+   - Extract tenantId from request context (auth middleware provides it)
+   - Check tenant pipeline limit (MAX_PIPELINES_PER_TENANT = 20)
+   - Run cycle detection (WP03) before persisting
+   - Validate step configs via step registry (WP05)
+   - Create pipeline and pipeline_steps rows
+   - If triggerType is schedule_tick, register cron job (WP07)
+   - Return 201 with created pipeline
+4. **GET /api/pipelines** — List pipelines:
+   - Query params: `status` (optional filter), `limit` (default 20), `offset` (default 0)
+   - Filter by tenantId (always enforced)
+   - Return paginated pipeline list with step counts
+5. **GET /api/pipelines/:id** — Get pipeline:
+   - Load pipeline by ID, verify tenantId
+   - Include steps, recent execution count, next scheduled run (if applicable)
+   - Return 404 if not found or wrong tenant
+6. **PUT /api/pipelines/:id** — Update pipeline:
+   - Validate with `UpdatePipelineInput`
+   - Verify tenant ownership
+   - Re-run cycle detection if trigger type or steps changed
+   - Update schedule if cron expression changed
+   - Return updated pipeline
+7. **DELETE /api/pipelines/:id** — Delete pipeline:
+   - Verify tenant ownership
+   - Unregister cron job if scheduled
+   - Soft-delete or hard-delete pipeline (cascade to steps, executions — per platform policy)
+   - Return 204
+8. **POST /api/pipelines/:id/trigger** — Manual trigger:
+   - Verify tenant ownership and pipeline is active
+   - Create trigger event via ManualRequestTriggerHandler
+   - Publish event to event bus
+   - Return 202 with trigger event ID
 
-```typescript
-// Addition to createPipelineRouter or separate router:
-
-  // GET /pipelines/:id/executions
-  router.get('/:id/executions', async (req, res) => {
-    const limit = Math.min(Number(req.query.limit) || 20, 100);
-    const offset = Number(req.query.offset) || 0;
-
-    const rows = await db
-      .select()
-      .from(pipelineExecutions)
-      .where(
-        and(
-          eq(pipelineExecutions.pipelineId, req.params.id),
-          eq(pipelineExecutions.tenantId, req.tenantId),
-        ),
-      )
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(pipelineExecutions.createdAt));
-
-    return res.json({ executions: rows, limit, offset });
-  });
-
-  // POST /review-decisions/:decisionId/decide
-  router.post('/review-decisions/:decisionId/decide', async (req, res) => {
-    const parsed = reviewDecisionSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-
-    try {
-      await decisionService.recordDecision(
-        req.params.decisionId,
-        req.user!.id,
-        parsed.data,
-        executor,  // PipelineExecutor reference injected into router factory
-      );
-      return res.json({ message: 'Decision recorded. Execution resuming.' });
-    } catch (err) {
-      if ((err as Error).message.includes('already been decided')) {
-        return res.status(409).json({ error: (err as Error).message });
-      }
-      throw err;
-    }
-  });
-```
+**Important implementation details**:
+- All routes extract `tenantId` from the authenticated request context. This is the Leash pattern (ADR-0002) — every query includes tenantId.
+- The router does NOT define its own auth middleware — it relies on the existing auth middleware applied at the server level.
+- Error responses should follow the existing pattern: `{ error: string, details?: unknown }` with appropriate HTTP status codes.
 
 **Files**:
-- `src/pipelines/routes.ts` (modified — add execution and review routes)
+- `joyus-ai-mcp-server/src/pipelines/routes.ts` (new, ~250 lines)
 
 **Validation**:
-- [ ] GET `/pipelines/:id/executions` respects tenant scoping on `pipelineExecutions.tenantId`
-- [ ] POST `/review-decisions/:decisionId/decide` returns 409 on double-decide
-- [ ] `tsc --noEmit` passes
+- [ ] All CRUD operations work correctly
+- [ ] Tenant isolation enforced on every route
+- [ ] Pipeline creation runs cycle detection
+- [ ] Pipeline creation validates step configs
+- [ ] Pipeline creation enforces per-tenant limit
+- [ ] Manual trigger publishes event to event bus
+- [ ] Schedule registration/unregistration on create/update/delete
 
 ---
 
-### T044: Implement MCP tool definitions (`src/tools/pipeline-tools.ts`)
+## Subtask T043: Implement Execution History and Review Decision Routes
 
-**Purpose**: Define all 8 pipeline MCP tools so Claude agents can manage pipelines conversationally through the MCP gateway.
+**Purpose**: Routes for querying execution history and submitting review decisions.
 
 **Steps**:
-1. Create `src/tools/pipeline-tools.ts`
-2. Define tools following the existing `ToolDefinition` interface pattern
-3. Each tool maps to an underlying service call (not a direct HTTP route call)
-
-**8 MCP tools**:
-1. `pipeline_list` — list pipelines for the authenticated tenant
-2. `pipeline_get` — get a single pipeline by ID
-3. `pipeline_create` — create a new pipeline (runs cycle detection)
-4. `pipeline_update` — update pipeline config or status
-5. `pipeline_delete` — delete a pipeline
-6. `pipeline_trigger` — manually trigger a pipeline
-7. `pipeline_execution_history` — get execution history for a pipeline
-8. `pipeline_analytics` — get aggregate metrics for a pipeline (calls WP09)
-
-```typescript
-// src/tools/pipeline-tools.ts
-import { z } from 'zod';
-import type { ToolDefinition } from './types';  // existing interface
-import { createPipelineSchema, updatePipelineSchema, reviewDecisionSchema } from '../pipelines/validation';
-
-export const pipelineTools: ToolDefinition[] = [
-  {
-    name: 'pipeline_list',
-    description: 'List all pipelines for the current tenant. Returns pipeline IDs, names, statuses, and trigger types.',
-    inputSchema: z.object({
-      status: z.enum(['active', 'paused', 'archived']).optional()
-        .describe('Filter by status. Omit to return all.'),
-    }),
-    async execute({ input, context }) {
-      // context.tenantId is injected by the MCP gateway
-      return context.services.pipelineService.list(context.tenantId, input.status);
-    },
-  },
-  {
-    name: 'pipeline_get',
-    description: 'Get details for a specific pipeline including its trigger config and step configs.',
-    inputSchema: z.object({
-      pipelineId: z.string().uuid().describe('The pipeline UUID'),
-    }),
-    async execute({ input, context }) {
-      return context.services.pipelineService.get(context.tenantId, input.pipelineId);
-    },
-  },
-  {
-    name: 'pipeline_create',
-    description: 'Create a new pipeline. Validates for circular dependencies before persisting.',
-    inputSchema: createPipelineSchema,
-    async execute({ input, context }) {
-      return context.services.pipelineService.create(context.tenantId, input);
-    },
-  },
-  {
-    name: 'pipeline_update',
-    description: 'Update a pipeline\'s name, description, trigger config, step configs, or status.',
-    inputSchema: updatePipelineSchema.extend({
-      pipelineId: z.string().uuid(),
-    }),
-    async execute({ input, context }) {
-      const { pipelineId, ...updates } = input;
-      return context.services.pipelineService.update(context.tenantId, pipelineId, updates);
-    },
-  },
-  {
-    name: 'pipeline_delete',
-    description: 'Delete a pipeline and cancel all pending executions.',
-    inputSchema: z.object({
-      pipelineId: z.string().uuid(),
-    }),
-    async execute({ input, context }) {
-      await context.services.pipelineService.delete(context.tenantId, input.pipelineId);
-      return { deleted: true };
-    },
-  },
-  {
-    name: 'pipeline_trigger',
-    description: 'Manually trigger a pipeline that has a manual trigger type.',
-    inputSchema: z.object({
-      pipelineId: z.string().uuid(),
-      payload: z.record(z.unknown()).optional()
-        .describe('Optional payload passed to the pipeline execution'),
-    }),
-    async execute({ input, context }) {
-      return context.services.pipelineService.manualTrigger(context.tenantId, input.pipelineId, input.payload);
-    },
-  },
-  {
-    name: 'pipeline_execution_history',
-    description: 'Get execution history for a pipeline with step-level detail.',
-    inputSchema: z.object({
-      pipelineId: z.string().uuid(),
-      limit: z.number().int().min(1).max(50).default(10),
-    }),
-    async execute({ input, context }) {
-      return context.services.pipelineService.getExecutionHistory(context.tenantId, input.pipelineId, input.limit);
-    },
-  },
-  {
-    name: 'pipeline_analytics',
-    description: 'Get aggregate performance metrics for a pipeline: success rate, avg duration, p95 duration, rejection rate.',
-    inputSchema: z.object({
-      pipelineId: z.string().uuid(),
-    }),
-    async execute({ input, context }) {
-      return context.services.analyticsService.getMetrics(context.tenantId, input.pipelineId);
-    },
-  },
-];
-```
+1. In `routes.ts`, add execution endpoints:
+2. **GET /api/pipelines/:id/executions** — Execution history:
+   - Query params: `status` (optional filter), `limit` (default 20, max 100), `offset`
+   - Filter by pipelineId AND tenantId
+   - Return paginated execution list with step summaries
+   - Support date range filtering: `since` and `until` query params (ISO date strings)
+3. **GET /api/executions/:id** — Get execution detail:
+   - Load execution by ID, verify tenantId
+   - Include all execution_steps with status, attempts, timing
+   - Include review_decisions if any
+   - Return 404 if not found or wrong tenant
+4. **POST /api/executions/:id/cancel** — Cancel execution:
+   - Verify tenant ownership
+   - Only cancellable if status IN ('pending', 'paused_at_gate', 'paused_on_failure')
+   - Update status to 'cancelled'
+   - Return updated execution
+5. **POST /api/review-decisions/:id/decide** — Submit review decision:
+   - Validate with `ReviewDecisionInput` Zod schema
+   - Extract tenantId from request context
+   - Delegate to DecisionRecorder (WP06)
+   - Return updated decision with resumption status
+6. **GET /api/pipelines/:id/review-decisions** — List pending review decisions:
+   - Filter by pipelineId AND tenantId AND status = 'pending'
+   - Include artifact references and execution context
+   - Return paginated list
 
 **Files**:
-- `src/tools/pipeline-tools.ts` (new, ~80 lines)
+- `joyus-ai-mcp-server/src/pipelines/routes.ts` (extend from T042, ~150 additional lines)
 
 **Validation**:
-- [ ] All 8 tools have unique `name` values prefixed with `pipeline_`
-- [ ] All `inputSchema` use Zod (matching existing tool pattern)
-- [ ] `pipeline_create` schema re-uses `createPipelineSchema` from `validation.ts` — no duplication
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- The `execute` function uses `context.services.pipelineService` — this requires a `PipelineService` facade to be wired in the MCP gateway context. Create a thin `PipelineService` class in `src/pipelines/service.ts` that wraps the DB operations and event bus calls. This avoids direct DB access in tool definitions.
+- [ ] Execution history is paginated and filterable
+- [ ] Execution detail includes step-level data
+- [ ] Cancel only works on cancellable statuses
+- [ ] Review decision delegates to DecisionRecorder
+- [ ] All routes enforce tenant isolation
 
 ---
 
-### T045: Enforce tenant scoping on all routes and tools
+## Subtask T044: Implement MCP Tool Definitions
 
-**Purpose**: Audit and verify that every route and MCP tool enforces tenant isolation. No route should return data from another tenant.
+**Purpose**: Define MCP tools for pipeline operations accessible by Claude agents.
 
 **Steps**:
-1. Verify all `db.select().from(pipelines)` queries include `.where(eq(pipelines.tenantId, tenantId))`
-2. Verify the review decision routes check `reviewDecisions.tenantId` before processing
-3. Verify MCP tools receive `context.tenantId` from the gateway (not from request body)
-4. Add a middleware-level check in `createPipelineRouter` that rejects requests without `req.tenantId`
+1. Create `joyus-ai-mcp-server/src/tools/pipeline-tools.ts`
+2. Define 8 MCP tools following the existing pattern in `src/tools/content-tools.ts`:
+3. **pipeline_create**: Create a new pipeline
+   - Input: name, description, triggerType, triggerConfig, steps[], retryPolicy, concurrencyPolicy
+   - Handler: validates, checks cycle, creates pipeline
+4. **pipeline_list**: List pipelines for the tenant
+   - Input: optional status filter, limit, offset
+   - Handler: queries with tenant filter
+5. **pipeline_trigger**: Manually trigger a pipeline
+   - Input: pipelineId, optional payload
+   - Handler: creates trigger event, publishes to event bus
+6. **pipeline_status**: Get pipeline status and current execution state
+   - Input: pipelineId
+   - Handler: loads pipeline + latest execution + next scheduled run
+7. **pipeline_history**: Get execution history for a pipeline
+   - Input: pipelineId, optional status filter, limit, offset
+   - Handler: queries executions with tenant filter
+8. **review_decide**: Submit a review decision
+   - Input: decisionId, status (approved/rejected), optional feedback
+   - Handler: delegates to DecisionRecorder
+9. **template_list**: List available pipeline templates
+   - Input: optional category filter
+   - Handler: queries templates
+10. **template_instantiate**: Create a pipeline from a template
+    - Input: templateId, parameters object, optional name override
+    - Handler: delegates to TemplateStore.instantiate
+11. All tools include:
+    - `name` (string, pipeline_ or template_ prefix)
+    - `description` (clear, human-readable)
+    - `inputSchema` (Zod schema matching the tool's input)
+    - `handler` (async function taking validated input + context, returning result)
 
-```typescript
-// Add to createPipelineRouter before other routes:
-router.use((req, res, next) => {
-  if (!req.tenantId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  next();
-});
-```
+**Important implementation details**:
+- Follow the exact registration pattern from `src/tools/content-tools.ts`
+- Every tool handler must extract tenantId from the tool execution context
+- Tool results should be structured for Claude readability: clear success/error messages, relevant data in the output
+- The pipeline_create tool should also validate step configs at creation time
 
 **Files**:
-- `src/pipelines/routes.ts` (modified — add router-level tenant check)
+- `joyus-ai-mcp-server/src/tools/pipeline-tools.ts` (new, ~300 lines)
 
 **Validation**:
-- [ ] Request without `req.tenantId` returns 401 on all pipeline routes
-- [ ] All DB queries in `routes.ts` include `tenantId` in the WHERE clause
-- [ ] MCP tools use `context.tenantId` exclusively (not from `input`)
-
-**Edge Cases**:
-- `pipeline_trigger` MCP tool allows passing a `payload` but not a `tenantId`. The tenant ID must come from `context.tenantId` only — never trust tenant ID from untrusted input.
+- [ ] All 8 tools defined with correct names, descriptions, schemas
+- [ ] All tools enforce tenant isolation via context
+- [ ] Tool handlers delegate to the correct pipeline module functions
+- [ ] `npm run typecheck` passes
 
 ---
 
-### T046: Create module entry point (`src/pipelines/index.ts`) — initialization and server wiring
+## Subtask T045: Enforce Tenant Scoping on All Routes and Tools
 
-**Purpose**: Define the `initializePipelines(app, db, options)` function that bootstraps the entire pipeline module — starts the executor, seeds templates, starts the escalation cron, and returns references needed by the router.
+**Purpose**: Verify that every route and tool enforces tenant isolation per the Leash pattern (ADR-0002).
 
 **Steps**:
-1. Update `src/pipelines/index.ts` (created in WP01 as a stub)
-2. Export `initializePipelines` async factory function
-3. On call: create event bus, trigger registry, step handler registry, executor, review services, template store
-4. Seed built-in templates
-5. Start executor and escalation cron
-6. Return `{ router, executor, eventBus, scheduleHandler }` for mounting in `src/index.ts`
-
-```typescript
-// src/pipelines/index.ts (replaces WP01 stub)
-export * from './schema';
-export * from './types';
-export * from './validation';
-export * from './event-bus';
-export * from './engine';
-export * from './steps';
-export * from './review';
-export * from './templates';
-
-import type { Express } from 'express';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { PgNotifyBus, createEventBus } from './event-bus';
-import { defaultTriggerRegistry } from './triggers/registry';
-import { ScheduleTriggerHandler } from './triggers/schedule';
-import { createDefaultStepHandlerRegistry } from './steps/registry';
-import { PipelineExecutor } from './engine/executor';
-import { startEscalationCron } from './review';
-import { seedBuiltInTemplates } from './templates/definitions';
-import { createPipelineRouter } from './routes';
-import type { StepHandlerDependencies } from './steps/registry';
-
-export interface PipelinesInitOptions {
-  connectionString: string;
-  stepHandlerDeps?: StepHandlerDependencies;
-  pollIntervalMs?: number;
-  escalationIntervalMs?: number;
-}
-
-export async function initializePipelines(
-  db: NodePgDatabase<Record<string, unknown>>,
-  options: PipelinesInitOptions,
-) {
-  // Seed built-in templates
-  await seedBuiltInTemplates(db);
-
-  // Create event bus
-  const eventBus = createEventBus(db, options.connectionString);
-  if (eventBus instanceof PgNotifyBus) {
-    await (eventBus as PgNotifyBus).start();
-  }
-
-  // Create registries
-  const scheduleHandler = new ScheduleTriggerHandler();
-  defaultTriggerRegistry.register(scheduleHandler);
-  const stepHandlerRegistry = createDefaultStepHandlerRegistry(options.stepHandlerDeps);
-
-  // Create and start executor
-  const executor = new PipelineExecutor(db, eventBus, defaultTriggerRegistry, stepHandlerRegistry, {
-    pollIntervalMs: options.pollIntervalMs,
-  });
-  await executor.start();
-
-  // Start escalation cron
-  const escalationTimer = startEscalationCron(db, undefined, options.escalationIntervalMs);
-
-  // Create router
-  const router = createPipelineRouter(db, eventBus, scheduleHandler);
-
-  return { router, executor, eventBus, escalationTimer };
-}
-```
+1. Audit every route handler in `routes.ts`:
+   - Every database query MUST include `tenantId` in the WHERE clause
+   - Every mutation MUST verify the target resource belongs to the requesting tenant
+   - Cross-tenant access attempts must return 404 (not 403, to prevent tenant enumeration)
+2. Audit every tool handler in `pipeline-tools.ts`:
+   - Every tool must extract tenantId from the execution context
+   - Every database operation must be scoped to that tenant
+3. Add a helper function for common tenant checks:
+   ```typescript
+   async function verifyTenantOwnership(
+     db: DrizzleClient,
+     resourceType: 'pipeline' | 'execution' | 'decision',
+     resourceId: string,
+     tenantId: string,
+   ): Promise<boolean>;
+   ```
+4. If any route or tool is missing tenant scoping, fix it
 
 **Files**:
-- `src/pipelines/index.ts` (modified — replaces WP01 stub, adds `initializePipelines`)
+- `joyus-ai-mcp-server/src/pipelines/routes.ts` (verify/fix)
+- `joyus-ai-mcp-server/src/tools/pipeline-tools.ts` (verify/fix)
 
 **Validation**:
-- [ ] `initializePipelines` is an async function (can be `await`ed in `src/index.ts`)
-- [ ] Returns `{ router, executor, eventBus, escalationTimer }` — all needed for graceful shutdown
-- [ ] `tsc --noEmit` passes
+- [ ] Every route includes tenantId in queries
+- [ ] Every tool extracts tenantId from context
+- [ ] Cross-tenant access returns 404
+- [ ] No data leakage paths exist
 
 ---
 
-### T047: Mount pipeline routes and register tools in `src/index.ts`
+## Subtask T046: Create Module Entry Point
 
-**Purpose**: Wire the pipeline module into the main Express server and MCP tool registry.
+**Purpose**: Create the initialization function that wires all pipeline module components together.
 
 **Steps**:
-1. Open `src/index.ts` (existing file)
-2. Call `initializePipelines(db, { connectionString: process.env.DATABASE_URL })` during startup
-3. Mount the returned router: `app.use('/pipelines', requireTenant, router)`
-4. Register `pipelineTools` with the existing tool registry
+1. Update `joyus-ai-mcp-server/src/pipelines/index.ts` to export an initialization function:
+   ```typescript
+   export interface PipelineModuleConfig {
+     db: DrizzleClient;
+     pool: Pool;
+     stepHandlerDeps: StepHandlerDependencies;
+     pollIntervalMs?: number;
+   }
 
-```typescript
-// src/index.ts — additions to existing startup sequence:
-import { initializePipelines } from './pipelines';
-import { pipelineTools } from './tools/pipeline-tools';
-import { requireTenant } from './middleware/auth';  // existing middleware
+   export async function initializePipelineModule(config: PipelineModuleConfig): Promise<PipelineModule> {
+     // 1. Create event bus
+     const eventBus = createEventBus(config.pool, { pollIntervalMs: config.pollIntervalMs });
 
-// In startup async function:
-const { router: pipelineRouter, executor, escalationTimer } = await initializePipelines(db, {
-  connectionString: process.env.DATABASE_URL!,
-});
+     // 2. Create step registry
+     const stepRegistry = createStepRegistry(config.stepHandlerDeps);
 
-app.use('/pipelines', requireTenant, pipelineRouter);
+     // 3. Create trigger registry
+     const triggerRegistry = createTriggerRegistry(config.db);
 
-// Register MCP tools
-for (const tool of pipelineTools) {
-  toolRegistry.register(tool);
-}
+     // 4. Create step runner
+     const stepRunner = new StepRunner(config.db, stepRegistry);
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  await executor.stop();
-  clearInterval(escalationTimer);
-  // ... existing shutdown logic
-});
-```
+     // 5. Create executor
+     const executor = new PipelineExecutor(config.db, eventBus, triggerRegistry, stepRunner);
+
+     // 6. Create review components
+     const reviewGate = new ReviewGate(config.db);
+     const decisionRecorder = new DecisionRecorder(config.db);
+     const escalationChecker = new EscalationChecker(config.db);
+
+     // 7. Create template store
+     const templateStore = new TemplateStore(config.db);
+
+     // 8. Create schedule handler and register it
+     const scheduleHandler = new ScheduleTriggerHandler(config.db, eventBus);
+     triggerRegistry.register(scheduleHandler);
+
+     // 9. Seed built-in templates
+     await seedBuiltInTemplates(templateStore);
+
+     // 10. Load scheduled pipelines
+     await scheduleHandler.loadAllSchedules();
+
+     // 11. Start escalation cron job
+     startEscalationJob(escalationChecker);
+
+     // 12. Start executor (begins processing events)
+     await executor.start();
+
+     return {
+       executor,
+       eventBus,
+       triggerRegistry,
+       stepRegistry,
+       reviewGate,
+       decisionRecorder,
+       templateStore,
+       scheduleHandler,
+       async shutdown() {
+         await executor.stop();
+         scheduleHandler.stopAll();
+         stopEscalationJob();
+       },
+     };
+   }
+   ```
+2. Define `PipelineModule` interface with all component references and shutdown method
+3. Create the Express router factory:
+   ```typescript
+   export function createPipelineRouter(module: PipelineModule): Router;
+   ```
 
 **Files**:
-- `src/index.ts` (modified — add pipeline initialization, route mounting, tool registration)
+- `joyus-ai-mcp-server/src/pipelines/index.ts` (rewrite — becomes the module entry point, ~100 lines)
 
 **Validation**:
-- [ ] `npm run typecheck` passes on modified `src/index.ts`
-- [ ] Server starts without errors: `npm run dev`
-- [ ] `GET /pipelines` returns 401 without auth, 200 (empty array) with valid auth
-
-**Edge Cases**:
-- `requireTenant` middleware must be applied to the pipeline router mount, not inside the router itself (the router has its own fallback check from T045, but the middleware is the primary enforcement layer).
+- [ ] All components are wired together correctly
+- [ ] Initialization order is correct (dependencies before dependents)
+- [ ] Shutdown cleans up all resources
+- [ ] `npm run typecheck` passes
 
 ---
 
-### T048: Unit tests for routes and tools
+## Subtask T047: Mount Pipeline Routes and Register Tools in Server
 
-**Purpose**: Verify route input validation, tenant scoping enforcement, and MCP tool schema correctness.
+**Purpose**: Wire the pipeline module into the existing Express server and tool system.
 
 **Steps**:
-1. Create `tests/pipelines/routes.test.ts` — test input validation and 401/404 responses
-2. Create `tests/pipelines/tools.test.ts` — test MCP tool input schema parsing
+1. Edit `joyus-ai-mcp-server/src/index.ts`:
+   - Import `initializePipelineModule` and `createPipelineRouter`
+   - After existing initialization (content module, scheduler, etc.):
+     ```typescript
+     const pipelineModule = await initializePipelineModule({
+       db,
+       pool,
+       stepHandlerDeps: {
+         db,
+         // Platform service clients — wire real implementations when available
+         // For now, leave optional deps as undefined (handlers will return non-transient errors)
+       },
+     });
+     const pipelineRouter = createPipelineRouter(pipelineModule);
+     app.use('/api', pipelineRouter);
+     ```
+   - On shutdown: call `pipelineModule.shutdown()`
+2. Register MCP tools:
+   - Import pipeline tools from `src/tools/pipeline-tools.ts`
+   - Register them in `src/tools/index.ts` (add to the tool definitions array)
+   - Verify the executor dispatches pipeline_ prefixed tools correctly
+3. Verify existing routes and tools still work (no conflicts)
 
-```typescript
-// tests/pipelines/routes.test.ts (validation-only, no DB required)
-import { describe, it, expect } from 'vitest';
-import { createPipelineSchema } from '../../src/pipelines/validation';
-
-describe('createPipelineSchema', () => {
-  it('rejects empty stepConfigs', () => {
-    const result = createPipelineSchema.safeParse({
-      name: 'My Pipeline',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid triggerConfig type', () => {
-    const result = createPipelineSchema.safeParse({
-      name: 'My Pipeline',
-      triggerConfig: { type: 'unknown_type' },
-      stepConfigs: [{ stepType: 'notification', name: 'n', config: {}, requiresReview: false }],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts a valid manual pipeline', () => {
-    const result = createPipelineSchema.safeParse({
-      name: 'My Pipeline',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [{ stepType: 'notification', name: 'Alert', config: { channel: 'slack', recipient: '#general', message: 'Done' }, requiresReview: false }],
-    });
-    expect(result.success).toBe(true);
-  });
-});
-
-// tests/pipelines/tools.test.ts
-import { describe, it, expect } from 'vitest';
-import { pipelineTools } from '../../src/tools/pipeline-tools';
-
-describe('pipelineTools', () => {
-  it('has exactly 8 tools', () => {
-    expect(pipelineTools).toHaveLength(8);
-  });
-
-  it('all tool names are unique and prefixed with pipeline_', () => {
-    const names = pipelineTools.map((t) => t.name);
-    expect(new Set(names).size).toBe(names.length);
-    expect(names.every((n) => n.startsWith('pipeline_'))).toBe(true);
-  });
-
-  it('pipeline_create tool accepts valid createPipeline input', () => {
-    const tool = pipelineTools.find((t) => t.name === 'pipeline_create')!;
-    const result = tool.inputSchema.safeParse({
-      name: 'Test',
-      triggerConfig: { type: 'manual' },
-      stepConfigs: [{ stepType: 'notification', name: 'n', config: {}, requiresReview: false }],
-    });
-    expect(result.success).toBe(true);
-  });
-});
-```
+**Important implementation details**:
+- The pipeline routes are mounted under `/api` alongside existing routes. Ensure no route path conflicts.
+- The MCP tools registration must follow the existing pattern exactly — check how content tools are registered.
+- Step handler dependencies for platform services (profile engine, content intelligence) should be wired to real implementations when those features are available. For now, they can be undefined.
 
 **Files**:
-- `tests/pipelines/routes.test.ts` (new, ~40 lines)
-- `tests/pipelines/tools.test.ts` (new, ~30 lines)
+- `joyus-ai-mcp-server/src/index.ts` (modify — add pipeline initialization and route mount)
+- `joyus-ai-mcp-server/src/tools/index.ts` (modify — register pipeline tools)
 
 **Validation**:
-- [ ] `npm test tests/pipelines/routes.test.ts` exits 0
-- [ ] `npm test tests/pipelines/tools.test.ts` exits 0
-- [ ] 8 tools verified, all uniquely named with `pipeline_` prefix
+- [ ] Pipeline routes accessible at `/api/pipelines/*`
+- [ ] MCP tools registered and callable
+- [ ] Existing routes and tools unaffected
+- [ ] Server startup succeeds with pipeline module
+- [ ] Server shutdown cleans up pipeline resources
+- [ ] `npm run typecheck` passes
+
+---
+
+## Subtask T048: Unit Tests for Routes and Tools
+
+**Purpose**: Verify route handlers and MCP tools work correctly.
+
+**Steps**:
+1. Create `joyus-ai-mcp-server/tests/pipelines/routes.test.ts` (or split by concern)
+2. Route test cases:
+   - **POST /api/pipelines**: Valid input creates pipeline, returns 201
+   - **POST /api/pipelines**: Invalid input returns 400 with validation errors
+   - **POST /api/pipelines**: Exceeds tenant limit returns 409
+   - **POST /api/pipelines**: Cycle detected returns 409 with cycle path
+   - **GET /api/pipelines**: Returns tenant's pipelines (not other tenants')
+   - **GET /api/pipelines/:id**: Returns 404 for other tenant's pipeline
+   - **POST /api/pipelines/:id/trigger**: Creates trigger event, returns 202
+   - **POST /api/review-decisions/:id/decide**: Records decision, returns updated status
+   - **GET /api/pipelines/:id/executions**: Returns paginated history with tenant filter
+3. Tool test cases (can be inline or in a separate file):
+   - **pipeline_create**: Valid input creates pipeline via tool
+   - **pipeline_list**: Returns tenant-scoped results
+   - **pipeline_trigger**: Publishes event
+   - **review_decide**: Delegates to DecisionRecorder
+   - **template_list**: Returns active templates
+   - **template_instantiate**: Creates pipeline from template
+4. Use Vitest + supertest (or direct handler invocation) for route tests
+
+**Files**:
+- `joyus-ai-mcp-server/tests/pipelines/routes.test.ts` (new, ~250 lines)
+
+**Validation**:
+- [ ] All tests pass via `npm run test`
+- [ ] Tests verify tenant isolation on every route
+- [ ] Tests cover success and error paths
 
 ---
 
 ## Definition of Done
 
-- [ ] `src/pipelines/routes.ts` — CRUD + execution history + review decision routes, tenant scoping
-- [ ] `src/tools/pipeline-tools.ts` — 8 MCP tools with Zod input schemas
-- [ ] `src/pipelines/index.ts` — `initializePipelines` factory
-- [ ] `src/index.ts` — pipeline module mounted, tools registered
-- [ ] Tests passing: schema validation, tool count/naming
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm test` exits 0 with no regressions
-- [ ] Server starts without errors after modification
+- [ ] Express routes for full pipeline lifecycle (CRUD, trigger, history, review, cancel)
+- [ ] 8 MCP tools registered and functional
+- [ ] Tenant isolation enforced on ALL routes and tools (Leash pattern)
+- [ ] Module initialization wires all components correctly
+- [ ] Pipeline routes mounted in server, tools registered
+- [ ] Pipeline creation validates: Zod schema, step configs, cycle detection, tenant limit
+- [ ] Unit tests cover routes and tools
+- [ ] `npm run validate` passes with zero errors
 
 ## Risks
 
-- **Circular import via index.ts**: `src/pipelines/index.ts` imports from every sub-module. If any sub-module imports from `src/pipelines/index.ts`, a circular import cycle will form. Sub-modules must import from their direct dependencies, not from the barrel.
-- **requireTenant middleware coupling**: This WP assumes `requireTenant` middleware exists and sets `req.tenantId`. If the middleware API differs (e.g., uses `req.auth.tenantId`), all tenant scope checks must be updated. Read the existing middleware before implementing.
-- **Tool context shape**: `context.services.pipelineService` assumes a `PipelineService` facade exists in the MCP tool context. If the existing tools use a different context shape (e.g., direct `context.db`), the tool definitions must be adapted to match.
+- **Tool registration pattern**: Must exactly match the existing pattern. Inspect `content-tools.ts` and `tools/index.ts` carefully before implementing.
+- **Route path conflicts**: Pipeline routes under `/api` must not conflict with existing content routes. Verify existing route paths.
+- **Module initialization order**: The pipeline module depends on db, pool, and optional platform services. If initialization runs before the database is ready, it will fail.
 
 ## Reviewer Guidance
 
-- Verify every DB query in `routes.ts` includes `eq(table.tenantId, req.tenantId)` — cross-tenant data leakage is a security bug, not just a functional bug.
-- Check that `pipeline_trigger` in the MCP tools passes `context.tenantId` to the underlying service, not anything from `input` — tenant ID must always come from the authenticated session.
-- Confirm `initializePipelines` is `await`ed before `app.listen()` in `src/index.ts` — the executor must be running and templates seeded before the server accepts requests.
+- Verify EVERY route and tool includes tenantId in queries (Leash pattern audit)
+- Check that cross-tenant access returns 404 (not 403) to prevent enumeration
+- Verify pipeline creation runs: Zod validation -> step config validation -> cycle detection -> tenant limit check -> persist
+- Check that tool names follow the `pipeline_` and `template_` prefix convention
+- Verify module initialization creates all components in correct dependency order
+- Confirm server mount does not break existing routes or tools
+- Check that shutdown() cleans up: executor, event bus, cron jobs, schedule handler
+
+## Activity Log

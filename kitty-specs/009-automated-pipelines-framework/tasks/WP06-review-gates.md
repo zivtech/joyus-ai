@@ -1,511 +1,400 @@
 ---
-work_package_id: "WP06"
-title: "Review Gates"
-lane: "planned"
-dependencies: ["WP04"]
-subtasks: ["T030", "T031", "T032", "T033", "T034", "T035"]
+work_package_id: WP06
+title: Review Gates
+lane: planned
+dependencies: []
+subtasks: [T030, T031, T032, T033, T034, T035]
+phase: Phase D - Review Gates & Scheduling
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP06: Review Gates
 
-**Implementation command**: `spec-kitty implement WP06 --base WP04`
-**Target repo**: `joyus-ai`
-**Dependencies**: WP04 (Pipeline Executor)
-**Priority**: P1 | Can run in parallel with WP07
-
 ## Objective
 
-Build the human-in-the-loop review mechanism: pause pipeline execution at designated steps, route artifacts to a review queue, record reviewer decisions (approve/reject/partial), resume execution on approval, store structured rejection feedback, and escalate reviews that exceed their timeout window.
+Build the human-in-the-loop review gate mechanism. When a pipeline reaches a `review_gate` step, execution pauses, pending artifacts are routed to the tenant's review queue, and the pipeline resumes only when all review decisions are submitted. Rejected artifacts include structured feedback. Gates that exceed their timeout are escalated, never auto-approved.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP06 --base WP04
+```
 
 ## Context
 
-Review gates are the primary governance mechanism for Spec 009 (FR-004: human-in-the-loop control). When a step with `requiresReview: true` completes, the `StepRunner` (WP04) sets the execution status to `waiting_review`. This WP implements what happens next.
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (FR-006: review gates, FR-007: escalation, FR-008: rejection feedback)
+- **Research**: `kitty-specs/009-automated-pipelines-framework/research.md` (R5: Review Queue Integration)
+- **Data Model**: `kitty-specs/009-automated-pipelines-framework/data-model.md` (ReviewDecision table, PipelineExecution state transitions)
 
-**Resumption model**: After a reviewer approves, the execution must resume from the step immediately after the review gate. The `StepRunner.runAllSteps` loop already skips completed steps, so resuming means calling `runExecution` again on the paused execution. The review decision record is how the system knows which step index the execution paused at.
+Review gates are the platform's mechanism for human oversight of automated content production (Constitution §2.7). The pipeline framework defines how pipelines interact with review queues — the review queue UI itself is out of scope.
 
-**Partial approval**: A step may produce multiple artifacts (e.g., 3 generated emails). The reviewer can approve some and reject others. Approved artifacts move forward; rejected artifacts have feedback stored but do not block the pipeline — only a full rejection (`decision: 'rejected'`) cancels execution.
-
-**Escalation**: Reviews that exceed `reviewTimeoutHours` are escalated. Escalation does not auto-approve or auto-reject — it sends a notification and sets `escalation_status = 'escalated'`. The pipeline remains paused. Resolving escalation is a human action.
-
-WP06 runs in parallel with WP07 — both depend only on WP04.
-
----
-
-## Subtasks
-
-### T030: Implement ReviewGate — pause execution and create pending review decisions (`src/pipelines/review/gate.ts`)
-
-**Purpose**: When the `StepRunner` signals a review gate, create the `review_decisions` row in `pending` state with the timeout timestamp.
-
-**Steps**:
-1. Create `src/pipelines/review/gate.ts`
-2. Define `ReviewGate` class with `createReviewDecision(executionId, stepIndex, tenantId, stepConfig)`
-3. Calculate `timeoutAt` from `stepConfig.reviewTimeoutHours` (default: 24h)
-4. Insert the `review_decisions` row with `escalation_status: 'pending'`
-
-```typescript
-// src/pipelines/review/gate.ts
-import { eq, and } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { reviewDecisions } from '../schema';
-import type { StepConfig } from '../types';
-import { DEFAULT_REVIEW_TIMEOUT_HOURS } from '../types';
-
-export class ReviewGate {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
-
-  /**
-   * Called by StepRunner after a step with requiresReview: true completes.
-   * Creates the pending review decision row that blocks resumption.
-   */
-  async createReviewDecision(
-    executionId: string,
-    stepIndex: number,
-    tenantId: string,
-    stepConfig: StepConfig,
-    artifactPaths: string[] = [],
-  ): Promise<string> {
-    const timeoutHours = stepConfig.reviewTimeoutHours ?? DEFAULT_REVIEW_TIMEOUT_HOURS;
-    const timeoutAt = new Date(Date.now() + timeoutHours * 60 * 60 * 1000);
-
-    const [decision] = await this.db
-      .insert(reviewDecisions)
-      .values({
-        executionId,
-        stepIndex,
-        tenantId,
-        escalationStatus: 'pending',
-        timeoutAt,
-        // artifactApprovals: pre-populated with null for each artifact (reviewer fills in true/false)
-        artifactApprovals: Object.fromEntries(artifactPaths.map((p) => [p, null])),
-      })
-      .returning({ id: reviewDecisions.id });
-
-    return decision.id;
-  }
-
-  /**
-   * Check if an execution has a pending review decision blocking it.
-   */
-  async getPendingDecision(
-    executionId: string,
-    stepIndex: number,
-  ): Promise<typeof reviewDecisions.$inferSelect | null> {
-    const rows = await this.db
-      .select()
-      .from(reviewDecisions)
-      .where(
-        and(
-          eq(reviewDecisions.executionId, executionId),
-          eq(reviewDecisions.stepIndex, stepIndex),
-        ),
-      )
-      .limit(1);
-
-    return rows[0] ?? null;
-  }
-}
-```
-
-**Files**:
-- `src/pipelines/review/gate.ts` (new, ~55 lines)
-
-**Validation**:
-- [ ] `createReviewDecision` inserts a row with `escalation_status: 'pending'` and correct `timeoutAt`
-- [ ] `timeoutAt` is 24 hours from now when `reviewTimeoutHours` is not set
-- [ ] `artifactApprovals` is populated with `null` values for each artifact path
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- If `createReviewDecision` is called twice for the same `(executionId, stepIndex)` (e.g., on retry), use `INSERT ... ON CONFLICT DO NOTHING` to avoid duplicate review rows. The existing pending decision from the first call should be preserved.
+**Key design decisions from research.md (R5)**:
+- Pipeline pauses with `paused_at_gate` status when it hits a review_gate step
+- One ReviewDecision row per artifact per gate (not one per execution)
+- Resumption is triggered when all decisions for a gate are submitted
+- Rejected artifacts are removed from the forward path; approved artifacts continue
+- Escalation checks run hourly via cron; never auto-approve or auto-reject
+- Escalation is configurable per pipeline (default: 48 hours, escalate to admin)
 
 ---
 
-### T031: Implement decision recording and pipeline resumption logic (`src/pipelines/review/decision.ts`)
+## Subtask T030: Implement ReviewGate — Pause Execution and Create Decisions
 
-**Purpose**: Process a reviewer's decision — record it to the DB, then either resume or cancel the pipeline execution based on the decision type.
+**Purpose**: When the executor encounters a review_gate step, pause the pipeline and create pending review decision records for each artifact.
 
 **Steps**:
-1. Create `src/pipelines/review/decision.ts`
-2. Define `DecisionService` class with `recordDecision(decisionId, input, executorRef)` method
-3. On `approved`: update decision row, set execution `status = 'running'`, call `executor.runExecution(executionId)` to resume
-4. On `rejected`: update decision row, set execution `status = 'cancelled'`
-5. On `partial`: update decision row with per-artifact approvals, resume execution
+1. Create `joyus-ai-mcp-server/src/pipelines/review/gate.ts`
+2. Implement `ReviewGate` class:
+   ```typescript
+   export class ReviewGate {
+     constructor(private db: DrizzleClient) {}
 
-```typescript
-// src/pipelines/review/decision.ts
-import { eq } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { reviewDecisions, pipelineExecutions } from '../schema';
-import type { ReviewDecisionInput } from '../validation';
-import type { PipelineExecutor } from '../engine/executor';
+     /**
+      * Pause a pipeline execution at a review gate step.
+      * Creates ReviewDecision rows for each artifact requiring review.
+      * Returns the created decision IDs.
+      */
+     async pauseAtGate(
+       execution: PipelineExecution,
+       gateStep: ExecutionStep,
+       artifacts: ArtifactRef[],
+       profileVersionRef?: string,
+     ): Promise<string[]>;
+   }
+   ```
+3. **pauseAtGate(execution, gateStep, artifacts, profileVersionRef)**:
+   - For each artifact in the artifacts array:
+     - INSERT into `review_decisions` table:
+       - executionId = execution.id
+       - executionStepId = gateStep.id
+       - tenantId = execution.tenantId
+       - artifactRef = artifact (jsonb)
+       - profileVersionRef = profileVersionRef (from upstream profile generation step)
+       - status = 'pending'
+     - Collect the created decision IDs
+   - Update the execution_step (gateStep) status to `running` (it stays running while awaiting review)
+   - Update the pipeline_execution status to `paused_at_gate`
+   - Update the pipeline_execution `currentStepPosition` to the gate step's position
+   - Return the decision IDs
+4. The executor (WP04 T018) calls this method when it encounters a `review_gate` step type, then breaks its step loop (stops processing further steps)
 
-export class DecisionService {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
-
-  async recordDecision(
-    decisionId: string,
-    reviewerId: string,
-    input: ReviewDecisionInput,
-    executor: PipelineExecutor,
-  ): Promise<void> {
-    // Fetch the decision to get executionId
-    const rows = await this.db
-      .select()
-      .from(reviewDecisions)
-      .where(eq(reviewDecisions.id, decisionId))
-      .limit(1);
-
-    if (rows.length === 0) throw new Error(`Review decision ${decisionId} not found`);
-    const decisionRow = rows[0];
-
-    // Prevent re-deciding an already-decided review
-    if (decisionRow.decidedAt) {
-      throw new Error(`Review decision ${decisionId} has already been decided`);
-    }
-
-    // Record the decision
-    await this.db
-      .update(reviewDecisions)
-      .set({
-        decision: input.decision,
-        feedback: input.feedback,
-        reviewerId,
-        artifactApprovals: input.artifactApprovals ?? decisionRow.artifactApprovals,
-        decidedAt: new Date(),
-        escalationStatus: 'resolved',
-      })
-      .where(eq(reviewDecisions.id, decisionId));
-
-    // Act on the decision
-    if (input.decision === 'rejected') {
-      await this.db
-        .update(pipelineExecutions)
-        .set({ status: 'cancelled', completedAt: new Date(), errorMessage: `Rejected by reviewer: ${input.feedback ?? ''}` })
-        .where(eq(pipelineExecutions.id, decisionRow.executionId));
-    } else {
-      // approved or partial — resume execution from the next step
-      await this.db
-        .update(pipelineExecutions)
-        .set({ status: 'running' })
-        .where(eq(pipelineExecutions.id, decisionRow.executionId));
-
-      // Resume asynchronously — don't block the HTTP response
-      void executor.runExecution(decisionRow.executionId);
-    }
-  }
-}
-```
+**Artifact resolution**: The gate step's config specifies which upstream steps' outputs are artifacts for review. The executor resolves these from `previousStepOutputs` using the gate step's `inputRefs`. If `inputRefs` is empty, all outputs from immediately preceding steps are treated as artifacts.
 
 **Files**:
-- `src/pipelines/review/decision.ts` (new, ~55 lines)
+- `joyus-ai-mcp-server/src/pipelines/review/gate.ts` (new, ~80 lines)
 
 **Validation**:
-- [ ] `approved` decision: execution status set to `running`, `executor.runExecution` called
-- [ ] `rejected` decision: execution status set to `cancelled` with feedback in `errorMessage`
-- [ ] `partial` decision: treated same as `approved` for execution flow (artifacts with `false` approvals are already recorded)
-- [ ] Calling `recordDecision` on an already-decided review throws an error
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `executor.runExecution` is called with `void` to avoid blocking the HTTP response. The resumed execution runs asynchronously. The caller (API route) should return 200 immediately after recording the decision.
-- Tenant scoping: verify the `decisionId` belongs to the correct tenant before allowing the decision. The API route (WP08) should enforce this, but `DecisionService` should also check.
+- [ ] Creates one ReviewDecision row per artifact
+- [ ] Sets execution status to `paused_at_gate`
+- [ ] Sets execution_step status to `running`
+- [ ] Returns correct decision IDs
+- [ ] Handles zero artifacts gracefully (skip gate, continue pipeline)
 
 ---
 
-### T032: Implement structured rejection feedback storage and artifact path filtering
+## Subtask T031: Implement Decision Recording and Pipeline Resumption
 
-**Purpose**: Ensure rejection feedback is stored in a structured format and that partially approved artifact sets are correctly represented in the decision record.
+**Purpose**: Record reviewer decisions (approve/reject) and resume the pipeline when all decisions for a gate are complete.
 
 **Steps**:
-1. This task extends `gate.ts` and `decision.ts` — no new file required
-2. The `artifactApprovals` jsonb column stores `{ "path/to/artifact": true | false | null }` (null = not yet decided, true = approved, false = rejected)
-3. Add a helper `getApprovedArtifacts(decisionId)` to `gate.ts` that returns only the `true` entries
+1. Create `joyus-ai-mcp-server/src/pipelines/review/decision.ts`
+2. Implement `DecisionRecorder` class:
+   ```typescript
+   export class DecisionRecorder {
+     constructor(private db: DrizzleClient) {}
 
-```typescript
-// Addition to src/pipelines/review/gate.ts
+     /**
+      * Record a single review decision.
+      * If all decisions for this gate are complete, triggers pipeline resumption.
+      */
+     async recordDecision(
+       decisionId: string,
+       tenantId: string,
+       status: 'approved' | 'rejected',
+       reviewerId: string,
+       feedback?: ReviewFeedback,
+     ): Promise<{ allDecisionsComplete: boolean; executionId: string }>;
 
-  /**
-   * Returns the set of artifact paths that were explicitly approved.
-   * Used by downstream steps to know which artifacts to process.
-   */
-  async getApprovedArtifacts(decisionId: string): Promise<string[]> {
-    const rows = await this.db
-      .select({ artifactApprovals: reviewDecisions.artifactApprovals })
-      .from(reviewDecisions)
-      .where(eq(reviewDecisions.id, decisionId))
-      .limit(1);
+     /**
+      * Check if all decisions for a given gate step are complete.
+      */
+     async areAllDecisionsComplete(executionId: string, executionStepId: string): Promise<boolean>;
 
-    if (rows.length === 0) return [];
-    const approvals = rows[0].artifactApprovals as Record<string, boolean | null>;
-    return Object.entries(approvals)
-      .filter(([, approved]) => approved === true)
-      .map(([path]) => path);
-  }
-```
+     /**
+      * Resume a pipeline execution after all review decisions are submitted.
+      */
+     async resumeExecution(executionId: string): Promise<void>;
+   }
+   ```
+3. **recordDecision(decisionId, tenantId, status, reviewerId, feedback)**:
+   - Load the ReviewDecision by ID
+   - Verify it belongs to the specified tenant (tenant isolation)
+   - Verify its current status is `pending` (reject duplicate decisions)
+   - Update the row: status, reviewerId, decidedAt = now(), feedback (if rejected)
+   - Check if all decisions for this gate are complete (call areAllDecisionsComplete)
+   - If all complete: call resumeExecution
+   - Return `{ allDecisionsComplete, executionId }`
+4. **areAllDecisionsComplete(executionId, executionStepId)**:
+   - Query review_decisions WHERE executionId AND executionStepId
+   - Return true if ALL rows have status != 'pending'
+5. **resumeExecution(executionId)**:
+   - Load the pipeline_execution
+   - Partition review decisions into approved and rejected sets
+   - Update the execution's context: downstream steps should only process approved artifacts
+   - Store rejected artifact references and feedback in the execution's `outputArtifacts` or a separate field for downstream reference
+   - Update execution_step (the gate step) status to `completed`, set completedAt
+   - Update pipeline_execution status from `paused_at_gate` to `running`
+   - The executor will pick up this execution on its next poll cycle and continue from the next step
+
+**Important implementation details**:
+- Resumption does NOT re-run the step runner. It simply changes the execution status back to `running`. The executor's poll loop detects this and continues from `currentStepPosition + 1`.
+- The executor needs to support resuming: on finding an execution with status `running` and `currentStepPosition > 0`, it should continue from that position rather than starting over.
+- If ALL artifacts at a gate are rejected, the pipeline may need to handle the "no artifacts to forward" case. The next step receives an empty artifact set and can decide to be a no-op.
 
 **Files**:
-- `src/pipelines/review/gate.ts` (modified — add `getApprovedArtifacts`)
+- `joyus-ai-mcp-server/src/pipelines/review/decision.ts` (new, ~120 lines)
 
 **Validation**:
-- [ ] `getApprovedArtifacts` returns only paths with `true` value
-- [ ] Paths with `null` (undecided) and `false` (rejected) are excluded
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- When a reviewer submits a `partial` decision without specifying `artifactApprovals`, all artifacts should be treated as approved by default (conservative: don't silently discard work). Document this default in the API schema.
+- [ ] Records decision with correct status, reviewer, feedback, timestamp
+- [ ] Verifies tenant isolation (rejects cross-tenant decisions)
+- [ ] Rejects duplicate decisions on the same review_decision row
+- [ ] Detects when all decisions are complete
+- [ ] Resumes execution by changing status from paused_at_gate to running
+- [ ] Partitions artifacts into approved/rejected sets
 
 ---
 
-### T033: Implement timeout escalation logic (`src/pipelines/review/escalation.ts`)
+## Subtask T032: Implement Structured Rejection Feedback and Artifact Path Filtering
 
-**Purpose**: Find pending review decisions that have exceeded their `timeoutAt` timestamp and escalate them — sending a notification and updating `escalation_status`.
+**Purpose**: Store rejection feedback as structured signals and ensure rejected artifacts are excluded from downstream steps.
 
 **Steps**:
-1. Create `src/pipelines/review/escalation.ts`
-2. Define `EscalationService` with `escalateTimedOutReviews(notifier)` method
-3. Query `review_decisions WHERE decided_at IS NULL AND timeout_at < NOW() AND escalation_status = 'pending'`
-4. For each: update `escalation_status = 'escalated'`, send notification
-5. Escalation does NOT auto-approve or auto-reject — the pipeline stays paused
-
-```typescript
-// src/pipelines/review/escalation.ts
-import { and, isNull, lt, eq } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { reviewDecisions, pipelineExecutions, pipelines } from '../schema';
-
-export interface EscalationNotifier {
-  notifyEscalation(params: {
-    tenantId: string;
-    pipelineId: string;
-    pipelineName: string;
-    executionId: string;
-    decisionId: string;
-    stepIndex: number;
-    timedOutAt: Date;
-  }): Promise<void>;
-}
-
-export class NullEscalationNotifier implements EscalationNotifier {
-  async notifyEscalation(params: Parameters<EscalationNotifier['notifyEscalation']>[0]) {
-    console.warn(`[EscalationNotifier] Review timed out for execution ${params.executionId}, step ${params.stepIndex}`);
-  }
-}
-
-export class EscalationService {
-  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
-
-  /**
-   * Runs periodically (e.g., every 15 minutes via cron).
-   * Finds timed-out pending reviews and escalates them.
-   * Never auto-approves or auto-rejects.
-   */
-  async escalateTimedOutReviews(notifier: EscalationNotifier): Promise<number> {
-    const now = new Date();
-
-    const timedOut = await this.db
-      .select({
-        decisionId: reviewDecisions.id,
-        executionId: reviewDecisions.executionId,
-        stepIndex: reviewDecisions.stepIndex,
-        tenantId: reviewDecisions.tenantId,
-        timeoutAt: reviewDecisions.timeoutAt,
-      })
-      .from(reviewDecisions)
-      .where(
-        and(
-          isNull(reviewDecisions.decidedAt),
-          lt(reviewDecisions.timeoutAt, now),
-          eq(reviewDecisions.escalationStatus, 'pending'),
-        ),
-      )
-      .limit(50);
-
-    if (timedOut.length === 0) return 0;
-
-    for (const row of timedOut) {
-      // Update escalation status
-      await this.db
-        .update(reviewDecisions)
-        .set({ escalationStatus: 'escalated' })
-        .where(eq(reviewDecisions.id, row.decisionId));
-
-      // Fetch pipeline name for notification
-      const executionRows = await this.db
-        .select({ pipelineId: pipelineExecutions.pipelineId })
-        .from(pipelineExecutions)
-        .where(eq(pipelineExecutions.id, row.executionId))
-        .limit(1);
-
-      if (executionRows.length === 0) continue;
-      const pipelineId = executionRows[0].pipelineId;
-
-      const pipelineRows = await this.db
-        .select({ name: pipelines.name })
-        .from(pipelines)
-        .where(eq(pipelines.id, pipelineId))
-        .limit(1);
-
-      await notifier.notifyEscalation({
-        tenantId: row.tenantId,
-        pipelineId,
-        pipelineName: pipelineRows[0]?.name ?? 'Unknown',
-        executionId: row.executionId,
-        decisionId: row.decisionId,
-        stepIndex: row.stepIndex,
-        timedOutAt: row.timeoutAt!,
-      });
-    }
-
-    return timedOut.length;
-  }
-}
-```
+1. In `decision.ts`, enhance the resumeExecution logic:
+2. When partitioning decisions:
+   - Approved artifacts: extract artifact references, add to execution context for downstream
+   - Rejected artifacts: extract artifact references + feedback, store as structured signals
+3. Structured rejection signal shape (stored in ReviewDecision.feedback jsonb):
+   ```typescript
+   {
+     reason: string;            // Human-readable rejection reason
+     category: string;          // e.g., 'accuracy', 'tone', 'compliance', 'formatting', 'other'
+     details?: string;          // Optional detailed explanation
+     suggestedAction?: string;  // What to do differently (e.g., "Adjust tone parameters")
+   }
+   ```
+4. Update execution context for downstream steps:
+   - Add a `reviewGateResults` field to the execution's output that downstream steps can reference:
+     ```typescript
+     {
+       gateStepPosition: number;
+       approvedArtifacts: ArtifactRef[];
+       rejectedArtifacts: Array<{ artifact: ArtifactRef; feedback: ReviewFeedback }>;
+       approvalRate: number; // 0.0-1.0
+     }
+     ```
+5. Downstream steps that consume artifacts via input_refs should only receive approved artifacts. The step runner resolves input_refs from `previousStepOutputs`, which is updated after the gate to only include approved items.
 
 **Files**:
-- `src/pipelines/review/escalation.ts` (new, ~80 lines)
+- `joyus-ai-mcp-server/src/pipelines/review/decision.ts` (extend from T031, ~30 additional lines)
 
 **Validation**:
-- [ ] Only rows with `decided_at IS NULL AND timeout_at < NOW() AND escalation_status = 'pending'` are escalated
-- [ ] After escalation, `escalation_status = 'escalated'` (not `resolved`)
-- [ ] Pipeline execution status is NOT changed — execution remains `waiting_review`
-- [ ] `NullEscalationNotifier` logs a warning without throwing
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- Escalation is idempotent: if the cron runs twice before a reviewer acts, the second run finds `escalation_status = 'escalated'` and skips those rows (the `WHERE escalation_status = 'pending'` clause).
-- `timeoutAt` may be null if the review decision was created without a timeout (defensive: skip those rows).
+- [ ] Rejection feedback is stored with correct structure (reason, category, details, suggestedAction)
+- [ ] Downstream steps receive only approved artifacts
+- [ ] reviewGateResults includes both approved and rejected lists
+- [ ] Approval rate is computed correctly
 
 ---
 
-### T034: Create escalation cron job and barrel export (`src/pipelines/review/index.ts`)
+## Subtask T033: Implement Timeout Escalation Logic
 
-**Purpose**: Wire the escalation service into a recurring cron job so timed-out reviews are automatically escalated without manual intervention.
+**Purpose**: Detect review gates that have exceeded their timeout and escalate to secondary reviewers or admin notification.
 
 **Steps**:
-1. Create `src/pipelines/review/index.ts` as barrel export
-2. Add a `startEscalationCron(db, notifier, intervalMinutes)` function that runs `escalateTimedOutReviews` on an interval
-3. The cron runs every 15 minutes by default
+1. Create `joyus-ai-mcp-server/src/pipelines/review/escalation.ts`
+2. Implement `EscalationChecker` class:
+   ```typescript
+   export class EscalationChecker {
+     constructor(private db: DrizzleClient, private notificationService?: NotificationService) {}
 
-```typescript
-// src/pipelines/review/index.ts
-export { ReviewGate } from './gate';
-export { DecisionService } from './decision';
-export { EscalationService, NullEscalationNotifier } from './escalation';
-export type { EscalationNotifier } from './escalation';
-
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { EscalationService, NullEscalationNotifier } from './escalation';
-import type { EscalationNotifier } from './escalation';
-
-const DEFAULT_ESCALATION_INTERVAL_MS = 15 * 60 * 1000;  // 15 minutes
-
-export function startEscalationCron(
-  db: NodePgDatabase<Record<string, unknown>>,
-  notifier: EscalationNotifier = new NullEscalationNotifier(),
-  intervalMs: number = DEFAULT_ESCALATION_INTERVAL_MS,
-): NodeJS.Timeout {
-  const service = new EscalationService(db);
-
-  return setInterval(() => {
-    void service.escalateTimedOutReviews(notifier).then((count) => {
-      if (count > 0) {
-        console.info(`[EscalationCron] Escalated ${count} timed-out reviews`);
-      }
-    });
-  }, intervalMs);
-}
-```
+     /**
+      * Check all paused_at_gate executions for timeout violations.
+      * Called by the escalation cron job.
+      */
+     async checkAndEscalate(): Promise<EscalationResult[]>;
+   }
+   ```
+3. **checkAndEscalate()**:
+   - Query pipeline_executions WHERE status = 'paused_at_gate'
+   - For each paused execution:
+     - Load the parent pipeline to get `reviewGateTimeoutHours`
+     - Find the gate step (execution_step with status = 'running' and step type = 'review_gate')
+     - Compute time since gate was entered (gateStep.startedAt or execution.updatedAt)
+     - If elapsed time > reviewGateTimeoutHours:
+       - Check if already escalated (review_decisions have escalatedAt set) — skip if so
+       - Update review_decisions for this gate: set escalatedAt = now()
+       - Send escalation notification:
+         - Message includes: pipeline name, execution ID, gate step name, time waiting, number of pending decisions
+         - Recipient: tenant admin (or configurable escalation path in pipeline config)
+       - Log escalation event
+       - Return escalation result for this execution
+   - NEVER auto-approve or auto-reject (Constitution §3.3: tenant retains approval authority)
+4. Define `EscalationResult`:
+   ```typescript
+   export interface EscalationResult {
+     executionId: string;
+     pipelineId: string;
+     tenantId: string;
+     gateStepName: string;
+     hoursWaiting: number;
+     pendingDecisionCount: number;
+     escalatedTo: string;
+   }
+   ```
 
 **Files**:
-- `src/pipelines/review/index.ts` (new, ~30 lines)
+- `joyus-ai-mcp-server/src/pipelines/review/escalation.ts` (new, ~100 lines)
 
 **Validation**:
-- [ ] `startEscalationCron(db)` returns a `NodeJS.Timeout` (can be cleared with `clearInterval`)
-- [ ] `import { ReviewGate, DecisionService, EscalationService } from '../review'` resolves without errors
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- The cron runs every 15 minutes. If the escalation query is slow (many pending reviews), the interval may overlap. Add a mutex flag to prevent concurrent runs if this becomes an issue.
+- [ ] Identifies paused executions past timeout
+- [ ] Does NOT auto-approve or auto-reject
+- [ ] Updates escalatedAt on review_decisions
+- [ ] Sends escalation notification
+- [ ] Skips already-escalated gates
+- [ ] Handles missing notification service gracefully (logs warning, still marks escalated)
 
 ---
 
-### T035: Unit tests for review gate, decision, and escalation (`tests/pipelines/review/`)
+## Subtask T034: Create Escalation Cron Job and Barrel Export
 
-**Purpose**: Verify gate creation, decision recording, resumption trigger, escalation query logic, and idempotency of escalation.
+**Purpose**: Set up the hourly cron job that runs escalation checks and provide module exports.
 
 **Steps**:
-1. Create `tests/pipelines/review/gate.test.ts`
-2. Create `tests/pipelines/review/decision.test.ts`
-3. Create `tests/pipelines/review/escalation.test.ts`
+1. Create `joyus-ai-mcp-server/src/pipelines/review/index.ts`
+2. Implement cron job setup:
+   ```typescript
+   import cron from 'node-cron';
+   import { EscalationChecker } from './escalation.js';
 
-```typescript
-// tests/pipelines/review/escalation.test.ts (excerpt)
-import { describe, it, expect, vi } from 'vitest';
-import { NullEscalationNotifier } from '../../../src/pipelines/review/escalation';
+   let escalationJob: cron.ScheduledTask | null = null;
 
-describe('NullEscalationNotifier', () => {
-  it('does not throw when called', async () => {
-    const notifier = new NullEscalationNotifier();
-    await expect(notifier.notifyEscalation({
-      tenantId: 't1',
-      pipelineId: 'p1',
-      pipelineName: 'Test',
-      executionId: 'e1',
-      decisionId: 'd1',
-      stepIndex: 0,
-      timedOutAt: new Date(),
-    })).resolves.toBeUndefined();
-  });
-});
+   export function startEscalationJob(checker: EscalationChecker): void {
+     // Run every hour (ESCALATION_CHECK_INTERVAL_CRON from types.ts)
+     escalationJob = cron.schedule('0 * * * *', async () => {
+       try {
+         const results = await checker.checkAndEscalate();
+         if (results.length > 0) {
+           console.log(`[pipelines] Escalated ${results.length} review gates`);
+         }
+       } catch (error) {
+         console.error('[pipelines] Escalation check failed:', error);
+       }
+     });
+   }
 
-// Decision service tests need a mock executor
-describe('DecisionService', () => {
-  it('throws when decision is already decided', async () => {
-    // Use integration test pattern with test DB
-    // See tests/setup.ts for DB fixture utilities
-  });
-});
-```
+   export function stopEscalationJob(): void {
+     if (escalationJob) {
+       escalationJob.stop();
+       escalationJob = null;
+     }
+   }
+   ```
+3. Re-export all review module types and classes:
+   ```typescript
+   export { ReviewGate } from './gate.js';
+   export { DecisionRecorder } from './decision.js';
+   export { EscalationChecker } from './escalation.js';
+   export type { EscalationResult } from './escalation.js';
+   ```
+4. Update `src/pipelines/index.ts` to export from review module
 
 **Files**:
-- `tests/pipelines/review/gate.test.ts` (new, ~35 lines)
-- `tests/pipelines/review/decision.test.ts` (new, ~40 lines)
-- `tests/pipelines/review/escalation.test.ts` (new, ~40 lines)
+- `joyus-ai-mcp-server/src/pipelines/review/index.ts` (new, ~35 lines)
+- `joyus-ai-mcp-server/src/pipelines/index.ts` (modify — add review export)
 
 **Validation**:
-- [ ] `npm test tests/pipelines/review/` exits 0
-- [ ] Gate creation test: `timeoutAt` is approximately 24h from now (within 1s)
-- [ ] Escalation test: `NullEscalationNotifier` does not throw
-- [ ] Decision test: re-deciding a decided review throws
+- [ ] Cron job starts and runs hourly
+- [ ] Cron job stops cleanly on shutdown
+- [ ] All review exports accessible
+- [ ] `npm run typecheck` passes
 
-**Edge Cases**:
-- `DecisionService.recordDecision` requires a real `PipelineExecutor` reference to call `runExecution`. In unit tests, pass a mock with `vi.fn()` for `runExecution`. Do not create a full executor with DB connections in unit tests.
+---
+
+## Subtask T035: Unit Tests for Review Gate, Decision, and Escalation
+
+**Purpose**: Verify correctness of the complete review gate lifecycle.
+
+**Steps**:
+1. Create `joyus-ai-mcp-server/tests/pipelines/review/gate.test.ts`
+2. Gate test cases:
+   - **Pause with artifacts**: 3 artifacts, creates 3 ReviewDecision rows, execution status = paused_at_gate
+   - **Pause with zero artifacts**: Gate with no upstream artifacts, pipeline skips gate and continues
+   - **Execution state**: Verify execution.currentStepPosition and execution_step.status are set correctly
+3. Create `joyus-ai-mcp-server/tests/pipelines/review/escalation.test.ts`
+4. Decision test cases (can be in gate.test.ts or separate):
+   - **Approve single artifact**: Decision recorded, feedback null, decidedAt set
+   - **Reject with feedback**: Decision recorded with structured feedback
+   - **All approved resume**: 3 decisions all approved, pipeline resumes (status = running)
+   - **Mixed decisions resume**: 2 approved, 1 rejected, pipeline resumes with only approved artifacts in context
+   - **All rejected resume**: 3 decisions all rejected, pipeline resumes with empty artifact set
+   - **Partial decisions no resume**: 2 of 3 decided, pipeline stays paused
+   - **Duplicate decision rejected**: Attempt to decide on already-decided row, returns error
+   - **Cross-tenant rejected**: Attempt to decide with wrong tenantId, returns error
+5. Escalation test cases:
+   - **Within timeout no escalation**: Gate paused 24h ago, timeout = 48h, no escalation
+   - **Past timeout escalates**: Gate paused 50h ago, timeout = 48h, escalation triggered
+   - **Already escalated skipped**: Gate already has escalatedAt set, not escalated again
+   - **Never auto-approves**: After escalation, review_decisions still have status = pending
+   - **Notification sent**: Verify notification service called with correct message on escalation
+
+**Files**:
+- `joyus-ai-mcp-server/tests/pipelines/review/gate.test.ts` (new, ~200 lines)
+- `joyus-ai-mcp-server/tests/pipelines/review/escalation.test.ts` (new, ~150 lines)
+
+**Validation**:
+- [ ] All tests pass via `npm run test`
+- [ ] Tests cover full lifecycle: pause -> decide -> resume
+- [ ] Tests verify tenant isolation and duplicate prevention
+- [ ] Escalation tests verify no auto-approval/auto-rejection
 
 ---
 
 ## Definition of Done
 
-- [ ] `src/pipelines/review/gate.ts` — `ReviewGate` with `createReviewDecision`, `getPendingDecision`, `getApprovedArtifacts`
-- [ ] `src/pipelines/review/decision.ts` — `DecisionService` with `recordDecision`
-- [ ] `src/pipelines/review/escalation.ts` — `EscalationService`, `NullEscalationNotifier`, `EscalationNotifier`
-- [ ] `src/pipelines/review/index.ts` — barrel export and `startEscalationCron`
-- [ ] Tests passing: gate (timeoutAt, artifact approvals), decision (approve/reject/partial, re-decide throws), escalation (null notifier, idempotency)
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm test` exits 0 with no regressions
+- [ ] ReviewGate pauses execution and creates decision rows for each artifact
+- [ ] DecisionRecorder records approve/reject, resumes when all decisions complete
+- [ ] Rejected artifacts include structured feedback (reason, category, details, suggestedAction)
+- [ ] Downstream steps receive only approved artifacts after gate resumption
+- [ ] EscalationChecker detects timed-out gates and sends notifications
+- [ ] Escalation NEVER auto-approves or auto-rejects (Constitution §3.3)
+- [ ] Escalation cron job runs hourly
+- [ ] WP04 executor updated to call ReviewGate instead of placeholder
+- [ ] Unit tests cover all paths
+- [ ] `npm run validate` passes with zero errors
 
 ## Risks
 
-- **Resumption race**: `DecisionService.recordDecision` sets execution status to `running` and calls `executor.runExecution` asynchronously. If two reviewers submit decisions simultaneously (shouldn't happen but possible), both may call `runExecution` for the same execution. The `StepRunner`'s completed-step check provides idempotency, but it's not atomic. The `activeExecutions` set in `PipelineExecutor` provides in-process deduplication.
-- **Escalation without notification service**: `NullEscalationNotifier` logs but does not actually alert anyone. Wire up a real notifier (Slack webhook, email) before production use. The `EscalationService` is designed to accept any `EscalationNotifier` implementation.
-- **Partial approval semantics**: The spec does not define what "partial approval" means for pipeline continuation — do all steps after the gate run, or only those processing approved artifacts? The current implementation treats `partial` the same as `approved` (resume). Document this decision.
+- **Executor resume logic**: The executor must be updated to detect `running` executions with `currentStepPosition > 0` and continue from that position. This is a cross-WP change (WP04 executor needs a resume path).
+- **Partial approval complexity**: When some artifacts are approved and some rejected, downstream steps must handle a reduced artifact set. If all are rejected, the step may receive an empty set.
+- **Escalation notification delivery**: If the notification service is unavailable, escalation should still update the `escalatedAt` timestamp. Don't let notification failure prevent the escalation record.
 
 ## Reviewer Guidance
 
-- Verify escalation never modifies `pipeline_executions.status` — it must leave the execution in `waiting_review`. Only the reviewer's explicit decision changes the execution status.
-- Check that `recordDecision` validates that the `decisionId` belongs to the correct tenant. The `review_decisions` table has a `tenant_id` column — query must include it.
-- Confirm `startEscalationCron` returns the interval handle so the caller can clear it on graceful shutdown.
+- Verify ReviewGate creates exactly one ReviewDecision per artifact (not per execution)
+- Check that decision recording verifies tenant isolation before updating
+- Verify that resumeExecution partitions artifacts correctly and updates execution context
+- Confirm escalation checks: `hoursElapsed > timeoutHours` (not `>=`)
+- Verify escalation sets `escalatedAt` even if notification fails
+- Confirm no code path can auto-approve or auto-reject
+- Check that the cron job handles errors without crashing (try/catch in the cron callback)
+- Verify executor integration: WP04's review_gate placeholder must be replaced with actual ReviewGate call
+
+## Activity Log
