@@ -1,732 +1,404 @@
 ---
-work_package_id: "WP04"
-title: "Pipeline Executor"
-lane: "planned"
-dependencies: ["WP02", "WP03"]
-subtasks: ["T018", "T019", "T020", "T021", "T022", "T023"]
+work_package_id: WP04
+title: Pipeline Executor
+lane: planned
+dependencies: []
+subtasks: [T018, T019, T020, T021, T022, T023]
+phase: Phase C - Execution Engine
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP04: Pipeline Executor
 
-**Implementation command**: `spec-kitty implement WP04 --base WP02,WP03`
-**Target repo**: `joyus-ai`
-**Dependencies**: WP02 (Event Bus), WP03 (Trigger System)
-**Priority**: P1 (Execution engine — WP05, WP06, WP07 all depend on this)
-
 ## Objective
 
-Build the core pipeline execution engine: the `PipelineExecutor` poll loop that claims pending executions, the `StepRunner` that delegates to step handlers, exponential backoff retry logic, and idempotency key generation and deduplication. This is the heart of the pipelines feature.
+Build the core pipeline execution engine: a PipelineExecutor that polls the trigger_events table for pending events, matches them to pipeline definitions, enforces concurrency policies, and runs pipeline steps sequentially via a StepRunner with configurable retry and idempotency support.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP04 --base WP02 --base WP03
+```
 
 ## Context
 
-The executor operates in two modes simultaneously:
-1. **Event-driven**: subscribes to the event bus (WP02), receives trigger events, matches them against active pipelines via trigger handlers (WP03), creates `pipeline_executions` rows, and starts execution.
-2. **Poll-driven**: on startup, scans `trigger_events WHERE processed_at IS NULL` to recover events that were missed due to server restarts. Also scans `pipeline_executions WHERE status = 'pending'` to resume interrupted executions.
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (FR-003: execution logging, FR-004: retry, FR-005: forward-only, FR-014: idempotent, FR-015: concurrency)
+- **Research**: `kitty-specs/009-automated-pipelines-framework/research.md` (R2: Execution Engine, R3: Retry, R7: Idempotency)
+- **Data Model**: `kitty-specs/009-automated-pipelines-framework/data-model.md` (PipelineExecution, ExecutionStep tables)
 
-**Concurrency policy** (from `types.ts`):
-- `skip`: if an execution is already `running`, skip new trigger (most pipelines use this)
-- `queue`: add to pending queue (allow backlog)
-- `allow`: run multiple simultaneously (use with caution)
+The executor is the central runtime of the pipeline framework. It is a long-lived worker that runs inside the MCP server process. It consumes events from the event bus (WP02), uses trigger handlers (WP03) to match events to pipelines, and runs matched pipelines step by step.
 
-**Step execution** is delegated to `PipelineStepHandler` implementations (WP05). The `StepRunner` does not know about individual step types — it calls `stepHandlerRegistry.get(stepType).execute(...)`.
-
-WP04 is the blocker for WP05, WP06, and WP07. Complete it before those WPs start.
+**Key design decisions**:
+- Sequential step execution within a pipeline (spec FR-005: forward-only)
+- Parallel execution across pipelines (different pipelines can run concurrently)
+- Concurrency policy per pipeline: `skip_if_running` (default), `queue`, `allow_concurrent`
+- Step runner handles retry with exponential backoff; executor handles lifecycle transitions
+- Idempotency key = SHA-256(executionId:stepId:attemptNumber) per research.md R7
 
 ---
 
-## Subtasks
+## Subtask T018: Implement PipelineExecutor Class
 
-### T018: Implement PipelineExecutor class (`src/pipelines/engine/executor.ts`)
-
-**Purpose**: Orchestrate the full pipeline execution lifecycle — from event receipt to step completion. Manages the poll loop, concurrency policy enforcement, and execution state transitions.
+**Purpose**: The central orchestrator that picks up trigger events, matches them to pipelines, creates execution records, and drives step-by-step execution.
 
 **Steps**:
-1. Create `src/pipelines/engine/executor.ts`
-2. Constructor accepts: `db`, `eventBus`, `triggerRegistry`, `stepHandlerRegistry`, `options`
-3. `start()`: subscribes to event bus, starts poll loop
-4. `stop()`: unsubscribes, stops poll loop, waits for in-flight executions
-5. `handleEvent(event)`: matches triggers, enforces concurrency, creates execution rows, calls `runExecution`
-6. `runExecution(executionId)`: fetches execution + pipeline, runs steps in sequence via `StepRunner`
+1. Create `joyus-ai-mcp-server/src/pipelines/engine/executor.ts`
+2. Implement `PipelineExecutor` class:
+   ```typescript
+   export class PipelineExecutor {
+     constructor(
+       private db: DrizzleClient,
+       private eventBus: EventBus,
+       private triggerRegistry: TriggerRegistry,
+       private stepRunner: StepRunner,
+       private config?: ExecutorConfig,
+     ) {}
 
-```typescript
-// src/pipelines/engine/executor.ts
-import { eq, and, isNull, inArray } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { pipelines, pipelineExecutions, triggerEvents } from '../schema';
-import type { EventBus, EventEnvelope } from '../event-bus';
-import type { TriggerRegistry } from '../triggers/registry';
-import type { StepHandlerRegistry } from '../steps/registry';
-import { StepRunner } from './step-runner';
-import { generateIdempotencyKey, isDuplicateExecution } from './idempotency';
-import type {
-  Pipeline,
-  PipelineExecution,
-  ConcurrencyPolicy,
-  ExecutionStatus,
-} from '../types';
-import { POLL_INTERVAL_MS } from '../types';
+     async start(): Promise<void>;
+     async stop(): Promise<void>;
+     async processEvent(event: EventEnvelope): Promise<void>;
+     private async executePipeline(pipeline: Pipeline, steps: PipelineStep[], triggerEvent: TriggerEvent, chainDepth: number): Promise<void>;
+   }
+   ```
+3. **start()**:
+   - Subscribe to all registered trigger event types on the event bus
+   - For each event type, register a handler that calls `processEvent`
+   - Start the event bus
+4. **stop()**:
+   - Stop the event bus
+5. **processEvent(event)**:
+   - Get the trigger handler from the registry for this event type
+   - Call `handler.findMatchingPipelines(event.tenantId, event.payload)` to get matched pipelines
+   - Update trigger_event's `pipelinesTriggered` field with matched pipeline IDs
+   - For each matched pipeline:
+     - Check concurrency policy:
+       - `skip_if_running`: Query pipeline_executions for this pipeline with status IN ('pending', 'running', 'paused_at_gate'). If any exist, log skip and continue to next pipeline.
+       - `queue`: Allow — the execution will wait its turn (simplified for MVP: just allow concurrent, true queueing deferred)
+       - `allow_concurrent`: Always allow
+     - Check runtime depth: if `event.triggerChainDepth >= pipeline.maxPipelineDepth`, reject with cycle detection error
+     - Call `executePipeline`
+   - After all pipelines processed: update trigger_event status to `processed`
+6. **executePipeline(pipeline, steps, triggerEvent, chainDepth)**:
+   - Create a `pipeline_executions` record: status `pending`, stepsTotal = steps.length, triggerChainDepth = chainDepth
+   - Create `execution_steps` records for each step: status `pending`, position from step definition, idempotency key computed
+   - Update execution status to `running`
+   - Iterate through steps in position order:
+     - If step type is `review_gate`: delegate to review gate handler (WP06 — for now, skip with a TODO/placeholder that sets status to `paused_at_gate`)
+     - Otherwise: call `stepRunner.runStep(executionStep, pipelineStep, executionContext)`
+     - On success: update execution_step status to `completed`, increment stepsCompleted, update outputArtifacts
+     - On no-op: update execution_step status to `no_op`, increment stepsCompleted
+     - On failure: update execution_step status to `failed`, update execution status to `paused_on_failure`, set errorDetail, break the loop
+   - After all steps complete successfully: update execution status to `completed`, set completedAt
+   - On unhandled error: update execution status to `failed`, set errorDetail
 
-export interface ExecutorOptions {
-  pollIntervalMs?: number;
-  maxConcurrentExecutions?: number;
-}
-
-export class PipelineExecutor {
-  private pollTimer: NodeJS.Timeout | null = null;
-  private subscriptionIds: string[] = [];
-  private activeExecutions = new Set<string>();
-  private stepRunner: StepRunner;
-
-  constructor(
-    private readonly db: NodePgDatabase<Record<string, unknown>>,
-    private readonly eventBus: EventBus,
-    private readonly triggerRegistry: TriggerRegistry,
-    private readonly stepHandlerRegistry: StepHandlerRegistry,
-    private readonly options: ExecutorOptions = {},
-  ) {
-    this.stepRunner = new StepRunner(db, stepHandlerRegistry);
-  }
-
-  async start(): Promise<void> {
-    // Subscribe to all trigger event types
-    for (const handler of this.triggerRegistry.getAll()) {
-      const subId = this.eventBus.subscribe(handler.triggerType, (event) =>
-        this.handleEvent(event),
-      );
-      this.subscriptionIds.push(subId);
-    }
-
-    // Recovery: process unhandled events and pending executions on startup
-    await this.recoverUnprocessedEvents();
-    await this.resumePendingExecutions();
-
-    // Start poll loop
-    const interval = this.options.pollIntervalMs ?? POLL_INTERVAL_MS;
-    this.pollTimer = setInterval(() => void this.pollCycle(), interval);
-  }
-
-  async stop(): Promise<void> {
-    if (this.pollTimer) {
-      clearInterval(this.pollTimer);
-      this.pollTimer = null;
-    }
-    for (const id of this.subscriptionIds) {
-      this.eventBus.unsubscribe(id);
-    }
-    // Wait for active executions to finish (up to 30s)
-    const deadline = Date.now() + 30_000;
-    while (this.activeExecutions.size > 0 && Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, 500));
-    }
-  }
-
-  private async handleEvent(event: EventEnvelope): Promise<void> {
-    const handler = this.triggerRegistry.getHandler(event.eventType);
-    if (!handler) return;
-
-    // Fetch active pipelines for this tenant
-    const activePipelines = await this.db
-      .select()
-      .from(pipelines)
-      .where(and(eq(pipelines.tenantId, event.tenantId), eq(pipelines.status, 'active')));
-
-    const results = handler.getMatchingPipelines(
-      { event, tenantId: event.tenantId, currentDepth: (event.payload?.depth as number) ?? 0 },
-      activePipelines as Pipeline[],
-    );
-
-    for (const result of results) {
-      await this.createAndRunExecution(
-        result.pipelineId,
-        event.tenantId,
-        event.eventType,
-        result.triggerPayload,
-      );
-    }
-  }
-
-  private async createAndRunExecution(
-    pipelineId: string,
-    tenantId: string,
-    triggerType: string,
-    triggerPayload: Record<string, unknown>,
-  ): Promise<void> {
-    const pipeline = await this.db.query.pipelines.findFirst({
-      where: and(eq(pipelines.id, pipelineId), eq(pipelines.tenantId, tenantId)),
-    });
-    if (!pipeline) return;
-
-    // Enforce concurrency policy
-    if (!await this.checkConcurrencyPolicy(pipelineId, pipeline.concurrencyPolicy as ConcurrencyPolicy)) {
-      return;
-    }
-
-    // Idempotency check
-    const idempotencyKey = generateIdempotencyKey(pipelineId, triggerType, triggerPayload);
-    if (await isDuplicateExecution(this.db, idempotencyKey)) {
-      console.info(`[Executor] Skipping duplicate execution for key ${idempotencyKey}`);
-      return;
-    }
-
-    const [execution] = await this.db
-      .insert(pipelineExecutions)
-      .values({
-        pipelineId,
-        tenantId,
-        triggerType: triggerType as any,
-        triggerPayload,
-        idempotencyKey,
-        status: 'pending',
-      })
-      .returning();
-
-    await this.runExecution(execution.id);
-  }
-
-  async runExecution(executionId: string): Promise<void> {
-    this.activeExecutions.add(executionId);
-    try {
-      await this.db
-        .update(pipelineExecutions)
-        .set({ status: 'running', startedAt: new Date() })
-        .where(eq(pipelineExecutions.id, executionId));
-
-      await this.stepRunner.runAllSteps(executionId);
-
-      await this.db
-        .update(pipelineExecutions)
-        .set({ status: 'completed', completedAt: new Date() })
-        .where(eq(pipelineExecutions.id, executionId));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await this.db
-        .update(pipelineExecutions)
-        .set({ status: 'failed', completedAt: new Date(), errorMessage: message })
-        .where(eq(pipelineExecutions.id, executionId));
-    } finally {
-      this.activeExecutions.delete(executionId);
-    }
-  }
-
-  private async checkConcurrencyPolicy(
-    pipelineId: string,
-    policy: ConcurrencyPolicy,
-  ): Promise<boolean> {
-    if (policy === 'allow') return true;
-
-    const running = await this.db
-      .select({ id: pipelineExecutions.id })
-      .from(pipelineExecutions)
-      .where(
-        and(
-          eq(pipelineExecutions.pipelineId, pipelineId),
-          inArray(pipelineExecutions.status, ['pending', 'running', 'waiting_review']),
-        ),
-      )
-      .limit(1);
-
-    if (running.length === 0) return true;
-
-    if (policy === 'skip') {
-      console.info(`[Executor] Skipping pipeline ${pipelineId} — concurrent execution in progress`);
-      return false;
-    }
-    // policy === 'queue': allow creating a new pending execution
-    return true;
-  }
-
-  private async pollCycle(): Promise<void> {
-    await this.resumePendingExecutions();
-  }
-
-  private async recoverUnprocessedEvents(): Promise<void> {
-    const unprocessed = await this.db
-      .select()
-      .from(triggerEvents)
-      .where(isNull(triggerEvents.processedAt))
-      .limit(50);
-
-    for (const event of unprocessed) {
-      await this.handleEvent({
-        id: event.id,
-        tenantId: event.tenantId,
-        eventType: event.eventType as any,
-        payload: event.payload as Record<string, unknown>,
-        createdAt: event.createdAt,
-      });
-    }
-  }
-
-  private async resumePendingExecutions(): Promise<void> {
-    const pending = await this.db
-      .select({ id: pipelineExecutions.id })
-      .from(pipelineExecutions)
-      .where(eq(pipelineExecutions.status, 'pending'))
-      .limit(20);
-
-    for (const { id } of pending) {
-      if (!this.activeExecutions.has(id)) {
-        void this.runExecution(id);
-      }
-    }
-  }
-}
-```
+**Important implementation details**:
+- The executor must handle graceful shutdown: track in-progress executions and wait for them to complete (with a timeout) on stop()
+- The execution context passed to step runner should include: tenantId, executionId, pipelineId, triggerPayload, outputs from previous steps (for input_refs resolution)
+- The `stepsCompleted` counter and `currentStepPosition` must be updated after each step for progress tracking
+- Pipeline execution should be wrapped in a try/catch to prevent one pipeline's failure from affecting others
 
 **Files**:
-- `src/pipelines/engine/executor.ts` (new, ~140 lines)
+- `joyus-ai-mcp-server/src/pipelines/engine/executor.ts` (new, ~250 lines)
 
 **Validation**:
-- [ ] `tsc --noEmit` passes on `executor.ts`
-- [ ] `start()` subscribes to all trigger types and starts poll loop
-- [ ] `stop()` clears the interval and unsubscribes from event bus
-- [ ] Concurrency policy `skip` prevents duplicate running executions
-- [ ] `runExecution` transitions status: `pending` → `running` → `completed` (or `failed`)
-
-**Edge Cases**:
-- `resumePendingExecutions` must check `activeExecutions` to avoid double-running an execution that was just started in-process by `handleEvent`.
-- `checkConcurrencyPolicy` queries include `waiting_review` status — a paused-at-gate execution still counts as "in progress" for concurrency purposes.
+- [ ] Subscribes to event bus and processes events
+- [ ] Matches events to pipelines via trigger handlers
+- [ ] Enforces concurrency policy (skip_if_running)
+- [ ] Creates execution and execution_step records
+- [ ] Runs steps sequentially, updates status after each
+- [ ] Handles failure: pauses execution, does not run subsequent steps
+- [ ] Handles graceful shutdown
 
 ---
 
-### T019: Implement StepRunner (`src/pipelines/engine/step-runner.ts`)
+## Subtask T019: Implement StepRunner
 
-**Purpose**: Execute the steps of a single pipeline execution in sequence, delegating each step to its registered handler, and creating `step_executions` rows to track progress.
+**Purpose**: Execute a single pipeline step, delegating to the appropriate step handler and managing the retry lifecycle.
 
 **Steps**:
-1. Create `src/pipelines/engine/step-runner.ts`
-2. `runAllSteps(executionId)`: fetches the execution + pipeline, iterates `stepConfigs`, calls `runStep` for each
-3. `runStep(executionId, stepIndex, stepConfig)`: creates/updates `step_executions` row, calls handler, handles review gate pause
-4. Steps with `requiresReview: true` pause execution by setting status to `waiting_review` — the executor waits for WP06 to resume
+1. Create `joyus-ai-mcp-server/src/pipelines/engine/step-runner.ts`
+2. Implement `StepRunner` class:
+   ```typescript
+   export class StepRunner {
+     constructor(
+       private db: DrizzleClient,
+       private stepHandlerRegistry: StepHandlerRegistry, // from WP05 — use interface for now
+     ) {}
 
-```typescript
-// src/pipelines/engine/step-runner.ts
-import { eq, and } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { pipelineExecutions, stepExecutions, pipelines } from '../schema';
-import type { StepHandlerRegistry } from '../steps/registry';
-import type { StepConfig, StepType } from '../types';
-import { RetryExecutor } from './retry';
+     async runStep(
+       executionStep: ExecutionStep,
+       pipelineStep: PipelineStep,
+       context: ExecutionContext,
+       retryPolicy: RetryPolicy,
+     ): Promise<StepResult>;
+   }
+   ```
+3. **runStep(executionStep, pipelineStep, context, retryPolicy)**:
+   - Update execution_step status to `running`, set startedAt
+   - Look up the step handler by `pipelineStep.stepType` from the registry
+   - If handler not found: return failure (non-transient, "Unknown step type")
+   - Attempt execution in a retry loop:
+     - Compute idempotency key for current attempt
+     - Check for existing output with this idempotency key (dedup check via T021)
+     - If existing output found: return it as success (no-op replay)
+     - Otherwise: call `handler.execute(pipelineStep.config, context)`
+     - On success: update execution_step with outputData, status `completed`, set completedAt, return result
+     - On error:
+       - Classify error as transient or non-transient (from StepResult.error.isTransient)
+       - If non-transient: immediately fail (no retry)
+       - If transient and attempts < maxRetries: compute backoff delay, wait, increment attempts, retry
+       - If transient and retries exhausted: fail
+     - Update execution_step `attempts` counter after each attempt
+   - On final failure: update execution_step status to `failed`, set errorDetail and completedAt, return failure result
+4. Define `ExecutionContext` interface:
+   ```typescript
+   export interface ExecutionContext {
+     tenantId: string;
+     executionId: string;
+     pipelineId: string;
+     triggerPayload: Record<string, unknown>;
+     previousStepOutputs: Map<number, Record<string, unknown>>; // position -> output
+   }
+   ```
+5. Define `StepHandlerRegistry` interface (the actual registry is built in WP05):
+   ```typescript
+   export interface StepHandlerRegistry {
+     getHandler(stepType: StepType): PipelineStepHandler | undefined;
+   }
+   ```
 
-export class StepRunner {
-  private retryExecutor: RetryExecutor;
-
-  constructor(
-    private readonly db: NodePgDatabase<Record<string, unknown>>,
-    private readonly stepHandlerRegistry: StepHandlerRegistry,
-  ) {
-    this.retryExecutor = new RetryExecutor();
-  }
-
-  async runAllSteps(executionId: string): Promise<void> {
-    const execution = await this.db.query.pipelineExecutions.findFirst({
-      where: eq(pipelineExecutions.id, executionId),
-    });
-    if (!execution) throw new Error(`Execution ${executionId} not found`);
-
-    const pipeline = await this.db.query.pipelines.findFirst({
-      where: eq(pipelines.id, execution.pipelineId),
-    });
-    if (!pipeline) throw new Error(`Pipeline ${execution.pipelineId} not found`);
-
-    const stepConfigs = pipeline.stepConfigs as StepConfig[];
-
-    for (let i = 0; i < stepConfigs.length; i++) {
-      // Check if execution was cancelled externally
-      const current = await this.db.query.pipelineExecutions.findFirst({
-        where: eq(pipelineExecutions.id, executionId),
-      });
-      if (current?.status === 'cancelled') break;
-
-      // Check if this step was already completed (resumption after crash)
-      const existingStep = await this.db.query.stepExecutions.findFirst({
-        where: and(
-          eq(stepExecutions.executionId, executionId),
-          eq(stepExecutions.stepIndex, i),
-        ),
-      });
-      if (existingStep?.status === 'completed') continue;
-
-      await this.runStep(executionId, i, stepConfigs[i]);
-
-      // Check for review gate pause
-      const afterStep = await this.db.query.pipelineExecutions.findFirst({
-        where: eq(pipelineExecutions.id, executionId),
-      });
-      if (afterStep?.status === 'waiting_review') {
-        // WP06 will resume this execution — stop here
-        return;
-      }
-    }
-  }
-
-  private async runStep(
-    executionId: string,
-    stepIndex: number,
-    stepConfig: StepConfig,
-  ): Promise<void> {
-    const [stepExec] = await this.db
-      .insert(stepExecutions)
-      .values({
-        executionId,
-        stepIndex,
-        stepType: stepConfig.stepType as any,
-        status: 'running',
-        inputData: {},
-        startedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: [stepExecutions.executionId, stepExecutions.stepIndex],
-        set: { status: 'running', startedAt: new Date() },
-      })
-      .returning();
-
-    const handler = this.stepHandlerRegistry.get(stepConfig.stepType as StepType);
-    if (!handler) {
-      await this.markStepFailed(stepExec.id, `No handler registered for step type: ${stepConfig.stepType}`);
-      throw new Error(`No handler for step type ${stepConfig.stepType}`);
-    }
-
-    try {
-      const result = await this.retryExecutor.execute(
-        () => handler.execute({ executionId, stepIndex, stepConfig }),
-        stepConfig,
-      );
-
-      await this.db
-        .update(stepExecutions)
-        .set({ status: 'completed', outputData: result.outputData ?? {}, completedAt: new Date() })
-        .where(eq(stepExecutions.id, stepExec.id));
-
-      // Review gate: pause the execution for human review
-      if (stepConfig.requiresReview) {
-        await this.db
-          .update(pipelineExecutions)
-          .set({ status: 'waiting_review' })
-          .where(eq(pipelineExecutions.id, executionId));
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await this.markStepFailed(stepExec.id, message);
-      throw err;
-    }
-  }
-
-  private async markStepFailed(stepExecId: string, message: string): Promise<void> {
-    await this.db
-      .update(stepExecutions)
-      .set({ status: 'failed', errorMessage: message, completedAt: new Date() })
-      .where(eq(stepExecutions.id, stepExecId));
-  }
-}
-```
+**Important implementation details**:
+- The retry policy used is: step's `retryPolicyOverride` if set, otherwise pipeline's `retryPolicy`
+- StepRunner does NOT handle review_gate steps — those are handled by the executor directly (WP06)
+- The step handler registry interface is defined here but implemented in WP05. For now, tests can use a mock registry.
+- Previous step outputs are accumulated by the executor and passed in context for input_refs resolution
 
 **Files**:
-- `src/pipelines/engine/step-runner.ts` (new, ~85 lines)
+- `joyus-ai-mcp-server/src/pipelines/engine/step-runner.ts` (new, ~150 lines)
 
 **Validation**:
-- [ ] Steps with `status: 'completed'` are skipped on resumption (idempotent recovery)
-- [ ] Step with `requiresReview: true` sets execution status to `waiting_review` after completing
-- [ ] Missing handler throws and marks the step as `failed`
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `onConflictDoUpdate` on `(executionId, stepIndex)` requires a unique index on those two columns. Verify this index exists in the `stepExecutions` schema from WP01, or add it.
+- [ ] Delegates to correct step handler by type
+- [ ] Retries transient errors up to maxRetries
+- [ ] Does NOT retry non-transient errors
+- [ ] Computes correct backoff delays
+- [ ] Checks idempotency before executing
+- [ ] Updates execution_step record after each attempt
+- [ ] Returns StepResult with success/failure/no-op
 
 ---
 
-### T020: Implement retry policy with exponential backoff (`src/pipelines/engine/retry.ts`)
+## Subtask T020: Implement Retry Policy with Exponential Backoff
 
-**Purpose**: Wrap step handler execution with configurable retry logic — exponential backoff with jitter, max attempts, and transient vs non-transient error classification.
+**Purpose**: Compute retry delays using exponential backoff with configurable parameters.
 
 **Steps**:
-1. Create `src/pipelines/engine/retry.ts`
-2. Define `RetryExecutor` class with `execute(fn, stepConfig)` method
-3. On failure: check if error is transient, apply exponential backoff with jitter, retry up to `maxAttempts`
-4. Non-transient errors (e.g., 4xx HTTP, validation failure) are re-thrown immediately without retry
-
-```typescript
-// src/pipelines/engine/retry.ts
-import { DEFAULT_RETRY_POLICY } from '../types';
-import type { RetryPolicy, StepConfig } from '../types';
-
-export class NonTransientError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
-    super(message);
-    this.name = 'NonTransientError';
-  }
-}
-
-export function isTransientError(err: unknown): boolean {
-  if (err instanceof NonTransientError) return false;
-  if (err instanceof Error) {
-    // Network errors, DB connection errors, timeouts = transient
-    const msg = err.message.toLowerCase();
-    return (
-      msg.includes('econnrefused') ||
-      msg.includes('etimedout') ||
-      msg.includes('connection') ||
-      msg.includes('timeout') ||
-      msg.includes('temporarily unavailable')
-    );
-  }
-  return true; // Unknown errors: assume transient for safety
-}
-
-function computeDelay(attempt: number, policy: RetryPolicy): number {
-  const base = policy.initialDelayMs * Math.pow(policy.backoffMultiplier, attempt - 1);
-  const jitter = Math.random() * base * 0.2;  // ±20% jitter
-  return Math.min(base + jitter, policy.maxDelayMs);
-}
-
-export class RetryExecutor {
-  async execute<T>(
-    fn: () => Promise<T>,
-    stepConfig: StepConfig,
-    policyOverride?: RetryPolicy,
-  ): Promise<T> {
-    const policy: RetryPolicy = policyOverride ?? DEFAULT_RETRY_POLICY;
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= policy.maxAttempts; attempt++) {
-      try {
-        return await fn();
-      } catch (err) {
-        lastError = err;
-
-        if (!isTransientError(err)) {
-          throw err;  // Non-transient: fail immediately
-        }
-
-        if (attempt === policy.maxAttempts) break;
-
-        const delay = computeDelay(attempt, policy);
-        console.warn(
-          `[Retry] Step '${stepConfig.name}' attempt ${attempt}/${policy.maxAttempts} failed. Retrying in ${Math.round(delay)}ms.`,
-        );
-        await new Promise((r) => setTimeout(r, delay));
-      }
-    }
-
-    throw lastError;
-  }
-}
-```
+1. Create `joyus-ai-mcp-server/src/pipelines/engine/retry.ts`
+2. Implement delay computation:
+   ```typescript
+   /**
+    * Compute the delay before the next retry attempt.
+    * delay = min(baseDelayMs * backoffMultiplier^attempt, maxDelayMs)
+    */
+   export function computeRetryDelay(
+     attempt: number, // 0-indexed
+     policy: RetryPolicy,
+   ): number;
+   ```
+   - Attempt 0: `baseDelayMs` (30s default)
+   - Attempt 1: `baseDelayMs * backoffMultiplier` (60s default)
+   - Attempt 2: `baseDelayMs * backoffMultiplier^2` (120s default)
+   - Cap at `maxDelayMs`
+3. Implement retry decision:
+   ```typescript
+   /**
+    * Determine whether a failed step should be retried.
+    */
+   export function shouldRetry(
+     error: StepError,
+     currentAttempt: number,
+     policy: RetryPolicy,
+   ): { retry: boolean; delayMs?: number };
+   ```
+   - If `error.isTransient === false`: return `{ retry: false }`
+   - If `currentAttempt >= policy.maxRetries`: return `{ retry: false }`
+   - Otherwise: return `{ retry: true, delayMs: computeRetryDelay(currentAttempt, policy) }`
+4. Implement the actual wait function:
+   ```typescript
+   export function waitForRetry(delayMs: number): Promise<void> {
+     return new Promise(resolve => setTimeout(resolve, delayMs));
+   }
+   ```
 
 **Files**:
-- `src/pipelines/engine/retry.ts` (new, ~55 lines)
+- `joyus-ai-mcp-server/src/pipelines/engine/retry.ts` (new, ~50 lines)
 
 **Validation**:
-- [ ] `NonTransientError` thrown by a handler causes immediate failure without retry
-- [ ] Transient error retries up to `maxAttempts` with increasing delays
-- [ ] Delay never exceeds `maxDelayMs`
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- Jitter prevents thundering herd when many pipelines fail simultaneously and retry at the same time. The 20% range is a reasonable default.
-- In tests, set `initialDelayMs: 0` in the retry policy to avoid real `setTimeout` delays.
+- [ ] Default policy produces 30s, 60s, 120s delays for attempts 0, 1, 2
+- [ ] Delays are capped at maxDelayMs
+- [ ] Non-transient errors are never retried
+- [ ] Exhausted retries return retry: false
+- [ ] Custom policies produce correct delays
 
 ---
 
-### T021: Implement idempotency key generation and dedup checking (`src/pipelines/engine/idempotency.ts`)
+## Subtask T021: Implement Idempotency Key Generation and Dedup
 
-**Purpose**: Prevent duplicate executions when the same trigger event is received multiple times (at-least-once delivery from the event bus, or duplicate manual trigger requests).
+**Purpose**: Ensure pipeline steps are idempotent by generating deterministic keys and checking for existing outputs.
 
 **Steps**:
-1. Create `src/pipelines/engine/idempotency.ts`
-2. `generateIdempotencyKey(pipelineId, triggerType, payload)` — deterministic hash of the inputs
-3. `isDuplicateExecution(db, key)` — check if a non-failed execution already exists for this key
+1. Create `joyus-ai-mcp-server/src/pipelines/engine/idempotency.ts`
+2. Implement key generation:
+   ```typescript
+   import { createHash } from 'node:crypto';
 
-```typescript
-// src/pipelines/engine/idempotency.ts
-import { createHash } from 'crypto';
-import { eq, and, inArray } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { pipelineExecutions } from '../schema';
-
-/**
- * Generates a deterministic idempotency key from the trigger context.
- * Same inputs always produce the same key — enables deduplication.
- */
-export function generateIdempotencyKey(
-  pipelineId: string,
-  triggerType: string,
-  payload: Record<string, unknown>,
-): string {
-  // Use a stable subset of payload for the key — avoid timestamps and random IDs
-  const stablePayload = {
-    pipelineId,
-    triggerType,
-    sourceId: payload.sourceId,
-    // Manual triggers may pass an explicit idempotencyKey in payload
-    explicitKey: payload.idempotencyKey,
-  };
-
-  return createHash('sha256')
-    .update(JSON.stringify(stablePayload))
-    .digest('hex')
-    .slice(0, 32);  // 32 hex chars = 128 bits — sufficient for uniqueness
-}
-
-/**
- * Returns true if a non-failed execution already exists for the given key.
- * Failed executions do not count — they can be retried.
- */
-export async function isDuplicateExecution(
-  db: NodePgDatabase<Record<string, unknown>>,
-  idempotencyKey: string,
-): Promise<boolean> {
-  const existing = await db
-    .select({ id: pipelineExecutions.id })
-    .from(pipelineExecutions)
-    .where(
-      and(
-        eq(pipelineExecutions.idempotencyKey, idempotencyKey),
-        inArray(pipelineExecutions.status, ['pending', 'running', 'waiting_review', 'completed']),
-      ),
-    )
-    .limit(1);
-
-  return existing.length > 0;
-}
-```
+   /**
+    * Generate a deterministic idempotency key for a step execution attempt.
+    * Key = SHA-256(executionId:stepId:attemptNumber)
+    */
+   export function computeIdempotencyKey(
+     executionId: string,
+     stepId: string,
+     attemptNumber: number,
+   ): string {
+     return createHash('sha256')
+       .update(`${executionId}:${stepId}:${attemptNumber}`)
+       .digest('hex');
+   }
+   ```
+3. Implement dedup check:
+   ```typescript
+   /**
+    * Check if a step execution with this idempotency key already has output.
+    * Returns the existing output if found, null otherwise.
+    */
+   export async function checkIdempotency(
+     db: DrizzleClient,
+     idempotencyKey: string,
+   ): Promise<Record<string, unknown> | null>;
+   ```
+   - Query `execution_steps` WHERE `idempotencyKey = key` AND `status = 'completed'`
+   - If found: return the `outputData`
+   - If not found: return null
+4. The step runner (T019) uses these functions before executing a step: compute key, check dedup, skip if output exists.
 
 **Files**:
-- `src/pipelines/engine/idempotency.ts` (new, ~45 lines)
+- `joyus-ai-mcp-server/src/pipelines/engine/idempotency.ts` (new, ~40 lines)
 
 **Validation**:
-- [ ] Same `pipelineId + triggerType + sourceId` always produces the same key
-- [ ] Different `pipelineId` produces a different key
-- [ ] `isDuplicateExecution` returns `false` for failed executions (allowing retry)
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `JSON.stringify` is not guaranteed to produce stable key ordering across Node.js versions. For the `stablePayload` object, the properties are always defined in the same order — this is safe. Do not pass arbitrary `payload` objects directly to `JSON.stringify`.
+- [ ] Same inputs produce same SHA-256 hash
+- [ ] Different attempt numbers produce different keys
+- [ ] checkIdempotency returns existing output for completed steps
+- [ ] checkIdempotency returns null for pending/failed steps
 
 ---
 
-### T022: Create engine barrel export (`src/pipelines/engine/index.ts`)
+## Subtask T022: Create Engine Barrel Export
 
-**Purpose**: Single import point for the engine module.
-
-```typescript
-// src/pipelines/engine/index.ts
-export { PipelineExecutor } from './executor';
-export type { ExecutorOptions } from './executor';
-export { StepRunner } from './step-runner';
-export { RetryExecutor, NonTransientError, isTransientError } from './retry';
-export { generateIdempotencyKey, isDuplicateExecution } from './idempotency';
-```
-
-**Files**:
-- `src/pipelines/engine/index.ts` (new, ~8 lines)
-
-**Validation**:
-- [ ] All exported names are accessible via `import { PipelineExecutor } from '../engine'`
-- [ ] `tsc --noEmit` passes
-
----
-
-### T023: Unit tests for executor, step runner, and retry (`tests/pipelines/engine/`)
-
-**Purpose**: Verify the executor lifecycle, step runner recovery logic, retry backoff, and idempotency deduplication.
+**Purpose**: Provide barrel exports for the engine module.
 
 **Steps**:
-1. Create `tests/pipelines/engine/retry.test.ts` — retry policy tests (no DB needed)
-2. Create `tests/pipelines/engine/idempotency.test.ts` — key generation determinism tests
-3. Create `tests/pipelines/engine/step-runner.test.ts` — step execution with mock handlers
-
-```typescript
-// tests/pipelines/engine/retry.test.ts
-import { describe, it, expect, vi } from 'vitest';
-import { RetryExecutor, NonTransientError, isTransientError } from '../../../src/pipelines/engine/retry';
-
-const noopStepConfig = { stepType: 'notification', name: 'test', config: {}, requiresReview: false };
-const fastPolicy = { maxAttempts: 3, initialDelayMs: 0, backoffMultiplier: 1, maxDelayMs: 0 };
-
-describe('RetryExecutor', () => {
-  it('returns result on first success', async () => {
-    const executor = new RetryExecutor();
-    const fn = vi.fn().mockResolvedValue('ok');
-    const result = await executor.execute(fn, noopStepConfig, fastPolicy);
-    expect(result).toBe('ok');
-    expect(fn).toHaveBeenCalledOnce();
-  });
-
-  it('retries on transient error and succeeds', async () => {
-    const executor = new RetryExecutor();
-    const fn = vi.fn()
-      .mockRejectedValueOnce(new Error('connection timeout'))
-      .mockResolvedValue('ok');
-    const result = await executor.execute(fn, noopStepConfig, fastPolicy);
-    expect(result).toBe('ok');
-    expect(fn).toHaveBeenCalledTimes(2);
-  });
-
-  it('throws immediately on NonTransientError without retry', async () => {
-    const executor = new RetryExecutor();
-    const fn = vi.fn().mockRejectedValue(new NonTransientError('invalid config'));
-    await expect(executor.execute(fn, noopStepConfig, fastPolicy)).rejects.toThrow('invalid config');
-    expect(fn).toHaveBeenCalledOnce();
-  });
-
-  it('throws after exhausting max attempts', async () => {
-    const executor = new RetryExecutor();
-    const fn = vi.fn().mockRejectedValue(new Error('etimedout'));
-    await expect(executor.execute(fn, noopStepConfig, fastPolicy)).rejects.toThrow('etimedout');
-    expect(fn).toHaveBeenCalledTimes(3);
-  });
-});
-
-describe('isTransientError', () => {
-  it('returns false for NonTransientError', () => {
-    expect(isTransientError(new NonTransientError('bad input'))).toBe(false);
-  });
-
-  it('returns true for connection errors', () => {
-    expect(isTransientError(new Error('ECONNREFUSED'))).toBe(true);
-  });
-});
-```
+1. Create `joyus-ai-mcp-server/src/pipelines/engine/index.ts`
+2. Re-export all public types and classes:
+   ```typescript
+   export { PipelineExecutor } from './executor.js';
+   export { StepRunner, ExecutionContext, StepHandlerRegistry } from './step-runner.js';
+   export { computeRetryDelay, shouldRetry, waitForRetry } from './retry.js';
+   export { computeIdempotencyKey, checkIdempotency } from './idempotency.js';
+   ```
+3. Update `src/pipelines/index.ts` to export from engine:
+   ```typescript
+   export * from './engine/index.js';
+   ```
 
 **Files**:
-- `tests/pipelines/engine/retry.test.ts` (new, ~50 lines)
-- `tests/pipelines/engine/idempotency.test.ts` (new, ~25 lines)
-- `tests/pipelines/engine/step-runner.test.ts` (new, ~40 lines)
+- `joyus-ai-mcp-server/src/pipelines/engine/index.ts` (new, ~10 lines)
+- `joyus-ai-mcp-server/src/pipelines/index.ts` (modify — add engine export)
 
 **Validation**:
-- [ ] `npm test tests/pipelines/engine/` exits 0
-- [ ] Retry tests use `initialDelayMs: 0` to avoid slow tests
-- [ ] Idempotency test: same inputs → same key, different pipelineId → different key
+- [ ] `npm run typecheck` passes
+- [ ] All engine exports accessible from `../pipelines/index.js`
 
-**Edge Cases**:
-- Step runner tests require a mock `StepHandlerRegistry` and a test DB. Use `InMemoryEventBus` pattern from WP02 as a guide for creating a mock registry.
+---
+
+## Subtask T023: Unit Tests for Executor, Step Runner, and Retry
+
+**Purpose**: Verify the execution engine's correctness across normal, failure, and edge cases.
+
+**Steps**:
+1. Create `joyus-ai-mcp-server/tests/pipelines/engine/executor.test.ts`
+2. Executor test cases:
+   - **Processes event and creates execution**: Publish event, verify pipeline_execution record created with correct fields
+   - **Runs steps sequentially**: Pipeline with 3 steps, verify they execute in position order
+   - **Concurrency skip_if_running**: Pipeline already has running execution, new event triggers skip (no new execution)
+   - **Concurrency allow_concurrent**: Two events for same pipeline, both create executions
+   - **Runtime depth rejection**: Event with triggerChainDepth >= maxPipelineDepth, verify execution rejected
+   - **Execution completes successfully**: All steps succeed, execution status = `completed`, completedAt set
+   - **Execution pauses on failure**: Step 2 of 3 fails after retries, execution status = `paused_on_failure`, step 3 status = `pending` (not skipped)
+   - **Review gate placeholder**: Step with type review_gate, verify execution pauses (placeholder for WP06)
+3. Create `joyus-ai-mcp-server/tests/pipelines/engine/step-runner.test.ts`
+4. Step runner test cases:
+   - **Successful step execution**: Handler returns success, execution_step updated to completed
+   - **Transient failure with retry**: Handler fails with transient error, retries succeed on attempt 2
+   - **Non-transient failure no retry**: Handler fails with non-transient error, no retries attempted
+   - **Retries exhausted**: Handler fails 4 times (transient), retry policy maxRetries=3, step fails after 3 retries
+   - **Idempotent replay**: Step already has completed output for this key, handler is NOT called, existing output returned
+   - **Unknown step type**: Registry returns undefined, step fails with "Unknown step type"
+5. Create `joyus-ai-mcp-server/tests/pipelines/engine/retry.test.ts`
+6. Retry test cases:
+   - **Default backoff**: Attempts 0,1,2 produce 30000, 60000, 120000 ms delays
+   - **Max delay cap**: Very high attempt number, delay does not exceed maxDelayMs
+   - **Custom policy**: Custom base delay and multiplier produce correct sequence
+   - **shouldRetry non-transient**: Returns retry: false for non-transient errors
+   - **shouldRetry exhausted**: Returns retry: false when attempts >= maxRetries
+   - **shouldRetry transient with budget**: Returns retry: true with correct delay
+7. Use mock step handler registry and mock step handlers for executor and step runner tests
+
+**Files**:
+- `joyus-ai-mcp-server/tests/pipelines/engine/executor.test.ts` (new, ~250 lines)
+- `joyus-ai-mcp-server/tests/pipelines/engine/step-runner.test.ts` (new, ~200 lines)
+- `joyus-ai-mcp-server/tests/pipelines/engine/retry.test.ts` (new, ~100 lines)
+
+**Validation**:
+- [ ] All tests pass via `npm run test`
+- [ ] Tests cover normal execution, failure handling, concurrency, idempotency, and retry
 
 ---
 
 ## Definition of Done
 
-- [ ] `src/pipelines/engine/executor.ts` — poll loop, event handling, concurrency policy
-- [ ] `src/pipelines/engine/step-runner.ts` — step sequencing, review gate pause, recovery
-- [ ] `src/pipelines/engine/retry.ts` — exponential backoff, transient/non-transient classification
-- [ ] `src/pipelines/engine/idempotency.ts` — key generation, dedup check
-- [ ] `src/pipelines/engine/index.ts` — barrel export
-- [ ] Tests passing: retry (success, transient, non-transient, exhausted), idempotency (determinism), step runner (sequence, skip completed, review pause)
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm test` exits 0 with no regressions
+- [ ] PipelineExecutor processes events from event bus and creates executions
+- [ ] StepRunner executes steps with retry and idempotency
+- [ ] Retry policy computes correct exponential backoff delays
+- [ ] Idempotency keys prevent duplicate step execution
+- [ ] Concurrency policy enforcement works (skip_if_running tested)
+- [ ] Runtime depth counter rejects deep trigger chains
+- [ ] Review gate step type is handled with a placeholder (pauses execution)
+- [ ] Unit tests cover all paths
+- [ ] `npm run validate` passes with zero errors
 
 ## Risks
 
-- **Poll loop and event handler race**: If a `handleEvent` call and `resumePendingExecutions` both pick up the same execution simultaneously, the same execution could run twice. Mitigation: use `activeExecutions` set as an in-process lock, and use the DB concurrency policy check as the authoritative gate.
-- **Graceful shutdown timing**: `stop()` waits up to 30s for in-flight executions. If a step is blocked on a slow external service, the process will hang. Consider adding a per-execution timeout.
-- **Step `onConflictDoUpdate`**: The insert in `StepRunner` uses conflict resolution on `(executionId, stepIndex)`. This requires a unique constraint in the schema. Verify WP01 includes this index, or add it as part of this WP.
+- **Graceful shutdown**: The executor must wait for in-progress executions before shutting down. Incomplete executions will have status `running` and need manual recovery on restart.
+- **Concurrency policy race condition**: Two events arriving simultaneously for a `skip_if_running` pipeline could both pass the check. Mitigation: use a database-level advisory lock or transaction isolation for the check-and-create.
+- **Step handler registry not yet available**: WP05 builds the real step handlers. Use mock handlers in tests and the StepHandlerRegistry interface as the contract.
 
 ## Reviewer Guidance
 
-- Verify the concurrency policy check (`checkConcurrencyPolicy`) is done inside a DB transaction or with `FOR UPDATE SKIP LOCKED` to prevent TOCTOU races under concurrent requests. The current implementation uses a read-then-write pattern which is vulnerable to race conditions.
-- Check that `runExecution` always sets `completedAt` in both the success and failure paths — analytics (WP09) depend on this field being populated.
-- Confirm `resumePendingExecutions` is bounded by `LIMIT 20` to avoid a single poll cycle trying to resume thousands of executions at startup.
+- Verify the executor subscribes to the event bus (not polls trigger_events directly — the bus handles polling)
+- Check that concurrency policy check queries for ALL non-terminal statuses (pending, running, paused_at_gate)
+- Verify execution_step records are created upfront (all at once) before execution starts, not one at a time
+- Confirm retry delay computation matches the spec default: 30s, 60s, 120s
+- Verify idempotency key uses SHA-256 of the exact format: `executionId:stepId:attemptNumber`
+- Check that the executor catches exceptions per-pipeline (one pipeline's failure doesn't crash others)
+- Verify the review_gate step type is handled gracefully (placeholder, not error)
+
+## Activity Log

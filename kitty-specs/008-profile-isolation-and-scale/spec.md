@@ -1,241 +1,201 @@
-# Specification: Profile Isolation and Scale
+# Feature Specification: Profile Isolation and Scale
 
-**Project:** Joyus AI Platform
-**Phase:** 2.5+ — Profile Platform Layer
-**Date:** March 14, 2026
-**Status:** Specification Complete
+**Feature Branch**: `008-profile-isolation-and-scale`
+**Created**: 2026-03-10
+**Status**: Draft
+**Phase**: 3 (Platform Framework)
+**Dependencies**: 005 (Content Intelligence), 003 (Platform Architecture), 006 (Content Infrastructure), 007 (Org-Scale Agentic Governance)
+**Constitution**: §2.2 (Skills as Encoded Knowledge), §2.10 (Client Abstraction), §2.4 (Monitor Everything), §2.1 (Multi-Tenant from Day One)
 
----
+## Purpose
 
-## 1. Overview
+The Profile Engine (Spec 005) ships a 129-feature stylometric engine that builds structured writing profiles from corpora. It works. The problem is that it was built for a single-tenant proof of concept — one organization, one corpus, one set of profiles. Phase 3 demands multi-tenant operation where arbitrary clients onboard their own corpora and generate profiles without cross-contamination, without manual intervention, and without degrading fidelity for existing tenants.
 
-### Problem
+This spec defines how profiles are isolated between tenants, how profile lifecycles are managed at scale (creation, versioning, retraining, archival), and how the self-service onboarding pipeline generalizes the methodology to arbitrary domains.
 
-The joyus-profile-engine (Python, 129-feature stylometrics, 97.9% accuracy) operates as a standalone library with no concept of multi-tenancy, versioning, or access control. The platform currently references profiles by opaque string IDs (`profileId` in content schema tables, mediation sessions, generation logs, drift reports) but has no authoritative profile registry, no tenant isolation enforcement at the profile layer, no version history, and no mechanism to handle profile staleness or retraining at scale.
+## Scope
 
-As the platform onboards multiple tenants, three critical gaps emerge:
-1. **Isolation**: Tenant A's profiles must never be visible to Tenant B. Today, `profileId` is a free-text field with no ownership enforcement.
-2. **Scale**: Batch ingestion of large document corpora, profile caching, and latency optimization are missing. Each profile computation is expensive (129-feature extraction).
-3. **Lifecycle**: Profiles evolve as authors evolve. There is no versioning, staleness detection, or drift-triggered retraining.
+### In Scope
 
-### Solution
+- Tenant-scoped profile generation with data isolation at the data layer (not just API layer)
+- Profile versioning with immutable version identifiers and rollback support
+- Composite profile inheritance (org, department, individual tiers)
+- Self-service corpus intake supporting PDF, DOCX, TXT, HTML, Markdown
+- Content-hash corpus deduplication within tenant scope
+- Resolved profile caching with inheritance-aware invalidation
+- Concurrent pipeline execution for multiple tenants
+- Profile version retention and archival lifecycle
 
-Build the platform layer that wraps the Python profile engine with multi-tenant isolation, semantic versioning, caching, batch ingestion, and drift-triggered retraining. This layer lives in `joyus-ai` (TypeScript/Express/Drizzle) and communicates with the Python profile engine via a service interface. It does not rewrite the engine — it governs access to it.
+### Out of Scope
 
-### Users
+- Changes to the stylometric engine itself (Spec 005 is stable)
+- Hard tenant isolation via separate schemas/databases (soft isolation via tenant_id scoping per ADR-0002 Leash pattern)
+- Real-time streaming profile updates (batch pipeline only)
+- Cross-tenant profile sharing or marketplace
+- Profile export/import between platform instances
 
-- **Tenant administrators** — manage profiles for their organization's authors
-- **Content generation pipeline** — consumes profile versions for voice-matched generation (Spec 006)
-- **Fidelity monitoring system** — triggers retraining when drift exceeds thresholds (Spec 005)
-- **Pipeline automation** — runs profile generation and fidelity checks as pipeline steps (Spec 009)
-- **Platform operators** — monitor profile health across tenants
+## User Scenarios & Testing
 
----
+### User Story 1 - Tenant-Scoped Profile Generation (Priority: P1)
 
-## 2. Functional Requirements
+A new client uploads a corpus of 40 documents across 3 authors. The platform ingests the corpus, runs the stylometric pipeline, and produces isolated profiles scoped to that tenant. No other tenant's profiles or corpus data are visible or accessible during any step.
 
-### FR-001: Tenant-Scoped Profile Registry
+**Why this priority:** Without tenant isolation, the platform cannot onboard a second client. This is the foundational gate for multi-tenancy.
 
-A centralized registry of writing profiles, each owned by exactly one tenant. Every profile record includes `tenantId`, `authorName`, `authorType` (person/organization), and metadata. Profiles are queried only within tenant scope — all queries filter by `tenantId` at the database level.
+**Independent Test:** Onboard two tenants with overlapping author names. Verify that Tenant A's "Jane Smith" profile contains zero features derived from Tenant B's corpus.
 
-### FR-002: Profile Access Control
+**Acceptance Scenarios:**
 
-Implement `assertProfileAccessOrAudit()` guard that validates the requesting user has access to the profile's tenant before any read, write, or use operation. On access denial, emit a structured audit event (`ProfileAccessDeniedError`) and return 403. On success, log the access for audit trail.
+- **Given** a new tenant with a valid corpus of >=10 documents, **when** the profile generation pipeline runs, **then** all generated profiles are scoped exclusively to that tenant's namespace and are inaccessible via any other tenant's API credentials.
 
-### FR-003: Profile Access Audit Log
+- **Given** two tenants with authors sharing the same display name, **when** either tenant queries their profiles, **then** results contain only their own tenant's profile data with no leakage from the other tenant.
 
-Every profile access (read, create, update, use-in-generation, version-pin) is logged to an immutable audit table with `tenantId`, `userId`, `profileId`, `action`, `result` (allowed/denied), and `timestamp`. Audit logs are tenant-scoped and queryable for compliance.
+- **Given** a tenant's corpus ingestion fails midway (e.g., 22 of 40 documents processed), **when** the pipeline resumes or retries, **then** no partial profiles are visible to the tenant until the full pipeline completes successfully, and no partial data is accessible to other tenants.
 
-### FR-004: Session-Profile Binding Validation
+- **Given** a tenant's profile generation is in progress, **when** another tenant initiates their own profile generation concurrently, **then** both pipelines complete independently with correct results and neither blocks the other.
 
-When a mediation session (`contentMediationSessions.activeProfileId`) references a profile, validate that the session's `tenantId` matches the profile's `tenantId`. Reject session creation or profile binding if tenants do not match.
+### User Story 2 - Profile Versioning and Rollback (Priority: P1)
 
-### FR-005: Profile Versioning
+A client adds 15 new documents to an existing corpus and triggers profile regeneration. The platform produces a new version of affected profiles while retaining the previous version. If the new version degrades fidelity (detected via attribution scoring), the client can roll back to the prior version.
 
-Each profile supports semantic versions (1.0, 1.1, 2.0). Creating or retraining a profile creates a new version. Previous versions are retained and queryable. The `currentVersion` pointer tracks the latest version. A version record stores the feature vector snapshot, training corpus metadata, accuracy score, and creation timestamp.
+**Why this priority:** Without versioning, any corpus change is a one-way door. Clients will not trust a system that cannot undo a bad profile update.
 
-### FR-006: Profile Version Pinning
+**Independent Test:** Generate profiles from corpus v1 (30 docs). Add 10 documents, regenerate as v2. Verify v1 is still queryable and restorable.
 
-Content generation and pipeline steps can pin to a specific profile version (e.g., "use profile X at version 1.2"). This prevents unexpected behavior when a profile is retrained mid-pipeline. If no version is specified, the current version is used.
+**Acceptance Scenarios:**
 
-### FR-007: Profile Diff Engine
+- **Given** an existing profile at version N, **when** the corpus is updated and profiles are regenerated, **then** the new profiles are stored as version N+1 and version N remains queryable via explicit version reference.
 
-Compare two versions of the same profile to produce a structured diff: which stylometric features changed, by how much, and in which direction. This supports human review of profile evolution and debugging of drift.
+- **Given** a profile at version N+1 with a fidelity score below the tenant's configured threshold, **when** a rollback is requested, **then** version N becomes the active profile and all downstream consumers (generation, attribution) use version N until a new version is explicitly promoted.
 
-### FR-008: Staleness Detection
+- **Given** a profile with 5 historical versions, **when** the tenant queries version history, **then** all versions are listed with creation timestamp, corpus snapshot reference, and fidelity score at time of generation.
 
-Profiles that have not been refreshed within a configurable window (default: 30 days) are flagged as stale. Staleness is computed on query (not via background job) by comparing `lastRetrainedAt` against `stalenessThresholdDays`. Stale profiles are still usable but carry a `isStale: true` flag in API responses.
+### User Story 3 - Composite Profile Inheritance (Priority: P2)
 
-### FR-009: Drift-Triggered Retraining
+An organization defines an org-level voice profile (brand voice). Individual author profiles inherit from the org profile but override specific features (sentence cadence, vocabulary preferences). Department-level profiles sit between org and individual.
 
-When Spec 005's drift monitoring detects that a profile's overall drift score exceeds a configurable threshold (default: 0.7), emit a `profile.drift.exceeded` event. The profile module listens for this event and enqueues a retraining job. If Spec 009's pipeline framework is available, the retraining runs as a pipeline step; otherwise, it runs as a standalone background job.
+**Why this priority:** Real organizations have brand voice requirements that coexist with individual author styles. This is the second-order use case after basic isolation works.
 
-### FR-010: Batch Ingestion Pipeline
+**Independent Test:** Create an org profile, a department profile that overrides 3 features, and an individual profile that overrides 2 more. Verify the resolved profile at each level reflects the correct inheritance chain.
 
-Process large document corpora (100+ documents) for profile creation or retraining. The batch pipeline:
-- Accepts a list of document references (content item IDs from Spec 006)
-- Queues documents for feature extraction
-- Tracks progress (documents processed / total)
-- Emits completion event with accuracy metrics
-- Supports cancellation
+**Acceptance Scenarios:**
 
-### FR-011: Profile Caching
+- **Given** an org-level profile and an individual author profile, **when** the resolved profile is computed for that author, **then** org-level features are present except where the individual profile explicitly overrides them, and the override source is traceable.
 
-Cache computed profile feature vectors in memory (LRU) with configurable TTL (default: 1 hour). Cache key is `tenantId:profileId:version`. Cache is invalidated on profile retraining or version change. Reduces latency for repeated profile lookups during generation and verification.
+- **Given** a three-tier hierarchy (org > department > individual), **when** the department profile overrides an org feature and the individual profile does not re-override it, **then** the resolved individual profile reflects the department's override, not the org's original value.
 
-### FR-012: Profile Engine Service Interface
+- **Given** an org-level profile update, **when** the org profile is republished, **then** all downstream department and individual resolved profiles reflect the change unless they have explicit overrides for the affected features.
 
-Define a TypeScript interface (`ProfileEngineClient`) that abstracts communication with the Python profile engine. The interface supports:
-- `extractFeatures(documents: string[]): Promise<FeatureVector>`
-- `computeSimilarity(vectorA: FeatureVector, vectorB: FeatureVector): Promise<number>`
-- `trainProfile(documents: string[]): Promise<TrainedProfile>`
+### User Story 4 - Self-Service Corpus Intake (Priority: P2)
 
-Ship a `NullProfileEngineClient` stub for environments where the Python engine is unavailable.
+A client uploads documents through the platform's intake interface (API or UI). The system validates document formats, deduplicates against existing corpus entries, extracts author attribution metadata, and queues the corpus for profile generation — all without operator intervention.
 
-### FR-013: Profile API Routes
+**Why this priority:** Manual corpus intake does not scale. Self-service is required before the third client onboards.
 
-Express routes for profile management, all tenant-scoped:
-- `POST /api/profiles` — create profile (triggers initial training)
-- `GET /api/profiles` — list profiles for tenant
-- `GET /api/profiles/:id` — get profile with current version
-- `GET /api/profiles/:id/versions` — list version history
-- `GET /api/profiles/:id/versions/:version` — get specific version
-- `GET /api/profiles/:id/diff/:versionA/:versionB` — compare versions
-- `POST /api/profiles/:id/retrain` — trigger retraining
-- `POST /api/profiles/:id/pin` — pin a version for generation
-- `DELETE /api/profiles/:id` — soft-delete (archive) profile
-- `GET /api/profiles/:id/audit` — query audit log
+**Independent Test:** Upload a mixed-format corpus (PDF, DOCX, plain text) with 2 duplicate documents. Verify deduplication, format normalization, and author extraction complete without manual steps.
 
-### FR-014: Profile MCP Tools
+**Acceptance Scenarios:**
 
-MCP tool definitions for profile operations:
-- `profile_list` — list profiles for tenant
-- `profile_get` — get profile details and current version
-- `profile_create` — create new profile
-- `profile_retrain` — trigger retraining
-- `profile_versions` — list version history
-- `profile_diff` — compare two versions
-- `profile_status` — staleness, drift score, last retrained
+- **Given** a corpus upload containing supported formats (PDF, DOCX, TXT, HTML, Markdown), **when** the intake pipeline processes the upload, **then** all documents are normalized to the platform's internal representation and author metadata is extracted or prompted for.
 
----
-
-## 3. Non-Functional Requirements
-
-### Performance
-- Profile lookup (cache hit): < 5ms p95
-- Profile lookup (cache miss, DB fetch): < 50ms p95
-- Batch ingestion throughput: >= 10 documents/second
-- Profile feature extraction (single document): < 2 seconds via engine client
-- Version diff computation: < 100ms for any two versions
-
-### Security
-- All profile data is tenant-scoped. No cross-tenant query path exists.
-- Profile access audit log is append-only (no UPDATE or DELETE on audit table)
-- Profile feature vectors are stored encrypted at rest (PostgreSQL column-level or disk encryption)
-- `assertProfileAccessOrAudit()` is the single enforcement point — all code paths go through it
-
-### Availability
-- Profile cache degrades gracefully: cache miss falls through to DB, not error
-- Batch ingestion survives server restart: jobs are queue-backed with at-least-once delivery
-- Retraining failures do not corrupt the current profile version (new version is created only on success)
-
-### Cost
-- Profile cache: < 50MB memory per 1000 cached profiles (feature vectors are ~2KB each)
-- Audit log retention: 90 days default, configurable per tenant
-- Batch jobs: no additional infrastructure — runs in the existing Express process with queue table
-
----
-
-## 4. User Scenarios
-
-### Scenario 1: Onboarding a New Client's Writing Profiles
-
-A tenant administrator uploads 50 writing samples for their CEO. The platform creates a new profile, runs batch ingestion to extract stylometric features, trains the initial profile (version 1.0), and reports accuracy metrics. The profile is immediately available for content generation.
-
-### Scenario 2: Cross-Tenant Access Prevention
-
-A user at Tenant A attempts to reference a profile ID belonging to Tenant B in a generation request. The `assertProfileAccessOrAudit()` guard detects the tenant mismatch, logs a `ProfileAccessDeniedError` audit event, and returns 403. The generation request fails safely.
-
-### Scenario 3: Drift-Triggered Retraining
-
-The drift monitor (Spec 005) detects that the CEO profile's drift score has risen to 0.82 (above the 0.7 threshold). It emits a `profile.drift.exceeded` event. The profile module enqueues a retraining job. The job fetches the latest writing samples from the content corpus, trains a new version (1.1), and updates the `currentVersion` pointer. The old version (1.0) is retained for rollback.
-
-### Scenario 4: Version Pinning in Pipeline
-
-A content pipeline (Spec 009) generates a weekly newsletter using the CEO's voice. The pipeline definition pins to profile version 1.0. When version 1.1 is created mid-week from drift-triggered retraining, the pipeline continues using 1.0 until an administrator explicitly updates the pin. This prevents unexpected voice changes in in-flight content.
-
-### Scenario 5: Investigating Profile Evolution
-
-A tenant administrator notices the CEO's generated content feels different. They use `profile_diff` to compare version 1.0 and 1.1, seeing that formality increased by 15% and sentence complexity decreased by 10%. This confirms the CEO's recent writing style has shifted toward more concise communication, and the retraining correctly captured it.
-
----
-
-## 5. Key Entities
-
-| Entity | Description |
-|--------|-------------|
-| Profile | A writing profile owned by one tenant, representing one author's voice |
-| ProfileVersion | A point-in-time snapshot of a profile's feature vector and training metadata |
-| FeatureVector | The 129-dimensional stylometric representation produced by the profile engine |
-| ProfileAuditEntry | Immutable record of a profile access or modification event |
-| BatchIngestionJob | A queued job to process multiple documents for profile training |
-| ProfileCache | In-memory LRU cache of feature vectors keyed by tenant:profile:version |
-| ProfileEngineClient | TypeScript interface abstracting the Python profile engine |
-| DriftRetrainingEvent | Event emitted when drift exceeds threshold, triggering retraining |
-
----
-
-## 6. Success Criteria
-
-1. **Tenant isolation verified** — integration test confirms cross-tenant profile access returns 403 and logs audit event
-2. **Versioning complete** — profiles support create, retrain (new version), pin, diff, and rollback
-3. **Batch ingestion functional** — 100-document corpus processes within 20 seconds with progress tracking
-4. **Cache effective** — repeated profile lookups show < 5ms p95 on cache hit
-5. **Drift retraining works** — drift score above threshold triggers automatic retraining and creates new version
-6. **Audit trail complete** — all profile operations are logged and queryable per tenant
-7. **API and MCP tools operational** — all 10 routes and 7 MCP tools respond correctly
-8. **Zero cross-tenant data leaks** — no query path returns profiles from another tenant
-
----
-
-## 7. Assumptions
-
-- The Python profile engine (`joyus-profile-engine`) is available as a callable service or subprocess. The platform wraps it; it does not embed it.
-- The `content` schema (Spec 006) is deployed — profile IDs in `contentProductProfiles`, `contentGenerationLogs`, and `contentDriftReports` reference profiles from this module.
-- PostgreSQL supports the query patterns needed (JSONB for feature vectors, partial indexes for staleness).
-- The event bus pattern (if Spec 009 is deployed) is available for drift-triggered retraining. If not, a polling fallback is used.
-- Feature vectors are approximately 2KB per profile version (129 features as float64 + metadata).
-
----
-
-## 8. Dependencies
-
-- **Spec 005** (Content Intelligence): Drift monitoring emits signals consumed by FR-009. Voice analyzer interface already exists.
-- **Spec 006** (Content Infrastructure): Content schema already references `profileId`. Content items provide the training corpus.
-- **Spec 007** (Governance): Profile operations emit governance-compatible audit events. Access control follows the platform's auth middleware pattern.
-- **Spec 009** (Automated Pipelines): Profile generation and fidelity check are pipeline step types. Retraining can run as a pipeline step. Soft dependency — works without Spec 009.
-- **External**: Python profile engine library (`joyus-profile-engine`). Communication mechanism TBD (subprocess, HTTP, or direct FFI).
-
----
-
-## 9. Edge Cases
-
-- **Profile with zero versions**: A profile created but not yet trained has no versions. API returns `currentVersion: null` and `status: 'pending_training'`.
-- **Concurrent retraining**: Two drift events trigger two retraining jobs for the same profile simultaneously. Use database-level advisory locks on `profileId` to serialize retraining. Second job skips if a newer version already exists.
-- **Stale profile used in generation**: Stale profiles are still usable. The `isStale` flag is informational. Governance (Spec 007) can enforce policies on stale profile usage.
-- **Version pinned to deleted version**: If a pinned version's profile is archived, return the pinned version data with a warning flag. Do not silently fall back to a different profile.
-- **Batch ingestion with invalid documents**: Skip documents that fail feature extraction, log errors, continue processing remaining documents. Report partial success with error count.
-- **Cache stampede on popular profiles**: Use a mutex/lock pattern on cache miss to prevent multiple concurrent DB fetches for the same profile version.
-- **Audit log volume**: High-traffic tenants may generate thousands of audit entries per day. Use time-based partitioning or archival after retention window.
-
----
-
-## 10. Out of Scope
-
-- **Rewriting the Python profile engine** — this spec wraps it, does not replace it
-- **Real-time profile training** — training is batch-oriented, not streaming
-- **Cross-tenant profile sharing** — profiles are strictly tenant-isolated (future: explicit sharing with consent)
-- **Profile marketplace** — no discovery or exchange of profiles between tenants
-- **UI/dashboard for profile management** — API and MCP tools only; UI is a future feature
-- **Profile engine deployment** — how the Python engine is deployed/hosted is outside this spec
-- **Encryption key management** — uses the platform's existing encryption infrastructure
+- **Given** a corpus upload containing 3 documents already present in the tenant's corpus (by content hash), **when** the intake pipeline runs, **then** duplicates are flagged, the tenant is notified, and duplicates are excluded from profile regeneration unless the tenant explicitly re-includes them.
+
+- **Given** a corpus upload containing an unsupported format, **when** the intake pipeline encounters it, **then** the unsupported file is rejected with a clear error, and all supported files in the same upload continue processing.
+
+### User Story 5 - Profile Caching and Precomputation (Priority: P3)
+
+For tenants with large corpora (500+ documents, 20+ authors), resolved profiles are precomputed and cached. Cache invalidation triggers on corpus changes, org profile updates, or manual refresh.
+
+**Why this priority:** Latency optimization for large tenants. Not blocking for launch but required before enterprise-scale onboarding.
+
+**Independent Test:** Generate profiles for a 500-document corpus. Verify that subsequent profile lookups return cached results in <50ms. Update the corpus and verify cache invalidation and regeneration.
+
+**Acceptance Scenarios:**
+
+- **Given** a precomputed resolved profile in cache, **when** the profile is requested, **then** the cached version is returned without re-running the inheritance resolution or stylometric computation.
+
+- **Given** a cached resolved profile, **when** any profile in its inheritance chain is updated, **then** the cache entry is invalidated and the next request triggers recomputation.
+
+### Edge Cases
+
+- **Tenant deletion:** All profiles, corpus data, and version history for the tenant are soft-deleted (recoverable for 30 days) then hard-deleted. No orphaned data remains in shared indexes.
+- **Zero-document corpus:** Profile generation is rejected with a clear error; no empty profiles are created.
+- **Single-author corpus:** The system generates a profile but flags it as low-confidence (no contrastive signal for stylometric differentiation).
+- **Corpus with no attributable authors:** Documents are ingested but profile generation is deferred until author attribution is provided or inferred.
+
+## Requirements
+
+### Functional Requirements
+
+| ID | Requirement | Priority |
+|---|---|---|
+| FR-001 | All profile data (raw corpus, stylometric features, markers, resolved profiles) MUST be scoped to a single tenant. Cross-tenant data access MUST be denied at the data layer, not just the API layer. | P1 |
+| FR-002 | Profile generation pipelines MUST execute within a tenant-scoped context that prevents reads or writes to other tenants' data, even in the event of application-level bugs. | P1 |
+| FR-003 | Every profile MUST have an immutable version identifier. Profile updates MUST create new versions, never mutate existing versions. | P1 |
+| FR-004 | The platform MUST support rollback to any previous profile version within the retention window. Rollback MUST be atomic (all consumers switch simultaneously). | P1 |
+| FR-005 | Profile inheritance MUST support at least three tiers (org > department > individual). The resolved profile at any tier MUST be deterministically computable from the inheritance chain. | P2 |
+| FR-006 | Self-service corpus intake MUST support PDF, DOCX, TXT, HTML, and Markdown formats. Unsupported formats MUST be rejected without blocking the rest of the upload. | P2 |
+| FR-007 | Corpus deduplication MUST use content-hash comparison. Duplicate detection MUST operate within tenant scope only. | P2 |
+| FR-008 | Resolved profile caching MUST invalidate on any upstream change in the inheritance chain. Stale cache entries MUST NOT be served after invalidation. | P3 |
+| FR-009 | Profile version history MUST be retained for at least 90 days or the tenant's configured retention period, whichever is longer. | P1 |
+| FR-010 | Concurrent profile generation pipelines for different tenants MUST NOT contend on shared resources in a way that causes correctness failures. Performance degradation under contention is acceptable; data corruption is not. | P1 |
+
+### Non-Functional Requirements
+
+- NFR-001: Profile generation for a 50-document corpus MUST complete within 10 minutes wall clock time.
+- NFR-002: Profile rollback MUST complete (all consumers switched) within 30 seconds.
+- NFR-003: Cached resolved profile lookups MUST return in under 50ms at p95.
+- NFR-004: Self-service corpus intake MUST process a 100-document mixed-format upload with no more than 2 manual interventions.
+- NFR-005: Profile fidelity after inheritance resolution MUST degrade by no more than 5% compared to a standalone profile built from the same corpus.
+
+### Key Entities
+
+**TenantProfile**
+- `tenant_id`: Scoping key (foreign key to tenant)
+- `profile_id`: Unique within tenant
+- `version`: Monotonically increasing integer
+- `author_id`: Reference to attributed author (nullable for org/dept profiles)
+- `tier`: `org | department | individual`
+- `parent_profile_id`: Reference to parent in inheritance chain (nullable for org-level)
+- `corpus_snapshot_id`: Reference to the corpus version used for generation
+- `stylometric_features`: 129-feature vector (Spec 005 schema)
+- `markers`: Marker set (Spec 005 markers.json schema)
+- `fidelity_score`: Attribution accuracy at time of generation
+- `status`: `generating | active | rolled_back | archived`
+- `created_at`, `archived_at`
+
+**CorpusSnapshot**
+- `snapshot_id`: Unique identifier
+- `tenant_id`: Scoping key
+- `document_hashes`: Set of content hashes included in this snapshot
+- `document_count`: Total documents
+- `author_count`: Distinct authors detected
+- `created_at`
+
+## Success Criteria
+
+| ID | Criterion | Target |
+|---|---|---|
+| SC-001 | Profile generation for a 50-document corpus completes within time limit | <= 10 min |
+| SC-002 | Cross-tenant data access attempts are denied with zero false negatives over 10,000 test queries | 0 leaks |
+| SC-003 | Profile rollback completes (all consumers switched) within time limit | <= 30s |
+| SC-004 | Resolved profile cache hit returns within latency target at p95 | <= 50ms p95 |
+| SC-005 | Self-service corpus intake processes a 100-document mixed-format upload with minimal manual intervention | <= 2 manual steps |
+| SC-006 | Profile fidelity after inheritance resolution degrades by no more than threshold vs standalone | <= 5% degradation |
+
+## Assumptions
+
+- Spec 005's stylometric engine is stable and does not require architectural changes to support multi-tenant execution — only scoping and lifecycle management.
+- Tenant isolation at the data layer (FR-001) will be enforced by the platform's multi-tenancy infrastructure (ADR-0002, Leash pattern), not reimplemented per-feature.
+- Corpus sizes for the initial cohort of clients are <=500 documents and <=30 authors. Scaling beyond this is a future optimization, not a launch blocker.
+- The entitlement model from Spec 006 governs which tenants have access to profile features (generation, versioning, composite inheritance) based on their product tier.
+
+## References
+
+- Spec 005: Content Intelligence (Profile Engine) — stylometric features, markers, fidelity tiers
+- Spec 006: Content Infrastructure — entitlement model, content state management
+- Spec 007: Org-Scale Agentic Governance — governance gates for profile quality
+- Spec 009: Automated Pipelines Framework — event-driven triggers for profile regeneration
+- ADR-0002: Leash Multi-Tenancy — tenant isolation architecture (soft isolation, application-scoped tenant_id filtering)
+- ADR-0003: Agate Pattern — component discovery for profile services
+- Constitution §2.1, §2.2, §2.4, §2.10
