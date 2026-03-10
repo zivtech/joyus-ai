@@ -147,13 +147,13 @@ Acceptance:
 - Early-career development requires supervised learning environments, not removal of growth pathways.
 
 ## Success Criteria
-1. Rollout model is approved and used for all new team onboarding.
-2. ROI dashboard inputs are captured weekly for pilot teams.
-3. New MCP integrations cannot reach production without rubric assessment.
-4. Governance checks run in CI and block merges on P0 failures.
-5. Every pilot team has baseline and monthly maturity level classification.
-6. Level 4/5 workflows demonstrate scenario holdout validation before production release.
-7. Measured vs perceived productivity is reviewed weekly, with remediation when divergence persists.
+1. Rollout model is approved and used for all new team onboarding — 100% of new teams onboarded via the playbook within 2 weeks of pilot start.
+2. ROI dashboard inputs are captured weekly for pilot teams — ≥2 consecutive weeks of data for every pilot team before scale-up decisions.
+3. New MCP integrations cannot reach production without rubric assessment — 100% of integrations added after governance launch have a completed rubric score.
+4. Governance checks run in CI and block merges on P0 failures — zero P0 violations merged to main after CI enforcement is enabled.
+5. Every pilot team has baseline and monthly maturity level classification — 100% of pilot teams scored within 1 week of rollout start; monthly re-scoring occurs within 5 business days of month end.
+6. Level 4/5 workflows demonstrate scenario holdout validation before production release — 100% of Level 4/5 workflows have ≥1 holdout scenario set with documented pass/fail results.
+7. Measured vs perceived productivity is reviewed weekly, with remediation when divergence persists — remediation actions logged within 3 business days of divergence detection (≥20% gap between measured and perceived).
 
 ## Assumptions
 1. Existing feature-level specs remain authoritative for implementation scope.

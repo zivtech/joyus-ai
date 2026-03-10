@@ -257,6 +257,60 @@ Export current state with a note for a teammate, or load a teammate's shared sta
 
 ---
 
+### `query_snapshots`
+
+**Purpose**: Search and browse snapshot history for the current project. Enables mid-session queries like "what did my state look like yesterday?" or "show me snapshots from the feature branch."
+
+**Priority**: P1 (Extended tools — WP07, T039)
+
+**Input**:
+```json
+{
+  "branch": "feature/login-flow",
+  "eventType": "commit",
+  "since": "2026-02-15T00:00:00Z",
+  "until": "2026-02-16T23:59:59Z",
+  "limit": 10
+}
+```
+
+All parameters are optional. When omitted:
+- `branch`: current branch (from git)
+- `eventType`: all types
+- `since`/`until`: no time constraint
+- `limit`: 20 (max: 100)
+
+**Output**:
+```json
+{
+  "total": 47,
+  "returned": 10,
+  "snapshots": [
+    {
+      "id": "snap_abc123",
+      "timestamp": "2026-02-16T10:30:00Z",
+      "eventType": "commit",
+      "branch": "feature/login-flow",
+      "summary": "3 files modified, 2 tests passing, 1 decision pending",
+      "tags": ["pre-refactor"]
+    }
+  ]
+}
+```
+
+Returns summary objects, not full snapshot payloads. Use `get_context` with a snapshot ID to load the full state.
+
+**Error cases**:
+- `invalid_timestamp`: `since`/`until` cannot be parsed as ISO 8601
+- `limit_exceeded`: `limit` > 100
+- `no_results`: Zero snapshots match the query (not an error — returns `{ total: 0, returned: 0, snapshots: [] }`)
+
+**When Claude calls it**: When user asks about past state ("what was I working on yesterday?"), when reviewing session history, or when debugging state drift.
+
+**Performance target**: <500ms for queries returning ≤20 results.
+
+---
+
 ## CLI Commands (Deferred — Admin/Power Users)
 
 > **Note**: CLI commands are deferred. They will be built after the MCP server is validated. The CLI is an admin/debugging tool for Tier 2 power users, not the primary interface. See `plan.md` Deferred Items table.

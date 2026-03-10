@@ -22,12 +22,12 @@ joyus-ai prevents these failures through **structured mediation** — not by lim
 - A mediator layer between users and AI agents
 - A multi-tenant platform for internal use and client deployments
 - A skills-as-guardrails system where outputs are guided by constraints
-- A Claude Code alternative for clients who can't grant deep system access
+- A mediated AI access layer for organizations that can't or shouldn't grant raw AI agent access to their systems (Constitution §2.6)
 
 ### What joyus-ai Is NOT
 
 - A replacement for Claude Code or spec-kitty (it sits between the user and the agent)
-- A consumer product (it's for internal + managed client use)
+- Limited to internal use only (available for any organization — internal teams, managed service clients, or self-service deployers per Constitution §1.0)
 - A replacement for human judgment (outputs are always reviewable)
 - A way to bypass client approval (clients retain authority)
 - A data collection play (client data is never used for training)
@@ -262,7 +262,7 @@ Each domain is summarized here. Each will receive its own deep specification via
 
 - **SC-001**: Junior developers produce zero wrong-branch commits after joyus-ai is enabled (measured over 30-day period)
 - **SC-002**: Skills are auto-loaded for 100% of file edits matching configured patterns, with zero manual invocation required
-- **SC-003**: Session state restores within 5 seconds of a new session starting, with all active context (branch, files, tasks) intact
+- **SC-003**: Session state restores within 5 seconds of a new session starting, with all active context (branch, files, tasks) intact. *Timing note: This measures the total time from session start to Claude having restored context. The underlying MCP tool response (`get_context`) targets <500ms (see Feature 002 plan.md). The 30-second target in Feature 002 SC-001 measures the broader user-perceived resume time including Claude formulating its first contextual response.*
 - **SC-004**: Quality gate adoption reaches 90%+ of push/commit operations within 2 weeks of enabling for a project
 - **SC-005**: Token usage per task decreases by 20%+ compared to unmediated sessions (measured via prompt coaching and efficient routing)
 - **SC-006**: Client onboarding (workspace creation, skill loading, spend limits) completes in under 1 day
@@ -333,3 +333,35 @@ These are captured from the requirements brief and ongoing discussions. Each wil
 *Specification captured: February 17, 2026*
 *Interview conducted with: project leadership*
 *For: joyus-ai — Joyus AI Platform (Feature 003)*
+
+---
+
+## Requirement Traceability
+
+*This umbrella spec delegates requirements to downstream feature specs. The table below maps each FR to its owner(s).*
+
+*Cross-reference note: FR-004 is explicitly delegated to 002 FR-001 (session state persistence). FR-012 is explicitly delegated to 002 FR-001/FR-006 (event-driven snapshots + dirty-exit survival).*
+
+| FR | Summary | Downstream Feature(s) | Notes |
+|----|---------|----------------------|-------|
+| FR-001 | Mediate between users and AI agents, enriching prompts and enforcing skill usage | 004-workflow-enforcement | 004 Overview defines this as its core problem and solution |
+| FR-002 | Multi-tenant deployment with proper isolation | Unassigned | No current spec owns multi-tenancy isolation at runtime; candidate: future Feature 008 (Profile Isolation and Scale) |
+| FR-003 | Auto-load skills based on file patterns without manual invocation | 004-workflow-enforcement | 004 FR-008 (skill auto-load by file-pattern mapping) |
+| FR-004 | Persist active session state across compactions and restarts | 002-session-context-management | Delegated to 002 FR-001; 002 User Story 1 + FR-001/FR-003 are the direct owners |
+| FR-005 | Enforce configurable quality gates before push/commit | 004-workflow-enforcement | 004 FR-001 through FR-007 (Quality Gates section) |
+| FR-006 | Verify correct branch before commits | 004-workflow-enforcement | 004 FR-014 (branch verification against task context) |
+| FR-007 | Track and attribute token usage and costs per user, client, task | 001-mcp-server-aws-deployment (partial), Unassigned | 001 FR6 covers monitoring/health; full cost attribution is billing scope → future Feature 011 (API Account and Billing Model) |
+| FR-008 | Per-client spend limits with alerts and throttling | Unassigned | Billing/workspace management → future Feature 011 (API Account and Billing Model); 001 infrastructure is a prerequisite |
+| FR-009 | Audit trail linking changes to requirements, sessions, and agent attribution | 004-workflow-enforcement | 004 FR-020 through FR-025 (Audit and Traceability section) |
+| FR-010 | Three user tiers with appropriate interfaces and guardrail levels | 004-workflow-enforcement, 002-session-context-management | 004 FR-003 (tier-to-gate mapping) + FR-027 (per-developer config); 002 FR-010 (power user configuration) |
+| FR-011 | Capture user corrections and feed back into skill updates | 004-workflow-enforcement | 004 FR-030/FR-031 (Feedback Capture section) |
+| FR-012 | Checkpoint/snapshot before risky operations with graduated rollback | 002-session-context-management | Delegated to 002 FR-001/FR-006; event-driven snapshots at significant events + dirty-exit survival |
+| FR-013 | Work with existing Claude Code infrastructure (hooks, CLAUDE.md, MCP servers) | 002-session-context-management | 002 Assumptions + Dependencies (MCP-first architecture, companion service, hooks for Tier 2) |
+| FR-014 | Incrementally adoptable — teams can start with a single domain | 007-org-scale-agentic-governance | 007 FR-001 through FR-003 (rollout stages, pilot cohort model, onboarding assets) |
+| FR-015 | Support multiple AI backends (Claude, Codex, Gemini) | Unassigned | Explicitly deferred in 002 Out of Scope ("use LiteLLM when ready"); no current spec owns multi-backend routing |
+| FR-016 | Manage Anthropic API workspaces and keys programmatically | 001-mcp-server-aws-deployment (partial), Unassigned | 001 covers AWS/Docker infrastructure; programmatic workspace/key management (Admin API) → future Feature 011 |
+| FR-017 | Monitor content fidelity including brand compliance and voice consistency | 005-content-intelligence, 006-content-infrastructure | 005 System 3 (Fidelity Monitoring and Repair); 006 FR-018/FR-019 (background drift monitoring via VoiceAnalyzer interface) |
+| FR-018 | Never use client data for model training | 007-org-scale-agentic-governance | 007 governance model (data governance, constitution sync checks); constitutional constraint (Constitution §2.10) |
+| FR-019 | All outputs reviewable before delivery to end clients | 005-content-intelligence, 004-workflow-enforcement | 005 §5.3 generation workflow (deliver to review queue); 004 (quality gates as pre-delivery checks) |
+| FR-020 | Event-driven automated pipelines triggered by external events | Unassigned | Domain 12 (Automated Bug Triage) scoped here but not yet assigned; candidate: future Feature 009 (Automated Pipelines Framework) |
+| FR-021 | Structured diagnostic notes on tickets when automated remediation fails | Unassigned | Pairs with FR-020; candidate: future Feature 009 (Automated Pipelines Framework) |
