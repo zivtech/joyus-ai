@@ -114,3 +114,27 @@ Keep the summary line under 72 characters. Use the body to explain _why_, not _w
 ## Questions
 
 Open a [GitHub Discussion](https://github.com/Priivacy-ai/joyus-ai/discussions) for design questions or ideas that aren't yet a concrete issue.
+
+## Referencing Issues in Commits
+
+Reference GitHub issues in commit messages to create traceability between changes and the issues that motivated them.
+
+**Auto-close an issue on merge:**
+```
+fix(mcp-server): handle null profile in mediation router
+
+Fixes #42
+```
+
+**Reference without closing:**
+```
+feat(state): add divergence detection for canonical documents
+
+Refs #38
+```
+
+**Keywords that auto-close** (case-insensitive): `Fixes`, `Closes`, `Resolves`
+
+**Keywords that link only**: `Refs`, `See`, `Related to`
+
+Place issue references in the commit body or footer, not the summary line.
