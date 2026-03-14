@@ -37,6 +37,30 @@ kitty-specs/**/tasks/*.md
 !kitty-specs/006-content-infrastructure/tasks/WP10-drift-monitoring.md
 !kitty-specs/006-content-infrastructure/tasks/WP11-observability.md
 !kitty-specs/006-content-infrastructure/tasks/WP12-integration.md
+!kitty-specs/007-org-scale-agentic-governance/tasks/WP01-baseline-and-scoring.md
+!kitty-specs/007-org-scale-agentic-governance/tasks/WP02-backlog-and-ownership.md
+!kitty-specs/007-org-scale-agentic-governance/tasks/WP03-governance-remediations.md
+!kitty-specs/007-org-scale-agentic-governance/tasks/WP04-workflow-and-metadata-contracts.md
+!kitty-specs/007-org-scale-agentic-governance/tasks/WP05-automated-checks-and-ci.md
+!kitty-specs/007-org-scale-agentic-governance/tasks/WP06-autonomy-leveling-and-scenario-policy.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP01-profile-schema.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP02-access-control.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP03-versioning.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP04-batch-ingestion.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP05-caching.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP06-engine-retraining.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP07-api-mcp-tools.md
+!kitty-specs/008-profile-isolation-and-scale/tasks/WP08-integration-validation.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP01-schema-foundation.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP02-event-bus.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP03-trigger-system.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP04-pipeline-executor.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP05-step-handlers.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP06-review-gates.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP07-schedule-templates.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP08-api-mcp-tools.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP09-analytics.md
+!kitty-specs/009-automated-pipelines-framework/tasks/WP10-integration-validation.md
 
 # Generated artifacts
 **/tmp/
