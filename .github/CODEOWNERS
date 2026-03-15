@@ -7,12 +7,12 @@
 * @zivtech/joyus-ai
 
 # Specifications and design documents
-/spec/ @zivtech/joyus-ai @grndlvl
-/kitty-specs/ @zivtech/joyus-ai @grndlvl
-/.claude/commands/ @zivtech/joyus-ai @grndlvl
-/.kittify/ @zivtech/joyus-ai @grndlvl
-/README.md @zivtech/joyus-ai @grndlvl
-/ROADMAP.md @zivtech/joyus-ai @grndlvl
+/spec/ @zivtech/joyus-ai
+/kitty-specs/ @zivtech/joyus-ai
+/.claude/commands/ @zivtech/joyus-ai
+/.kittify/ @zivtech/joyus-ai
+/README.md @zivtech/joyus-ai
+/ROADMAP.md @zivtech/joyus-ai
 
 # Deployment infrastructure
 /deploy/ @zivtech/joyus-ops
