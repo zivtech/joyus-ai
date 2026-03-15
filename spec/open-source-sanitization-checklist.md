@@ -24,16 +24,16 @@ Remove all `/Users/AlexUA/` references that expose developer machine layout.
 | `joyus-ai-plan.md` | **Moved** to `_private/joyus-ai-internal/` |
 | `research/jawn-ai-research.md` | **Moved** to `_private/joyus-ai-internal/` |
 
-### 3. NCLC Client References ✅
+### 3. Client References ✅
 
 | File | Status |
 |------|--------|
 | `joyus-ai-requirements-brief.md` | **Moved** to `_private/joyus-ai-internal/` |
 | `joyus-ai-plan.md` | **Moved** to `_private/joyus-ai-internal/` |
-| `spec/profile-engine-spec.md` | **Fixed** — all NCLC refs genericized to "client PoC" |
+| `spec/profile-engine-spec.md` | **Fixed** — all client refs genericized to "client PoC" |
 | `spec/constitution.md` | **Fixed** — genericized to "client PoC" |
-| `spec/plan.md` | **Fixed** — all NCLC refs genericized |
-| `kitty-specs/*/spec.md` | **Fixed** — "nclclib" → "prior project", "NCLC" → "client PoC" |
+| `spec/plan.md` | **Fixed** — all client refs genericized |
+| `kitty-specs/*/spec.md` | **Fixed** — client library → "prior project", client name → "client PoC" |
 | `joyus-ai-state/tests/` | **Fixed** — test fixture genericized |
 
 ### 4. Internal Infrastructure References ✅
@@ -126,7 +126,7 @@ All "Zivtech AI" product branding replaced with "Joyus AI" across all files:
 
 ### 11. Client-Specific Terminology ✅
 
-- "treatise" → "publication" / "book" (NCLC-specific term for books)
+- "treatise" → "publication" / "book" (client-specific term for books)
 - CFPB/FCRA/TILA/furnisher/servicer → generic regulatory terms
 - Lauren Saunders → Author A; rent-a-bank → regulatory enforcement
 - Litigator/Advocate/Educator/Expert/Priest voices → Formal/Accessible/Technical/Persuasive
