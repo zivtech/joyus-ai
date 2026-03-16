@@ -13,6 +13,7 @@ import { executeGithubTool } from './executors/github-executor.js';
 import { executeGoogleTool } from './executors/google-executor.js';
 import { executeJiraTool } from './executors/jira-executor.js';
 import { executeOpsTool } from './executors/ops-executor.js';
+import { executePipelineTool, type PipelineExecutorContext } from './executors/pipeline-executor.js';
 import { executeSlackTool } from './executors/slack-executor.js';
 
 export interface ExecutorContext {
@@ -20,6 +21,26 @@ export interface ExecutorContext {
   accessToken: string;
   refreshToken?: string;
   metadata?: unknown;
+}
+
+// ============================================================
+// PIPELINE CONTEXT (injected during server startup)
+// ============================================================
+
+interface PipelineContextDeps {
+  stepRegistry: PipelineExecutorContext['stepRegistry'];
+  decisionRecorder: PipelineExecutorContext['decisionRecorder'];
+  eventBus: PipelineExecutorContext['eventBus'];
+}
+
+let _pipelineContext: PipelineContextDeps | null = null;
+
+/**
+ * Inject pipeline module dependencies for tool execution.
+ * Called once during server initialization after the pipeline module is ready.
+ */
+export function setPipelineContext(deps: PipelineContextDeps): void {
+  _pipelineContext = deps;
 }
 
 /**
@@ -33,6 +54,19 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   if (toolName.startsWith('content_')) {
     const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
     return executeContentTool(toolName, input, { userId, tenantId, db });
+  }
+
+  if (toolName.startsWith('pipeline_') || toolName.startsWith('template_') || toolName.startsWith('review_')) {
+    const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
+    // Pipeline executor context requires additional deps — these are injected via setPipelineContext()
+    if (!_pipelineContext) {
+      throw new Error('Pipeline module not initialized');
+    }
+    return executePipelineTool(toolName, input, {
+      tenantId,
+      db: db as unknown as PipelineExecutorContext['db'],
+      ..._pipelineContext,
+    });
   }
 
   // Determine which service this tool belongs to

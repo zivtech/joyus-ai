@@ -23,9 +23,10 @@ import { authRouter } from './auth/routes.js';
 import { requireBearerToken } from './auth/middleware.js';
 import { db, auditLogs } from './db/client.js';
 import { initializeContentModule } from './content/index.js';
+import { initializePipelineModule, type PipelineModule } from './pipelines/init.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
-import { executeTool } from './tools/executor.js';
+import { executeTool, setPipelineContext } from './tools/executor.js';
 import { getAllTools } from './tools/index.js';
 
 config();
@@ -302,6 +303,39 @@ app.listen(PORT, async () => {
   } catch (error) {
     console.error('Failed to initialize content module:', error);
   }
+
+  // Initialize pipeline module (failure is isolated — won't crash the server)
+  let pipelineModule: PipelineModule | null = null;
+  try {
+    pipelineModule = await initializePipelineModule({
+      db: db as unknown as import('drizzle-orm/node-postgres').NodePgDatabase,
+      connectionString: process.env.DATABASE_URL ?? '',
+    });
+
+    // Mount pipeline routes
+    app.use('/api', pipelineModule.router);
+
+    // Inject pipeline deps into tool executor
+    setPipelineContext({
+      stepRegistry: pipelineModule.stepRegistry,
+      decisionRecorder: pipelineModule.decisionRecorder,
+      eventBus: pipelineModule.eventBus,
+    });
+
+    console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
+  } catch (error) {
+    console.error('Failed to initialize pipeline module:', error);
+  }
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    if (pipelineModule) {
+      await pipelineModule.shutdown();
+    }
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 });
 
 export { app };
