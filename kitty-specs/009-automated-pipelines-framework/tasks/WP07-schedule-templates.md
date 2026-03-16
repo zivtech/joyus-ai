@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: Schedule Triggers & Templates
-lane: "doing"
+lane: "done"
 dependencies: []
 base_branch: main
 base_commit: 7efaca018cd3063d2769cd4b6b6666a69277dc89
@@ -11,8 +11,8 @@ phase: Phase D - Review Gates & Scheduling
 assignee: ''
 agent: ''
 shell_pid: "58980"
-review_status: ''
-reviewed_by: ''
+review_status: "approved"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
@@ -384,3 +384,4 @@ The schedule trigger extends the trigger system (WP03) with cron-based execution
 - Verify ScheduleTriggerHandler is added to the TriggerRegistry factory
 
 ## Activity Log
+- 2026-03-16T19:00:21Z – unknown – shell_pid=58980 – lane=done – Schedule triggers, templates, 3 built-in defs, 30 tests.
