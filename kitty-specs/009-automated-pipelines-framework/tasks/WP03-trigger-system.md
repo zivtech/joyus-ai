@@ -1,13 +1,17 @@
 ---
-work_package_id: "WP03"
-title: "Trigger System"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T012", "T013", "T014", "T015", "T016", "T017"]
+work_package_id: WP03
+title: Trigger System
+lane: "doing"
+dependencies: [WP01]
+base_branch: 009-automated-pipelines-framework-WP01
+base_commit: 5df73eb05e3ceb65f97fdc2b2dc81790126c74e3
+created_at: '2026-03-16T16:55:42.593780+00:00'
+subtasks: [T012, T013, T014, T015, T016, T017]
+shell_pid: "84658"
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP03: Trigger System
