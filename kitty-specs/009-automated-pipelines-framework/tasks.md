@@ -28,13 +28,13 @@ Layer 7: WP10 (depends on all)
 Create the Drizzle ORM schema for the `pipelines` PostgreSQL schema (8 tables, 8 enums), Zod validation schemas, shared TypeScript types, and wire exports into the existing database client.
 
 **Subtasks**:
-- [ ] T001: Create pipelines Drizzle schema (`src/pipelines/schema.ts`) — all 8 tables with pgSchema, enums, relations, indexes
-- [ ] T002: Create shared TypeScript types, enums, and constants (`src/pipelines/types.ts`)
-- [ ] T003: Create Zod validation schemas (`src/pipelines/validation.ts`) — pipeline config, trigger config, step config, retry policy
-- [ ] T004: Create module barrel export (`src/pipelines/index.ts`)
-- [ ] T005: Export pipelines schema from `src/db/client.ts`
-- [ ] T006: Generate Drizzle migration (`drizzle/`)
-- [ ] T007: Verify typecheck and existing tests pass
+- [x] T001: Create pipelines Drizzle schema (`src/pipelines/schema.ts`) — all 8 tables with pgSchema, enums, relations, indexes
+- [x] T002: Create shared TypeScript types, enums, and constants (`src/pipelines/types.ts`)
+- [x] T003: Create Zod validation schemas (`src/pipelines/validation.ts`) — pipeline config, trigger config, step config, retry policy
+- [x] T004: Create module barrel export (`src/pipelines/index.ts`)
+- [x] T005: Export pipelines schema from `src/db/client.ts`
+- [x] T006: Generate Drizzle migration (`drizzle/`)
+- [x] T007: Verify typecheck and existing tests pass
 
 **Parallel opportunities**: None — this is the foundation.
 **Risks**: Drizzle `pgSchema` must create the `pipelines` schema before tables. May need `CREATE SCHEMA IF NOT EXISTS pipelines;` in migration.
