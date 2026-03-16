@@ -1,0 +1,110 @@
+{
+  "name": "Scheduled Content Audit",
+  "description": "Runs a scheduled fidelity check across a set of profiles, generates a digest of quality signals, and routes findings through a review gate before notifying the content team.",
+  "category": "quality-assurance",
+  "assumptions": [
+    "Profile IDs are stable and belong to the tenant.",
+    "The fidelity threshold is calibrated to acceptable quality levels.",
+    "Reviewers are notified out-of-band (e.g. via the platform dashboard) that a review gate is waiting."
+  ],
+  "definition": {
+    "triggerType": "schedule_tick",
+    "triggerConfig": {
+      "type": "schedule_tick",
+      "cronExpression": "{{cronExpression}}",
+      "timezone": "{{timezone}}"
+    },
+    "steps": [
+      {
+        "name": "Fidelity check",
+        "stepType": "fidelity_check",
+        "config": {
+          "type": "fidelity_check",
+          "thresholds": {
+            "minScore": "{{minFidelityScore}}"
+          }
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Generate audit digest",
+        "stepType": "content_generation",
+        "config": {
+          "type": "content_generation",
+          "prompt": "{{digestPrompt}}",
+          "profileId": "{{profileId}}"
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Review gate",
+        "stepType": "review_gate",
+        "config": {
+          "type": "review_gate",
+          "artifactSelection": "all_preceding"
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Notify content team",
+        "stepType": "notification",
+        "config": {
+          "type": "notification",
+          "channel": "{{notificationChannel}}",
+          "message": "Content audit complete. Review findings in the platform dashboard."
+        },
+        "inputRefs": []
+      }
+    ],
+    "retryPolicy": {
+      "maxRetries": 3,
+      "baseDelayMs": 30000,
+      "maxDelayMs": 300000,
+      "backoffMultiplier": 2
+    },
+    "concurrencyPolicy": "skip_if_running",
+    "reviewGateTimeoutHours": 72
+  },
+  "parameters": [
+    {
+      "name": "cronExpression",
+      "type": "string",
+      "required": true,
+      "description": "Cron expression for the audit schedule (e.g. '0 0 1 * *' for monthly)."
+    },
+    {
+      "name": "timezone",
+      "type": "string",
+      "required": false,
+      "default": "UTC",
+      "description": "IANA timezone for the cron schedule."
+    },
+    {
+      "name": "profileId",
+      "type": "string",
+      "required": true,
+      "description": "Profile ID used to generate the audit digest."
+    },
+    {
+      "name": "minFidelityScore",
+      "type": "number",
+      "required": false,
+      "default": 0.8,
+      "description": "Minimum acceptable fidelity score (0–1). Profiles below this threshold are flagged."
+    },
+    {
+      "name": "digestPrompt",
+      "type": "string",
+      "required": false,
+      "default": "Produce a concise audit digest identifying profiles that fall below the fidelity threshold, the likely causes, and recommended remediation steps.",
+      "description": "Prompt used to generate the audit digest."
+    },
+    {
+      "name": "notificationChannel",
+      "type": "string",
+      "required": false,
+      "default": "email",
+      "description": "Notification channel: email, slack, or webhook."
+    }
+  ]
+}
