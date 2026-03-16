@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Pipeline API & MCP Tools
-lane: "doing"
+lane: "done"
 dependencies: []
 base_branch: main
 base_commit: 7ed6195c2aabbed155812edcf7d46fc58aefdf19
@@ -11,8 +11,8 @@ phase: Phase E - API & Tools
 assignee: ''
 agent: ''
 shell_pid: "58980"
-review_status: ''
-reviewed_by: ''
+review_status: "approved"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
@@ -438,3 +438,4 @@ This WP is the external surface of the pipeline framework — everything built i
 - Check that shutdown() cleans up: executor, event bus, cron jobs, schedule handler
 
 ## Activity Log
+- 2026-03-16T19:00:55Z – unknown – shell_pid=58980 – lane=done – API routes, 8 MCP tools, module init, server wiring, 24 tests.
