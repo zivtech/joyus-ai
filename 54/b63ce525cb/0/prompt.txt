@@ -1,0 +1,486 @@
+check the handoff documents and tell me what's next
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion commands!
+
+Run this command to get the work package prompt and review instructions:
+
+```bash
+spec-kitty agent workflow review 009-WP01 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is reviewing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "for_review"` and move it to "doing" for you.
+
+## Dependency checks (required)
+
+- dependency_check: If the WP frontmatter lists `dependencies`, confirm each dependency WP is merged to main before you review this WP.
+- dependent_check: Identify any WPs that list this WP as a dependency and note their current lanes.
+- rebase_warning: If you request changes AND any dependents exist, warn those agents to rebase and provide a concrete command (example: `cd .worktrees/FEATURE-WP02 && git rebase FEATURE-WP01`).
+- verify_instruction: Confirm dependency declarations match actual code coupling (imports, shared modules, API contracts).
+
+**After reviewing, scroll to the bottom and run ONE of these commands**:
+- ✅ Approve: `spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"`
+- ❌ Reject: Write feedback to the temp file path shown in the prompt, then run `spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>`
+
+**The prompt will provide a unique temp file path for feedback - use that exact path to avoid conflicts with other agents!**
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+---
+
+<task-notification>
+<task-id>b79ifgeaz</task-id>
+<tool-use-id>toolu_01FTdJN2sohC5qMdkMgjjww7</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Run TypeScript compilation check in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>bo9zf7h6a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Run test suite in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+can you fix the high and medium issues?
+
+---
+
+yes
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion commands!
+
+Run this command to get the work package prompt and review instructions:
+
+```bash
+spec-kitty agent workflow review WP01 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is reviewing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "for_review"` and move it to "doing" for you.
+
+## Dependency checks (required)
+
+- dependency_check: If the WP frontmatter lists `dependencies`, confirm each dependency WP is merged to main before you review this WP.
+- dependent_check: Identify any WPs that list this WP as a dependency and note their current lanes.
+- rebase_warning: If you request changes AND any dependents exist, warn those agents to rebase and provide a concrete command (example: `cd .worktrees/FEATURE-WP02 && git rebase FEATURE-WP01`).
+- verify_instruction: Confirm dependency declarations match actual code coupling (imports, shared modules, API contracts).
+
+**After reviewing, scroll to the bottom and run ONE of these commands**:
+- ✅ Approve: `spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"`
+- ❌ Reject: Write feedback to the temp file path shown in the prompt, then run `spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>`
+
+**The prompt will provide a unique temp file path for feedback - use that exact path to avoid conflicts with other agents!**
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+IO meant yes
+
+---
+
+do it
+
+---
+
+<task-notification>
+<task-id>abf7d3f1c1eeec07f</task-id>
+<tool-use-id>toolu_015B1CNXymPCC6EC3NjTHZPv</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement WP02 Event Bus" completed</summary>
+<result>I need Bash permission to run the type check and tests. Could you allow the Bash tool call so I can run `./node_modules/.bin/tsc --noEmit` and `npm test` in the worktree directory? These are needed to verify correctness before claiming completion.</result>
+<usage><total_tokens>38791</total_tokens><tool_uses>13</tool_uses><duration_ms>72292</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>b4pcxi6oh</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>failed</status>
+<summary>Background command "Run vitest test suite" failed with exit code 127</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>a44250af614a459ac</task-id>
+<tool-use-id>toolu_01Ro3Am7oVczbcXmtFaxcLWT</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement WP03 Trigger System" completed</summary>
+<result>Let me use per-file LSP diagnostics and wait for the test output:</result>
+<usage><total_tokens>54370</total_tokens><tool_uses>31</tool_uses><duration_ms>153324</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>bxwlpxzyk</task-id>
+<tool-use-id>toolu_012pH3rvJvs9pctnvMkvvnVw</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install dependencies in WP02 worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>b0ol5njnq</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install dependencies in WP03 worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+review
+
+---
+
+<task-notification>
+<task-id>a54549d22a777c787</task-id>
+<tool-use-id>toolu_016LEP5zkJx76mLDqoU75arE</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "Review WP02 Event Bus" completed</summary>
+<result>
+
+Bash is denied -- I'll proceed with my analysis based on the code I've already read. I have sufficient information from the source files, the schema, the types, and the tsc output (which was clean) to complete the review.
+
+Let me now compile my complete findings.
+
+---
+
+## Code Review Summary
+
+**Files Reviewed:** 4 implementation files + 2 context files (schema.ts, types.ts)
+**Total Issues:** 7
+
+### By Severity
+- CRITICAL: 1 (must fix)
+- HIGH: 1 (should fix)
+- MEDIUM: 3 (consider fixing)
+- LOW: 2 (optional)
+
+---
+
+### Stage 1 -- Spec Compliance
+
+#### T008 (Interface) -- PASS
+- `EventEnvelope` has `id` (string), `tenantId` (string), `eventType` (TriggerEventType), `payload` (Record<string,unknown>), `createdAt` (Date) -- all correct.
+- `EventBus` interface has `publish`, `subscribe`, `unsubscribe`, `close` -- all correct.
+- `EventHandler` returns `Promise<void>` -- correct.
+- `InMemoryEventBus` correctly implements `EventBus` -- correct.
+
+#### T009 (PgNotifyBus) -- MOSTLY PASS, one critical issue
+- LISTEN client is `new pg.Client(...)` (not from Drizzle pool) -- correct.
+- `publish()`: INSERT into trigger_events THEN pg_notify -- correct order.
+- NOTIFY payload is only the event ID -- correct.
+- Each handler wrapped in try/catch -- correct.
+- Reconnect logic on client error/end -- correct.
+- `sql` imported from `drizzle-orm` (not `drizzle-orm/pg-core`) -- correct.
+- `close()` sets closed flag and ends the LISTEN client -- correct.
+- **ISSUE**: `handleNotification` marks `acknowledged` THEN dispatches to handlers, but never transitions to `processed` or `failed` after dispatch completes. See CRITICAL issue below.
+
+#### T010 (Factory) -- PASS
+- Returns InMemoryEventBus when `useInMemory` or `NODE_ENV=test` -- correct.
+- Returns PgNotifyBus otherwise -- correct.
+- All types re-exported -- correct.
+
+#### T011 (Tests) -- PASS
+- publish returns string ID -- tested.
+- subscribe + publish calls matching handler -- tested.
+- type mismatch handler not called -- tested.
+- unsubscribe removes handler -- tested.
+- close clears subscriptions -- tested.
+- Additionally tests multiple handlers -- good.
+
+#### General
+- `.js` extensions in all ESM imports -- correct (verified all local imports).
+- No circular imports -- confirmed.
+- No hardcoded secrets -- confirmed.
+- No SQL injection (uses Drizzle ORM and `sql` tagged template) -- confirmed.
+
+---
+
+### Issues
+
+**[CRITICAL] handleNotification never transitions event status to `processed` or `failed` after handler dispatch**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts:90-118`
+Issue: The `handleNotification` method marks the event as `acknowledged` (line 94) and then dispatches to handlers, but never sets the status to `processed` on success or `failed` if all handlers fail. The `trigger_events` schema defines a status enum with `pending -> acknowledged -> processed/failed/expired`, and the `processedAt` column exists for this purpose (schema.ts:151). Events will be permanently stuck in `acknowledged` status, which will cause problems for any monitoring, retry logic, or cleanup that relies on the status lifecycle.
+Fix: After the handler dispatch loop completes, update the row to `status: 'processed'` and set `processedAt: new Date()`. If all handlers threw, update to `status: 'failed'` instead. Example:
+
+```typescript
+let allFailed = true;
+let anyRan = false;
+for (const sub of this.subscriptions.values()) {
+  if (sub.eventType === envelope.eventType) {
+    anyRan = true;
+    try {
+      await sub.handler(envelope);
+      allFailed = false;
+    } catch (err) {
+      console.error(`[PgNotifyBus] handler error for event ${eventId}:`, err);
+    }
+  }
+}
+const finalStatus = (anyRan && allFailed) ? 'failed' : 'processed';
+await this.db
+  .update(triggerEvents)
+  .set({ status: finalStatus, processedAt: new Date() })
+  .where(eq(triggerEvents.id, eventId));
+```
+
+---
+
+**[HIGH] InMemoryEventBus.publish does not isolate handler errors -- one failing handler prevents others from running**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/interface.ts:76-82`
+Issue: `publish()` uses `Promise.all(dispatches)` which will reject as soon as any single handler rejects. This means (a) the remaining handler promises are still running but their results are ignored, and (b) the `publish` call itself throws, potentially crashing the caller. `PgNotifyBus` correctly wraps each handler in try/catch (line 111-115), but `InMemoryEventBus` does not. The two implementations should have consistent error semantics, especially since `InMemoryEventBus` is used for testing and behavioral differences between test and production code can mask real bugs.
+Fix: Use `Promise.allSettled(dispatches)` instead of `Promise.all(dispatches)`, or wrap each handler dispatch in a try/catch as `PgNotifyBus` does. Since InMemoryEventBus dispatches in parallel while PgNotifyBus dispatches sequentially, also consider making the dispatch strategy consistent:
+
+```typescript
+for (const sub of this.subscriptions.values()) {
+  if (sub.eventType === eventType) {
+    try {
+      await sub.handler(envelope);
+    } catch (err) {
+      // Log or swallow — consistent with PgNotifyBus behavior
+    }
+  }
+}
+```
+
+---
+
+**[MEDIUM] Duplicate EventEnvelope type in types.ts diverges from the canonical definition in interface.ts**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/types.ts:118-124`
+Issue: `types.ts` defines its own `EventEnvelope` interface (lines 118-124) with different field names: `eventId` instead of `id`, and `timestamp` instead of `createdAt`. The actual implementation in `interface.ts` uses `id` and `createdAt`. Having two competing `EventEnvelope` types with different shapes will confuse downstream consumers and can cause runtime bugs when code imports from the wrong module.
+Fix: Remove the `EventEnvelope` from `types.ts` entirely and have consumers import from the canonical `event-bus/interface.ts` (or `event-bus/index.ts`). Alternatively, update `types.ts` to re-export the canonical type: `export type { EventEnvelope } from './event-bus/interface.js';`
+
+---
+
+**[MEDIUM] `handleNotification` uses atomic UPDATE + WHERE for acknowledgment but has no concurrency guard against duplicate notifications**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts:92-98`
+Issue: The UPDATE sets `status = 'acknowledged'` for any row matching the event ID regardless of current status. If two PgNotifyBus instances (e.g., in a multi-process deployment) both receive the same NOTIFY, both will successfully update the row and both will dispatch handlers, breaking the at-least-once intent (this becomes at-least-twice). The spec says "at-least-once", but unguarded duplicate dispatch can cause real side effects for content generation or notification steps.
+Fix: Add a status guard to the WHERE clause so only the first consumer wins:
+
+```typescript
+.where(
+  and(
+    eq(triggerEvents.id, eventId),
+    eq(triggerEvents.status, 'pending'),
+  ),
+)
+```
+This makes the acknowledgment idempotent -- the second process will get zero rows back and skip dispatch.
+
+---
+
+**[MEDIUM] Reconnect can recurse infinitely on persistent connection failures**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts:74-83`
+Issue: If `connectListenClient()` keeps failing (e.g., database is down for extended period), `reconnect()` calls itself recursively via `void this.reconnect()` in the catch block (line 82). While the `setTimeout` prevents synchronous stack overflow, this creates an unbounded async retry loop with no backoff escalation, no max retry count, and no way for the caller to detect that the bus is in a degraded state.
+Fix: Add exponential backoff and/or a maximum retry count. After exceeding the max, log a final error and stop retrying (or emit an error event that the application can observe). Example: track `reconnectAttempts`, multiply delay by `Math.min(2 ** reconnectAttempts, 60000)`, and cap at a maximum number of attempts.
+
+---
+
+**[LOW] Duplicate import statements for `eq` and `sql` could be consolidated**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts:11-12`
+Issue: Lines 11 and 12 import `eq` and `sql` on separate lines from the same module `'drizzle-orm'`. This is a minor style issue but inconsistent with typical patterns where named imports from the same module are combined.
+Fix: Combine into a single import: `import { eq, sql } from 'drizzle-orm';`
+
+---
+
+**[LOW] console.error/console.warn used directly rather than injected logger**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts:52,58,81,114`
+Issue: Four uses of `console.error` and `console.warn` are hardcoded. This makes it impossible to control log levels, route logs to structured logging, or silence logs in tests. Not blocking for WP02 but worth noting for future work.
+Fix: Accept an optional logger in the constructor (defaulting to `console`) so callers can inject a structured logger or a no-op logger for tests.
+
+---
+
+### Recommendation
+
+**REQUEST CHANGES**
+
+The critical issue (events permanently stuck in `acknowledged` status) must be fixed before merge. The `handleNotification` method needs to transition events to `processed` or `failed` after handler dispatch. The high-severity handler isolation inconsistency between `InMemoryEventBus` and `PgNotifyBus` should also be addressed to prevent test/production behavioral divergence.
+
+The medium-severity duplicate `EventEnvelope` type in `types.ts` (lines 118-124) should be reconciled with the canonical definition in `interface.ts` to prevent downstream confusion, though this could be deferred if `types.ts` was authored in WP01 and the implementer plans to reconcile it in a later WP.
+
+Summary of required changes before approval:
+1. **[CRITICAL]** Add `processed`/`failed` status transition after handler dispatch in `pg-notify-bus.ts:handleNotification`
+2. **[HIGH]** Add try/catch or `Promise.allSettled` in `InMemoryEventBus.publish` to match `PgNotifyBus` error isolation</result>
+<usage><total_tokens>49238</total_tokens><tool_uses>34</tool_uses><duration_ms>136118</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>aee6a5994b2aaeaa4</task-id>
+<tool-use-id>toolu_01FXYY3FyB6rr3zrMDqdyxU3</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "Review WP03 Trigger System" completed</summary>
+<result>
+
+I now have all the information needed to complete this review. Let me compile my findings.
+
+---
+
+## Code Review Summary
+
+**Files Reviewed:** 10 (+ 2 supporting files: `schema.ts`, `types.ts`)
+**TypeScript Compilation:** PASS (tsc --noEmit clean)
+**LSP Diagnostics:** Unavailable (typescript-language-server not installed); tsc used as substitute
+**AST Grep:** Unavailable (@ast-grep/napi not installed); Grep used as substitute
+**Tests:** Could not run (Bash permission denied for vitest); please confirm tests pass independently
+
+### By Severity
+- CRITICAL: 0
+- HIGH: 0
+- MEDIUM: 3
+- LOW: 3
+
+---
+
+### Stage 1: Spec Compliance
+
+I verified each subtask (T012-T017) against the WP03 spec.
+
+**T012 - TriggerHandler interface**: PASS
+- `TriggerContext` has `event` (EventEnvelope), `tenantId`, `currentDepth` -- matches spec.
+- `TriggerResult` has `pipelineId`, `triggerPayload` -- matches spec.
+- `TriggerHandler` has `triggerType`, `canHandle`, `getMatchingPipelines` -- matches spec.
+- Handlers are pure (no DB access, no async, receive pre-fetched pipelines) -- matches spec.
+- Note: the spec also mentions `shouldFire` in T012 step 3, but the spec's own code example does not include it, and it is redundant with `canHandle`. Acceptable deviation.
+
+**T013 - CorpusChangeTriggerHandler**: PASS with deviation (see MEDIUM issue below)
+- triggerType is `corpus_change` -- matches.
+- Depth guard using `DEFAULT_MAX_PIPELINE_DEPTH` -- matches.
+- Filters activePipelines to corpus_change triggers -- matches.
+- Depth counter incremented in triggerPayload -- matches.
+- Filtering approach differs from spec: implementation uses `corpusFilter` (a generic key-value match against event payload) instead of `sourceIds` array. This is a generalization that is arguably more flexible but deviates from the spec's `sourceIds` approach.
+
+**T014 - ManualRequestTriggerHandler**: PASS with deviation (see MEDIUM issue below)
+- triggerType is `manual_request` -- matches.
+- Missing pipelineId returns `[]` -- matches.
+- Finds matching pipeline by ID in activePipelines -- matches.
+- Returns single TriggerResult or empty -- matches.
+- Spec mentions `allowedRoles` checking; implementation omits it. The spec notes this is defense-in-depth and the API layer is primary enforcer, so this is acceptable but worth noting.
+
+**T015 - TriggerRegistry**: PASS
+- `register` and `getHandler` methods -- matches.
+- `getAll` returns all handlers -- matches.
+- `defaultTriggerRegistry` pre-populated with both handlers -- matches.
+
+**T016 - Cycle Detector**: PASS
+- `buildDependencyGraph` correctly accepts `Pipeline[]` and `PipelineStep[]` separately (since `pipeline_steps` is a separate table, not inline `stepConfigs`). This is a correct adaptation from the spec's `stepConfigs` property approach.
+- `CORPUS_WRITER_STEP_TYPES` identifies `content_generation` and `profile_generation` -- matches spec.
+- `detectCycle` uses DFS returning cycle path or null -- matches.
+- `validateNoCycle` builds graph with new pipeline included, throws on cycle -- matches.
+- `MAX_PIPELINE_DEPTH` imported from `types.ts` (single definition) -- confirmed, `DEFAULT_MAX_PIPELINE_DEPTH` at `types.ts:172`.
+- DFS `path` array is function-scoped (closure inside `detectCycle`) -- confirmed, not shared state.
+
+**T017 - Tests**: PASS
+- Cycle detector tests cover: no cycle (linear), direct cycle (A->B->A), indirect cycle (A->B->C->A), self-loop excluded, node with no edges, node not in graph, validateNoCycle safe and unsafe cases.
+- Corpus-change tests cover: triggerType, canHandle, depth limit, filter matching (absent, empty, matching, non-matching), non-corpus_change filtering, depth increment.
+- Manual-request tests cover: triggerType, canHandle, missing pipelineId, non-string pipelineId, empty string pipelineId, correct selection, no match, wrong triggerType, depth increment.
+- Coverage exceeds spec requirements.
+
+---
+
+### Stage 2: Code Quality Issues
+
+**[MEDIUM] DFS cycle detection uses `path.includes()` -- O(n) per node visit**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP03/joyus-ai-mcp-server/src/pipelines/graph/cycle-detector.ts:94`
+Issue: `path.includes(nodeId)` is O(n) on every DFS visit, making the overall DFS O(V * E * V) in the worst case instead of the standard O(V + E). For small pipeline graphs (MAX_PIPELINES_PER_TENANT = 20) this is not a real performance concern. However, the standard DFS cycle detection algorithm uses a `Set` for the recursion stack, which would be O(1) per check.
+Fix: Add a `const inPath = new Set<string>()` alongside the `path` array. Add to both when pushing, remove from both when popping. Check `inPath.has(nodeId)` instead of `path.includes(nodeId)`. This keeps the `path` array for returning the cycle but uses the Set for O(1) lookups.
+
+**[MEDIUM] Spec deviation: `corpusFilter` (generic key-value) replaces `sourceIds` (array) in corpus-change handler**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP03/joyus-ai-mcp-server/src/pipelines/triggers/corpus-change.ts:40-58`
+Issue: The spec (T013) calls for `triggerConfig.sourceIds` as a string array with `includes()` matching. The implementation uses `triggerConfig.corpusFilter` as a `Record<string, unknown>` with generic `Object.entries(filter).every()` matching. This is more flexible (can filter on any payload key, not just sourceId) but deviates from the explicit spec language. The `CorpusChangeTriggerConfig` type in `types.ts:48-51` confirms `corpusFilter?: Record<string, unknown>` -- so this was an intentional design choice at the type level.
+Fix: If this deviation was intentional (generalized filtering is better than sourceId-only), document the rationale in a code comment or update the spec. If unintentional, align with the spec's `sourceIds` approach. Given that the schema, types, and validation all use `corpusFilter`, this appears intentional and is acceptable, but the spec should be updated to match.
+
+**[MEDIUM] `pipelines/index.ts` does not re-export triggers or graph submodules**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP03/joyus-ai-mcp-server/src/pipelines/index.ts`
+Issue: The module entry point (`index.ts`) only re-exports `schema`, `types`, and `validation`. The new `triggers/` and `graph/` submodules are not re-exported. Consumers must import from `./pipelines/triggers/index.js` or `./pipelines/graph/index.js` directly rather than from the unified `./pipelines/index.js` entry point.
+Fix: Add `export * from './triggers/index.js';` and `export * from './graph/index.js';` to `src/pipelines/index.ts`. The comment in that file even says "Extended in later WPs with event-bus, engine, triggers, steps..." -- this is the WP that should add the triggers re-export. However, if the intent is to add these in a later integration WP, that is also acceptable -- just document it.
+
+**[LOW] `console.warn` in production handler code**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP03/joyus-ai-mcp-server/src/pipelines/triggers/corpus-change.ts:25-28`
+Issue: The depth-limit warning uses `console.warn()` directly. While acceptable for now, production code typically uses a structured logger with correlation IDs. The spec example also uses `console.warn`, so this matches the spec.
+Fix: Consider replacing with a structured logger (e.g., `logger.warn({ tenantId, depth }, 'Max pipeline depth reached')`) when a logging framework is introduced. No action needed now.
+
+**[LOW] Spec mentions `allowedRoles` defense-in-depth in ManualRequestTriggerHandler; implementation omits it**
+File: `/Users/AlexUA/claude/joyus-ai/.worktrees/009-automated-pipelines-framework-WP03/joyus-ai-mcp-server/src/pipelines/triggers/manual-request.ts`
+Issue: The spec (T014) suggests the manual handler could double-check `allowedRoles` from the trigger config. The implementation skips this, relying on the API layer (WP08) for role enforcement. The `ManualRequestTriggerConfig` type in `types.ts:59-61` has no `allowedRoles` field, confirming this was a deliberate simplification.
+Fix: No action required -- the spec acknowledges role enforcement is "primarily at the API layer." If defense-in-depth is desired later, add `allowedRoles?: string[]` to `ManualRequestTriggerConfig` and check in the handler.
+
+**[LOW] Test fixtures use `as unknown as Pipeline` / `as unknown as PipelineStep` casts**
+Files: All three test files (e.g., `tests/pipelines/graph/cycle-detector.test.ts:42`, `tests/pipelines/triggers/corpus-change.test.ts:42`)
+Issue: The `makePipeline` and `makeStep` fixture helpers use double casts (`as unknown as Pipeline`). This is common in test code when constructing partial objects, but it means the compiler will not catch if the `Pipeline` type changes and the fixtures become invalid.
+Fix: Consider using a factory that returns a complete `Pipeline` object with all required fields, avoiding the `as unknown` escape hatch. Alternatively, use a `Partial<Pipeline>` with `satisfies` to get partial type checking. This is a minor test hygiene concern, not a blocking issue.
+
+---
+
+### Security Review
+
+- No hardcoded secrets, API keys, or tokens found.
+- No SQL queries or database access in trigger handlers (pure functions as intended).
+- No user input is trusted without validation -- `pipelineId` is type-checked before use.
+- `tenantId` in trigger context is passed through (not from user input), consistent with the validation.ts pattern where tenantId comes from session context.
+- No XSS or injection vectors -- this is backend logic with no HTML output.
+
+### ESM Import Compliance
+
+- All imports use `.js` extensions -- confirmed across all trigger and graph files.
+- No circular imports detected between the new modules.
+
+---
+
+### Recommendation
+
+**APPROVE**
+
+The implementation is solid, well-structured, and closely follows the WP03 spec. All deviations from the spec are improvements or intentional simplifications that are well-reflected in the type system (`types.ts`, `schema.ts`, `validation.ts`). The code is pure, testable, and free of security issues. TypeScript compilation passes cleanly.
+
+The three MEDIUM issues are all non-blocking:
+1. The `path.includes()` performance concern is theoretical at the current scale (max 20 pipelines per tenant).
+2. The `corpusFilter` vs `sourceIds` deviation is a generalization already reflected in the type system.
+3. The missing re-export from `pipelines/index.ts` can be added now or in a later integration WP.
+
+**Action needed from reviewer:** Please run `npx vitest run tests/pipelines/triggers/ tests/pipelines/graph/` to confirm all tests pass -- I was unable to execute the test suite due to a Bash permission restriction.</result>
+<usage><total_tokens>67353</total_tokens><tool_uses>51</tool_uses><duration_ms>157423</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output

@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "54b63ce525cb",
+  "session_id": "01a781e1-f127-4e56-a33e-6bc56692d530",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-16T17:51:12.725206Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/interface.ts",
+    ".worktrees/009-automated-pipelines-framework-WP02/joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "44b66098-2fc4-4892-849b-9ce9508121ab",
+  "checkpoint_transcript_start": 876,
+  "transcript_lines_at_start": 876,
+  "token_usage": {
+    "input_tokens": 104,
+    "cache_creation_tokens": 331120,
+    "cache_read_tokens": 6206991,
+    "output_tokens": 11260,
+    "api_call_count": 36
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-16T17:51:12.594921Z",
+    "agent_lines": 0,
+    "human_added": 24,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 24,
+    "agent_percentage": 0
+  }
+}
