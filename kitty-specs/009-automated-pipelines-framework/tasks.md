@@ -124,12 +124,12 @@ Implement the PipelineStepHandler interface and all 6 built-in step type handler
 Build the review gate mechanism: pause execution at gates, route artifacts to review queue, record decisions, resume on approval, handle rejection with structured feedback, and escalate on timeout.
 
 **Subtasks**:
-- [ ] T030: Implement ReviewGate — pause execution, create pending review decisions (`src/pipelines/review/gate.ts`)
-- [ ] T031: Implement decision recording and pipeline resumption logic (`src/pipelines/review/decision.ts`)
-- [ ] T032: Implement structured rejection feedback storage and artifact path filtering
-- [ ] T033: Implement timeout escalation logic (`src/pipelines/review/escalation.ts`)
-- [ ] T034: Create escalation cron job and barrel export (`src/pipelines/review/index.ts`)
-- [ ] T035: Unit tests for review gate, decision, escalation (`tests/pipelines/review/`)
+- [x] T030: Implement ReviewGate — pause execution, create pending review decisions (`src/pipelines/review/gate.ts`)
+- [x] T031: Implement decision recording and pipeline resumption logic (`src/pipelines/review/decision.ts`)
+- [x] T032: Implement structured rejection feedback storage and artifact path filtering
+- [x] T033: Implement timeout escalation logic (`src/pipelines/review/escalation.ts`)
+- [x] T034: Create escalation cron job and barrel export (`src/pipelines/review/index.ts`)
+- [x] T035: Unit tests for review gate, decision, escalation (`tests/pipelines/review/`)
 
 **Parallel opportunities**: Can run in parallel with WP07. T033-T034 (escalation) is independent of T030-T032 (gate + decision).
 **Risks**: Decision recording must handle partial approval (some artifacts approved, some rejected). Escalation must never auto-approve or auto-reject.
