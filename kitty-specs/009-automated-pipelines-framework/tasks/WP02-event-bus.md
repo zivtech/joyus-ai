@@ -1,13 +1,17 @@
 ---
-work_package_id: "WP02"
-title: "Event Bus"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T008", "T009", "T010", "T011"]
+work_package_id: WP02
+title: Event Bus
+lane: "doing"
+dependencies: [WP01]
+base_branch: 009-automated-pipelines-framework-WP01
+base_commit: 5df73eb05e3ceb65f97fdc2b2dc81790126c74e3
+created_at: '2026-03-16T16:55:37.698289+00:00'
+subtasks: [T008, T009, T010, T011]
+shell_pid: "84181"
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP02: Event Bus
