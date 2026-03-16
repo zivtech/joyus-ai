@@ -8,6 +8,7 @@ import { Pool } from 'pg';
 
 import * as schema from './schema.js';
 import * as contentSchema from '../content/schema.js';
+import * as pipelinesSchema from '../pipelines/schema.js';
 
 // Create PostgreSQL connection pool
 const pool = new Pool({
@@ -17,12 +18,13 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-// Create Drizzle client with both public and content schemas
-export const db = drizzle(pool, { schema: { ...schema, ...contentSchema } });
+// Create Drizzle client with public, content, and pipelines schemas
+export const db = drizzle(pool, { schema: { ...schema, ...contentSchema, ...pipelinesSchema } });
 
 // Export schemas for convenience
 export * from './schema.js';
 export * from '../content/schema.js';
+export * from '../pipelines/schema.js';
 
 // Helper to close pool on shutdown
 export async function closeDb() {
