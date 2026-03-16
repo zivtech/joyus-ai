@@ -60,4 +60,4 @@ export { ReviewGate } from './gate.js';
 export { DecisionRecorder } from './decision.js';
 export type { ReviewGateResult } from './decision.js';
 export { EscalationChecker } from './escalation.js';
-export type { EscalationResult, NotificationService } from './escalation.js';
+export type { EscalationResult } from './escalation.js';
