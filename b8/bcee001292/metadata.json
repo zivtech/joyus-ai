@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "b8bcee001292",
+  "strategy": "manual-commit",
+  "branch": "009-automated-pipelines-framework-WP01",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "joyus-ai-mcp-server/drizzle/migrations/0001_fine_young_avengers.sql",
+    "joyus-ai-mcp-server/drizzle/migrations/0001_silent_miek.sql",
+    "joyus-ai-mcp-server/drizzle/migrations/meta/_journal.json",
+    "joyus-ai-mcp-server/src/pipelines/schema.ts",
+    "joyus-ai-mcp-server/src/pipelines/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b8/bcee001292/0/metadata.json",
+      "transcript": "/b8/bcee001292/0/full.jsonl",
+      "context": "/b8/bcee001292/0/context.md",
+      "content_hash": "/b8/bcee001292/0/content_hash.txt",
+      "prompt": "/b8/bcee001292/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 236,
+    "cache_creation_tokens": 371268,
+    "cache_read_tokens": 8278324,
+    "output_tokens": 18949,
+    "api_call_count": 80
+  }
+}
