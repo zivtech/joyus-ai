@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Built-in Step Handlers
-lane: "doing"
+lane: "done"
 dependencies: []
 base_branch: main
 base_commit: 3fcac60575d816c1ee481fe80b0df29082a9082a
@@ -11,8 +11,8 @@ phase: Phase C - Execution Engine
 assignee: ''
 agent: ''
 shell_pid: "35212"
-review_status: ''
-reviewed_by: ''
+review_status: "approved"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
@@ -367,3 +367,4 @@ Step handlers are the pipeline framework's integration points with the rest of t
 - Verify StepHandlerDependencies interfaces are minimal and match what each handler actually uses
 
 ## Activity Log
+- 2026-03-16T18:33:50Z – unknown – shell_pid=35212 – lane=done – 5 step handlers, registry, 31 tests, tsc clean.
