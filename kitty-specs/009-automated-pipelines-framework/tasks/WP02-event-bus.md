@@ -1,13 +1,13 @@
 ---
 work_package_id: WP02
 title: Event Bus
-lane: planned
+lane: "doing"
 dependencies: []
 subtasks: [T008, T009, T010, T011]
 phase: Phase B - Event & Trigger Layer
 assignee: ''
-agent: ''
-shell_pid: ''
+agent: "claude-opus"
+shell_pid: "34769"
 review_status: ''
 reviewed_by: ''
 history:
@@ -242,3 +242,4 @@ The event bus is the pipeline framework's primary event delivery mechanism. It s
 - Confirm no race condition between NOTIFY handler and poll loop processing the same event
 
 ## Activity Log
+- 2026-03-16T18:18:52Z – claude-opus – shell_pid=34769 – lane=doing – Started implementation via workflow command
