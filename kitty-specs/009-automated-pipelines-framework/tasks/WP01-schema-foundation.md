@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP01"
 title: "Schema & Foundation"
-lane: "doing"
+lane: "done"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
 agent: "claude-opus"
@@ -680,3 +680,4 @@ CREATE TABLE "pipelines"."pipelines" (
 - 2026-03-16T14:58:57Z – claude-opus – shell_pid=58896 – lane=doing – Started review via workflow command
 - 2026-03-16T15:17:29Z – claude-opus – shell_pid=58896 – lane=planned – Moved to planned
 - 2026-03-16T16:31:41Z – claude-opus – shell_pid=73152 – lane=doing – Started review via workflow command
+- 2026-03-16T16:49:50Z – claude-opus – shell_pid=73152 – lane=done – Review passed: all 3 HIGH and 4 MEDIUM issues fixed. 9 tables, 8 enums, tenant isolation, FK cascades, partial indexes, quality_signals table. tsc clean, 110 tests pass.
