@@ -50,10 +50,10 @@ Create the Drizzle ORM schema for the `pipelines` PostgreSQL schema (8 tables, 8
 Build the event bus abstraction and PostgreSQL LISTEN/NOTIFY implementation with delivery guarantee via the trigger_events queue table.
 
 **Subtasks**:
-- [ ] T008: Define EventBus interface and EventEnvelope types (`src/pipelines/event-bus/interface.ts`)
-- [ ] T009: Implement PgNotifyBus — PostgreSQL LISTEN/NOTIFY with queue table persistence (`src/pipelines/event-bus/pg-notify-bus.ts`)
-- [ ] T010: Create bus factory and barrel export (`src/pipelines/event-bus/index.ts`)
-- [ ] T011: Unit tests for PgNotifyBus (`tests/pipelines/event-bus/pg-notify-bus.test.ts`)
+- [x] T008: Define EventBus interface and EventEnvelope types (`src/pipelines/event-bus/interface.ts`)
+- [x] T009: Implement PgNotifyBus — PostgreSQL LISTEN/NOTIFY with queue table persistence (`src/pipelines/event-bus/pg-notify-bus.ts`)
+- [x] T010: Create bus factory and barrel export (`src/pipelines/event-bus/index.ts`)
+- [x] T011: Unit tests for PgNotifyBus (`tests/pipelines/event-bus/pg-notify-bus.test.ts`)
 
 **Parallel opportunities**: Can run in parallel with WP03.
 **Risks**: LISTEN requires a dedicated persistent pg.Client (not from pool). NOTIFY payloads limited to 8000 bytes — pass event ID only.
