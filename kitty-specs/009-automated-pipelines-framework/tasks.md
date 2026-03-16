@@ -141,12 +141,12 @@ Build the review gate mechanism: pause execution at gates, route artifacts to re
 Build the schedule trigger handler (cron-based) and the pipeline template system (store, built-in definitions, instantiation).
 
 **Subtasks**:
-- [ ] T036: Implement ScheduleTriggerHandler with cron job management (`src/pipelines/triggers/schedule.ts`)
-- [ ] T037: Implement overlap detection and timezone support
-- [ ] T038: Implement TemplateStore — CRUD and instantiation logic (`src/pipelines/templates/store.ts`)
-- [ ] T039: Create 3 built-in template definitions (`src/pipelines/templates/definitions/`)
-- [ ] T040: Create template barrel export (`src/pipelines/templates/index.ts`)
-- [ ] T041: Unit tests for schedule triggers and templates (`tests/pipelines/triggers/schedule.test.ts`, `tests/pipelines/templates/store.test.ts`)
+- [x] T036: Implement ScheduleTriggerHandler with cron job management (`src/pipelines/triggers/schedule.ts`)
+- [x] T037: Implement overlap detection and timezone support
+- [x] T038: Implement TemplateStore — CRUD and instantiation logic (`src/pipelines/templates/store.ts`)
+- [x] T039: Create 3 built-in template definitions (`src/pipelines/templates/definitions/`)
+- [x] T040: Create template barrel export (`src/pipelines/templates/index.ts`)
+- [x] T041: Unit tests for schedule triggers and templates (`tests/pipelines/triggers/schedule.test.ts`, `tests/pipelines/templates/store.test.ts`)
 
 **Parallel opportunities**: Can run in parallel with WP06. T036-T037 (schedule) and T038-T040 (templates) are independent.
 **Risks**: Cron job map must be updated dynamically on pipeline create/update/delete. Template instantiation must deep-clone definitions to prevent cross-tenant contamination.
