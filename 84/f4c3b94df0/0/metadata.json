@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "84f4c3b94df0",
+  "session_id": "01a781e1-f127-4e56-a33e-6bc56692d530",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-16T16:56:56.349312Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".kittify/workspaces/009-automated-pipelines-framework-WP02.json",
+    ".kittify/workspaces/009-automated-pipelines-framework-WP03.json",
+    ".worktrees/009-automated-pipelines-framework-WP01/joyus-ai-mcp-server/drizzle/migrations/0001_fine_young_avengers.sql",
+    ".worktrees/009-automated-pipelines-framework-WP01/joyus-ai-mcp-server/drizzle/migrations/0001_silent_miek.sql",
+    ".worktrees/009-automated-pipelines-framework-WP01/joyus-ai-mcp-server/drizzle/migrations/meta/_journal.json",
+    ".worktrees/009-automated-pipelines-framework-WP01/joyus-ai-mcp-server/src/pipelines/schema.ts",
+    ".worktrees/009-automated-pipelines-framework-WP01/joyus-ai-mcp-server/src/pipelines/types.ts",
+    "kitty-specs/008-profile-isolation-and-scale/meta.json",
+    "kitty-specs/009-automated-pipelines-framework/meta.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "bc406411-f6a2-4faa-91aa-1f148c3a9cc8",
+  "checkpoint_transcript_start": 769,
+  "transcript_lines_at_start": 769,
+  "token_usage": {
+    "input_tokens": 31,
+    "cache_creation_tokens": 25022,
+    "cache_read_tokens": 1691340,
+    "output_tokens": 5251,
+    "api_call_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-16T16:56:56.236531Z",
+    "agent_lines": 14,
+    "human_added": 4856,
+    "human_modified": 976,
+    "human_removed": 0,
+    "total_committed": 5846,
+    "agent_percentage": 0.23947998631542936
+  }
+}
