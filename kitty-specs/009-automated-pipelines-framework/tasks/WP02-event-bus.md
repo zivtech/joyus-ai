@@ -1,13 +1,15 @@
 ---
 work_package_id: WP02
 title: Event Bus
-lane: "doing"
+lane: "done"
 dependencies: [WP01]
 base_branch: 009-automated-pipelines-framework-WP01
 base_commit: 5df73eb05e3ceb65f97fdc2b2dc81790126c74e3
 created_at: '2026-03-16T16:55:37.698289+00:00'
 subtasks: [T008, T009, T010, T011]
 shell_pid: "84181"
+reviewed_by: "Alex Urevick-Ackelsberg"
+review_status: "approved"
 history:
 - date: '2026-03-14'
   action: created
@@ -461,3 +463,7 @@ describe('InMemoryEventBus', () => {
 - Verify the LISTEN client is `new Client(...)` from `pg`, not a connection from the Drizzle pool — this is the most common mistake with NOTIFY implementations.
 - Check that `handleNotification` marks `processed_at` before calling handlers (at-least-once, not exactly-once). If the process crashes after marking but before the handler runs, the event is lost. This tradeoff is acceptable for this use case.
 - Confirm `publish` uses a transaction if NOTIFY must be atomic with the INSERT — if the INSERT succeeds but NOTIFY fails, the event is still in the queue and will be picked up by the poll loop.
+
+## Activity Log
+
+- 2026-03-16T17:50:03Z – unknown – shell_pid=84181 – lane=done – Review passed: event lifecycle fixed (processed/failed), atomic claim guard, handler error isolation. tsc clean, 116 tests.
