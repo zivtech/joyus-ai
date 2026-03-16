@@ -162,13 +162,13 @@ Build the schedule trigger handler (cron-based) and the pipeline template system
 Implement Express routes for pipeline management, MCP tool definitions, tenant-scoped route enforcement, module entry point, and server mount.
 
 **Subtasks**:
-- [ ] T042: Implement pipeline CRUD routes (`src/pipelines/routes.ts`) — create, list, get, update, delete, manual trigger
-- [ ] T043: Implement execution history and review decision routes
-- [ ] T044: Implement MCP tool definitions (`src/tools/pipeline-tools.ts`) — 8 tools
-- [ ] T045: Enforce tenant scoping on all routes and tools
-- [ ] T046: Create module entry point (`src/pipelines/index.ts`) — initialization, server wiring
-- [ ] T047: Mount pipeline routes and register tools in `src/index.ts`
-- [ ] T048: Unit tests for routes and tools
+- [x] T042: Implement pipeline CRUD routes (`src/pipelines/routes.ts`) — create, list, get, update, delete, manual trigger
+- [x] T043: Implement execution history and review decision routes
+- [x] T044: Implement MCP tool definitions (`src/tools/pipeline-tools.ts`) — 8 tools
+- [x] T045: Enforce tenant scoping on all routes and tools
+- [x] T046: Create module entry point (`src/pipelines/index.ts`) — initialization, server wiring
+- [x] T047: Mount pipeline routes and register tools in `src/index.ts`
+- [x] T048: Unit tests for routes and tools
 
 **Parallel opportunities**: T042-T043 (routes) and T044 (tools) are independent.
 **Risks**: Must match existing tool registration pattern (ToolDefinition interface, prefix routing in executor). Pipeline creation must run cycle detection before persisting.
