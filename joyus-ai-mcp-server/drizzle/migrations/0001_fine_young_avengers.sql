@@ -1,6 +1,6 @@
-CREATE SCHEMA "content";
+CREATE SCHEMA IF NOT EXISTS "content";
 --> statement-breakpoint
-CREATE SCHEMA "pipelines";
+CREATE SCHEMA IF NOT EXISTS "pipelines";
 --> statement-breakpoint
 CREATE TYPE "content"."content_source_status" AS ENUM('active', 'syncing', 'error', 'disconnected');--> statement-breakpoint
 CREATE TYPE "content"."content_source_type" AS ENUM('relational-database', 'rest-api');--> statement-breakpoint
@@ -227,6 +227,7 @@ CREATE TABLE "pipelines"."pipeline_steps" (
 --> statement-breakpoint
 CREATE TABLE "pipelines"."pipeline_templates" (
 	"id" text PRIMARY KEY NOT NULL,
+	"tenant_id" text,
 	"name" text NOT NULL,
 	"description" text NOT NULL,
 	"category" text NOT NULL,
@@ -255,6 +256,18 @@ CREATE TABLE "pipelines"."pipelines" (
 	"template_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "pipelines"."quality_signals" (
+	"id" text PRIMARY KEY NOT NULL,
+	"pipeline_id" text NOT NULL,
+	"tenant_id" text NOT NULL,
+	"signal_type" text NOT NULL,
+	"severity" text NOT NULL,
+	"message" text NOT NULL,
+	"metadata" jsonb NOT NULL,
+	"acknowledged_at" timestamp,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "pipelines"."review_decisions" (
@@ -292,14 +305,15 @@ ALTER TABLE "content"."product_sources" ADD CONSTRAINT "product_sources_product_
 ALTER TABLE "content"."product_sources" ADD CONSTRAINT "product_sources_source_id_sources_id_fk" FOREIGN KEY ("source_id") REFERENCES "content"."sources"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "content"."sync_runs" ADD CONSTRAINT "sync_runs_source_id_sources_id_fk" FOREIGN KEY ("source_id") REFERENCES "content"."sources"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pipelines"."execution_steps" ADD CONSTRAINT "execution_steps_execution_id_pipeline_executions_id_fk" FOREIGN KEY ("execution_id") REFERENCES "pipelines"."pipeline_executions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pipelines"."execution_steps" ADD CONSTRAINT "execution_steps_step_id_pipeline_steps_id_fk" FOREIGN KEY ("step_id") REFERENCES "pipelines"."pipeline_steps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pipelines"."execution_steps" ADD CONSTRAINT "execution_steps_step_id_pipeline_steps_id_fk" FOREIGN KEY ("step_id") REFERENCES "pipelines"."pipeline_steps"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pipelines"."pipeline_executions" ADD CONSTRAINT "pipeline_executions_pipeline_id_pipelines_id_fk" FOREIGN KEY ("pipeline_id") REFERENCES "pipelines"."pipelines"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pipelines"."pipeline_executions" ADD CONSTRAINT "pipeline_executions_trigger_event_id_trigger_events_id_fk" FOREIGN KEY ("trigger_event_id") REFERENCES "pipelines"."trigger_events"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pipelines"."pipeline_executions" ADD CONSTRAINT "pipeline_executions_trigger_event_id_trigger_events_id_fk" FOREIGN KEY ("trigger_event_id") REFERENCES "pipelines"."trigger_events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pipelines"."pipeline_metrics" ADD CONSTRAINT "pipeline_metrics_pipeline_id_pipelines_id_fk" FOREIGN KEY ("pipeline_id") REFERENCES "pipelines"."pipelines"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pipelines"."pipeline_steps" ADD CONSTRAINT "pipeline_steps_pipeline_id_pipelines_id_fk" FOREIGN KEY ("pipeline_id") REFERENCES "pipelines"."pipelines"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pipelines"."pipelines" ADD CONSTRAINT "pipelines_template_id_pipeline_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "pipelines"."pipeline_templates"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pipelines"."pipelines" ADD CONSTRAINT "pipelines_template_id_pipeline_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "pipelines"."pipeline_templates"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pipelines"."quality_signals" ADD CONSTRAINT "quality_signals_pipeline_id_pipelines_id_fk" FOREIGN KEY ("pipeline_id") REFERENCES "pipelines"."pipelines"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pipelines"."review_decisions" ADD CONSTRAINT "review_decisions_execution_id_pipeline_executions_id_fk" FOREIGN KEY ("execution_id") REFERENCES "pipelines"."pipeline_executions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pipelines"."review_decisions" ADD CONSTRAINT "review_decisions_execution_step_id_execution_steps_id_fk" FOREIGN KEY ("execution_step_id") REFERENCES "pipelines"."execution_steps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pipelines"."review_decisions" ADD CONSTRAINT "review_decisions_execution_step_id_execution_steps_id_fk" FOREIGN KEY ("execution_step_id") REFERENCES "pipelines"."execution_steps"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "content_api_keys_tenant_id_idx" ON "content"."api_keys" USING btree ("tenant_id");--> statement-breakpoint
 CREATE INDEX "content_api_keys_tenant_active_idx" ON "content"."api_keys" USING btree ("tenant_id","is_active");--> statement-breakpoint
 CREATE INDEX "content_drift_tenant_profile_window_idx" ON "content"."drift_reports" USING btree ("tenant_id","profile_id","window_end");--> statement-breakpoint
@@ -337,16 +351,21 @@ CREATE INDEX "pipeline_metrics_tenant_window_idx" ON "pipelines"."pipeline_metri
 CREATE INDEX "pipeline_metrics_tenant_id_idx" ON "pipelines"."pipeline_metrics" USING btree ("tenant_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "pipeline_steps_pipeline_position_unique" ON "pipelines"."pipeline_steps" USING btree ("pipeline_id","position");--> statement-breakpoint
 CREATE INDEX "pipeline_steps_pipeline_id_idx" ON "pipelines"."pipeline_steps" USING btree ("pipeline_id");--> statement-breakpoint
+CREATE INDEX "pipeline_templates_tenant_id_idx" ON "pipelines"."pipeline_templates" USING btree ("tenant_id");--> statement-breakpoint
 CREATE INDEX "pipeline_templates_category_active_idx" ON "pipelines"."pipeline_templates" USING btree ("category","is_active");--> statement-breakpoint
 CREATE INDEX "pipeline_templates_active_idx" ON "pipelines"."pipeline_templates" USING btree ("is_active");--> statement-breakpoint
 CREATE INDEX "pipelines_tenant_id_idx" ON "pipelines"."pipelines" USING btree ("tenant_id");--> statement-breakpoint
 CREATE INDEX "pipelines_tenant_status_idx" ON "pipelines"."pipelines" USING btree ("tenant_id","status");--> statement-breakpoint
 CREATE INDEX "pipelines_tenant_trigger_idx" ON "pipelines"."pipelines" USING btree ("tenant_id","trigger_type");--> statement-breakpoint
 CREATE UNIQUE INDEX "pipelines_tenant_name_unique" ON "pipelines"."pipelines" USING btree ("tenant_id","name");--> statement-breakpoint
+CREATE INDEX "quality_signals_pipeline_id_idx" ON "pipelines"."quality_signals" USING btree ("pipeline_id");--> statement-breakpoint
+CREATE INDEX "quality_signals_tenant_id_idx" ON "pipelines"."quality_signals" USING btree ("tenant_id");--> statement-breakpoint
+CREATE INDEX "quality_signals_unack_idx" ON "pipelines"."quality_signals" USING btree ("tenant_id","created_at") WHERE acknowledged_at IS NULL;--> statement-breakpoint
 CREATE INDEX "review_decisions_execution_step_idx" ON "pipelines"."review_decisions" USING btree ("execution_id","execution_step_id");--> statement-breakpoint
 CREATE INDEX "review_decisions_tenant_status_idx" ON "pipelines"."review_decisions" USING btree ("tenant_id","status");--> statement-breakpoint
 CREATE INDEX "review_decisions_step_status_idx" ON "pipelines"."review_decisions" USING btree ("execution_step_id","status");--> statement-breakpoint
 CREATE INDEX "review_decisions_tenant_id_idx" ON "pipelines"."review_decisions" USING btree ("tenant_id");--> statement-breakpoint
 CREATE INDEX "trigger_events_tenant_received_idx" ON "pipelines"."trigger_events" USING btree ("tenant_id","received_at");--> statement-breakpoint
 CREATE INDEX "trigger_events_status_received_idx" ON "pipelines"."trigger_events" USING btree ("status","received_at");--> statement-breakpoint
-CREATE INDEX "trigger_events_tenant_id_idx" ON "pipelines"."trigger_events" USING btree ("tenant_id");
+CREATE INDEX "trigger_events_tenant_id_idx" ON "pipelines"."trigger_events" USING btree ("tenant_id");--> statement-breakpoint
+CREATE INDEX "trigger_events_unprocessed_idx" ON "pipelines"."trigger_events" USING btree ("status","received_at") WHERE processed_at IS NULL;
