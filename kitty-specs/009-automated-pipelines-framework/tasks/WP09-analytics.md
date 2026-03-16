@@ -1,13 +1,16 @@
 ---
 work_package_id: WP09
 title: Analytics & Quality Signals
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: main
+base_commit: 1b04d3d8f7128e468b3c4dc7139f02bd4fe299e3
+created_at: '2026-03-16T19:15:58.800075+00:00'
 subtasks: [T049, T050, T051, T052, T053, T054]
 phase: Phase F - Analytics
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "81465"
 review_status: ''
 reviewed_by: ''
 history:
