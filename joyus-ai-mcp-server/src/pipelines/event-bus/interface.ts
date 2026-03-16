@@ -73,13 +73,15 @@ export class InMemoryEventBus implements EventBus {
     const id = createId();
     const envelope: EventEnvelope = { id, tenantId, eventType, payload, createdAt: new Date() };
 
-    const dispatches: Promise<void>[] = [];
     for (const sub of this.subscriptions.values()) {
       if (sub.eventType === eventType) {
-        dispatches.push(sub.handler(envelope));
+        try {
+          await sub.handler(envelope);
+        } catch {
+          // Swallow handler errors — consistent with PgNotifyBus behavior.
+        }
       }
     }
-    await Promise.all(dispatches);
 
     return id;
   }

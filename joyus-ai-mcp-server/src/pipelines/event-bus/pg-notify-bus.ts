@@ -8,8 +8,7 @@
 
 import pg from 'pg';
 import { createId } from '@paralleldrive/cuid2';
-import { eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { triggerEvents } from '../schema.js';
 import type { TriggerEventType } from '../types.js';
@@ -88,11 +87,11 @@ export class PgNotifyBus implements EventBus {
   // ------------------------------------------------------------------
 
   private async handleNotification(eventId: string): Promise<void> {
-    // Fetch the full event row and mark it acknowledged.
+    // Atomically claim the event (only first consumer wins in multi-process).
     const rows = await this.db
       .update(triggerEvents)
       .set({ status: 'acknowledged', acknowledgedAt: new Date() })
-      .where(eq(triggerEvents.id, eventId))
+      .where(and(eq(triggerEvents.id, eventId), eq(triggerEvents.status, 'pending')))
       .returning();
 
     if (rows.length === 0) return;
@@ -106,15 +105,26 @@ export class PgNotifyBus implements EventBus {
       createdAt: row.receivedAt,
     };
 
+    let anyRan = false;
+    let allFailed = true;
     for (const sub of this.subscriptions.values()) {
       if (sub.eventType === envelope.eventType) {
+        anyRan = true;
         try {
           await sub.handler(envelope);
+          allFailed = false;
         } catch (err) {
           console.error(`[PgNotifyBus] handler error for event ${eventId}:`, err);
         }
       }
     }
+
+    // Transition to final status after handler dispatch.
+    const finalStatus = (anyRan && allFailed) ? 'failed' : 'processed';
+    await this.db
+      .update(triggerEvents)
+      .set({ status: finalStatus, processedAt: new Date() })
+      .where(eq(triggerEvents.id, eventId));
   }
 
   // ------------------------------------------------------------------
