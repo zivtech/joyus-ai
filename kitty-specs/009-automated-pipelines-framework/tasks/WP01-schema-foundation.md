@@ -1,9 +1,11 @@
 ---
 work_package_id: "WP01"
 title: "Schema & Foundation"
-lane: "planned"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
+agent: "claude-opus"
+shell_pid: "58896"
 history:
   - date: "2026-03-14"
     action: "created"
@@ -670,3 +672,7 @@ CREATE TABLE "pipelines"."pipelines" (
 - Check that `triggerConfig`, `stepConfigs`, and `retryPolicy` columns use `jsonb` (not `json`) — `jsonb` is indexable and more efficient.
 - Confirm the partial index on `trigger_events` filters out processed events: `WHERE processed_at IS NULL`. This is the hot path for the poll loop.
 - Verify `tenant_id` columns are on every table — tenant isolation depends on this being present at the schema level.
+
+## Activity Log
+
+- 2026-03-16T14:58:57Z – claude-opus – shell_pid=58896 – lane=doing – Started review via workflow command
