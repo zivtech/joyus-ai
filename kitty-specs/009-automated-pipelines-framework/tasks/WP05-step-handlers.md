@@ -1,559 +1,366 @@
 ---
-work_package_id: "WP05"
-title: "Built-in Step Handlers"
-lane: "planned"
-dependencies: ["WP04"]
-subtasks: ["T024", "T025", "T026", "T027", "T028", "T029"]
+work_package_id: WP05
+title: Built-in Step Handlers
+lane: planned
+dependencies: []
+subtasks: [T024, T025, T026, T027, T028, T029]
+phase: Phase C - Execution Engine
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP05: Built-in Step Handlers
 
-**Implementation command**: `spec-kitty implement WP05 --base WP04`
-**Target repo**: `joyus-ai`
-**Dependencies**: WP04 (Pipeline Executor)
-**Priority**: P1 | T025-T028 are independent and can be written in parallel
-
 ## Objective
 
-Define the `PipelineStepHandler` interface and implement all 6 built-in step type handlers: profile-generation, fidelity-check, content-generation, source-query, notification, and the review-gate handler. Each handler integrates with a platform capability from Spec 005 (Profile Engine), Spec 006 (Content Infrastructure), or Spec 008.
+Implement the `PipelineStepHandler` interface and all 6 built-in step type handlers that integrate with platform capabilities. Each handler encapsulates the logic for one step type (profile generation, fidelity check, content generation, source query, notification) and returns structured results that the step runner can process.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP05 --base WP04
+```
 
 ## Context
 
-The `StepRunner` (WP04, T019) delegates each step to a handler registered in the `StepHandlerRegistry`. Handlers implement a single `execute()` method and return a `StepResult`. They do not manage retry — that is `RetryExecutor`'s job.
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (FR-001, FR-014: idempotent steps)
+- **Plan**: `kitty-specs/009-automated-pipelines-framework/plan.md` (WP-07: Built-in step handlers)
+- **Research**: `kitty-specs/009-automated-pipelines-framework/research.md` (R3: error classification, R7: idempotency)
 
-**Integration dependencies**: Some handlers depend on platform services (profile engine, content infrastructure) that may not be fully available at the time this WP is implemented. The approach: use interface-based dependency injection. Each handler accepts a service client interface in its constructor. Where the real client is unavailable, ship a `NullServiceClient` stub that logs a warning and returns a no-op result. This keeps the step handlers testable and shippable.
+Step handlers are the pipeline framework's integration points with the rest of the platform. Each handler knows how to invoke a specific platform capability (profile engine, content infrastructure, etc.) and translate the result into the step runner's `StepResult` format.
 
-**Error classification**: Handlers must throw `NonTransientError` (from `src/pipelines/engine/retry.ts`) for business logic failures (invalid config, resource not found) and plain `Error` for transient failures (network timeout, service unavailable). The `RetryExecutor` distinguishes these.
+**Key design decisions**:
+- Step handlers depend on platform services via interfaces (dependency injection), not direct imports
+- Handlers classify their own errors as transient or non-transient (the step runner trusts this classification)
+- Handlers support idempotency: they check for existing output before performing work
+- The `review_gate` step type is NOT a handler — it is handled directly by the executor/review gate module (WP06)
 
----
-
-## Subtasks
-
-### T024: Define PipelineStepHandler interface and StepResult type (`src/pipelines/steps/interface.ts`)
-
-**Purpose**: Establish the contract all step handlers must implement, including the execution context and result shape.
-
-**Steps**:
-1. Create `src/pipelines/steps/interface.ts`
-2. Define `StepExecutionContext` — inputs available to every handler
-3. Define `StepResult` — what every handler must return
-4. Define `PipelineStepHandler` interface with `stepType` and `execute`
-
-```typescript
-// src/pipelines/steps/interface.ts
-import type { StepConfig, StepType } from '../types';
-
-export interface StepExecutionContext {
-  executionId: string;      // UUID of the parent pipeline_execution
-  stepIndex: number;        // 0-based position in the pipeline
-  stepConfig: StepConfig;   // the config from the pipeline definition
-  tenantId: string;         // for scoping calls to platform services
-}
-
-export interface StepResult {
-  /**
-   * Arbitrary output data stored in step_executions.output_data (jsonb).
-   * Passed as input to the next step via execution context.
-   */
-  outputData: Record<string, unknown>;
-
-  /**
-   * Optional: artifact paths created by this step (e.g., generated content IDs).
-   * Used by review gates (WP06) to route specific artifacts for review.
-   */
-  artifactPaths?: string[];
-
-  /**
-   * If true, the executor should surface this as a quality signal.
-   * Used by fidelity-check to flag low-quality outputs.
-   */
-  flagForReview?: boolean;
-}
-
-export interface PipelineStepHandler {
-  /**
-   * The step type this handler is responsible for.
-   */
-  readonly stepType: StepType;
-
-  /**
-   * Execute the step. Must be idempotent — may be called more than once
-   * on retry or recovery. Use `context.executionId + context.stepIndex`
-   * as an idempotency key when calling external services.
-   *
-   * Throw `NonTransientError` for business logic failures (no retry).
-   * Throw plain `Error` for transient failures (will be retried).
-   */
-  execute(context: StepExecutionContext): Promise<StepResult>;
-}
-```
-
-**Files**:
-- `src/pipelines/steps/interface.ts` (new, ~45 lines)
-
-**Validation**:
-- [ ] `tsc --noEmit` passes on `interface.ts`
-- [ ] `StepExecutionContext` includes `tenantId` — handlers must scope all platform calls to the tenant
-- [ ] `PipelineStepHandler.execute` returns `Promise<StepResult>`, not `void`
-
-**Edge Cases**:
-- Handlers must be idempotent. Document this requirement in the interface comment so future handler authors are aware. The `executionId + stepIndex` combination is the natural idempotency key to pass to external services.
+**Platform integration points**:
+- `profile_generation`: Spec 008 (Profile Isolation and Scale) — profile engine regeneration
+- `fidelity_check`: Spec 005 (Content Intelligence) — attribution scoring
+- `content_generation`: Spec 006 (Content Infrastructure) — content-aware generation via mediation
+- `source_query`: Spec 006 (Content Infrastructure) — content source querying
+- `notification`: Existing `src/scheduler/notifications.ts` — notification delivery
 
 ---
 
-### T025: Implement profile-generation step handler (`src/pipelines/steps/profile-generation.ts`)
+## Subtask T024: Define PipelineStepHandler Interface and StepResult Type
 
-**Purpose**: Trigger profile generation for a target entity (person, organization) using Spec 005's Profile Engine. This is the most common step in outreach pipelines.
+**Purpose**: Define the contract that all step handlers must implement.
 
 **Steps**:
-1. Create `src/pipelines/steps/profile-generation.ts`
-2. Define `ProfileServiceClient` interface (what the handler needs from Spec 005)
-3. Implement `ProfileGenerationStepHandler` using the client
-4. Export `NullProfileServiceClient` for environments where Spec 005 is unavailable
+1. Create `joyus-ai-mcp-server/src/pipelines/steps/interface.ts`
+2. Define the `PipelineStepHandler` interface:
+   ```typescript
+   export interface PipelineStepHandler {
+     /** The step type this handler processes. */
+     readonly stepType: StepType;
 
-```typescript
-// src/pipelines/steps/profile-generation.ts
-import { NonTransientError } from '../engine/retry';
-import type { PipelineStepHandler, StepExecutionContext, StepResult } from './interface';
+     /**
+      * Execute the step with the given configuration and context.
+      * Returns a StepResult indicating success, failure, or no-op.
+      */
+     execute(
+       config: Record<string, unknown>,
+       context: ExecutionContext,
+     ): Promise<StepResult>;
 
-export interface ProfileServiceClient {
-  generateProfile(params: {
-    tenantId: string;
-    targetId: string;
-    targetType: 'person' | 'organization';
-    idempotencyKey: string;
-  }): Promise<{ profileId: string; status: 'created' | 'updated' | 'skipped' }>;
-}
+     /**
+      * Validate step configuration at pipeline creation time.
+      * Returns validation errors if config is invalid.
+      */
+     validateConfig(config: Record<string, unknown>): string[];
+   }
+   ```
+3. Re-export `StepResult` and `StepError` from `../types.js` (defined in WP01 T002)
+4. Define `StepHandlerDependencies` — services that handlers may need:
+   ```typescript
+   export interface StepHandlerDependencies {
+     db: DrizzleClient;
+     profileEngine?: ProfileEngineClient;      // Spec 008 interface
+     contentIntelligence?: ContentIntelClient;  // Spec 005 interface
+     contentInfrastructure?: ContentInfraClient; // Spec 006 interface
+     notificationService?: NotificationService;  // Existing scheduler service
+   }
+   ```
+5. Define lightweight client interfaces for each dependency (these are the contract, not the implementation):
+   ```typescript
+   export interface ProfileEngineClient {
+     regenerateProfile(tenantId: string, profileId: string, options?: Record<string, unknown>): Promise<{ profileId: string; version: string; metadata: Record<string, unknown> }>;
+   }
 
-export class NullProfileServiceClient implements ProfileServiceClient {
-  async generateProfile(params: Parameters<ProfileServiceClient['generateProfile']>[0]) {
-    console.warn('[NullProfileServiceClient] Profile Engine not available. Returning stub result.');
-    return { profileId: `stub-${params.targetId}`, status: 'skipped' as const };
-  }
-}
+   export interface ContentIntelClient {
+     runFidelityCheck(tenantId: string, profileId: string, contentIds: string[]): Promise<{ score: number; details: Record<string, unknown> }>;
+   }
 
-export class ProfileGenerationStepHandler implements PipelineStepHandler {
-  readonly stepType = 'profile_generation' as const;
+   export interface ContentInfraClient {
+     generateContent(tenantId: string, prompt: string, profileId?: string, sourceIds?: string[]): Promise<{ text: string; citations: unknown[]; metadata: Record<string, unknown> }>;
+     querySource(tenantId: string, query: string, sourceIds?: string[], limit?: number): Promise<{ items: unknown[]; totalCount: number }>;
+   }
 
-  constructor(private readonly profileService: ProfileServiceClient) {}
-
-  async execute(context: StepExecutionContext): Promise<StepResult> {
-    const { targetId, targetType } = context.stepConfig.config as {
-      targetId?: string;
-      targetType?: 'person' | 'organization';
-    };
-
-    if (!targetId) throw new NonTransientError('profile_generation step requires config.targetId');
-    if (!targetType) throw new NonTransientError('profile_generation step requires config.targetType');
-
-    const idempotencyKey = `profile-gen-${context.executionId}-${context.stepIndex}`;
-
-    const result = await this.profileService.generateProfile({
-      tenantId: context.tenantId,
-      targetId,
-      targetType,
-      idempotencyKey,
-    });
-
-    return {
-      outputData: { profileId: result.profileId, status: result.status },
-      artifactPaths: result.status !== 'skipped' ? [`profiles/${result.profileId}`] : [],
-    };
-  }
-}
-```
+   export interface NotificationService {
+     send(channel: string, message: string, metadata?: Record<string, unknown>): Promise<void>;
+   }
+   ```
 
 **Files**:
-- `src/pipelines/steps/profile-generation.ts` (new, ~50 lines)
+- `joyus-ai-mcp-server/src/pipelines/steps/interface.ts` (new, ~80 lines)
 
 **Validation**:
-- [ ] Missing `targetId` throws `NonTransientError` (no retry)
-- [ ] Successful profile generation returns `artifactPaths` with the profile path
-- [ ] `NullProfileServiceClient.generateProfile` returns a valid stub result
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `targetId` may be provided statically in `stepConfig.config` (pipeline definition) or dynamically from the previous step's `outputData`. For this implementation, only static config is supported. Dynamic wiring between steps is a future enhancement.
+- [ ] `npm run typecheck` passes
+- [ ] All interfaces are importable
+- [ ] Dependency interfaces are minimal (only what step handlers need)
 
 ---
 
-### T026: Implement fidelity-check step handler (`src/pipelines/steps/fidelity-check.ts`)
+## Subtask T025: Implement Profile Generation Step Handler
 
-**Purpose**: Evaluate the quality of a previously generated profile or content artifact using Spec 008's fidelity scoring. Flags low-quality outputs for human review.
+**Purpose**: Invoke the profile engine to regenerate profiles when triggered by a pipeline.
 
 **Steps**:
-1. Create `src/pipelines/steps/fidelity-check.ts`
-2. Define `FidelityServiceClient` interface
-3. Implement `FidelityCheckStepHandler` — calls fidelity service, sets `flagForReview` if score is below threshold
+1. Create `joyus-ai-mcp-server/src/pipelines/steps/profile-generation.ts`
+2. Implement `ProfileGenerationHandler` class implementing `PipelineStepHandler`:
+3. **stepType**: `'profile_generation'`
+4. **validateConfig(config)**:
+   - Must have `profileIds: string[]` (non-empty array) OR `regenerateAll: boolean`
+   - Optional: `options: Record<string, unknown>` (passed through to profile engine)
+   - Return errors array (empty if valid)
+5. **execute(config, context)**:
+   - Extract profileIds from config (or load all tenant profiles if `regenerateAll`)
+   - For each profileId:
+     - Call `profileEngine.regenerateProfile(context.tenantId, profileId, config.options)`
+     - Collect results (new version IDs)
+   - If profileEngine dependency is not available: return error with `isTransient: false`, message explaining the dependency is not configured
+   - Return success with `outputData: { regeneratedProfiles: [{ profileId, version, metadata }] }`
+   - On network/timeout error: return error with `isTransient: true`
+   - On auth/config error: return error with `isTransient: false`
 
-```typescript
-// src/pipelines/steps/fidelity-check.ts
-import { NonTransientError } from '../engine/retry';
-import type { PipelineStepHandler, StepExecutionContext, StepResult } from './interface';
-
-export interface FidelityServiceClient {
-  checkFidelity(params: {
-    tenantId: string;
-    artifactPath: string;
-    idempotencyKey: string;
-  }): Promise<{ score: number; issues: string[] }>;
-}
-
-export class NullFidelityServiceClient implements FidelityServiceClient {
-  async checkFidelity() {
-    console.warn('[NullFidelityServiceClient] Fidelity service not available. Returning passing stub.');
-    return { score: 1.0, issues: [] };
-  }
-}
-
-export class FidelityCheckStepHandler implements PipelineStepHandler {
-  readonly stepType = 'fidelity_check' as const;
-
-  // Score below this threshold triggers flagForReview
-  private static readonly REVIEW_THRESHOLD = 0.7;
-
-  constructor(private readonly fidelityService: FidelityServiceClient) {}
-
-  async execute(context: StepExecutionContext): Promise<StepResult> {
-    const { artifactPath, reviewThreshold } = context.stepConfig.config as {
-      artifactPath?: string;
-      reviewThreshold?: number;
-    };
-
-    if (!artifactPath) throw new NonTransientError('fidelity_check step requires config.artifactPath');
-
-    const idempotencyKey = `fidelity-${context.executionId}-${context.stepIndex}`;
-    const threshold = reviewThreshold ?? FidelityCheckStepHandler.REVIEW_THRESHOLD;
-
-    const result = await this.fidelityService.checkFidelity({
-      tenantId: context.tenantId,
-      artifactPath,
-      idempotencyKey,
-    });
-
-    const flagForReview = result.score < threshold;
-
-    return {
-      outputData: { score: result.score, issues: result.issues, flagForReview },
-      flagForReview,
-    };
-  }
-}
-```
+**Important implementation details**:
+- The profile engine client is injected via `StepHandlerDependencies`. If not provided, the handler fails with a clear non-transient error — it does not attempt to import or construct the engine directly.
+- Each profile regeneration is independent — if one fails, others can still succeed. Collect partial results and report them in the output.
+- The output includes version references that downstream steps (fidelity check) can use via input_refs.
 
 **Files**:
-- `src/pipelines/steps/fidelity-check.ts` (new, ~50 lines)
+- `joyus-ai-mcp-server/src/pipelines/steps/profile-generation.ts` (new, ~80 lines)
 
 **Validation**:
-- [ ] Score below `REVIEW_THRESHOLD` sets `flagForReview: true`
-- [ ] Score at or above threshold sets `flagForReview: false`
-- [ ] Missing `artifactPath` throws `NonTransientError`
-- [ ] `tsc --noEmit` passes
-
-**Edge Cases**:
-- `reviewThreshold` is configurable per-step via `stepConfig.config`. This allows some pipelines to use a strict threshold (0.9) and others a loose one (0.5).
+- [ ] Validates config correctly (profileIds required)
+- [ ] Calls profile engine for each profile
+- [ ] Returns structured output with version references
+- [ ] Classifies errors correctly (network = transient, config = non-transient)
+- [ ] Handles missing dependency gracefully
 
 ---
 
-### T027: Implement content-generation step handler (`src/pipelines/steps/content-generation.ts`)
+## Subtask T026: Implement Fidelity Check Step Handler
 
-**Purpose**: Generate content (emails, summaries, reports) using Spec 006's content infrastructure. Stores the result in the corpus and returns an artifact path.
+**Purpose**: Run attribution scoring against content using the content intelligence service.
 
 **Steps**:
-1. Create `src/pipelines/steps/content-generation.ts`
-2. Define `ContentServiceClient` interface
-3. Implement `ContentGenerationStepHandler`
+1. Create `joyus-ai-mcp-server/src/pipelines/steps/fidelity-check.ts`
+2. Implement `FidelityCheckHandler` class implementing `PipelineStepHandler`:
+3. **stepType**: `'fidelity_check'`
+4. **validateConfig(config)**:
+   - Must have `profileId: string`
+   - Must have `contentIds: string[]` (non-empty) OR `useUpstreamOutputs: boolean` (resolves from previous step outputs via input_refs)
+   - Optional: `threshold: number` (minimum fidelity score, default 0.7)
+   - Return errors array
+5. **execute(config, context)**:
+   - Resolve contentIds from config or from previous step outputs (via `context.previousStepOutputs`)
+   - Call `contentIntelligence.runFidelityCheck(context.tenantId, config.profileId, contentIds)`
+   - If score >= threshold: return success with `outputData: { score, details, passed: true }`
+   - If score < threshold: return success with `outputData: { score, details, passed: false }` (NOT a failure — the check ran successfully, the score was low)
+   - If contentIntelligence dependency not available: return non-transient error
+   - On network errors: return transient error
 
-```typescript
-// src/pipelines/steps/content-generation.ts
-import { NonTransientError } from '../engine/retry';
-import type { PipelineStepHandler, StepExecutionContext, StepResult } from './interface';
-
-export interface ContentServiceClient {
-  generateContent(params: {
-    tenantId: string;
-    contentType: string;
-    templateId?: string;
-    context: Record<string, unknown>;
-    idempotencyKey: string;
-  }): Promise<{ contentId: string; path: string }>;
-}
-
-export class NullContentServiceClient implements ContentServiceClient {
-  async generateContent(params: Parameters<ContentServiceClient['generateContent']>[0]) {
-    console.warn('[NullContentServiceClient] Content service not available. Returning stub result.');
-    return { contentId: `stub-content-${Date.now()}`, path: `content/stub-${params.idempotencyKey}` };
-  }
-}
-
-export class ContentGenerationStepHandler implements PipelineStepHandler {
-  readonly stepType = 'content_generation' as const;
-
-  constructor(private readonly contentService: ContentServiceClient) {}
-
-  async execute(context: StepExecutionContext): Promise<StepResult> {
-    const { contentType, templateId, contextData } = context.stepConfig.config as {
-      contentType?: string;
-      templateId?: string;
-      contextData?: Record<string, unknown>;
-    };
-
-    if (!contentType) throw new NonTransientError('content_generation step requires config.contentType');
-
-    const idempotencyKey = `content-gen-${context.executionId}-${context.stepIndex}`;
-
-    const result = await this.contentService.generateContent({
-      tenantId: context.tenantId,
-      contentType,
-      templateId,
-      context: contextData ?? {},
-      idempotencyKey,
-    });
-
-    return {
-      outputData: { contentId: result.contentId, path: result.path },
-      artifactPaths: [result.path],
-    };
-  }
-}
-```
+**Important implementation details**:
+- A low fidelity score is NOT a step failure — the step executed successfully and returned a result. Downstream steps or review gates should use the score to decide next action.
+- The `useUpstreamOutputs` pattern resolves content IDs from the `previousStepOutputs` map, using the step's `inputRefs` to identify which upstream step and which field to read.
 
 **Files**:
-- `src/pipelines/steps/content-generation.ts` (new, ~50 lines)
+- `joyus-ai-mcp-server/src/pipelines/steps/fidelity-check.ts` (new, ~70 lines)
 
 **Validation**:
-- [ ] Missing `contentType` throws `NonTransientError`
-- [ ] `artifactPaths` includes the generated content path (for review gate routing)
-- [ ] `tsc --noEmit` passes
+- [ ] Validates config correctly
+- [ ] Calls content intelligence service with correct params
+- [ ] Low score is success (not failure)
+- [ ] Resolves content IDs from upstream outputs when configured
+- [ ] Handles missing dependency gracefully
 
 ---
 
-### T028: Implement source-query and notification step handlers (`src/pipelines/steps/source-query.ts`, `src/pipelines/steps/notification.ts`)
+## Subtask T027: Implement Content Generation Step Handler
 
-**Purpose**: Source-query retrieves documents from the content corpus by query. Notification sends alerts via configured channels (Slack, email, webhook).
+**Purpose**: Generate content using the content infrastructure's mediation layer.
 
 **Steps**:
-1. Create `src/pipelines/steps/source-query.ts`
-2. Create `src/pipelines/steps/notification.ts`
-3. Both follow the same interface pattern as T025-T027
+1. Create `joyus-ai-mcp-server/src/pipelines/steps/content-generation.ts`
+2. Implement `ContentGenerationHandler` class implementing `PipelineStepHandler`:
+3. **stepType**: `'content_generation'`
+4. **validateConfig(config)**:
+   - Must have `prompt: string` (the generation prompt/template)
+   - Optional: `profileId: string` (voice profile to apply)
+   - Optional: `sourceIds: string[]` (content sources to draw from)
+   - Optional: `maxSources: number` (default 5)
+   - Return errors array
+5. **execute(config, context)**:
+   - Call `contentInfrastructure.generateContent(context.tenantId, config.prompt, config.profileId, config.sourceIds)`
+   - Return success with `outputData: { text, citations, metadata, artifactRef: { type: 'generated_content', id: <generated>, metadata } }`
+   - The artifactRef enables downstream review gates to reference this output
+   - On network errors: return transient error
+   - On invalid config: return non-transient error
 
-```typescript
-// src/pipelines/steps/source-query.ts
-import { NonTransientError } from '../engine/retry';
-import type { PipelineStepHandler, StepExecutionContext, StepResult } from './interface';
-
-export interface SourceQueryServiceClient {
-  query(params: {
-    tenantId: string;
-    query: string;
-    sourceIds?: string[];
-    limit?: number;
-  }): Promise<{ documents: Array<{ id: string; path: string; snippet: string }> }>;
-}
-
-export class NullSourceQueryServiceClient implements SourceQueryServiceClient {
-  async query() {
-    console.warn('[NullSourceQueryServiceClient] Source query service not available.');
-    return { documents: [] };
-  }
-}
-
-export class SourceQueryStepHandler implements PipelineStepHandler {
-  readonly stepType = 'source_query' as const;
-
-  constructor(private readonly sourceQueryService: SourceQueryServiceClient) {}
-
-  async execute(context: StepExecutionContext): Promise<StepResult> {
-    const { query, sourceIds, limit } = context.stepConfig.config as {
-      query?: string;
-      sourceIds?: string[];
-      limit?: number;
-    };
-
-    if (!query) throw new NonTransientError('source_query step requires config.query');
-
-    const result = await this.sourceQueryService.query({
-      tenantId: context.tenantId,
-      query,
-      sourceIds,
-      limit: limit ?? 10,
-    });
-
-    return {
-      outputData: { documents: result.documents, count: result.documents.length },
-    };
-  }
-}
-```
-
-```typescript
-// src/pipelines/steps/notification.ts
-import { NonTransientError } from '../engine/retry';
-import type { PipelineStepHandler, StepExecutionContext, StepResult } from './interface';
-
-export interface NotificationServiceClient {
-  send(params: {
-    tenantId: string;
-    channel: 'slack' | 'email' | 'webhook';
-    recipient: string;
-    message: string;
-    idempotencyKey: string;
-  }): Promise<{ messageId: string }>;
-}
-
-export class NullNotificationServiceClient implements NotificationServiceClient {
-  async send(params: Parameters<NotificationServiceClient['send']>[0]) {
-    console.warn(`[NullNotificationServiceClient] Would send to ${params.channel}:${params.recipient}`);
-    return { messageId: `stub-msg-${Date.now()}` };
-  }
-}
-
-export class NotificationStepHandler implements PipelineStepHandler {
-  readonly stepType = 'notification' as const;
-
-  constructor(private readonly notificationService: NotificationServiceClient) {}
-
-  async execute(context: StepExecutionContext): Promise<StepResult> {
-    const { channel, recipient, message } = context.stepConfig.config as {
-      channel?: 'slack' | 'email' | 'webhook';
-      recipient?: string;
-      message?: string;
-    };
-
-    if (!channel) throw new NonTransientError('notification step requires config.channel');
-    if (!recipient) throw new NonTransientError('notification step requires config.recipient');
-    if (!message) throw new NonTransientError('notification step requires config.message');
-
-    const idempotencyKey = `notification-${context.executionId}-${context.stepIndex}`;
-
-    const result = await this.notificationService.send({
-      tenantId: context.tenantId,
-      channel,
-      recipient,
-      message,
-      idempotencyKey,
-    });
-
-    return {
-      outputData: { messageId: result.messageId, channel, recipient },
-    };
-  }
-}
-```
+**Important implementation details**:
+- Content generation goes through the platform's mediation layer (Spec 006) — the handler does NOT call AI models directly (Constitution §2.6)
+- The prompt field may contain template variables that reference trigger payload or upstream outputs. For MVP, pass the prompt as-is; template variable resolution can be added later.
+- Generated content produces an artifact reference that review gates use to identify what needs review.
 
 **Files**:
-- `src/pipelines/steps/source-query.ts` (new, ~50 lines)
-- `src/pipelines/steps/notification.ts` (new, ~50 lines)
+- `joyus-ai-mcp-server/src/pipelines/steps/content-generation.ts` (new, ~70 lines)
 
 **Validation**:
-- [ ] `source_query` with no `query` throws `NonTransientError`
-- [ ] `notification` with missing required config fields throws `NonTransientError`
-- [ ] Both null clients log warnings and return stub results
-- [ ] `tsc --noEmit` passes on both files
+- [ ] Validates config correctly (prompt required)
+- [ ] Calls content infrastructure's generate method
+- [ ] Returns artifact reference in output
+- [ ] Classifies errors correctly
+- [ ] Handles missing dependency gracefully
 
 ---
 
-### T029: Create step type registry and barrel export (`src/pipelines/steps/registry.ts`, `src/pipelines/steps/index.ts`)
+## Subtask T028: Implement Source Query and Notification Step Handlers
 
-**Purpose**: Central registry mapping step type strings to handler instances, plus the barrel export for the steps module.
+**Purpose**: Implement the two remaining built-in step handlers: source querying and notification delivery.
 
 **Steps**:
-1. Create `src/pipelines/steps/registry.ts`
-2. Define `StepHandlerRegistry` class with `register` and `get` methods
-3. Export `createDefaultStepHandlerRegistry` factory that wires up all 6 handlers with null clients
-4. Create `src/pipelines/steps/index.ts` barrel export
-
-```typescript
-// src/pipelines/steps/registry.ts
-import type { PipelineStepHandler } from './interface';
-import type { StepType } from '../types';
-import { ProfileGenerationStepHandler, NullProfileServiceClient } from './profile-generation';
-import { FidelityCheckStepHandler, NullFidelityServiceClient } from './fidelity-check';
-import { ContentGenerationStepHandler, NullContentServiceClient } from './content-generation';
-import { SourceQueryStepHandler, NullSourceQueryServiceClient } from './source-query';
-import { NotificationStepHandler, NullNotificationServiceClient } from './notification';
-
-export class StepHandlerRegistry {
-  private handlers = new Map<StepType, PipelineStepHandler>();
-
-  register(handler: PipelineStepHandler): void {
-    this.handlers.set(handler.stepType, handler);
-  }
-
-  get(stepType: StepType): PipelineStepHandler | undefined {
-    return this.handlers.get(stepType);
-  }
-
-  getAll(): PipelineStepHandler[] {
-    return Array.from(this.handlers.values());
-  }
-}
-
-export interface StepHandlerDependencies {
-  profileService?: ConstructorParameters<typeof ProfileGenerationStepHandler>[0];
-  fidelityService?: ConstructorParameters<typeof FidelityCheckStepHandler>[0];
-  contentService?: ConstructorParameters<typeof ContentGenerationStepHandler>[0];
-  sourceQueryService?: ConstructorParameters<typeof SourceQueryStepHandler>[0];
-  notificationService?: ConstructorParameters<typeof NotificationStepHandler>[0];
-}
-
-/**
- * Creates a registry with all 6 built-in handlers.
- * Pass real service clients for production; omit for null-client stubs.
- */
-export function createDefaultStepHandlerRegistry(
-  deps: StepHandlerDependencies = {},
-): StepHandlerRegistry {
-  const registry = new StepHandlerRegistry();
-  registry.register(new ProfileGenerationStepHandler(deps.profileService ?? new NullProfileServiceClient()));
-  registry.register(new FidelityCheckStepHandler(deps.fidelityService ?? new NullFidelityServiceClient()));
-  registry.register(new ContentGenerationStepHandler(deps.contentService ?? new NullContentServiceClient()));
-  registry.register(new SourceQueryStepHandler(deps.sourceQueryService ?? new NullSourceQueryServiceClient()));
-  registry.register(new NotificationStepHandler(deps.notificationService ?? new NullNotificationServiceClient()));
-  return registry;
-}
-```
+1. Create `joyus-ai-mcp-server/src/pipelines/steps/source-query.ts`
+2. Implement `SourceQueryHandler` class:
+   - **stepType**: `'source_query'`
+   - **validateConfig**: Must have `query: string`. Optional: `sourceIds: string[]`, `limit: number` (default 20)
+   - **execute**: Call `contentInfrastructure.querySource(...)`, return items in outputData
+   - Query results are used by downstream steps (content generation can reference them)
+3. Create `joyus-ai-mcp-server/src/pipelines/steps/notification.ts`
+4. Implement `NotificationHandler` class:
+   - **stepType**: `'notification'`
+   - **validateConfig**: Must have `channel: string` (notification channel identifier) and `message: string` (message template)
+   - **execute**: Call `notificationService.send(channel, message, context)` — reuses existing notification infrastructure from `src/scheduler/notifications.ts`
+   - The message can include template variables: `{pipelineName}`, `{executionId}`, `{status}` — resolve from context
+   - Notification delivery errors: classify network issues as transient, invalid channel as non-transient
+   - Notification is naturally idempotent if the service checks for duplicate deliveries by idempotency key
 
 **Files**:
-- `src/pipelines/steps/registry.ts` (new, ~50 lines)
-- `src/pipelines/steps/index.ts` (new, ~15 lines — barrel export)
+- `joyus-ai-mcp-server/src/pipelines/steps/source-query.ts` (new, ~60 lines)
+- `joyus-ai-mcp-server/src/pipelines/steps/notification.ts` (new, ~60 lines)
 
 **Validation**:
-- [ ] `createDefaultStepHandlerRegistry()` (no args) returns a registry with 5 handlers (review_gate is WP06)
-- [ ] `registry.get('profile_generation')` returns a `ProfileGenerationStepHandler` instance
-- [ ] `registry.get('review_gate')` returns `undefined` until WP06 registers it
-- [ ] `tsc --noEmit` passes
+- [ ] SourceQueryHandler queries content sources correctly
+- [ ] NotificationHandler sends via notification service
+- [ ] Both validate config and classify errors
+- [ ] Both handle missing dependencies gracefully
 
-**Edge Cases**:
-- `review_gate` is a special step type handled directly by `StepRunner` (it pauses execution rather than calling an external service). It does not need a registry entry. Document this in the registry comment.
+---
+
+## Subtask T029: Create Step Type Registry and Barrel Export
+
+**Purpose**: Map step type strings to their handler implementations and provide module exports.
+
+**Steps**:
+1. Create `joyus-ai-mcp-server/src/pipelines/steps/registry.ts`
+2. Implement `StepRegistry` class that implements `StepHandlerRegistry` (interface from WP04 T019):
+   ```typescript
+   export class StepRegistry implements StepHandlerRegistry {
+     private handlers = new Map<StepType, PipelineStepHandler>();
+
+     register(handler: PipelineStepHandler): void {
+       this.handlers.set(handler.stepType, handler);
+     }
+
+     getHandler(stepType: StepType): PipelineStepHandler | undefined {
+       return this.handlers.get(stepType);
+     }
+
+     getRegisteredTypes(): StepType[] {
+       return Array.from(this.handlers.keys());
+     }
+
+     validateStepConfig(stepType: StepType, config: Record<string, unknown>): string[] {
+       const handler = this.getHandler(stepType);
+       if (!handler) return [`Unknown step type: ${stepType}`];
+       return handler.validateConfig(config);
+     }
+   }
+   ```
+3. Export a factory function:
+   ```typescript
+   export function createStepRegistry(deps: StepHandlerDependencies): StepRegistry {
+     const registry = new StepRegistry();
+     registry.register(new ProfileGenerationHandler(deps));
+     registry.register(new FidelityCheckHandler(deps));
+     registry.register(new ContentGenerationHandler(deps));
+     registry.register(new SourceQueryHandler(deps));
+     registry.register(new NotificationHandler(deps));
+     // Note: review_gate is NOT a handler — it's handled by the executor
+     return registry;
+   }
+   ```
+4. Create `joyus-ai-mcp-server/src/pipelines/steps/index.ts` — barrel export:
+   ```typescript
+   export type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
+   export { StepRegistry, createStepRegistry } from './registry.js';
+   export { ProfileGenerationHandler } from './profile-generation.js';
+   export { FidelityCheckHandler } from './fidelity-check.js';
+   export { ContentGenerationHandler } from './content-generation.js';
+   export { SourceQueryHandler } from './source-query.js';
+   export { NotificationHandler } from './notification.js';
+   ```
+5. Update `src/pipelines/index.ts` to export from steps module
+
+**Files**:
+- `joyus-ai-mcp-server/src/pipelines/steps/registry.ts` (new, ~50 lines)
+- `joyus-ai-mcp-server/src/pipelines/steps/index.ts` (new, ~15 lines)
+- `joyus-ai-mcp-server/src/pipelines/index.ts` (modify — add steps export)
+
+**Validation**:
+- [ ] Registry maps all 5 step types to handlers
+- [ ] getHandler returns undefined for unknown types (including 'review_gate')
+- [ ] validateStepConfig delegates to correct handler
+- [ ] Factory creates registry with all handlers
+- [ ] `npm run typecheck` passes
 
 ---
 
 ## Definition of Done
 
-- [ ] `src/pipelines/steps/interface.ts` — `PipelineStepHandler`, `StepExecutionContext`, `StepResult`
-- [ ] `src/pipelines/steps/profile-generation.ts` — handler + client interface + null client
-- [ ] `src/pipelines/steps/fidelity-check.ts` — handler + client interface + null client
-- [ ] `src/pipelines/steps/content-generation.ts` — handler + client interface + null client
-- [ ] `src/pipelines/steps/source-query.ts` — handler + client interface + null client
-- [ ] `src/pipelines/steps/notification.ts` — handler + client interface + null client
-- [ ] `src/pipelines/steps/registry.ts` — `StepHandlerRegistry`, `createDefaultStepHandlerRegistry`
-- [ ] `src/pipelines/steps/index.ts` — barrel export
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm test` exits 0 with no regressions
+- [ ] `PipelineStepHandler` interface defined with execute and validateConfig methods
+- [ ] All 5 step handlers implemented: profile_generation, fidelity_check, content_generation, source_query, notification
+- [ ] All handlers classify errors as transient/non-transient
+- [ ] All handlers validate their config at pipeline creation time
+- [ ] All handlers handle missing dependencies gracefully (non-transient error)
+- [ ] Step registry maps types to handlers
+- [ ] Platform service interfaces defined (not implementations — dependency injection)
+- [ ] Barrel exports in place
+- [ ] `npm run validate` passes with zero errors
 
 ## Risks
 
-- **Null client silent failures**: `NullServiceClient` stubs log warnings and return empty/stub results. If a pipeline runs in production with null clients (because the real service wasn't wired up), it will appear to succeed but produce no real output. Add a startup check that logs an error if null clients are in use in non-test environments.
-- **Step output chaining**: The current interface does not pass the previous step's `outputData` as input to the next step. This is a known limitation. The `executionId` can be used to fetch previous step outputs from the DB, but this is not built-in. Track this as a future enhancement.
-- **review_gate step type**: The enum in WP01 includes `review_gate` as a step type, but it is handled by `StepRunner` directly (not via a registry handler). If someone configures a pipeline with `stepType: 'review_gate'` expecting the registry to handle it, it will get a "no handler" error. The `StepRunner` should intercept `review_gate` steps before dispatching to the registry.
+- **Platform service availability**: Step handlers depend on services from other specs (005, 006, 008) that may not be fully implemented. Mitigation: handlers use injected interfaces. If the dependency is not provided, the handler returns a non-transient error with a clear message.
+- **Error classification accuracy**: Incorrectly classifying a non-transient error as transient wastes retry budget. Mitigation: default to non-transient for unknown errors; only classify specific known-transient patterns (network timeout, rate limit, 503) as transient.
 
 ## Reviewer Guidance
 
-- Verify all 6 handler constructors accept a service client interface (not a concrete class) — this is the dependency injection requirement that enables testing.
-- Check that all `NonTransientError` throws use descriptive messages that include the step type and the missing field name — these messages appear in `step_executions.error_message` and must be actionable.
-- Confirm null clients produce `console.warn` (not `console.error` or silent) — they are expected in development but not in production.
+- Verify all handlers accept dependencies via constructor injection (not direct imports of platform services)
+- Check that `review_gate` is NOT registered in the step registry (it is handled by the executor/review module)
+- Verify error classification: network/timeout = transient, config/auth = non-transient
+- Confirm fidelity_check: a low score is a successful result, not a failure
+- Verify notification handler message template variable resolution
+- Check that all handlers have meaningful validateConfig implementations (not just empty arrays)
+- Verify StepHandlerDependencies interfaces are minimal and match what each handler actually uses
+
+## Activity Log
