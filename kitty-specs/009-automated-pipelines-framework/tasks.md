@@ -65,12 +65,12 @@ Build the event bus abstraction and PostgreSQL LISTEN/NOTIFY implementation with
 Build trigger handlers, trigger registry, and the circular dependency detection system (DFS cycle detector + runtime depth counter).
 
 **Subtasks**:
-- [ ] T012: Define TriggerHandler interface (`src/pipelines/triggers/interface.ts`)
-- [ ] T013: Implement CorpusChangeTriggerHandler (`src/pipelines/triggers/corpus-change.ts`)
-- [ ] T014: Implement ManualRequestTriggerHandler (`src/pipelines/triggers/manual-request.ts`)
-- [ ] T015: Create trigger registry (`src/pipelines/triggers/registry.ts`)
-- [ ] T016: Build DFS cycle detector and dependency graph builder (`src/pipelines/graph/`)
-- [ ] T017: Unit tests for cycle detector and trigger handlers (`tests/pipelines/graph/`, `tests/pipelines/triggers/`)
+- [x] T012: Define TriggerHandler interface (`src/pipelines/triggers/interface.ts`)
+- [x] T013: Implement CorpusChangeTriggerHandler (`src/pipelines/triggers/corpus-change.ts`)
+- [x] T014: Implement ManualRequestTriggerHandler (`src/pipelines/triggers/manual-request.ts`)
+- [x] T015: Create trigger registry (`src/pipelines/triggers/registry.ts`)
+- [x] T016: Build DFS cycle detector and dependency graph builder (`src/pipelines/graph/`)
+- [x] T017: Unit tests for cycle detector and trigger handlers (`tests/pipelines/graph/`, `tests/pipelines/triggers/`)
 
 **Parallel opportunities**: Can run in parallel with WP02. T016 (graph) is independent of T012-T015 (triggers).
 **Risks**: Graph construction must handle indirect cycles across corpus_change event chains. Runtime depth counter must be propagated through trigger chain.
