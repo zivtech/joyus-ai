@@ -1,13 +1,16 @@
 ---
 work_package_id: WP10
 title: Integration & Validation
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: main
+base_commit: 31a79e98c335b7afb4072e860de05aa3331c3821
+created_at: '2026-03-16T19:16:01.378024+00:00'
 subtasks: [T055, T056, T057, T058, T059, T060]
 phase: Phase G - Integration
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "81465"
 review_status: ''
 reviewed_by: ''
 history:
