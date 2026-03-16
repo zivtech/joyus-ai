@@ -184,12 +184,12 @@ Implement Express routes for pipeline management, MCP tool definitions, tenant-s
 Build metrics aggregation, quality signal emission, analytics API routes, and analytics MCP tool.
 
 **Subtasks**:
-- [ ] T049: Implement MetricsAggregator — compute per-pipeline metrics from execution history (`src/pipelines/analytics/aggregator.ts`)
-- [ ] T050: Implement materialized metrics refresh on execution completion events
-- [ ] T051: Implement QualitySignalEmitter — rejection rate monitoring and governance signal emission (`src/pipelines/analytics/quality-signals.ts`)
-- [ ] T052: Add analytics Express routes and MCP tool (`pipeline_analytics`)
-- [ ] T053: Create analytics barrel export (`src/pipelines/analytics/index.ts`)
-- [ ] T054: Unit tests for aggregator and quality signals (`tests/pipelines/analytics/`)
+- [x] T049: Implement MetricsAggregator — compute per-pipeline metrics from execution history (`src/pipelines/analytics/aggregator.ts`)
+- [x] T050: Implement materialized metrics refresh on execution completion events
+- [x] T051: Implement QualitySignalEmitter — rejection rate monitoring and governance signal emission (`src/pipelines/analytics/quality-signals.ts`)
+- [x] T052: Add analytics Express routes and MCP tool (`pipeline_analytics`)
+- [x] T053: Create analytics barrel export (`src/pipelines/analytics/index.ts`)
+- [x] T054: Unit tests for aggregator and quality signals (`tests/pipelines/analytics/`)
 
 **Parallel opportunities**: T049-T050 (aggregator) and T051 (quality signals) are independent.
 **Risks**: p95 computation requires sorting execution durations — must handle efficiently. Quality signal threshold (>30% rejection over 10 executions) must be configurable.
