@@ -1,0 +1,79 @@
+{
+  "name": "Corpus Update → Profile Regeneration",
+  "description": "Triggers profile regeneration whenever a corpus source is updated, then runs a fidelity check and notifies the configured channel.",
+  "category": "profile-management",
+  "assumptions": [
+    "Profile IDs are stable identifiers known at instantiation time.",
+    "The notification channel is configured and reachable.",
+    "Fidelity thresholds are set appropriate to the use case."
+  ],
+  "definition": {
+    "triggerType": "corpus_change",
+    "triggerConfig": {
+      "type": "corpus_change",
+      "corpusFilter": {}
+    },
+    "steps": [
+      {
+        "name": "Regenerate profiles",
+        "stepType": "profile_generation",
+        "config": {
+          "type": "profile_generation",
+          "profileIds": "{{profileIds}}",
+          "forceRegenerate": true
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Fidelity check",
+        "stepType": "fidelity_check",
+        "config": {
+          "type": "fidelity_check",
+          "thresholds": {
+            "minScore": "{{minFidelityScore}}"
+          }
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Notify on completion",
+        "stepType": "notification",
+        "config": {
+          "type": "notification",
+          "channel": "{{notificationChannel}}",
+          "message": "Profile regeneration complete for corpus update. Fidelity threshold: {{minFidelityScore}}."
+        },
+        "inputRefs": []
+      }
+    ],
+    "retryPolicy": {
+      "maxRetries": 3,
+      "baseDelayMs": 30000,
+      "maxDelayMs": 300000,
+      "backoffMultiplier": 2
+    },
+    "concurrencyPolicy": "skip_if_running"
+  },
+  "parameters": [
+    {
+      "name": "profileIds",
+      "type": "array",
+      "required": true,
+      "description": "List of profile IDs to regenerate when the corpus is updated."
+    },
+    {
+      "name": "minFidelityScore",
+      "type": "number",
+      "required": false,
+      "default": 0.75,
+      "description": "Minimum acceptable fidelity score (0–1). Defaults to 0.75."
+    },
+    {
+      "name": "notificationChannel",
+      "type": "string",
+      "required": false,
+      "default": "email",
+      "description": "Notification channel: email, slack, or webhook."
+    }
+  ]
+}

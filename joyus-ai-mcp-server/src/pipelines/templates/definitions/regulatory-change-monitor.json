@@ -1,0 +1,116 @@
+{
+  "name": "Regulatory Change Monitor",
+  "description": "Runs on a schedule to query a designated source for regulatory updates, then generates a summary and routes it through a review gate before notifying stakeholders.",
+  "category": "compliance",
+  "assumptions": [
+    "A source ID pointing to a regulatory document feed or database is provided.",
+    "A reviewer is assigned and available within the review gate timeout.",
+    "The content generation prompt is appropriate for summarising regulatory changes."
+  ],
+  "definition": {
+    "triggerType": "schedule_tick",
+    "triggerConfig": {
+      "type": "schedule_tick",
+      "cronExpression": "{{cronExpression}}",
+      "timezone": "{{timezone}}"
+    },
+    "steps": [
+      {
+        "name": "Query regulatory source",
+        "stepType": "source_query",
+        "config": {
+          "type": "source_query",
+          "query": "{{sourceQuery}}",
+          "sourceIds": ["{{sourceId}}"],
+          "maxResults": 20
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Generate change summary",
+        "stepType": "content_generation",
+        "config": {
+          "type": "content_generation",
+          "prompt": "{{summaryPrompt}}",
+          "profileId": "{{profileId}}"
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Human review gate",
+        "stepType": "review_gate",
+        "config": {
+          "type": "review_gate",
+          "artifactSelection": "all_preceding"
+        },
+        "inputRefs": []
+      },
+      {
+        "name": "Notify stakeholders",
+        "stepType": "notification",
+        "config": {
+          "type": "notification",
+          "channel": "{{notificationChannel}}",
+          "message": "Regulatory change summary is ready for distribution."
+        },
+        "inputRefs": []
+      }
+    ],
+    "retryPolicy": {
+      "maxRetries": 2,
+      "baseDelayMs": 60000,
+      "maxDelayMs": 300000,
+      "backoffMultiplier": 2
+    },
+    "concurrencyPolicy": "skip_if_running",
+    "reviewGateTimeoutHours": 48
+  },
+  "parameters": [
+    {
+      "name": "cronExpression",
+      "type": "string",
+      "required": true,
+      "description": "Cron expression defining the monitoring schedule (e.g. '0 9 * * 1' for weekly Monday 9am)."
+    },
+    {
+      "name": "timezone",
+      "type": "string",
+      "required": false,
+      "default": "UTC",
+      "description": "IANA timezone for the cron schedule."
+    },
+    {
+      "name": "sourceId",
+      "type": "string",
+      "required": true,
+      "description": "ID of the content source to query for regulatory updates."
+    },
+    {
+      "name": "sourceQuery",
+      "type": "string",
+      "required": false,
+      "default": "recent regulatory changes",
+      "description": "Search query to run against the regulatory source."
+    },
+    {
+      "name": "profileId",
+      "type": "string",
+      "required": true,
+      "description": "Profile ID used to generate the change summary."
+    },
+    {
+      "name": "summaryPrompt",
+      "type": "string",
+      "required": false,
+      "default": "Summarise the most significant regulatory changes found in the source material. Focus on obligations, deadlines, and compliance implications.",
+      "description": "Prompt used for content generation of the regulatory summary."
+    },
+    {
+      "name": "notificationChannel",
+      "type": "string",
+      "required": false,
+      "default": "email",
+      "description": "Notification channel after review approval: email, slack, or webhook."
+    }
+  ]
+}
