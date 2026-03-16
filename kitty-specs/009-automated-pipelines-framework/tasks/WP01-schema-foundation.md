@@ -1,11 +1,13 @@
 ---
 work_package_id: "WP01"
 title: "Schema & Foundation"
-lane: "doing"
+lane: "planned"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
 agent: "claude-opus"
 shell_pid: "58896"
+review_status: "has_feedback"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
   - date: "2026-03-14"
     action: "created"
@@ -676,3 +678,4 @@ CREATE TABLE "pipelines"."pipelines" (
 ## Activity Log
 
 - 2026-03-16T14:58:57Z – claude-opus – shell_pid=58896 – lane=doing – Started review via workflow command
+- 2026-03-16T15:17:29Z – claude-opus – shell_pid=58896 – lane=planned – Moved to planned
