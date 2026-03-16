@@ -24,6 +24,7 @@ import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
+import { createEventAdapterRouter } from './event-adapter/index.js';
 import { createAllFunctions, inngest } from './inngest/index.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
@@ -280,6 +281,9 @@ try {
 
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
+
+// Event adapter routes (webhooks, schedules, automation)
+app.use('/v1/events', createEventAdapterRouter());
 
 // MCP endpoint with Bearer token auth
 app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
