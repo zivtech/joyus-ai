@@ -205,12 +205,12 @@ Build metrics aggregation, quality signal emission, analytics API routes, and an
 End-to-end integration tests, review gate flow tests, scheduled execution tests, analytics accuracy tests, tenant isolation tests, and full validation sweep.
 
 **Subtasks**:
-- [ ] T055: Integration test — end-to-end pipeline execution (corpus-change → steps → completion)
-- [ ] T056: Integration test — review gate flow (pause → decide → resume, including partial approval)
-- [ ] T057: Integration test — scheduled pipeline execution with overlap detection
-- [ ] T058: Integration test — analytics accuracy (20 executions → verify aggregate metrics)
-- [ ] T059: Integration test — tenant isolation (cross-tenant access denied on all paths)
-- [ ] T060: Validation sweep — `npm run validate` (typecheck + lint + test), zero regressions
+- [x] T055: Integration test — end-to-end pipeline execution (corpus-change → steps → completion)
+- [x] T056: Integration test — review gate flow (pause → decide → resume, including partial approval)
+- [x] T057: Integration test — scheduled pipeline execution with overlap detection
+- [x] T058: Integration test — analytics accuracy (20 executions → verify aggregate metrics)
+- [x] T059: Integration test — tenant isolation (cross-tenant access denied on all paths)
+- [x] T060: Validation sweep — `npm run validate` (typecheck + lint + test), zero regressions
 
 **Parallel opportunities**: T055-T059 are independent test suites.
 **Risks**: Integration tests need database fixtures, mock platform services (profile engine, content infrastructure), and clock manipulation for schedule tests. Must not interfere with existing tests.
