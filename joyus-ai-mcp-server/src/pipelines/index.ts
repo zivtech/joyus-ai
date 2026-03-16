@@ -17,3 +17,4 @@ export {
   type PipelineModuleConfig,
   type PipelineModule,
 } from './init.js';
+export * from './analytics/index.js';
