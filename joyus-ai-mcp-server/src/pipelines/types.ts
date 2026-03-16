@@ -30,6 +30,8 @@ export type ConcurrencyPolicy = 'skip_if_running' | 'queue' | 'allow_concurrent'
 
 export type ReviewDecisionStatus = 'pending' | 'approved' | 'rejected';
 
+export type QualitySignalSeverity = 'info' | 'warning' | 'critical';
+
 // ============================================================
 // INTERFACES — JSONB column shapes
 // ============================================================
