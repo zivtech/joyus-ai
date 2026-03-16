@@ -103,12 +103,12 @@ Build the core execution engine: PipelineExecutor poll loop, StepRunner with ret
 Implement the PipelineStepHandler interface and all 6 built-in step type handlers that integrate with platform capabilities (Spec 005, 006, 008).
 
 **Subtasks**:
-- [ ] T024: Define PipelineStepHandler interface and StepResult type (`src/pipelines/steps/interface.ts`)
-- [ ] T025: Implement profile-generation step handler (`src/pipelines/steps/profile-generation.ts`)
-- [ ] T026: Implement fidelity-check step handler (`src/pipelines/steps/fidelity-check.ts`)
-- [ ] T027: Implement content-generation step handler (`src/pipelines/steps/content-generation.ts`)
-- [ ] T028: Implement source-query and notification step handlers (`src/pipelines/steps/source-query.ts`, `src/pipelines/steps/notification.ts`)
-- [ ] T029: Create step type registry and barrel export (`src/pipelines/steps/registry.ts`, `src/pipelines/steps/index.ts`)
+- [x] T024: Define PipelineStepHandler interface and StepResult type (`src/pipelines/steps/interface.ts`)
+- [x] T025: Implement profile-generation step handler (`src/pipelines/steps/profile-generation.ts`)
+- [x] T026: Implement fidelity-check step handler (`src/pipelines/steps/fidelity-check.ts`)
+- [x] T027: Implement content-generation step handler (`src/pipelines/steps/content-generation.ts`)
+- [x] T028: Implement source-query and notification step handlers (`src/pipelines/steps/source-query.ts`, `src/pipelines/steps/notification.ts`)
+- [x] T029: Create step type registry and barrel export (`src/pipelines/steps/registry.ts`, `src/pipelines/steps/index.ts`)
 
 **Parallel opportunities**: T025-T028 are independent step handlers implementing the same interface.
 **Risks**: Step handlers depend on platform capabilities (Spec 005/006/008) that may not be fully available. Use interface-based dependency injection; ship with mock implementations for unavailable services.
