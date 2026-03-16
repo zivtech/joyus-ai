@@ -1,13 +1,16 @@
 ---
 work_package_id: WP06
 title: Review Gates
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: main
+base_commit: 2faf56cb1a73cd0f0bd607f652f2ad5ca78a6df0
+created_at: '2026-03-16T18:19:05.821929+00:00'
 subtasks: [T030, T031, T032, T033, T034, T035]
 phase: Phase D - Review Gates & Scheduling
 assignee: ''
 agent: ''
-shell_pid: ''
+shell_pid: "35709"
 review_status: ''
 reviewed_by: ''
 history:
