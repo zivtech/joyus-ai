@@ -1,469 +1,244 @@
 ---
 work_package_id: WP02
 title: Event Bus
-lane: "done"
-dependencies: [WP01]
-base_branch: 009-automated-pipelines-framework-WP01
-base_commit: 5df73eb05e3ceb65f97fdc2b2dc81790126c74e3
-created_at: '2026-03-16T16:55:37.698289+00:00'
+lane: planned
+dependencies: []
 subtasks: [T008, T009, T010, T011]
-shell_pid: "84181"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+phase: Phase B - Event & Trigger Layer
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-- date: '2026-03-14'
-  action: created
-  agent: claude-opus
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP02: Event Bus
 
-**Implementation command**: `spec-kitty implement WP02 --base WP01`
-**Target repo**: `joyus-ai`
-**Dependencies**: WP01 (Schema & Foundation)
-**Priority**: P1 | Can run in parallel with WP03
-
 ## Objective
 
-Build the event bus abstraction and its PostgreSQL LISTEN/NOTIFY implementation. Events are the nervous system of the pipeline engine: corpus-change events from Spec 006, manual trigger requests, and schedule firings all flow through the bus. Delivery is guaranteed via the `trigger_events` queue table — NOTIFY wakes up listeners, but the queue is the source of truth.
+Build the event bus abstraction layer and its PostgreSQL LISTEN/NOTIFY implementation. The event bus provides delivery-guaranteed event publishing and subscription, using the `trigger_events` table as the source of truth and NOTIFY as a low-latency wakeup signal for the executor's poll loop.
+
+## Implementation Command
+
+```bash
+spec-kitty implement WP02 --base WP01
+```
 
 ## Context
 
-The platform already uses PostgreSQL (Drizzle + pg pool) for all persistence. Rather than introducing a new message broker (Redis, RabbitMQ), the event bus uses PostgreSQL's native LISTEN/NOTIFY for low-latency wake-ups combined with the `trigger_events` table as a durable queue. This is the same pattern used by many production Node.js + Postgres systems.
+- **Spec**: `kitty-specs/009-automated-pipelines-framework/spec.md` (FR-001: event-driven triggers)
+- **Research**: `kitty-specs/009-automated-pipelines-framework/research.md` (R1: Event Bus Patterns)
+- **Data Model**: `kitty-specs/009-automated-pipelines-framework/data-model.md` (TriggerEvent table)
 
-**Key constraint**: `LISTEN` requires a dedicated, persistent `pg.Client` — it cannot use a connection from the pool because the pool may recycle connections, killing the listener. The `PgNotifyBus` must manage its own dedicated client with reconnect logic.
+The event bus is the pipeline framework's primary event delivery mechanism. It sits between trigger handlers (which detect events like corpus changes) and the pipeline executor (which picks up events and runs pipelines). The `EventBus` interface abstracts the transport so it can be swapped to Redis Streams or RabbitMQ in the future without changing any consumer code.
 
-**Key constraint**: `NOTIFY` payloads are limited to 8000 bytes. The bus passes only the event ID in the NOTIFY payload, not the full event. Consumers query the `trigger_events` table to fetch the full payload.
-
-WP02 runs in parallel with WP03 (Trigger System). Both depend only on WP01.
-
----
-
-## Subtasks
-
-### T008: Define EventBus interface and EventEnvelope types (`src/pipelines/event-bus/interface.ts`)
-
-**Purpose**: Establish the contract that all event bus implementations must satisfy so that tests can use an in-memory stub and production uses `PgNotifyBus`.
-
-**Steps**:
-1. Create `src/pipelines/event-bus/interface.ts`
-2. Define `EventEnvelope` — the typed container for all events passing through the bus
-3. Define `EventBus` interface with `publish`, `subscribe`, `unsubscribe`, and `close`
-4. Define `EventHandler` callback type
-
-```typescript
-// src/pipelines/event-bus/interface.ts
-import type { TriggerType } from '../types';
-
-export interface EventEnvelope {
-  id: string;           // UUID — matches trigger_events.id
-  tenantId: string;     // UUID
-  eventType: TriggerType;
-  payload: Record<string, unknown>;
-  createdAt: Date;
-}
-
-export type EventHandler = (event: EventEnvelope) => Promise<void>;
-
-export interface EventBus {
-  /**
-   * Publish an event. Persists to trigger_events table and sends NOTIFY.
-   * Returns the persisted event ID.
-   */
-  publish(
-    tenantId: string,
-    eventType: TriggerType,
-    payload: Record<string, unknown>,
-  ): Promise<string>;
-
-  /**
-   * Subscribe to all events matching the given type.
-   * Handler is called with the full EventEnvelope after DB fetch.
-   * Returns a subscription ID for unsubscribing.
-   */
-  subscribe(eventType: TriggerType, handler: EventHandler): string;
-
-  /**
-   * Remove a subscription by ID.
-   */
-  unsubscribe(subscriptionId: string): void;
-
-  /**
-   * Gracefully shut down the bus (close LISTEN connection, flush pending).
-   */
-  close(): Promise<void>;
-}
-
-/**
- * In-memory event bus for testing. Calls handlers synchronously in-process.
- */
-export class InMemoryEventBus implements EventBus {
-  private handlers = new Map<TriggerType, Map<string, EventHandler>>();
-  private counter = 0;
-
-  async publish(tenantId: string, eventType: TriggerType, payload: Record<string, unknown>): Promise<string> {
-    const id = `test-event-${++this.counter}`;
-    const envelope: EventEnvelope = { id, tenantId, eventType, payload, createdAt: new Date() };
-    const subs = this.handlers.get(eventType);
-    if (subs) {
-      for (const handler of subs.values()) {
-        await handler(envelope);
-      }
-    }
-    return id;
-  }
-
-  subscribe(eventType: TriggerType, handler: EventHandler): string {
-    if (!this.handlers.has(eventType)) this.handlers.set(eventType, new Map());
-    const id = `sub-${++this.counter}`;
-    this.handlers.get(eventType)!.set(id, handler);
-    return id;
-  }
-
-  unsubscribe(subscriptionId: string): void {
-    for (const subs of this.handlers.values()) {
-      subs.delete(subscriptionId);
-    }
-  }
-
-  async close(): Promise<void> {
-    this.handlers.clear();
-  }
-}
-```
-
-**Files**:
-- `src/pipelines/event-bus/interface.ts` (new, ~65 lines)
-
-**Validation**:
-- [ ] `tsc --noEmit` passes on `interface.ts`
-- [ ] `InMemoryEventBus` implements `EventBus` without TypeScript errors
-- [ ] `EventEnvelope.id` is a `string`, not `uuid` Drizzle type — this is plain TypeScript
-
-**Edge Cases**:
-- `EventHandler` returns `Promise<void>`. Bus implementations must not swallow errors — use `try/catch` around handler invocation and emit an error event or log.
+**Key design decisions from research.md (R1)**:
+- Events are persisted to `trigger_events` table BEFORE NOTIFY is sent (delivery guarantee)
+- NOTIFY is an optimization — reduces poll latency but is not required for correctness
+- Poll loop is the primary consumption mechanism (handles NOTIFY loss on connection drop)
+- LISTEN requires a dedicated `pg.Client` (not from the connection pool)
+- NOTIFY payload is limited to 8000 bytes — pass only the event ID, not the full payload
 
 ---
 
-### T009: Implement PgNotifyBus (`src/pipelines/event-bus/pg-notify-bus.ts`)
+## Subtask T008: Define EventBus Interface and EventEnvelope Types
 
-**Purpose**: Production event bus using PostgreSQL LISTEN/NOTIFY for wake-up and `trigger_events` table for durable queuing. Handles reconnection on connection loss.
+**Purpose**: Define the transport-agnostic event bus contract that all implementations must fulfill.
 
 **Steps**:
-1. Create `src/pipelines/event-bus/pg-notify-bus.ts`
-2. On construction, acquire a dedicated `pg.Client` (not from pool) and call `LISTEN pipelines_events`
-3. On `publish`: INSERT into `trigger_events`, then send `NOTIFY pipelines_events, '<event_id>'`
-4. On `notification` event from the pg client: fetch the full event from `trigger_events`, dispatch to matching handlers, mark `processed_at`
-5. Implement reconnect: on client `error` or `end`, wait 2s and re-establish the LISTEN connection
+1. Create `joyus-ai-mcp-server/src/pipelines/event-bus/interface.ts`
+2. Define the `EventBus` interface:
+   ```typescript
+   export interface EventBus {
+     /** Publish an event. MUST persist before returning (delivery guarantee). */
+     publish(event: EventEnvelope): Promise<string>; // returns event ID
 
-```typescript
-// src/pipelines/event-bus/pg-notify-bus.ts
-import { Client } from 'pg';
-import { eq, isNull } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { triggerEvents } from '../schema';
-import type { EventBus, EventEnvelope, EventHandler } from './interface';
-import type { TriggerType } from '../types';
+     /** Subscribe to events of a given type. */
+     subscribe(eventType: string, handler: EventHandler): void;
 
-const NOTIFY_CHANNEL = 'pipelines_events';
-const RECONNECT_DELAY_MS = 2000;
+     /** Remove a subscription. */
+     unsubscribe(eventType: string): void;
 
-export class PgNotifyBus implements EventBus {
-  private handlers = new Map<TriggerType, Map<string, EventHandler>>();
-  private listenClient: Client | null = null;
-  private subscriptionCounter = 0;
-  private closed = false;
+     /** Start listening. Call after all subscriptions are registered. */
+     start(): Promise<void>;
 
-  constructor(
-    private readonly db: NodePgDatabase<Record<string, unknown>>,
-    private readonly connectionString: string,
-  ) {}
-
-  async start(): Promise<void> {
-    await this.connect();
-  }
-
-  private async connect(): Promise<void> {
-    if (this.closed) return;
-    const client = new Client({ connectionString: this.connectionString });
-    client.on('error', (err) => {
-      console.error('[PgNotifyBus] LISTEN client error:', err.message);
-      this.scheduleReconnect();
-    });
-    client.on('end', () => {
-      if (!this.closed) this.scheduleReconnect();
-    });
-    client.on('notification', (msg) => {
-      if (msg.channel === NOTIFY_CHANNEL && msg.payload) {
-        void this.handleNotification(msg.payload);
-      }
-    });
-    await client.connect();
-    await client.query(`LISTEN ${NOTIFY_CHANNEL}`);
-    this.listenClient = client;
-  }
-
-  private scheduleReconnect(): void {
-    setTimeout(() => void this.connect(), RECONNECT_DELAY_MS);
-  }
-
-  private async handleNotification(eventId: string): Promise<void> {
-    // Fetch the full event from the DB queue
-    const rows = await this.db
-      .select()
-      .from(triggerEvents)
-      .where(eq(triggerEvents.id, eventId));
-
-    if (rows.length === 0) return;
-    const row = rows[0];
-
-    // Mark as processed first (at-least-once delivery — idempotent handlers required)
-    await this.db
-      .update(triggerEvents)
-      .set({ processedAt: new Date() })
-      .where(eq(triggerEvents.id, eventId));
-
-    const envelope: EventEnvelope = {
-      id: row.id,
-      tenantId: row.tenantId,
-      eventType: row.eventType as TriggerType,
-      payload: row.payload as Record<string, unknown>,
-      createdAt: row.createdAt,
-    };
-
-    const subs = this.handlers.get(envelope.eventType);
-    if (!subs) return;
-
-    for (const handler of subs.values()) {
-      try {
-        await handler(envelope);
-      } catch (err) {
-        console.error('[PgNotifyBus] Handler error for event', eventId, err);
-      }
-    }
-  }
-
-  async publish(
-    tenantId: string,
-    eventType: TriggerType,
-    payload: Record<string, unknown>,
-  ): Promise<string> {
-    const [row] = await this.db
-      .insert(triggerEvents)
-      .values({ tenantId, eventType, payload })
-      .returning({ id: triggerEvents.id });
-
-    // NOTIFY payload is just the event ID — stays well under 8000-byte limit
-    await this.db.execute(
-      sql`SELECT pg_notify(${NOTIFY_CHANNEL}, ${row.id})`
-    );
-
-    return row.id;
-  }
-
-  subscribe(eventType: TriggerType, handler: EventHandler): string {
-    if (!this.handlers.has(eventType)) this.handlers.set(eventType, new Map());
-    const id = `sub-${++this.subscriptionCounter}`;
-    this.handlers.get(eventType)!.set(id, handler);
-    return id;
-  }
-
-  unsubscribe(subscriptionId: string): void {
-    for (const subs of this.handlers.values()) {
-      subs.delete(subscriptionId);
-    }
-  }
-
-  async close(): Promise<void> {
-    this.closed = true;
-    if (this.listenClient) {
-      await this.listenClient.end();
-      this.listenClient = null;
-    }
-  }
-}
-```
+     /** Stop listening and clean up resources. */
+     stop(): Promise<void>;
+   }
+   ```
+3. Import and re-export `EventEnvelope` from `../types.js` (already defined in T002)
+4. Define `EventHandler` type:
+   ```typescript
+   export type EventHandler = (event: EventEnvelope) => Promise<void>;
+   ```
+5. Define `EventBusConfig` interface:
+   ```typescript
+   export interface EventBusConfig {
+     pollIntervalMs?: number;      // Default: 30000 (30s)
+     staleEventThresholdMs?: number; // Default: 10000 (10s) — events older than this are picked up by poll
+     channelName?: string;          // Default: 'pipeline_events'
+   }
+   ```
 
 **Files**:
-- `src/pipelines/event-bus/pg-notify-bus.ts` (new, ~95 lines)
+- `joyus-ai-mcp-server/src/pipelines/event-bus/interface.ts` (new, ~50 lines)
 
 **Validation**:
-- [ ] `tsc --noEmit` passes on `pg-notify-bus.ts`
-- [ ] `PgNotifyBus` implements `EventBus` interface without TypeScript errors
-- [ ] `LISTEN` call uses the `NOTIFY_CHANNEL` constant, not a hardcoded string
-- [ ] `publish` inserts into `trigger_events` before sending `pg_notify`
-- [ ] `handleNotification` marks `processed_at` before dispatching to handlers
-
-**Edge Cases**:
-- `pg.Client` vs pool: The LISTEN client must be a standalone `Client` — using a pool connection will break because the pool recycles connections. Do not use `db` (the Drizzle pool) for LISTEN.
-- At-least-once delivery: if the server restarts between NOTIFY and `handleNotification`, the event stays in `trigger_events` with `processed_at = null`. The executor's poll loop (WP04) recovers unprocessed events on startup.
-- The `sql` template tag for `pg_notify` must be imported from `drizzle-orm`.
+- [ ] `npm run typecheck` passes
+- [ ] Interface is importable from `../event-bus/interface.js`
 
 ---
 
-### T010: Create bus factory and barrel export (`src/pipelines/event-bus/index.ts`)
+## Subtask T009: Implement PgNotifyBus
 
-**Purpose**: Provide a factory function that returns the correct `EventBus` implementation based on environment, and re-export all public types.
+**Purpose**: Implement the EventBus interface using PostgreSQL LISTEN/NOTIFY with the trigger_events table as the durable queue.
 
 **Steps**:
-1. Create `src/pipelines/event-bus/index.ts`
-2. Export `createEventBus` factory: returns `PgNotifyBus` in production, `InMemoryEventBus` in test
-3. Re-export `EventBus`, `EventEnvelope`, `EventHandler`, `InMemoryEventBus`
+1. Create `joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts`
+2. Implement `PgNotifyBus` class implementing `EventBus`:
+3. **Constructor**: Accept a `pg.Pool` and optional `EventBusConfig`. Store handler map (`Map<string, EventHandler>`).
+4. **publish(event)**:
+   - INSERT the event into the `trigger_events` table with status `pending` using the Drizzle client
+   - After successful insert, execute `NOTIFY pipeline_events, '<event_id>'` via raw SQL
+   - Return the event ID
+   - If INSERT fails, throw (caller handles)
+   - If NOTIFY fails after INSERT succeeds, log warning but don't throw (event is persisted, poll will pick it up)
+5. **subscribe(eventType, handler)**:
+   - Store the handler in the internal map keyed by eventType
+6. **unsubscribe(eventType)**:
+   - Remove the handler from the internal map
+7. **start()**:
+   - Acquire a dedicated `pg.Client` from the pool (call `pool.connect()` — this client is held for the lifetime of the bus)
+   - Execute `LISTEN pipeline_events` on the dedicated client
+   - Register notification handler: `client.on('notification', async (msg) => { ... })`
+     - On notification: extract event_id from `msg.payload`
+     - Query `trigger_events` by ID
+     - If event exists and status is `pending`: update status to `acknowledged`, update `acknowledgedAt`
+     - Look up handler by `event.eventType`, call it
+     - After handler completes: update status to `processed`, update `processedAt`
+     - On handler error: update status to `failed`, log error
+   - Start poll loop (`setInterval`):
+     - Query `trigger_events` WHERE `status = 'pending'` AND `receivedAt < now() - staleEventThresholdMs` ORDER BY `receivedAt` ASC LIMIT 10
+     - Process each event same as notification handler above
+     - This catches events where NOTIFY was lost
+8. **stop()**:
+   - Clear the poll interval
+   - Execute `UNLISTEN pipeline_events` on the dedicated client
+   - Release the dedicated client back to the pool
+   - Clear the handler map
 
-```typescript
-// src/pipelines/event-bus/index.ts
-export type { EventBus, EventEnvelope, EventHandler } from './interface';
-export { InMemoryEventBus } from './interface';
-export { PgNotifyBus } from './pg-notify-bus';
-
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { PgNotifyBus } from './pg-notify-bus';
-import { InMemoryEventBus } from './interface';
-import type { EventBus } from './interface';
-
-export function createEventBus(
-  db: NodePgDatabase<Record<string, unknown>>,
-  connectionString: string,
-  options?: { useInMemory?: boolean },
-): EventBus {
-  if (options?.useInMemory || process.env.NODE_ENV === 'test') {
-    return new InMemoryEventBus();
-  }
-  const bus = new PgNotifyBus(db, connectionString);
-  // Caller is responsible for calling bus.start() before use
-  return bus;
-}
-```
+**Important implementation details**:
+- The dedicated LISTEN client must handle disconnection: on `error` event, attempt to reconnect and re-LISTEN
+- NOTIFY payload is just the event ID string (not JSON) — keeps under 8000 byte limit
+- Poll loop and NOTIFY handler must not process the same event twice — the `status = 'pending'` check in the WHERE clause prevents this (once acknowledged, it won't be polled)
+- Use a simple mutex/flag to prevent concurrent poll executions if a poll cycle takes longer than the interval
 
 **Files**:
-- `src/pipelines/event-bus/index.ts` (new, ~25 lines)
+- `joyus-ai-mcp-server/src/pipelines/event-bus/pg-notify-bus.ts` (new, ~200 lines)
 
 **Validation**:
-- [ ] `createEventBus(db, connStr, { useInMemory: true })` returns `InMemoryEventBus` instance
-- [ ] `createEventBus(db, connStr)` returns `PgNotifyBus` when `NODE_ENV !== 'test'`
-- [ ] All types re-exported from `index.ts` are accessible via `import { EventBus } from '../event-bus'`
-
-**Edge Cases**:
-- `createEventBus` returns `EventBus` interface, not concrete type. Callers should not cast to `PgNotifyBus` — if they need to call `.start()`, accept it as `PgNotifyBus` explicitly or add `start()` to the `EventBus` interface.
+- [ ] `npm run typecheck` passes
+- [ ] publish() persists event to trigger_events table before NOTIFY
+- [ ] start() acquires dedicated client and begins LISTEN
+- [ ] Notification handler processes events and updates status
+- [ ] Poll loop picks up stale pending events
+- [ ] stop() cleans up resources properly
 
 ---
 
-### T011: Unit tests for PgNotifyBus (`tests/pipelines/event-bus/pg-notify-bus.test.ts`)
+## Subtask T010: Create Bus Factory and Barrel Export
 
-**Purpose**: Verify `PgNotifyBus` behavior — publish persists to DB, subscribe/unsubscribe works, handler is called after notification, handler errors do not crash the bus.
+**Purpose**: Provide a factory function for creating the event bus and a barrel export for the module.
 
 **Steps**:
-1. Create `tests/pipelines/event-bus/pg-notify-bus.test.ts`
-2. Use `InMemoryEventBus` for the majority of tests (no DB required)
-3. For DB-dependent tests, use the project's test database setup (check existing integration tests for the pattern)
-4. Test: `publish` returns a string ID
-5. Test: `subscribe` adds a handler, `unsubscribe` removes it
-6. Test: published event calls matching handler
-7. Test: event type mismatch — handler not called for wrong event type
-8. Test: handler throwing does not prevent other handlers from being called
-9. Test: `InMemoryEventBus.close()` clears all subscriptions
+1. Create `joyus-ai-mcp-server/src/pipelines/event-bus/index.ts`
+2. Implement factory function:
+   ```typescript
+   import { Pool } from 'pg';
+   import { EventBus, EventBusConfig } from './interface.js';
+   import { PgNotifyBus } from './pg-notify-bus.js';
 
-```typescript
-// tests/pipelines/event-bus/pg-notify-bus.test.ts
-import { describe, it, expect, vi } from 'vitest';
-import { InMemoryEventBus } from '../../../src/pipelines/event-bus';
-import type { EventEnvelope } from '../../../src/pipelines/event-bus';
-
-describe('InMemoryEventBus', () => {
-  it('publish returns an event id', async () => {
-    const bus = new InMemoryEventBus();
-    const id = await bus.publish('tenant-1', 'manual', {});
-    expect(typeof id).toBe('string');
-    expect(id.length).toBeGreaterThan(0);
-  });
-
-  it('calls subscribed handler on matching event type', async () => {
-    const bus = new InMemoryEventBus();
-    const handler = vi.fn().mockResolvedValue(undefined);
-    bus.subscribe('manual', handler);
-    await bus.publish('tenant-1', 'manual', { key: 'value' });
-    expect(handler).toHaveBeenCalledOnce();
-    const envelope = handler.mock.calls[0][0] as EventEnvelope;
-    expect(envelope.tenantId).toBe('tenant-1');
-    expect(envelope.eventType).toBe('manual');
-    expect(envelope.payload).toEqual({ key: 'value' });
-  });
-
-  it('does not call handler for a different event type', async () => {
-    const bus = new InMemoryEventBus();
-    const handler = vi.fn().mockResolvedValue(undefined);
-    bus.subscribe('schedule', handler);
-    await bus.publish('tenant-1', 'manual', {});
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  it('unsubscribe removes the handler', async () => {
-    const bus = new InMemoryEventBus();
-    const handler = vi.fn().mockResolvedValue(undefined);
-    const subId = bus.subscribe('manual', handler);
-    bus.unsubscribe(subId);
-    await bus.publish('tenant-1', 'manual', {});
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  it('handler error does not prevent other handlers from being called', async () => {
-    const bus = new InMemoryEventBus();
-    const errorHandler = vi.fn().mockRejectedValue(new Error('boom'));
-    const okHandler = vi.fn().mockResolvedValue(undefined);
-    bus.subscribe('manual', errorHandler);
-    bus.subscribe('manual', okHandler);
-    // InMemoryEventBus does not catch errors — document this behavior in test
-    await expect(bus.publish('tenant-1', 'manual', {})).rejects.toThrow('boom');
-    // Note: PgNotifyBus wraps each handler in try/catch; InMemoryEventBus does not.
-    // This test documents the behavioral difference.
-  });
-
-  it('close clears all subscriptions', async () => {
-    const bus = new InMemoryEventBus();
-    const handler = vi.fn().mockResolvedValue(undefined);
-    bus.subscribe('manual', handler);
-    await bus.close();
-    await bus.publish('tenant-1', 'manual', {});
-    expect(handler).not.toHaveBeenCalled();
-  });
-});
-```
+   export function createEventBus(pool: Pool, config?: EventBusConfig): EventBus {
+     return new PgNotifyBus(pool, config);
+   }
+   ```
+3. Re-export all types from interface:
+   ```typescript
+   export type { EventBus, EventHandler, EventBusConfig } from './interface.js';
+   export { PgNotifyBus } from './pg-notify-bus.js';
+   ```
+4. Update `src/pipelines/index.ts` to export from event-bus:
+   ```typescript
+   export * from './event-bus/index.js';
+   ```
 
 **Files**:
-- `tests/pipelines/event-bus/pg-notify-bus.test.ts` (new, ~65 lines)
+- `joyus-ai-mcp-server/src/pipelines/event-bus/index.ts` (new, ~15 lines)
+- `joyus-ai-mcp-server/src/pipelines/index.ts` (modify — add event-bus export)
 
 **Validation**:
-- [ ] `npm test tests/pipelines/event-bus/` exits 0 with all tests passing
-- [ ] Tests cover: publish, subscribe, unsubscribe, type mismatch, close
-- [ ] No real database connection needed for unit tests — `InMemoryEventBus` only
+- [ ] `npm run typecheck` passes
+- [ ] `createEventBus` is importable from `../pipelines/index.js`
 
-**Edge Cases**:
-- The error-handler test documents a known behavioral difference between `InMemoryEventBus` (propagates errors) and `PgNotifyBus` (catches errors per handler). This asymmetry is intentional — tests use InMemoryEventBus for simplicity, production needs resilience.
-- If the project uses a global test database setup file (e.g., `tests/setup.ts`), import it in integration test files. Do not duplicate DB setup logic.
+---
+
+## Subtask T011: Unit Tests for PgNotifyBus
+
+**Purpose**: Verify event bus correctness: publish persists, notifications trigger handlers, poll loop catches stale events.
+
+**Steps**:
+1. Create `joyus-ai-mcp-server/tests/pipelines/event-bus/pg-notify-bus.test.ts`
+2. Test cases:
+   - **publish() persists event**: Call publish, verify trigger_events row exists with status `pending`
+   - **publish() returns event ID**: Verify returned ID matches the row in trigger_events
+   - **subscribe() registers handler**: Subscribe to 'corpus_change', publish a corpus_change event, verify handler is called with correct EventEnvelope
+   - **unsubscribe() removes handler**: Subscribe, unsubscribe, publish — verify handler is NOT called
+   - **poll loop picks up stale events**: Insert a trigger_event with status `pending` and old receivedAt timestamp, start the bus with a short poll interval, verify the event is processed
+   - **duplicate processing prevention**: Process an event via notification, verify poll loop does NOT reprocess it (status is no longer `pending`)
+   - **error handling**: Subscribe a handler that throws, publish an event — verify trigger_event status is updated to `failed`
+   - **stop() cleans up**: Start the bus, stop it, verify no more events are processed
+3. Use Vitest mocking for the pg.Pool and pg.Client — mock `pool.connect()`, `client.on('notification')`, `client.query()`
+4. For integration-style tests, mock the Drizzle db operations (insert, update, query on trigger_events table)
+
+**Files**:
+- `joyus-ai-mcp-server/tests/pipelines/event-bus/pg-notify-bus.test.ts` (new, ~200 lines)
+
+**Validation**:
+- [ ] All tests pass via `npm run test`
+- [ ] Tests cover publish, subscribe, unsubscribe, poll, error handling, and cleanup
+- [ ] No flaky timing-dependent tests (use fake timers for poll interval)
 
 ---
 
 ## Definition of Done
 
-- [ ] `src/pipelines/event-bus/interface.ts` — `EventBus`, `EventEnvelope`, `EventHandler`, `InMemoryEventBus`
-- [ ] `src/pipelines/event-bus/pg-notify-bus.ts` — `PgNotifyBus` with LISTEN/NOTIFY + queue table
-- [ ] `src/pipelines/event-bus/index.ts` — factory and barrel exports
-- [ ] `tests/pipelines/event-bus/pg-notify-bus.test.ts` — unit tests passing
-- [ ] `npm run typecheck` exits 0
-- [ ] `npm test` exits 0 with no regressions
+- [ ] `EventBus` interface defined with publish, subscribe, unsubscribe, start, stop
+- [ ] `PgNotifyBus` implements EventBus using PostgreSQL LISTEN/NOTIFY
+- [ ] Events are persisted to trigger_events table before NOTIFY (delivery guarantee)
+- [ ] Poll loop catches events where NOTIFY was lost
+- [ ] Factory function and barrel exports in place
+- [ ] Unit tests cover all paths
+- [ ] `npm run validate` passes with zero errors
 
 ## Risks
 
-- **LISTEN connection loss**: If the PostgreSQL connection drops (network glitch, server restart), NOTIFY events will be missed. The recovery path is the poll loop in WP04 scanning `trigger_events WHERE processed_at IS NULL`. The reconnect logic in `PgNotifyBus` covers transient failures.
-- **8000-byte NOTIFY limit**: Passing only the event ID in the NOTIFY payload (not the full event) is the correct pattern. If someone changes `publish` to pass the full payload, large events will silently truncate.
-- **pg vs pg-pool**: Using `pg.Client` directly for LISTEN means the developer must manage connection lifecycle. Ensure `close()` is called during graceful shutdown to avoid hanging processes.
+- **Dedicated LISTEN client**: Must be held for the bus lifetime. If the pool is exhausted, this client reduces available connections by 1. Mitigation: ensure pool `max` is at least 2 higher than expected concurrent queries.
+- **NOTIFY payload size**: Limited to 8000 bytes. Mitigation: only send event ID in the NOTIFY payload, never the full event data.
+- **Poll loop timing**: If poll interval is too short, it wastes database queries. If too long, stale events sit unprocessed. Default 30s is a reasonable compromise.
 
 ## Reviewer Guidance
 
-- Verify the LISTEN client is `new Client(...)` from `pg`, not a connection from the Drizzle pool — this is the most common mistake with NOTIFY implementations.
-- Check that `handleNotification` marks `processed_at` before calling handlers (at-least-once, not exactly-once). If the process crashes after marking but before the handler runs, the event is lost. This tradeoff is acceptable for this use case.
-- Confirm `publish` uses a transaction if NOTIFY must be atomic with the INSERT — if the INSERT succeeds but NOTIFY fails, the event is still in the queue and will be picked up by the poll loop.
+- Verify publish() writes to trigger_events table BEFORE sending NOTIFY
+- Check that NOTIFY payload is just the event ID (not full JSON)
+- Confirm dedicated client is acquired from pool (not created as new Client)
+- Verify poll loop only picks up events with `status = 'pending'` and age > staleEventThresholdMs
+- Check error handling: handler errors should update event status to `failed`, not crash the bus
+- Verify stop() releases the dedicated client and clears the interval
+- Confirm no race condition between NOTIFY handler and poll loop processing the same event
 
 ## Activity Log
-
-- 2026-03-16T17:50:03Z – unknown – shell_pid=84181 – lane=done – Review passed: event lifecycle fixed (processed/failed), atomic claim guard, handler error isolation. tsc clean, 116 tests.
