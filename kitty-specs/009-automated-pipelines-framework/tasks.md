@@ -86,12 +86,12 @@ Build trigger handlers, trigger registry, and the circular dependency detection 
 Build the core execution engine: PipelineExecutor poll loop, StepRunner with retry and backoff, idempotency key generation, and concurrency policy enforcement.
 
 **Subtasks**:
-- [ ] T018: Implement PipelineExecutor class (`src/pipelines/engine/executor.ts`) — poll loop, trigger matching, execution lifecycle
-- [ ] T019: Implement StepRunner (`src/pipelines/engine/step-runner.ts`) — single step execution with delegation to step handlers
-- [ ] T020: Implement retry policy with exponential backoff (`src/pipelines/engine/retry.ts`)
-- [ ] T021: Implement idempotency key generation and dedup checking (`src/pipelines/engine/idempotency.ts`)
-- [ ] T022: Create engine barrel export (`src/pipelines/engine/index.ts`)
-- [ ] T023: Unit tests for executor, step runner, retry logic (`tests/pipelines/engine/`)
+- [x] T018: Implement PipelineExecutor class (`src/pipelines/engine/executor.ts`) — poll loop, trigger matching, execution lifecycle
+- [x] T019: Implement StepRunner (`src/pipelines/engine/step-runner.ts`) — single step execution with delegation to step handlers
+- [x] T020: Implement retry policy with exponential backoff (`src/pipelines/engine/retry.ts`)
+- [x] T021: Implement idempotency key generation and dedup checking (`src/pipelines/engine/idempotency.ts`)
+- [x] T022: Create engine barrel export (`src/pipelines/engine/index.ts`)
+- [x] T023: Unit tests for executor, step runner, retry logic (`tests/pipelines/engine/`)
 
 **Parallel opportunities**: T020 (retry) and T021 (idempotency) are independent utilities.
 **Risks**: Poll loop must handle graceful shutdown. Concurrency policy enforcement must check for running executions atomically. StepRunner must classify transient vs non-transient errors correctly.
