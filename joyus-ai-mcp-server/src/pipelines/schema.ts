@@ -8,7 +8,7 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgSchema,
   text,
@@ -73,6 +73,7 @@ export const reviewDecisionStatusEnum = pipelinesSchema.enum('review_decision_st
 
 export const pipelineTemplates = pipelinesSchema.table('pipeline_templates', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
+  tenantId: text('tenant_id'),  // null = built-in template visible to all tenants
   name: text('name').notNull().unique(),
   description: text('description').notNull(),
   category: text('category').notNull(),
@@ -84,6 +85,7 @@ export const pipelineTemplates = pipelinesSchema.table('pipeline_templates', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
+  tenantIdIdx: index('pipeline_templates_tenant_id_idx').on(table.tenantId),
   categoryActiveIdx: index('pipeline_templates_category_active_idx').on(table.category, table.isActive),
   activeIdx: index('pipeline_templates_active_idx').on(table.isActive),
 }));
@@ -107,7 +109,7 @@ export const pipelines = pipelinesSchema.table('pipelines', {
   reviewGateTimeoutHours: integer('review_gate_timeout_hours').notNull().default(48),
   maxPipelineDepth: integer('max_pipeline_depth').notNull().default(10),
   status: pipelineStatusEnum('status').notNull().default('active'),
-  templateId: text('template_id').references(() => pipelineTemplates.id),
+  templateId: text('template_id').references(() => pipelineTemplates.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -151,6 +153,9 @@ export const triggerEvents = pipelinesSchema.table('trigger_events', {
   tenantReceivedIdx: index('trigger_events_tenant_received_idx').on(table.tenantId, table.receivedAt),
   statusReceivedIdx: index('trigger_events_status_received_idx').on(table.status, table.receivedAt),
   tenantIdIdx: index('trigger_events_tenant_id_idx').on(table.tenantId),
+  unprocessedIdx: index('trigger_events_unprocessed_idx')
+    .on(table.status, table.receivedAt)
+    .where(sql`processed_at IS NULL`),
 }));
 
 // --- PipelineExecution ---
@@ -159,7 +164,7 @@ export const pipelineExecutions = pipelinesSchema.table('pipeline_executions', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   pipelineId: text('pipeline_id').notNull().references(() => pipelines.id, { onDelete: 'cascade' }),
   tenantId: text('tenant_id').notNull(),
-  triggerEventId: text('trigger_event_id').notNull().references(() => triggerEvents.id),
+  triggerEventId: text('trigger_event_id').notNull().references(() => triggerEvents.id, { onDelete: 'cascade' }),
   status: executionStatusEnum('status').notNull().default('pending'),
   stepsCompleted: integer('steps_completed').notNull().default(0),
   stepsTotal: integer('steps_total').notNull(),
@@ -181,7 +186,7 @@ export const pipelineExecutions = pipelinesSchema.table('pipeline_executions', {
 export const executionSteps = pipelinesSchema.table('execution_steps', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   executionId: text('execution_id').notNull().references(() => pipelineExecutions.id, { onDelete: 'cascade' }),
-  stepId: text('step_id').notNull().references(() => pipelineSteps.id),
+  stepId: text('step_id').notNull().references(() => pipelineSteps.id, { onDelete: 'cascade' }),
   position: integer('position').notNull(),
   status: executionStepStatusEnum('status').notNull().default('pending'),
   attempts: integer('attempts').notNull().default(0),
@@ -202,7 +207,7 @@ export const executionSteps = pipelinesSchema.table('execution_steps', {
 export const reviewDecisions = pipelinesSchema.table('review_decisions', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   executionId: text('execution_id').notNull().references(() => pipelineExecutions.id, { onDelete: 'cascade' }),
-  executionStepId: text('execution_step_id').notNull().references(() => executionSteps.id),
+  executionStepId: text('execution_step_id').notNull().references(() => executionSteps.id, { onDelete: 'cascade' }),
   tenantId: text('tenant_id').notNull(),
   artifactRef: jsonb('artifact_ref').notNull(),
   profileVersionRef: text('profile_version_ref'),
@@ -244,6 +249,26 @@ export const pipelineMetrics = pipelinesSchema.table('pipeline_metrics', {
   tenantIdIdx: index('pipeline_metrics_tenant_id_idx').on(table.tenantId),
 }));
 
+// --- QualitySignal ---
+
+export const qualitySignals = pipelinesSchema.table('quality_signals', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  pipelineId: text('pipeline_id').notNull().references(() => pipelines.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id').notNull(),
+  signalType: text('signal_type').notNull(),
+  severity: text('severity').notNull(),  // 'info' | 'warning' | 'critical'
+  message: text('message').notNull(),
+  metadata: jsonb('metadata').notNull().$defaultFn(() => ({})),
+  acknowledgedAt: timestamp('acknowledged_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  pipelineIdx: index('quality_signals_pipeline_id_idx').on(table.pipelineId),
+  tenantIdx: index('quality_signals_tenant_id_idx').on(table.tenantId),
+  unacknowledgedIdx: index('quality_signals_unack_idx')
+    .on(table.tenantId, table.createdAt)
+    .where(sql`acknowledged_at IS NULL`),
+}));
+
 // ============================================================
 // RELATIONS
 // ============================================================
@@ -252,6 +277,7 @@ export const pipelinesRelations = relations(pipelines, ({ one, many }) => ({
   steps: many(pipelineSteps),
   executions: many(pipelineExecutions),
   metrics: many(pipelineMetrics),
+  qualitySignals: many(qualitySignals),
   template: one(pipelineTemplates, {
     fields: [pipelines.templateId],
     references: [pipelineTemplates.id],
@@ -316,6 +342,13 @@ export const pipelineMetricsRelations = relations(pipelineMetrics, ({ one }) => 
   }),
 }));
 
+export const qualitySignalsRelations = relations(qualitySignals, ({ one }) => ({
+  pipeline: one(pipelines, {
+    fields: [qualitySignals.pipelineId],
+    references: [pipelines.id],
+  }),
+}));
+
 // ============================================================
 // TYPE EXPORTS
 // ============================================================
@@ -343,3 +376,6 @@ export type NewPipelineTemplate = typeof pipelineTemplates.$inferInsert;
 
 export type PipelineMetric = typeof pipelineMetrics.$inferSelect;
 export type NewPipelineMetric = typeof pipelineMetrics.$inferInsert;
+
+export type QualitySignal = typeof qualitySignals.$inferSelect;
+export type NewQualitySignal = typeof qualitySignals.$inferInsert;
