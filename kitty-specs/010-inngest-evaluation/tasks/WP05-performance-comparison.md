@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP05"
 title: "Performance Comparison"
-lane: "planned"
+lane: "doing"
 dependencies: ["WP02", "WP03", "WP04"]
 subtasks: ["T021", "T022", "T023", "T024", "T025"]
 phase: "Phase C - Assessment"
@@ -36,3 +36,7 @@ spec-kitty implement WP05
 - [ ] T023: Measure cold-start time for both (first execution after server restart)
 - [ ] T024: Document results in `research/performance-comparison.md`
 - [ ] T025: Flag latency anomalies (Redis polling interval, self-hosted overhead)
+
+## Activity Log
+
+- 2026-03-19T11:49:13Z – unknown – lane=doing – Starting performance comparison implementation
