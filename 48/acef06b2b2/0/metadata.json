@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "48acef06b2b2",
+  "session_id": "b62c46a7-6384-4538-9743-8196091b516b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-19T02:23:15.785372Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/package.json",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/client.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "97cf2e25-4153-41b1-b2b4-8a6caf82f814",
+  "checkpoint_transcript_start": 712,
+  "transcript_lines_at_start": 712,
+  "token_usage": {
+    "input_tokens": 139,
+    "cache_creation_tokens": 360127,
+    "cache_read_tokens": 4333954,
+    "output_tokens": 19064,
+    "api_call_count": 58
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-19T02:23:15.644769Z",
+    "agent_lines": 0,
+    "human_added": 238,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 238,
+    "agent_percentage": 0
+  }
+}
