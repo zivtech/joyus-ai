@@ -114,7 +114,40 @@ export function createCorpusUpdatePipeline(registry: StepHandlerRegistry) {
       }
 
       // ------------------------------------------------------------------
-      // Summary
+      // Step 3: Wait for human review decision (up to 7 days)
+      // ------------------------------------------------------------------
+
+      const reviewDecision = await step.waitForEvent('wait-for-review', {
+        event: 'pipeline/review.decided',
+        timeout: '7d',
+        if: `async.data.executionId == '${executionId}'`,
+      });
+
+      if (reviewDecision === null) {
+        // Timeout — no decision received within 7 days
+        return {
+          executionId,
+          tenantId,
+          corpusId,
+          changeType,
+          status: 'timeout',
+          escalated: true,
+        };
+      }
+
+      if (reviewDecision.data.decision === 'rejected') {
+        return {
+          executionId,
+          tenantId,
+          corpusId,
+          changeType,
+          status: 'rejected',
+          feedback: reviewDecision.data.feedback,
+        };
+      }
+
+      // ------------------------------------------------------------------
+      // Summary (approved path)
       // ------------------------------------------------------------------
 
       return {
@@ -122,6 +155,8 @@ export function createCorpusUpdatePipeline(registry: StepHandlerRegistry) {
         tenantId,
         corpusId,
         changeType,
+        status: 'approved',
+        artifactsApproved: true,
         steps: {
           profileGeneration: {
             success: step1Result.success,

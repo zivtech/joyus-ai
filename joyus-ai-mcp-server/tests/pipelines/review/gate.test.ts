@@ -3,6 +3,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock inngest client so DecisionRecorder.recordDecision() doesn't attempt
+// a real network call when all decisions are complete (Feature 010 spike).
+vi.mock('../../../src/inngest/client.js', () => ({
+  inngest: { send: vi.fn().mockResolvedValue(undefined) },
+}));
+
 import { ReviewGate } from '../../../src/pipelines/review/gate.js';
 import { DecisionRecorder } from '../../../src/pipelines/review/decision.js';
 import type { PipelineExecution, ExecutionStep } from '../../../src/pipelines/schema.js';
