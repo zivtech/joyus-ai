@@ -1,0 +1,12 @@
+{
+  "wp_id": "WP09",
+  "feature_slug": "009-automated-pipelines-framework",
+  "worktree_path": ".worktrees/009-automated-pipelines-framework-WP09",
+  "branch_name": "009-automated-pipelines-framework-WP09",
+  "base_branch": "main",
+  "base_commit": "1b04d3d8f7128e468b3c4dc7139f02bd4fe299e3",
+  "dependencies": [],
+  "created_at": "2026-03-16T19:15:58.800075+00:00",
+  "created_by": "implement-command",
+  "vcs_backend": "git"
+}
