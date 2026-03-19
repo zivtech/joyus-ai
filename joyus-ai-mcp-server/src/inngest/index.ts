@@ -5,7 +5,7 @@
  * Import `allFunctions` to pass to the serve() adapter in index.ts.
  *
  * `allFunctions` registers all pipeline functions with an empty step registry
- * (stub mode). When a real StepHandlerRegistry is available (see pipelines/init.ts),
+ * (stub mode). When a real StepHandlerRegistry is wired in server startup,
  * construct the pipeline functions with it and replace allFunctions at serve() time.
  */
 export { inngest } from './client.js';
