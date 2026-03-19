@@ -38,11 +38,11 @@ Layer 4: WP06 (decision — depends on all)
 **Priority**: P1 | **Dependencies**: WP01 | **Est. ~300 lines**
 
 **Subtasks**:
-- [ ] T006: Define `InngestStepHandlerAdapter` — wraps existing `PipelineStepHandler` interface for use with `step.run()`
-- [ ] T007: Port corpus-update-to-profiles pipeline as Inngest function (`src/inngest/functions/corpus-update-pipeline.ts`)
-- [ ] T008: Wire corpus_change event → Inngest function trigger (event name: `pipeline/corpus.changed`)
-- [ ] T009: Run end-to-end execution via Inngest UI, confirm step traces appear
-- [ ] T010: Write unit tests for adapter and function structure
+- [x] T006: Define `InngestStepHandlerAdapter` — wraps existing `PipelineStepHandler` interface for use with `step.run()`
+- [x] T007: Port corpus-update-to-profiles pipeline as Inngest function (`src/inngest/functions/corpus-update-pipeline.ts`)
+- [x] T008: Wire corpus_change event → Inngest function trigger (event name: `pipeline/corpus.changed`)
+- [x] T009: Run end-to-end execution via Inngest UI, confirm step traces appear
+- [x] T010: Write unit tests for adapter and function structure
 
 ### WP03 — Review Gate via step.waitForEvent()
 **Prompt**: [`tasks/WP03-review-gate.md`](tasks/WP03-review-gate.md)
