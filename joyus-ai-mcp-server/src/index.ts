@@ -19,8 +19,11 @@ import helmet from 'helmet';
 
 import { sql } from 'drizzle-orm';
 
+import { serve } from 'inngest/express';
+
 import { authRouter } from './auth/routes.js';
 import { requireBearerToken } from './auth/middleware.js';
+import { inngest, allFunctions } from './inngest/index.js';
 import { db, auditLogs } from './db/client.js';
 import { initializeContentModule } from './content/index.js';
 import { initializePipelineModule, type PipelineModule } from './pipelines/init.js';
@@ -161,6 +164,10 @@ app.use('/auth', authRouter);
 
 // Task management routes (scheduled tasks)
 app.use('/tasks', taskRouter);
+
+// Inngest event handler — Feature 010 evaluation spike
+// No auth middleware: Inngest server signs requests via INNGEST_SIGNING_KEY
+app.use('/api/inngest', serve({ client: inngest, functions: allFunctions }));
 
 // MCP endpoint with Bearer token auth
 app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
@@ -323,6 +330,7 @@ app.listen(PORT, async () => {
     });
 
     console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
+    console.log(`   Inngest:   http://localhost:${PORT}/api/inngest`);
   } catch (error) {
     console.error('Failed to initialize pipeline module:', error);
   }
