@@ -10,6 +10,10 @@ import { createPipelineRouter } from '../../src/pipelines/routes.js';
 import type { PipelineRouterDeps } from '../../src/pipelines/routes.js';
 import type { Request, Response } from 'express';
 
+vi.mock('../../src/inngest/client.js', () => ({
+  inngest: { send: vi.fn().mockResolvedValue(undefined) },
+}));
+
 // ============================================================
 // MOCK FACTORIES
 // ============================================================
@@ -93,15 +97,6 @@ function makeMockDecisionRecorder() {
   };
 }
 
-function makeMockEventBus() {
-  return {
-    publish: vi.fn().mockResolvedValue('event-123'),
-    subscribe: vi.fn().mockReturnValue('sub-1'),
-    unsubscribe: vi.fn(),
-    close: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
 function makeReq(overrides: Partial<Request> = {}): Request {
   return {
     headers: { 'x-tenant-id': 'tenant-a' },
@@ -181,20 +176,17 @@ describe('Pipeline Routes', () => {
   let db: ReturnType<typeof makeMockDb>;
   let stepRegistry: ReturnType<typeof makeMockStepRegistry>;
   let decisionRecorder: ReturnType<typeof makeMockDecisionRecorder>;
-  let eventBus: ReturnType<typeof makeMockEventBus>;
   let router: ReturnType<typeof createPipelineRouter>;
 
   beforeEach(() => {
     db = makeMockDb();
     stepRegistry = makeMockStepRegistry();
     decisionRecorder = makeMockDecisionRecorder();
-    eventBus = makeMockEventBus();
 
     const deps: PipelineRouterDeps = {
       db: db as unknown as PipelineRouterDeps['db'],
       stepRegistry: stepRegistry as unknown as PipelineRouterDeps['stepRegistry'],
       decisionRecorder: decisionRecorder as unknown as PipelineRouterDeps['decisionRecorder'],
-      eventBus: eventBus as unknown as PipelineRouterDeps['eventBus'],
     };
 
     router = createPipelineRouter(deps);
@@ -380,12 +372,16 @@ describe('Pipeline Routes', () => {
 
       expect(res._status).toBe(202);
       const data = res._json as { eventId: string; pipelineId: string };
-      expect(data.eventId).toBe('event-123');
+      expect(typeof data.eventId).toBe('string');
+      expect(data.eventId.length).toBeGreaterThan(0);
       expect(data.pipelineId).toBe('pipe-1');
-      expect(eventBus.publish).toHaveBeenCalledWith(
-        'tenant-a',
-        'manual_request',
-        expect.objectContaining({ pipelineId: 'pipe-1' }),
+
+      const { inngest } = await import('../../src/inngest/client.js');
+      expect(inngest.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'pipeline/manual.triggered',
+          data: expect.objectContaining({ tenantId: 'tenant-a', pipelineId: 'pipe-1' }),
+        }),
       );
     });
 

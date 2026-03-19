@@ -47,6 +47,15 @@ type PipelineEvents = {
       scheduledAt: string;
     };
   };
+
+  /** Fired by the manual trigger route to enqueue pipeline execution */
+  'pipeline/manual.triggered': {
+    data: {
+      tenantId: string;
+      pipelineId: string;
+      payload: Record<string, unknown>;
+    };
+  };
 };
 
 // ---------------------------------------------------------------------------

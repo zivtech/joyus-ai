@@ -80,7 +80,6 @@ export async function initializePipelineModule(
     db,
     stepRegistry,
     decisionRecorder,
-    eventBus,
   };
   const router = createPipelineRouter(routerDeps);
 
