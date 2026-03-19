@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Port One Pipeline to Inngest Functions
-lane: "doing"
+lane: "done"
 dependencies: [WP01]
 base_branch: 010-inngest-evaluation-WP01
 base_commit: 24da977f19a333868beb140919ac67f6e5d97c46
@@ -11,8 +11,8 @@ phase: Phase B - Core Validation
 assignee: ''
 agent: "claude-sonnet"
 shell_pid: "81954"
-review_status: ''
-reviewed_by: ''
+review_status: "approved"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
 - timestamp: '2026-03-19T05:00:00Z'
   lane: planned
@@ -44,3 +44,4 @@ spec-kitty implement WP02
 
 - 2026-03-19T02:34:16Z – unknown – shell_pid=2176 – lane=for_review – Adapter + corpus-update pipeline implemented: InngestStepHandlerAdapter wraps PipelineStepHandler.execute(), createCorpusUpdatePipeline factory with stub fallback, 12 unit tests passing, typecheck clean.
 - 2026-03-19T02:50:21Z – claude-sonnet – shell_pid=81954 – lane=doing – Started review via workflow command
+- 2026-03-19T02:56:34Z – claude-sonnet – shell_pid=81954 – lane=done – Review passed: adapter wraps PipelineStepHandler correctly, two-step pipeline factory clean, 12 tests passing. MEDIUM: corpus pipeline not yet in allFunctions (deferred to WP03+). Spike-appropriate.
