@@ -30,7 +30,6 @@ export interface ExecutorContext {
 interface PipelineContextDeps {
   stepRegistry: PipelineExecutorContext['stepRegistry'];
   decisionRecorder: PipelineExecutorContext['decisionRecorder'];
-  eventBus: PipelineExecutorContext['eventBus'];
 }
 
 let _pipelineContext: PipelineContextDeps | null = null;

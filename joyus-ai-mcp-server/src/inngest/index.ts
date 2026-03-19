@@ -22,7 +22,7 @@ import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.j
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
 import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
-import type { StepHandlerRegistry } from '../pipelines/engine/step-runner.js';
+import type { StepHandlerRegistry } from '../pipelines/types.js';
 
 // Empty registry — functions run in stub mode until a real registry is provided.
 // WP03 (deletion cleanup) will restructure how the registry is wired.
