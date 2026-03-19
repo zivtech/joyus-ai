@@ -1,13 +1,13 @@
 ---
 work_package_id: "WP06"
 title: "Decision Document and Migration Plan"
-lane: "for_review"
+lane: "doing"
 dependencies: ["WP01", "WP02", "WP03", "WP04", "WP05"]
 subtasks: ["T026", "T027", "T028", "T029", "T030"]
 phase: "Phase C - Assessment"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude-sonnet"
+shell_pid: "44125"
 review_status: ""
 reviewed_by: ""
 history:
@@ -40,3 +40,4 @@ spec-kitty implement WP06
 ## Activity Log
 
 - 2026-03-19T12:24:31Z – unknown – lane=for_review – Decision document complete: GO recommendation with 7/7 criteria passed, 1493 LOC deletion inventory across engine/event-bus/triggers, Feature 011 migration sequence (4 phases).
+- 2026-03-19T12:24:44Z – claude-sonnet – shell_pid=44125 – lane=doing – Started review via workflow command
