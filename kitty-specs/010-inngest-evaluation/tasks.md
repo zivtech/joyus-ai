@@ -75,11 +75,11 @@ Layer 4: WP06 (decision — depends on all)
 **Priority**: P2 | **Dependencies**: WP02, WP03, WP04 | **Est. ~150 lines**
 
 **Subtasks**:
-- [ ] T021: Benchmark custom executor — 50 sequential executions, record p50/p95/p99 step latency
-- [ ] T022: Benchmark Inngest — same 50 sequential executions, same metrics
-- [ ] T023: Measure cold-start time for both (first execution after server restart)
-- [ ] T024: Document results in `research/performance-comparison.md`
-- [ ] T025: Flag any latency anomalies (self-hosted Redis overhead, polling intervals)
+- [x] T021: Benchmark custom executor — 50 sequential executions, record p50/p95/p99 step latency
+- [x] T022: Benchmark Inngest — same 50 sequential executions, same metrics
+- [x] T023: Measure cold-start time for both (first execution after server restart)
+- [x] T024: Document results in `research/performance-comparison.md`
+- [x] T025: Flag any latency anomalies (self-hosted Redis overhead, polling intervals)
 
 ### WP06 — Decision Document and Migration Plan
 **Prompt**: [`tasks/WP06-decision-doc.md`](tasks/WP06-decision-doc.md)
