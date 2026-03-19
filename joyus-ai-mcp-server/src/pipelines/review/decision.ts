@@ -12,6 +12,7 @@ import {
 } from '../schema.js';
 import type { ReviewDecision } from '../schema.js';
 import type { ArtifactRef, ReviewFeedback } from '../types.js';
+import { inngest } from '../../inngest/client.js';
 
 // ============================================================
 // REVIEW GATE RESULT (appended to outputArtifacts on resume)
@@ -93,6 +94,17 @@ export class DecisionRecorder {
 
     if (allDecisionsComplete) {
       await this.resumeExecution(decision.executionId);
+
+      // Send Inngest event to resume the paused review-gate step
+      await inngest.send({
+        name: 'pipeline/review.decided',
+        data: {
+          tenantId: decision.tenantId,
+          executionId: decision.executionId,
+          decision: status,
+          feedback: status === 'rejected' && feedback ? feedback.reason : undefined,
+        },
+      });
     }
 
     return { allDecisionsComplete, executionId: decision.executionId };
