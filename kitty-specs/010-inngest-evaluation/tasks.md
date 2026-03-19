@@ -60,11 +60,11 @@ Layer 4: WP06 (decision — depends on all)
 **Priority**: P1 | **Dependencies**: WP02 | **Est. ~200 lines**
 
 **Subtasks**:
-- [ ] T016: Add `concurrency: { key: 'event.data.tenantId', limit: 1 }` to pipeline function
-- [ ] T017: Test cross-tenant isolation — two tenants trigger simultaneously, no contamination
-- [ ] T018: Implement schedule_tick pipeline as Inngest cron function
-- [ ] T019: Confirm overlap detection — concurrent cron runs blocked by concurrency key
-- [ ] T020: Confirm timezone support for schedule configurations
+- [x] T016: Add `concurrency: { key: 'event.data.tenantId', limit: 1 }` to pipeline function
+- [x] T017: Test cross-tenant isolation — two tenants trigger simultaneously, no contamination
+- [x] T018: Implement schedule_tick pipeline as Inngest cron function
+- [x] T019: Confirm overlap detection — concurrent cron runs blocked by concurrency key
+- [x] T020: Confirm timezone support for schedule configurations
 
 ---
 
