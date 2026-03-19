@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Port One Pipeline to Inngest Functions
-lane: "doing"
+lane: "for_review"
 dependencies: [WP01]
 base_branch: 010-inngest-evaluation-WP01
 base_commit: 24da977f19a333868beb140919ac67f6e5d97c46
@@ -39,3 +39,7 @@ spec-kitty implement WP02
 - [ ] T008: Wire `pipeline/corpus.changed` event → Inngest function trigger
 - [ ] T009: Run end-to-end execution, confirm step traces appear in Inngest UI
 - [ ] T010: Write unit tests for adapter and function structure
+
+## Activity Log
+
+- 2026-03-19T02:34:16Z – unknown – shell_pid=2176 – lane=for_review – Adapter + corpus-update pipeline implemented: InngestStepHandlerAdapter wraps PipelineStepHandler.execute(), createCorpusUpdatePipeline factory with stub fallback, 12 unit tests passing, typecheck clean.
