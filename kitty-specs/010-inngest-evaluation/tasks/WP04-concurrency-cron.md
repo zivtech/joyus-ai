@@ -1,20 +1,23 @@
 ---
-work_package_id: "WP04"
-title: "Per-Tenant Concurrency and Cron Scheduling"
-lane: "planned"
-dependencies: ["WP02"]
-subtasks: ["T016", "T017", "T018", "T019", "T020"]
-phase: "Phase B - Core Validation"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP04
+title: Per-Tenant Concurrency and Cron Scheduling
+lane: "doing"
+dependencies: [WP02]
+base_branch: 010-inngest-evaluation-WP02
+base_commit: 9f52f333b3830e35879a6decccc40e5d7702105d
+created_at: '2026-03-19T10:45:28.064951+00:00'
+subtasks: [T016, T017, T018, T019, T020]
+phase: Phase B - Core Validation
+assignee: ''
+agent: ''
+shell_pid: "32008"
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-19T05:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-19T05:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP04: Per-Tenant Concurrency and Cron Scheduling
