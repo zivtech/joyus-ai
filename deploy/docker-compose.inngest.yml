@@ -1,0 +1,41 @@
+# Inngest self-hosted server — for Feature 010 evaluation spike
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.inngest.yml up
+#
+# Adds: inngest-server, redis
+# Requires: postgres service from base docker-compose.yml
+
+services:
+  inngest-server:
+    image: inngest/inngest:latest
+    ports:
+      - "8288:8288"   # Inngest dev UI + API
+    environment:
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-key}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-local-signing-key}"
+      # Connect to existing Postgres for state storage
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-jawn_ai}?sslmode=disable"
+      REDIS_URL: "redis://redis:6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - jawn-net
+    command: ["start", "--host", "0.0.0.0", "--port", "8288"]
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - jawn-net
+
+networks:
+  jawn-net:
+    external: true
