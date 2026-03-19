@@ -25,6 +25,20 @@ _private/
 # Block WP status files (managed in main repo, prevents merge conflicts)
 # Research artifacts in kitty-specs/**/research/ are allowed
 kitty-specs/**/tasks/*.md
+!kitty-specs/005-content-intelligence/tasks/WP01-package-foundation.md
+!kitty-specs/005-content-intelligence/tasks/WP02-corpus-ingestion.md
+!kitty-specs/005-content-intelligence/tasks/WP03-feature-extraction.md
+!kitty-specs/005-content-intelligence/tasks/WP04-profile-generation.md
+!kitty-specs/005-content-intelligence/tasks/WP05-verification-cli.md
+!kitty-specs/005-content-intelligence/tasks/WP06-mcp-server.md
+!kitty-specs/005-content-intelligence/tasks/WP07-phase-a-testing.md
+!kitty-specs/005-content-intelligence/tasks/WP08-composite-builder.md
+!kitty-specs/005-content-intelligence/tasks/WP09-hierarchy-management.md
+!kitty-specs/005-content-intelligence/tasks/WP10-cascade-attribution.md
+!kitty-specs/005-content-intelligence/tasks/WP11-voice-context-testing.md
+!kitty-specs/005-content-intelligence/tasks/WP12-monitoring-drift.md
+!kitty-specs/005-content-intelligence/tasks/WP13-diagnosis-repair.md
+!kitty-specs/005-content-intelligence/tasks/WP14-monitoring-mcp-testing.md
 !kitty-specs/006-content-infrastructure/tasks/WP01-content-schema-foundation.md
 !kitty-specs/006-content-infrastructure/tasks/WP02-connectors.md
 !kitty-specs/006-content-infrastructure/tasks/WP03-sync-engine.md
