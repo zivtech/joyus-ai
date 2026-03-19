@@ -1,20 +1,23 @@
 ---
-work_package_id: "WP03"
-title: "Review Gate via step.waitForEvent()"
-lane: "planned"
-dependencies: ["WP02"]
-subtasks: ["T011", "T012", "T013", "T014", "T015"]
-phase: "Phase B - Core Validation"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP03
+title: Review Gate via step.waitForEvent()
+lane: "doing"
+dependencies: [WP02]
+base_branch: 010-inngest-evaluation-WP02
+base_commit: 9f52f333b3830e35879a6decccc40e5d7702105d
+created_at: '2026-03-19T10:44:56.108021+00:00'
+subtasks: [T011, T012, T013, T014, T015]
+phase: Phase B - Core Validation
+assignee: ''
+agent: ''
+shell_pid: "30219"
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-19T05:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-19T05:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP03: Review Gate via step.waitForEvent()
