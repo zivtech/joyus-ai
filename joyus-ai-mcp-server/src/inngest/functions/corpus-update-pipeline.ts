@@ -52,6 +52,10 @@ export function createCorpusUpdatePipeline(registry: StepHandlerRegistry) {
     {
       id: 'corpus-update-pipeline',
       name: 'Corpus Update Pipeline',
+      concurrency: {
+        key: 'event.data.tenantId',
+        limit: 1,
+      },
     },
     { event: 'pipeline/corpus.changed' },
     async ({ event, step }) => {
