@@ -1,20 +1,23 @@
 ---
-work_package_id: "WP02"
-title: "Port One Pipeline to Inngest Functions"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T006", "T007", "T008", "T009", "T010"]
-phase: "Phase B - Core Validation"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP02
+title: Port One Pipeline to Inngest Functions
+lane: "doing"
+dependencies: [WP01]
+base_branch: 010-inngest-evaluation-WP01
+base_commit: 24da977f19a333868beb140919ac67f6e5d97c46
+created_at: '2026-03-19T02:25:10.000486+00:00'
+subtasks: [T006, T007, T008, T009, T010]
+phase: Phase B - Core Validation
+assignee: ''
+agent: ''
+shell_pid: "2176"
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-19T05:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-19T05:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP02: Port One Pipeline to Inngest Functions
