@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Per-Tenant Concurrency and Cron Scheduling
-lane: "doing"
+lane: "for_review"
 dependencies: [WP02]
 base_branch: 010-inngest-evaluation-WP02
 base_commit: 9f52f333b3830e35879a6decccc40e5d7702105d
@@ -44,3 +44,4 @@ spec-kitty implement WP04
 
 - 2026-03-19T10:57:55Z – unknown – shell_pid=32008 – lane=for_review – Per-tenant concurrency (key=tenantId, limit=1) on corpus pipeline, schedule-tick cron function with IANA timezone support, 18 tests passing.
 - 2026-03-19T10:58:57Z – claude-sonnet – shell_pid=82810 – lane=doing – Started review via workflow command
+- 2026-03-19T11:45:30Z – claude-sonnet – shell_pid=82810 – lane=for_review – Fixed: cron concurrency key now static (schedule-tick-global), T017/T019/T020 tests assert actual config. 18 tests passing, typecheck clean.
