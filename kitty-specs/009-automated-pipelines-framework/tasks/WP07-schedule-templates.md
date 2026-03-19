@@ -9,7 +9,7 @@ created_at: '2026-03-16T18:39:55.213916+00:00'
 subtasks: [T036, T037, T038, T039, T040, T041]
 phase: Phase D - Review Gates & Scheduling
 assignee: "Claude"
-agent: ''
+agent: "claude-sonnet"
 shell_pid: "58980"
 review_status: "approved"
 reviewed_by: "Alex Urevick-Ackelsberg"

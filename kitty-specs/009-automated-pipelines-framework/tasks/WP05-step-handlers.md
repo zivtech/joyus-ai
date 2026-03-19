@@ -9,7 +9,7 @@ created_at: '2026-03-16T18:19:02.497164+00:00'
 subtasks: [T024, T025, T026, T027, T028, T029]
 phase: Phase C - Execution Engine
 assignee: "Claude"
-agent: ''
+agent: "claude-sonnet"
 shell_pid: "35212"
 review_status: "approved"
 reviewed_by: "Alex Urevick-Ackelsberg"

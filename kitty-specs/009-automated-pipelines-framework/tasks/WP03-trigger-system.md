@@ -15,6 +15,7 @@ history:
   action: created
   agent: claude-opus
 assignee: "Claude"
+agent: "claude-sonnet"
 ---
 
 # WP03: Trigger System
