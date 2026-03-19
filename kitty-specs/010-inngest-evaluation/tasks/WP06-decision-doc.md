@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP06"
 title: "Decision Document and Migration Plan"
-lane: "planned"
+lane: "for_review"
 dependencies: ["WP01", "WP02", "WP03", "WP04", "WP05"]
 subtasks: ["T026", "T027", "T028", "T029", "T030"]
 phase: "Phase C - Assessment"
@@ -36,3 +36,7 @@ spec-kitty implement WP06
 - [ ] T028: Write go/no-go recommendation with rationale
 - [ ] T029: If "go": produce deletion inventory (009 files/LOC removable), migration sequence, Feature 011 scope estimate
 - [ ] T030: If "no-go": document blockers and recommended fixes for custom implementation
+
+## Activity Log
+
+- 2026-03-19T12:24:31Z – unknown – lane=for_review – Decision document complete: GO recommendation with 7/7 criteria passed, 1493 LOC deletion inventory across engine/event-bus/triggers, Feature 011 migration sequence (4 phases).
