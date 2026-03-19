@@ -34,3 +34,7 @@ create a plan to do it and then use the most efficient agent to do the work
 
 1
 
+### Prompt 9
+
+check the open PRs, they all seem to have errors
+

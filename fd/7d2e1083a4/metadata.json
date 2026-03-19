@@ -5,7 +5,9 @@
   "branch": "main",
   "checkpoints_count": 1,
   "files_touched": [
-    "joyus-ai-mcp-server/src/index.ts"
+    ".github/workflows/secret-scan.yml",
+    ".gitignore",
+    "joyus-ai-mcp-server/src/db/client.ts"
   ],
   "sessions": [
     {
@@ -17,10 +19,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 96,
-    "cache_creation_tokens": 154013,
-    "cache_read_tokens": 1666549,
-    "output_tokens": 14217,
-    "api_call_count": 32
+    "input_tokens": 130,
+    "cache_creation_tokens": 102861,
+    "cache_read_tokens": 4351310,
+    "output_tokens": 17615,
+    "api_call_count": 44
   }
 }
