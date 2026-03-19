@@ -8,7 +8,7 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray, gt } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { RetryPolicy } from '../types.js';
 import { DEFAULT_RETRY_POLICY } from '../types.js';
@@ -75,6 +75,147 @@ export class PipelineExecutor {
   }
 
   // ----------------------------------------------------------
+  // REVIEW GATE RESUME
+  // ----------------------------------------------------------
+
+  /**
+   * Resume an execution that was paused at a review gate.
+   * Called by DecisionRecorder after all decisions for a gate step are complete
+   * and the execution status has been set back to 'running'.
+   *
+   * Loads the execution and remaining steps (position > gate step position),
+   * then runs them sequentially exactly as executePipeline() does.
+   */
+  async resumeFromGate(executionId: string): Promise<void> {
+    const [execution] = await this.db
+      .select()
+      .from(pipelineExecutions)
+      .where(eq(pipelineExecutions.id, executionId))
+      .limit(1);
+
+    if (!execution || execution.status !== 'running') return;
+
+    const pipeline = (
+      await this.db
+        .select()
+        .from(pipelines)
+        .where(eq(pipelines.id, execution.pipelineId))
+        .limit(1)
+    )[0];
+
+    if (!pipeline) return;
+
+    // Recover the original trigger payload for step execution context
+    const triggerEventRows = await this.db
+      .select()
+      .from(triggerEvents)
+      .where(eq(triggerEvents.id, execution.triggerEventId))
+      .limit(1);
+    const triggerPayload = (triggerEventRows[0]?.payload as Record<string, unknown>) ?? {};
+
+    // Load all steps for the pipeline, then filter to those after the gate
+    const allSteps = await this.db
+      .select()
+      .from(pipelineSteps)
+      .where(
+        and(
+          eq(pipelineSteps.pipelineId, pipeline.id),
+          gt(pipelineSteps.position, execution.currentStepPosition),
+        ),
+      );
+    allSteps.sort((a, b) => a.position - b.position);
+
+    if (allSteps.length === 0) {
+      // No steps after the gate — mark completed
+      await this.db
+        .update(pipelineExecutions)
+        .set({ status: 'completed', completedAt: new Date() })
+        .where(eq(pipelineExecutions.id, executionId));
+      return;
+    }
+
+    // Load existing execution step records for remaining positions
+    const remainingPositions = allSteps.map((s) => s.position);
+    const execStepRecords = await this.db
+      .select()
+      .from(executionSteps)
+      .where(
+        and(
+          eq(executionSteps.executionId, executionId),
+          inArray(executionSteps.position, remainingPositions),
+        ),
+      );
+
+    // Map position → execStep id for lookup
+    const execStepByPosition = new Map(execStepRecords.map((e) => [e.position, e]));
+
+    const previousStepOutputs = new Map<number, Record<string, unknown>>();
+    let stepsCompleted = execution.stepsCompleted;
+
+    const executionPromise = (async () => {
+      for (const step of allSteps) {
+        if (step.stepType === 'review_gate') {
+          await this.db
+            .update(pipelineExecutions)
+            .set({ status: 'paused_at_gate', currentStepPosition: step.position })
+            .where(eq(pipelineExecutions.id, executionId));
+          return;
+        }
+
+        const execStep = execStepByPosition.get(step.position);
+        if (!execStep) continue;
+
+        const context: import('./step-runner.js').ExecutionContext = {
+          tenantId: pipeline.tenantId,
+          executionId,
+          pipelineId: pipeline.id,
+          triggerPayload: triggerPayload,
+          previousStepOutputs,
+        };
+
+        const retryPolicy = (pipeline.retryPolicy as RetryPolicy | null) ?? DEFAULT_RETRY_POLICY;
+        const result = await this.stepRunner.runStep(execStep.id, step, context, retryPolicy);
+
+        if (result.success || result.isNoOp) {
+          stepsCompleted++;
+          if (result.outputData) {
+            previousStepOutputs.set(step.position, result.outputData);
+          }
+          await this.db
+            .update(pipelineExecutions)
+            .set({ stepsCompleted, currentStepPosition: step.position })
+            .where(eq(pipelineExecutions.id, executionId));
+        } else {
+          await this.db
+            .update(pipelineExecutions)
+            .set({
+              status: 'paused_on_failure',
+              currentStepPosition: step.position,
+              errorDetail: result.error ?? { message: 'Step failed' },
+            })
+            .where(eq(pipelineExecutions.id, executionId));
+          return;
+        }
+      }
+
+      await this.db
+        .update(pipelineExecutions)
+        .set({ status: 'completed', completedAt: new Date(), stepsCompleted })
+        .where(eq(pipelineExecutions.id, executionId));
+    })().catch((err) => {
+      console.error(
+        `[PipelineExecutor] Unhandled error resuming execution ${executionId}:`,
+        err instanceof Error ? err.message : String(err),
+      );
+    });
+
+    this.inFlightExecutions.add(executionPromise);
+    executionPromise.finally(() => {
+      this.inFlightExecutions.delete(executionPromise);
+    });
+  }
+
+  // ----------------------------------------------------------
   // EVENT PROCESSING
   // ----------------------------------------------------------
 
@@ -86,16 +227,9 @@ export class PipelineExecutor {
     const handler = this.triggerRegistry.getHandler(event.eventType);
     if (!handler) return;
 
-    // Persist trigger event record
-    const triggerEventId = createId();
-    await this.db.insert(triggerEvents).values({
-      id: triggerEventId,
-      tenantId: event.tenantId,
-      eventType: event.eventType,
-      payload: event.payload,
-      status: 'acknowledged',
-      acknowledgedAt: new Date(),
-    });
+    // Reuse the event ID from the bus — PgNotifyBus already inserted and
+    // acknowledged the trigger_events row before dispatching this handler.
+    const triggerEventId = event.id;
 
     // Fetch active pipelines for this tenant
     const activePipelines = await this.db

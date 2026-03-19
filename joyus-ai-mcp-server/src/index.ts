@@ -312,8 +312,8 @@ app.listen(PORT, async () => {
       connectionString: process.env.DATABASE_URL ?? '',
     });
 
-    // Mount pipeline routes
-    app.use('/api', pipelineModule.router);
+    // Mount pipeline routes (requires Bearer token auth — same pattern as /mcp)
+    app.use('/api', requireBearerToken, pipelineModule.router);
 
     // Inject pipeline deps into tool executor
     setPipelineContext({

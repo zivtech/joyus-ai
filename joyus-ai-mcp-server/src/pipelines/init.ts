@@ -18,6 +18,7 @@ import { StepRunner } from './engine/step-runner.js';
 import { createStepRegistry, StepRegistry } from './steps/registry.js';
 import type { StepHandlerDependencies } from './steps/interface.js';
 import { TriggerRegistry, defaultTriggerRegistry } from './triggers/registry.js';
+import { ScheduleTriggerHandler } from './triggers/schedule.js';
 import { ReviewGate } from './review/gate.js';
 import { DecisionRecorder } from './review/decision.js';
 import { EscalationChecker } from './review/escalation.js';
@@ -64,6 +65,11 @@ export async function initializePipelineModule(
   const triggerRegistry = defaultTriggerRegistry;
   const stepRegistry = createStepRegistry(stepHandlerDeps ?? {});
 
+  // 2a. Register and load schedule trigger handler
+  const scheduleTriggerHandler = new ScheduleTriggerHandler(db, eventBus);
+  triggerRegistry.register(scheduleTriggerHandler);
+  await scheduleTriggerHandler.loadAllSchedules();
+
   // 3. Step runner
   const stepRunner = new StepRunner(db, stepRegistry);
 
@@ -72,7 +78,7 @@ export async function initializePipelineModule(
 
   // 5. Review components
   const reviewGate = new ReviewGate(db);
-  const decisionRecorder = new DecisionRecorder(db);
+  const decisionRecorder = new DecisionRecorder(db, executor);
   const escalationChecker = new EscalationChecker(db);
 
   // 6. Express router
@@ -103,6 +109,7 @@ export async function initializePipelineModule(
     tools: pipelineTools,
     async shutdown(): Promise<void> {
       stopEscalationJob();
+      scheduleTriggerHandler.stopAll();
       await executor.stop();
       console.log('[pipelines] Module shut down');
     },

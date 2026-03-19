@@ -12,6 +12,7 @@ import {
 } from '../schema.js';
 import type { ReviewDecision } from '../schema.js';
 import type { ArtifactRef, ReviewFeedback } from '../types.js';
+import type { PipelineExecutor } from '../engine/executor.js';
 
 // ============================================================
 // REVIEW GATE RESULT (appended to outputArtifacts on resume)
@@ -29,7 +30,10 @@ export interface ReviewGateResult {
 // ============================================================
 
 export class DecisionRecorder {
-  constructor(private readonly db: NodePgDatabase) {}
+  constructor(
+    private readonly db: NodePgDatabase,
+    private readonly executor?: PipelineExecutor,
+  ) {}
 
   /**
    * Record a single reviewer decision (approve or reject) for a pending
@@ -185,7 +189,7 @@ export class DecisionRecorder {
       .set({ status: 'completed', completedAt: new Date() })
       .where(eq(executionSteps.id, gateStepId));
 
-    // Resume execution — the executor poll loop will continue from here
+    // Resume execution — set status back to running, then re-invoke the executor
     await this.db
       .update(pipelineExecutions)
       .set({
@@ -193,5 +197,10 @@ export class DecisionRecorder {
         outputArtifacts: updatedArtifacts as unknown as Record<string, unknown>[],
       })
       .where(eq(pipelineExecutions.id, executionId));
+
+    // Re-queue remaining steps through the executor so they actually run
+    if (this.executor) {
+      void this.executor.resumeFromGate(executionId);
+    }
   }
 }

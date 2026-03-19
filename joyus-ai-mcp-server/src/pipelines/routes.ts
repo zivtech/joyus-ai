@@ -52,22 +52,17 @@ export interface PipelineRouterDeps {
 // ============================================================
 
 /**
- * Extract tenantId from request. Uses x-tenant-id header, falling back
- * to the authenticated user ID (matching the content executor pattern).
+ * Extract tenantId from the authenticated request context.
+ * Prefers the authenticated mcpUser.id (set by requireBearerToken middleware),
+ * then falls back to session userId. The raw x-tenant-id header is intentionally
+ * NOT trusted — it can be spoofed by any caller.
  */
 function getTenantId(req: Request): string {
-  const header = req.headers['x-tenant-id'];
-  if (typeof header === 'string' && header.length > 0) {
-    return header;
+  // Primary: authenticated user from Bearer token middleware
+  if (req.mcpUser?.id) {
+    return req.mcpUser.id;
   }
-  // Fall back to mcpUser id (matches content executor pattern)
-  const user = (req as unknown as Record<string, unknown>)['mcpUser'] as
-    | { id: string }
-    | undefined;
-  if (user?.id) {
-    return user.id;
-  }
-  // Last resort: session userId
+  // Secondary: session userId (for session-authenticated flows)
   if (req.session) {
     const session = req.session as unknown as Record<string, unknown>;
     if (session['userId']) {
@@ -75,6 +70,33 @@ function getTenantId(req: Request): string {
     }
   }
   return '';
+}
+
+// ============================================================
+// SHARED HELPERS
+// ============================================================
+
+/**
+ * Validate each step's config against the step handler registry.
+ * Returns the first error response payload, or null if all steps are valid.
+ */
+function validateSteps(
+  steps: Array<{ name: string; stepType: string; config: unknown }>,
+  stepRegistry: StepRegistry,
+): { error: string; details: string[] } | null {
+  for (const step of steps) {
+    const errors = stepRegistry.validateStepConfig(
+      step.stepType as StepType,
+      step.config as Record<string, unknown>,
+    );
+    if (errors.length > 0) {
+      return {
+        error: `Invalid step configuration for "${step.name}"`,
+        details: errors,
+      };
+    }
+  }
+  return null;
 }
 
 // ============================================================
@@ -120,17 +142,9 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
       }
 
       // Validate step types via registry
-      for (const step of input.steps) {
-        const errors = stepRegistry.validateStepConfig(
-          step.stepType as StepType,
-          step.config as Record<string, unknown>,
-        );
-        if (errors.length > 0) {
-          return res.status(400).json({
-            error: `Invalid step configuration for "${step.name}"`,
-            details: errors,
-          });
-        }
+      const stepValidationError = validateSteps(input.steps, stepRegistry);
+      if (stepValidationError) {
+        return res.status(400).json(stepValidationError);
       }
 
       // Cycle detection
@@ -301,8 +315,13 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
         return res.status(404).json({ error: 'Pipeline not found' });
       }
 
-      // If steps are being updated, re-run cycle detection
+      // If steps are being updated, validate configs then re-run cycle detection
       if (input.steps) {
+        const stepValidationError = validateSteps(input.steps, stepRegistry);
+        if (stepValidationError) {
+          return res.status(400).json(stepValidationError);
+        }
+
         const existingPipelines = await db.select().from(pipelines);
         const existingSteps = await db.select().from(pipelineSteps);
 
