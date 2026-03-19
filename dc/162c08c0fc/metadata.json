@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "dc162c08c0fc",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/secret-scan.yml",
+    ".kittify/missions/software-dev/mission.yaml",
+    ".kittify/workspaces/010-inngest-evaluation-WP03.json",
+    ".kittify/workspaces/010-inngest-evaluation-WP04.json",
+    ".worktrees/010-inngest-evaluation-WP01/deploy/docker-compose.inngest.yml",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/package.json",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/index.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/client.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/functions/stub.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/index.ts",
+    ".worktrees/010-inngest-evaluation-WP01/research/inngest-setup.md",
+    ".worktrees/010-inngest-evaluation-WP03/joyus-ai-mcp-server/src/inngest/adapter.ts",
+    ".worktrees/010-inngest-evaluation-WP03/joyus-ai-mcp-server/src/pipelines/review/decision.ts",
+    ".worktrees/010-inngest-evaluation-WP03/joyus-ai-mcp-server/tests/pipelines/review/gate.test.ts",
+    ".worktrees/010-inngest-evaluation-WP04/joyus-ai-mcp-server/src/inngest/adapter.test.ts",
+    ".worktrees/010-inngest-evaluation-WP04/joyus-ai-mcp-server/src/inngest/functions/schedule-tick-pipeline.ts",
+    "kitty-specs/007-org-scale-agentic-governance/tasks/WP03-governance-remediations.md",
+    "kitty-specs/009-automated-pipelines-framework/checklists/requirements.md",
+    "kitty-specs/009-automated-pipelines-framework/meta.json",
+    "kitty-specs/010-inngest-evaluation/meta.json",
+    "kitty-specs/010-inngest-evaluation/plan.md",
+    "kitty-specs/010-inngest-evaluation/spec.md",
+    "kitty-specs/010-inngest-evaluation/tasks.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/dc/162c08c0fc/0/metadata.json",
+      "transcript": "/dc/162c08c0fc/0/full.jsonl",
+      "context": "/dc/162c08c0fc/0/context.md",
+      "content_hash": "/dc/162c08c0fc/0/content_hash.txt",
+      "prompt": "/dc/162c08c0fc/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 225,
+    "cache_creation_tokens": 138540,
+    "cache_read_tokens": 4734536,
+    "output_tokens": 14631,
+    "api_call_count": 34
+  }
+}
