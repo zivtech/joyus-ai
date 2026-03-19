@@ -1,7 +1,7 @@
 ---
 work_package_id: WP03
 title: Review Gate via step.waitForEvent()
-lane: "for_review"
+lane: "doing"
 dependencies: [WP02]
 base_branch: 010-inngest-evaluation-WP02
 base_commit: 9f52f333b3830e35879a6decccc40e5d7702105d
@@ -10,7 +10,7 @@ subtasks: [T011, T012, T013, T014, T015]
 phase: Phase B - Core Validation
 assignee: ''
 agent: "claude-sonnet"
-shell_pid: "18844"
+shell_pid: "53313"
 review_status: ''
 reviewed_by: ''
 history:
@@ -47,3 +47,4 @@ spec-kitty implement WP03
 - 2026-03-19T11:06:49Z – claude-sonnet – shell_pid=81942 – lane=for_review – Fixed: idempotency key on inngest.send(), InngestStep interface documented. 15 tests passing, typecheck clean.
 - 2026-03-19T11:45:40Z – claude-sonnet – shell_pid=18844 – lane=doing – Started review via workflow command
 - 2026-03-19T11:51:52Z – claude-sonnet – shell_pid=18844 – lane=for_review – Fixed: inngest client mocked in gate.test.ts. 347/347 tests passing.
+- 2026-03-19T11:52:04Z – claude-sonnet – shell_pid=53313 – lane=doing – Started review via workflow command
