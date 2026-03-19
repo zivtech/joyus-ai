@@ -7,6 +7,10 @@ import { pipelineTools } from '../../src/tools/pipeline-tools.js';
 import { executePipelineTool } from '../../src/tools/executors/pipeline-executor.js';
 import type { PipelineExecutorContext } from '../../src/tools/executors/pipeline-executor.js';
 
+vi.mock('../../src/inngest/client.js', () => ({
+  inngest: { send: vi.fn().mockResolvedValue(undefined) },
+}));
+
 // ============================================================
 // HELPERS
 // ============================================================
@@ -81,12 +85,6 @@ function makeMockContext(db: ReturnType<typeof makeMockDb>): PipelineExecutorCon
         executionId: 'exec-1',
       }),
     } as unknown as PipelineExecutorContext['decisionRecorder'],
-    eventBus: {
-      publish: vi.fn().mockResolvedValue('event-abc'),
-      subscribe: vi.fn(),
-      unsubscribe: vi.fn(),
-      close: vi.fn(),
-    } as unknown as PipelineExecutorContext['eventBus'],
   };
 }
 
@@ -205,8 +203,17 @@ describe('Pipeline Tool Executor', () => {
       );
 
       const data = result as { eventId: string; status: string };
-      expect(data.eventId).toBe('event-abc');
+      expect(typeof data.eventId).toBe('string');
+      expect(data.eventId.length).toBeGreaterThan(0);
       expect(data.status).toBe('triggered');
+
+      const { inngest } = await import('../../src/inngest/client.js');
+      expect(inngest.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'pipeline/manual.triggered',
+          data: expect.objectContaining({ tenantId: 'tenant-a', pipelineId: 'pipe-1' }),
+        }),
+      );
     });
   });
 

@@ -113,6 +113,31 @@ export type StepConfig =
   | ReviewGateStepConfig
   | NotificationStepConfig;
 
+// --- Core execution types (relocated from engine/step-runner.ts in WP03) ---
+
+/** Context passed to step handlers during execution. */
+export interface ExecutionContext {
+  tenantId: string;
+  executionId: string;
+  pipelineId: string;
+  triggerPayload: Record<string, unknown>;
+  previousStepOutputs: Map<number, Record<string, unknown>>;
+}
+
+/** Interface for step handlers. */
+export interface PipelineStepHandler {
+  readonly stepType: StepType;
+  execute(
+    config: Record<string, unknown>,
+    context: ExecutionContext,
+  ): Promise<StepResult>;
+}
+
+/** Lookup step handlers by type. */
+export interface StepHandlerRegistry {
+  getHandler(stepType: StepType): PipelineStepHandler | undefined;
+}
+
 // --- Event bus ---
 
 export interface EventEnvelope {

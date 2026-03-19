@@ -2,7 +2,7 @@
  * Step handler interface and dependency injection types for built-in step handlers.
  */
 
-import type { ExecutionContext, PipelineStepHandler as EngineStepHandler } from '../engine/step-runner.js';
+import type { ExecutionContext, PipelineStepHandler as EngineStepHandler } from '../types.js';
 
 // ============================================================
 // LIGHTWEIGHT CLIENT INTERFACES

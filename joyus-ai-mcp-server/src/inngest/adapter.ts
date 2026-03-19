@@ -5,7 +5,7 @@
  * `step.run()` call. This gives Inngest durable-execution semantics
  * (checkpointing, retries) around existing handler logic.
  */
-import type { PipelineStepHandler, ExecutionContext } from '../pipelines/engine/step-runner.js';
+import type { PipelineStepHandler, ExecutionContext } from '../pipelines/types.js';
 import type { StepResult } from '../pipelines/types.js';
 
 // ---------------------------------------------------------------------------
