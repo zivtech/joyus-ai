@@ -71,3 +71,7 @@ kitty-specs/**/tasks/*.md
 
 # Deploy secrets (never commit actual .env files)
 deploy/.env
+
+# Vitest timestamp/cache artifacts
+vitest.config.ts.timestamp-*
+.vitest-cache/

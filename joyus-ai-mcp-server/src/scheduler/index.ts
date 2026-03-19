@@ -8,7 +8,7 @@
  * - Logs all executions
  */
 
-import { parseExpression } from 'cron-parser';
+import cronParser from 'cron-parser';
 import { eq } from 'drizzle-orm';
 import cron from 'node-cron';
 
@@ -208,7 +208,7 @@ export async function runTask(taskId: string): Promise<void> {
  */
 async function updateTaskNextRun(taskId: string, schedule: string, timezone: string): Promise<void> {
   try {
-    const interval = parseExpression(schedule, {
+    const interval = cronParser.parseExpression(schedule, {
       tz: timezone || 'America/New_York'
     });
     const nextRun = interval.next().toDate();
