@@ -1,10 +1,27 @@
 {
+  "accept_commit": null,
+  "acceptance_history": [
+    {
+      "accepted_at": "2026-03-19T01:04:03Z",
+      "accepted_by": "Claude",
+      "accepted_from_commit": "e73215e8941e9ffc9ffc6603ed744d67a69fded2",
+      "branch": "feat/009-automated-pipelines-framework",
+      "mode": "pr",
+      "validation_commands": [
+        "npm run validate"
+      ]
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-03-19T01:04:03Z",
+  "accepted_by": "Claude",
+  "accepted_from_commit": "e73215e8941e9ffc9ffc6603ed744d67a69fded2",
+  "created_at": "2026-03-10T08:28:00Z",
   "feature_number": "009",
-  "slug": "009-automated-pipelines-framework",
   "friendly_name": "Automated Pipelines Framework",
   "mission": "software-dev",
+  "slug": "009-automated-pipelines-framework",
   "source_description": "Event-driven pipeline execution framework with triggers, retry policies, review gates, templates, and analytics for content-and-profile workflows",
-  "created_at": "2026-03-10T08:28:00Z",
   "vcs": "git",
   "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00"
 }
