@@ -32,8 +32,8 @@ artifacts:
 
 # Path conventions for this mission
 paths:
-  workspace: "src/"
-  tests: "tests/"
+  workspace: "joyus-ai-mcp-server/src/"
+  tests: "joyus-ai-mcp-server/tests/"
   deliverables: "contracts/"
   documentation: "docs/"
 
