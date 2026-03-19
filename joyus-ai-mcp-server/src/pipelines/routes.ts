@@ -34,7 +34,7 @@ import {
 import { validateNoCycle } from './graph/cycle-detector.js';
 import type { StepRegistry } from './steps/registry.js';
 import type { DecisionRecorder } from './review/decision.js';
-import type { EventBus } from './event-bus/interface.js';
+import { inngest } from '../inngest/client.js';
 
 // ============================================================
 // TYPES
@@ -44,7 +44,6 @@ export interface PipelineRouterDeps {
   db: NodePgDatabase;
   stepRegistry: StepRegistry;
   decisionRecorder: DecisionRecorder;
-  eventBus: EventBus;
 }
 
 // ============================================================
@@ -82,7 +81,7 @@ function getTenantId(req: Request): string {
 // ============================================================
 
 export function createPipelineRouter(deps: PipelineRouterDeps): Router {
-  const { db, stepRegistry, decisionRecorder, eventBus } = deps;
+  const { db, stepRegistry, decisionRecorder } = deps;
   const router = Router();
 
   // ----------------------------------------------------------
@@ -447,11 +446,11 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
       }
 
       const payload = (req.body?.payload as Record<string, unknown>) ?? {};
-      const eventId = await eventBus.publish(
-        tenantId,
-        'manual_request',
-        { pipelineId: pipeline.id, ...payload },
-      );
+      await inngest.send({
+        name: 'pipeline/manual.triggered',
+        data: { tenantId, pipelineId: pipeline.id, payload },
+      });
+      const eventId = createId();
 
       return res.status(202).json({ eventId, pipelineId: pipeline.id });
     } catch (err) {
