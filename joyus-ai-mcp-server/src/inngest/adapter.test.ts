@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createInngestAdapter } from './adapter.js';
+import { inngest } from './client.js';
 import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.js';
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import type { InngestStep } from './adapter.js';
@@ -309,11 +310,16 @@ describe('Concurrency and scheduling', () => {
   // Inngest server at runtime; it cannot be asserted in a unit test without a
   // running Inngest instance. What we can verify is that independent calls
   // produce distinct executionIds — confirming separate execution contexts.
-  it('T017: generates unique executionIds for different tenants (cross-tenant isolation)', async () => {
+  it('T017: corpus-update-pipeline has per-tenant concurrency config and generates unique executionIds', async () => {
     const registry = makeRegistry();
-    const inngestFn = createCorpusUpdatePipeline(registry) as unknown as {
+
+    // Assert the function definition carries the correct concurrency config
+    const fnDef = createCorpusUpdatePipeline(registry) as unknown as {
+      opts?: { concurrency?: { key: string; limit: number } };
       fn: (args: { event: unknown; step: InngestStep }) => Promise<{ executionId: string }>;
     };
+    expect(fnDef.opts?.concurrency?.key).toBe('event.data.tenantId');
+    expect(fnDef.opts?.concurrency?.limit).toBe(1);
 
     const makeStepMock = (): InngestStep =>
       ({
@@ -323,35 +329,43 @@ describe('Concurrency and scheduling', () => {
     const eventTenantA = { data: { tenantId: 'tenant-A', corpusId: 'c1', changeType: 'updated' as const } };
     const eventTenantB = { data: { tenantId: 'tenant-B', corpusId: 'c2', changeType: 'updated' as const } };
 
-    const rA = await inngestFn.fn({ event: eventTenantA, step: makeStepMock() });
-    const rB = await inngestFn.fn({ event: eventTenantB, step: makeStepMock() });
+    const rA = await fnDef.fn({ event: eventTenantA, step: makeStepMock() });
+    const rB = await fnDef.fn({ event: eventTenantB, step: makeStepMock() });
 
     // Each tenant invocation gets its own distinct executionId
     expect(rA.executionId).not.toBe(rB.executionId);
-    // NOTE: Full concurrency isolation (at most 1 run per tenant at a time)
-    // is enforced by the Inngest server using key='event.data.tenantId', limit=1.
-    // Validate that config is wired correctly by running the dev server.
+    // NOTE: Runtime serialisation (at most 1 run per tenant at a time) is enforced
+    // by the Inngest server; validate against the dev server for full coverage.
   });
 
   // T019 — Overlap detection via concurrency key
   // We verify the function definition is created with concurrency config.
   // Runtime overlap prevention is enforced by Inngest server, not unit-testable.
-  it('T019: schedule-tick-pipeline has concurrency key configured', () => {
+  it('T019: schedule-tick-pipeline has global concurrency key to prevent cron overlap', () => {
     const fn = createScheduleTickPipeline() as unknown as {
       id?: string;
       opts?: { concurrency?: { key: string; limit: number } };
     };
-    // Function must be defined (structure exists)
     expect(fn).toBeDefined();
-    expect(typeof fn).toBe('object');
-    // NOTE: Inngest SDK stores concurrency config internally; overlap detection
-    // (preventing a second tick from starting while a first is in-flight) is
-    // validated against a live Inngest dev server with key='event.data.tenantId'.
+    // Cron events carry no tenantId, so the key must be a static string —
+    // 'event.data.tenantId' would evaluate to undefined and skip enforcement.
+    expect(fn.opts?.concurrency?.key).toBe('"schedule-tick-global"');
+    expect(fn.opts?.concurrency?.limit).toBe(1);
   });
 
   // T020 — Timezone support
-  it('T020: schedule-tick-pipeline is created without errors (UTC timezone)', () => {
+  it('T020: schedule-tick-pipeline accepts IANA timezone configuration', () => {
+    // Default (UTC) construction works
     expect(createScheduleTickPipeline()).toBeDefined();
+
+    // Inngest accepts { cron, timezone } — verify a timezone-aware variant
+    // constructs without error (validates SDK accepts the timezone field)
+    const tzFn = inngest.createFunction(
+      { id: 'schedule-tick-pipeline-tz-test', name: 'Timezone Test' },
+      { cron: '0 9 * * *', timezone: 'America/New_York' },
+      async () => ({ status: 'ok' }),
+    );
+    expect(tzFn).toBeDefined();
   });
 
   it('schedule-tick-pipeline returns a truthy function definition', () => {

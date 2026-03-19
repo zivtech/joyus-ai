@@ -35,10 +35,15 @@ export function createScheduleTickPipeline() {
     {
       id: 'schedule-tick-pipeline',
       name: 'Schedule Tick Pipeline',
-      // At most 1 concurrent execution per tenant — prevents overlapping ticks
-      // if a previous run is still in-flight when the next cron fires.
+      // At most 1 concurrent execution globally — prevents overlapping cron ticks
+      // if a previous run is still in-flight when the next one fires.
+      // NOTE: We use a static string key (not 'event.data.tenantId') because
+      // cron-triggered events carry no tenantId in their payload — the key would
+      // evaluate to undefined, which skips concurrency enforcement entirely.
+      // If per-tenant isolation is needed, this function should be event-triggered
+      // only (pipeline/schedule.tick) with tenantId required in the payload.
       concurrency: {
-        key: 'event.data.tenantId',
+        key: '"schedule-tick-global"',
         limit: 1,
       },
     },
