@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Per-Tenant Concurrency and Cron Scheduling
-lane: "for_review"
+lane: "doing"
 dependencies: [WP02]
 base_branch: 010-inngest-evaluation-WP02
 base_commit: 9f52f333b3830e35879a6decccc40e5d7702105d
@@ -9,8 +9,8 @@ created_at: '2026-03-19T10:45:28.064951+00:00'
 subtasks: [T016, T017, T018, T019, T020]
 phase: Phase B - Core Validation
 assignee: ''
-agent: ''
-shell_pid: "32008"
+agent: "claude-sonnet"
+shell_pid: "82810"
 review_status: ''
 reviewed_by: ''
 history:
@@ -43,3 +43,4 @@ spec-kitty implement WP04
 ## Activity Log
 
 - 2026-03-19T10:57:55Z – unknown – shell_pid=32008 – lane=for_review – Per-tenant concurrency (key=tenantId, limit=1) on corpus pipeline, schedule-tick cron function with IANA timezone support, 18 tests passing.
+- 2026-03-19T10:58:57Z – claude-sonnet – shell_pid=82810 – lane=doing – Started review via workflow command
