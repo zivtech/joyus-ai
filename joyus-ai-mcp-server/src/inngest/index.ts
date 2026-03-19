@@ -12,6 +12,7 @@
 export { inngest } from './client.js';
 export { stubFunction } from './functions/stub.js';
 export { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.js';
+export { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 export { createInngestAdapter } from './adapter.js';
 export type { InngestStep, InngestStepHandlerAdapter } from './adapter.js';
 
