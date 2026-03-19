@@ -95,8 +95,11 @@ export class DecisionRecorder {
     if (allDecisionsComplete) {
       await this.resumeExecution(decision.executionId);
 
-      // Send Inngest event to resume the paused review-gate step
+      // Send Inngest event to resume the paused review-gate step.
+      // id is a deterministic idempotency key — prevents duplicate resumes if
+      // two reviewers submit their final decision concurrently.
       await inngest.send({
+        id: `review-decided-${decision.executionId}`,
         name: 'pipeline/review.decided',
         data: {
           tenantId: decision.tenantId,
