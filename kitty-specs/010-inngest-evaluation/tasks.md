@@ -23,11 +23,11 @@ Layer 4: WP06 (decision — depends on all)
 **Priority**: P0 (blocks everything) | **Dependencies**: none | **Est. ~200 lines**
 
 **Subtasks**:
-- [ ] T001: Add `inngest` npm package to `joyus-ai-mcp-server`
-- [ ] T002: Create `docker-compose.inngest.yml` (Inngest server + Redis) using existing Postgres
-- [ ] T003: Create `src/inngest/client.ts` — Inngest client configured for self-hosted server
-- [ ] T004: Register stub Inngest function in Express server (`serve()` adapter at `/api/inngest`)
-- [ ] T005: Verify Inngest dev UI shows registered function, dev server connects
+- [x] T001: Add `inngest` npm package to `joyus-ai-mcp-server`
+- [x] T002: Create `docker-compose.inngest.yml` (Inngest server + Redis) using existing Postgres
+- [x] T003: Create `src/inngest/client.ts` — Inngest client configured for self-hosted server
+- [x] T004: Register stub Inngest function in Express server (`serve()` adapter at `/api/inngest`)
+- [x] T005: Verify Inngest dev UI shows registered function, dev server connects
 
 ---
 
