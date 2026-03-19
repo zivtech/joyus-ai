@@ -91,7 +91,7 @@ app.get('/health/playwright', async (req, res) => {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch('http://playwright:3002/health', {
+    const response = await fetch('http://playwright:3002/mcp', {
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -135,7 +135,7 @@ app.get('/health', async (req, res) => {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch('http://playwright:3002/health', {
+    const response = await fetch('http://playwright:3002/mcp', {
       signal: controller.signal,
     });
     clearTimeout(timeout);
