@@ -21,16 +21,6 @@ import type { StepResult } from '../pipelines/types.js';
  * is not assignable to `Promise<T>`. Since the adapter always returns a
  * `StepResult`, we cast at the call site instead.
  */
-/**
- * The subset of the Inngest `step` object that the *adapter* requires.
- *
- * `waitForEvent` is intentionally excluded: the SDK's real signature is a
- * complex generic (it constrains `event` to the typed PipelineEvents union and
- * returns `Jsonify<T> | null`), so any simplified structural version would be
- * immediately incompatible with the real `step` object.  Pipelines call
- * `step.waitForEvent(...)` directly using the SDK's own types; the adapter
- * only wraps `step.run()`.
- */
 export interface InngestStep {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   run(name: string, fn: () => Promise<any>): Promise<unknown>;
