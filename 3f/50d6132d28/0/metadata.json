@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "3f50d6132d28",
+  "session_id": "b62c46a7-6384-4538-9743-8196091b516b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-19T13:04:59.451441Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "kitty-specs/011-inngest-migration/plan.md",
+    "kitty-specs/011-inngest-migration/research.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "85b6dc38-bdb5-4ddc-aed3-74402682b0ca",
+  "checkpoint_transcript_start": 2705,
+  "transcript_lines_at_start": 2705,
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 124763,
+    "cache_read_tokens": 1221083,
+    "output_tokens": 5125,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-19T13:04:59.150234Z",
+    "agent_lines": 213,
+    "human_added": 1541797,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1542010,
+    "agent_percentage": 0.013813139992607052
+  }
+}
