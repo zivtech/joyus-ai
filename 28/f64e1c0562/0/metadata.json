@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "28f64e1c0562",
+  "session_id": "b62c46a7-6384-4538-9743-8196091b516b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-19T02:50:00.240854Z",
+  "branch": "010-inngest-evaluation-WP01",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/secret-scan.yml",
+    ".kittify/missions/software-dev/mission.yaml",
+    ".worktrees/010-inngest-evaluation-WP01/deploy/docker-compose.inngest.yml",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/package.json",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/index.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/client.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/functions/stub.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/index.ts",
+    ".worktrees/010-inngest-evaluation-WP01/research/inngest-setup.md",
+    "deploy/docker-compose.inngest.yml",
+    "kitty-specs/007-org-scale-agentic-governance/tasks/WP03-governance-remediations.md",
+    "kitty-specs/009-automated-pipelines-framework/checklists/requirements.md",
+    "kitty-specs/009-automated-pipelines-framework/meta.json",
+    "kitty-specs/010-inngest-evaluation/meta.json",
+    "kitty-specs/010-inngest-evaluation/plan.md",
+    "kitty-specs/010-inngest-evaluation/spec.md",
+    "kitty-specs/010-inngest-evaluation/tasks.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "26d6b92e-c262-434f-aee4-d1dd01acac35",
+  "checkpoint_transcript_start": 1142,
+  "transcript_lines_at_start": 1142,
+  "token_usage": {
+    "input_tokens": 49,
+    "cache_creation_tokens": 24560,
+    "cache_read_tokens": 1815962,
+    "output_tokens": 9449,
+    "api_call_count": 18
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-19T02:50:00.103843Z",
+    "agent_lines": 0,
+    "human_added": 1541165,
+    "human_modified": 678,
+    "human_removed": 0,
+    "total_committed": 1541838,
+    "agent_percentage": 0
+  }
+}

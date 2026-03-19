@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "28f64e1c0562",
+  "strategy": "manual-commit",
+  "branch": "010-inngest-evaluation-WP01",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/secret-scan.yml",
+    ".kittify/missions/software-dev/mission.yaml",
+    ".worktrees/010-inngest-evaluation-WP01/deploy/docker-compose.inngest.yml",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/package.json",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/index.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/client.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/functions/stub.ts",
+    ".worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/index.ts",
+    ".worktrees/010-inngest-evaluation-WP01/research/inngest-setup.md",
+    "deploy/docker-compose.inngest.yml",
+    "kitty-specs/007-org-scale-agentic-governance/tasks/WP03-governance-remediations.md",
+    "kitty-specs/009-automated-pipelines-framework/checklists/requirements.md",
+    "kitty-specs/009-automated-pipelines-framework/meta.json",
+    "kitty-specs/010-inngest-evaluation/meta.json",
+    "kitty-specs/010-inngest-evaluation/plan.md",
+    "kitty-specs/010-inngest-evaluation/spec.md",
+    "kitty-specs/010-inngest-evaluation/tasks.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/28/f64e1c0562/0/metadata.json",
+      "transcript": "/28/f64e1c0562/0/full.jsonl",
+      "context": "/28/f64e1c0562/0/context.md",
+      "content_hash": "/28/f64e1c0562/0/content_hash.txt",
+      "prompt": "/28/f64e1c0562/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 49,
+    "cache_creation_tokens": 24560,
+    "cache_read_tokens": 1815962,
+    "output_tokens": 9449,
+    "api_call_count": 18
+  }
+}
