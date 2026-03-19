@@ -16,6 +16,7 @@ import type { StepResult } from '../pipelines/types.js';
 function makeStep(): InngestStep {
   return {
     run: vi.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+    waitForEvent: vi.fn().mockResolvedValue(null),
   } as unknown as InngestStep;
 }
 
@@ -161,6 +162,7 @@ describe('createCorpusUpdatePipeline — stub path (no handlers)', () => {
 
     const step = {
       run: vi.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+      waitForEvent: vi.fn().mockResolvedValue({ data: { executionId: 'exec-stub', decision: 'approved' } }),
     } as unknown as InngestStep;
 
     const event = {
@@ -220,6 +222,7 @@ describe('createCorpusUpdatePipeline — handler path', () => {
 
     const step = {
       run: vi.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+      waitForEvent: vi.fn().mockResolvedValue({ data: { executionId: 'exec-1', decision: 'approved' } }),
     } as unknown as InngestStep;
 
     const event = {
@@ -261,6 +264,7 @@ describe('createCorpusUpdatePipeline — handler path', () => {
 
     const step = {
       run: vi.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+      waitForEvent: vi.fn().mockResolvedValue({ data: { executionId: 'exec-2', decision: 'approved' } }),
     } as unknown as InngestStep;
 
     const event = {
@@ -284,6 +288,7 @@ describe('createCorpusUpdatePipeline — handler path', () => {
     const makeStepMock = (): InngestStep =>
       ({
         run: vi.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+        waitForEvent: vi.fn().mockResolvedValue({ data: { executionId: 'x', decision: 'approved' } }),
       }) as unknown as InngestStep;
 
     const event = {
@@ -294,5 +299,82 @@ describe('createCorpusUpdatePipeline — handler path', () => {
     const r2 = await inngestFn.fn({ event, step: makeStepMock() });
 
     expect(r1.executionId).not.toBe(r2.executionId);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Review gate paths (T013-T015)
+// ---------------------------------------------------------------------------
+
+describe('createCorpusUpdatePipeline — review gate paths', () => {
+  const event = {
+    data: {
+      tenantId: 'tenant-review',
+      corpusId: 'corpus-rg',
+      changeType: 'updated' as const,
+    },
+  };
+
+  interface InngestStepWithWaitForEvent extends InngestStep {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    waitForEvent: ReturnType<typeof vi.fn>;
+  }
+
+  function makeReviewStep(waitForEventReturnValue: unknown): InngestStepWithWaitForEvent {
+    return {
+      run: vi.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+      waitForEvent: vi.fn().mockResolvedValue(waitForEventReturnValue),
+    } as unknown as InngestStepWithWaitForEvent;
+  }
+
+  it('T013: returns approved status when reviewer approves', async () => {
+    const registry = makeRegistry();
+    const inngestFn = createCorpusUpdatePipeline(registry) as unknown as {
+      fn: (args: { event: unknown; step: InngestStep }) => Promise<Record<string, unknown>>;
+    };
+
+    const step = makeReviewStep({
+      data: { executionId: 'exec-approve', decision: 'approved' },
+    });
+
+    const result = await inngestFn.fn({ event, step });
+
+    expect(result.status).toBe('approved');
+    expect(result.artifactsApproved).toBe(true);
+    expect(step.waitForEvent).toHaveBeenCalledOnce();
+    expect(step.waitForEvent).toHaveBeenCalledWith('wait-for-review', expect.objectContaining({
+      event: 'pipeline/review.decided',
+      timeout: '7d',
+    }));
+  });
+
+  it('T014: returns rejected status with feedback when reviewer rejects', async () => {
+    const registry = makeRegistry();
+    const inngestFn = createCorpusUpdatePipeline(registry) as unknown as {
+      fn: (args: { event: unknown; step: InngestStep }) => Promise<Record<string, unknown>>;
+    };
+
+    const step = makeReviewStep({
+      data: { executionId: 'exec-reject', decision: 'rejected', feedback: 'Needs revision' },
+    });
+
+    const result = await inngestFn.fn({ event, step });
+
+    expect(result.status).toBe('rejected');
+    expect(result.feedback).toBe('Needs revision');
+  });
+
+  it('T015: returns timeout status with escalated flag when waitForEvent returns null', async () => {
+    const registry = makeRegistry();
+    const inngestFn = createCorpusUpdatePipeline(registry) as unknown as {
+      fn: (args: { event: unknown; step: InngestStep }) => Promise<Record<string, unknown>>;
+    };
+
+    const step = makeReviewStep(null);
+
+    const result = await inngestFn.fn({ event, step });
+
+    expect(result.status).toBe('timeout');
+    expect(result.escalated).toBe(true);
   });
 });
