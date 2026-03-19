@@ -6,5 +6,9 @@
   "source_description": "Event-driven pipeline execution framework with triggers, retry policies, review gates, templates, and analytics for content-and-profile workflows",
   "created_at": "2026-03-10T08:28:00Z",
   "vcs": "git",
-  "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00"
+  "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00",
+  "measurement_owner": "platform team",
+  "review_cadence": "weekly",
+  "risk_class": "standard",
+  "lifecycle_state": "spec-only"
 }
