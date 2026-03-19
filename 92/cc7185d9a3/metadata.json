@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "92cc7185d9a3",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "kitty-specs/011-inngest-migration/tasks.md",
+    "kitty-specs/011-inngest-migration/tasks/WP01-port-remaining-pipelines.md",
+    "kitty-specs/011-inngest-migration/tasks/WP02-update-routes.md",
+    "kitty-specs/011-inngest-migration/tasks/WP03-delete-custom-plumbing.md",
+    "kitty-specs/011-inngest-migration/tasks/WP04-integration-tests.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/92/cc7185d9a3/0/metadata.json",
+      "transcript": "/92/cc7185d9a3/0/full.jsonl",
+      "context": "/92/cc7185d9a3/0/context.md",
+      "content_hash": "/92/cc7185d9a3/0/content_hash.txt",
+      "prompt": "/92/cc7185d9a3/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 33,
+    "cache_creation_tokens": 201076,
+    "cache_read_tokens": 1264759,
+    "output_tokens": 14580,
+    "api_call_count": 11
+  }
+}

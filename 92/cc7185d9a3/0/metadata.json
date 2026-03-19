@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "92cc7185d9a3",
+  "session_id": "b62c46a7-6384-4538-9743-8196091b516b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-19T13:18:12.421223Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "kitty-specs/011-inngest-migration/tasks.md",
+    "kitty-specs/011-inngest-migration/tasks/WP01-port-remaining-pipelines.md",
+    "kitty-specs/011-inngest-migration/tasks/WP02-update-routes.md",
+    "kitty-specs/011-inngest-migration/tasks/WP03-delete-custom-plumbing.md",
+    "kitty-specs/011-inngest-migration/tasks/WP04-integration-tests.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "7dd82980-4f8f-46e5-9e2c-217191be64ec",
+  "checkpoint_transcript_start": 2787,
+  "transcript_lines_at_start": 2787,
+  "token_usage": {
+    "input_tokens": 33,
+    "cache_creation_tokens": 201076,
+    "cache_read_tokens": 1264759,
+    "output_tokens": 14580,
+    "api_call_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-19T13:18:12.112584Z",
+    "agent_lines": 112,
+    "human_added": 1541797,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1541909,
+    "agent_percentage": 0.007263723086122463
+  }
+}

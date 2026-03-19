@@ -1,0 +1,3589 @@
+what's next?
+
+---
+
+# /spec-kitty.accept - Validate Feature Readiness
+
+**Version**: 0.11.0+
+**Purpose**: Validate all work packages are complete and feature is ready to merge.
+
+## 📍 WORKING DIRECTORY: Run from MAIN repository
+
+**IMPORTANT**: Accept runs from the main repository root, NOT from a WP worktree.
+
+```bash
+# If you're in a worktree, return to main first:
+cd $(git rev-parse --show-toplevel)
+
+# Then run accept:
+spec-kitty accept
+```
+
+## User Input
+
+```text
+
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Discovery (mandatory)
+
+Before running the acceptance workflow, gather the following:
+
+1. **Feature slug** (e.g., `005-awesome-thing`). If omitted, detect automatically.
+2. **Acceptance mode**:
+   - `pr` when the feature will merge via hosted pull request.
+   - `local` when the feature will merge locally without a PR.
+   - `checklist` to run the readiness checklist without committing or producing merge instructions.
+3. **Validation commands executed** (tests/builds). Collect each command verbatim; omit if none.
+4. **Acceptance actor** (optional, defaults to the current agent name).
+
+Ask one focused question per item and confirm the summary before continuing. End the discovery turn with `WAITING_FOR_ACCEPTANCE_INPUT` until all answers are provided.
+
+## Execution Plan
+
+1. Compile the acceptance options into an argument list:
+   - Always include `--actor "__AGENT__"`.
+   - Append `--feature "<slug>"` when the user supplied a slug.
+   - Append `--mode <mode>` (`pr`, `local`, or `checklist`).
+   - Append `--test "<command>"` for each validation command provided.
+2. Run `{SCRIPT}` (the CLI wrapper) with the assembled arguments **and** `--json`.
+3. Parse the JSON response. It contains:
+   - `summary.ok` (boolean) and other readiness details.
+   - `summary.outstanding` categories when issues remain.
+   - `instructions` (merge steps) and `cleanup_instructions`.
+   - `notes` (e.g., acceptance commit hash).
+4. Present the outcome:
+   - If `summary.ok` is `false`, list each outstanding category with bullet points and advise the user to resolve them before retrying acceptance.
+   - If `summary.ok` is `true`, display:
+     - Acceptance timestamp, actor, and (if present) acceptance commit hash.
+     - Merge instructions and cleanup instructions as ordered steps.
+     - Validation commands executed (if any).
+5. When the mode is `checklist`, make it clear no commits or merge instructions were produced.
+
+## Output Requirements
+
+- Summaries must be in plain text (no tables). Use short bullet lists for instructions.
+- Surface outstanding issues before any congratulations or success messages.
+- If the JSON payload includes warnings, surface them under an explicit **Warnings** section.
+- Never fabricate results; only report what the JSON contains.
+
+## Error Handling
+
+- If the command fails or returns invalid JSON, report the failure and request user guidance (do not retry automatically).
+- When outstanding issues exist, do **not** attempt to force acceptance—return the checklist and prompt the user to fix the blockers.
+
+---
+
+# /spec-kitty.accept - Validate Feature Readiness
+
+**Version**: 0.11.0+
+**Purpose**: Validate all work packages are complete and feature is ready to merge.
+
+## 📍 WORKING DIRECTORY: Run from MAIN repository
+
+**IMPORTANT**: Accept runs from the main repository root, NOT from a WP worktree.
+
+```bash
+# If you're in a worktree, return to main first:
+cd $(git rev-parse --show-toplevel)
+
+# Then run accept:
+spec-kitty accept
+```
+
+## User Input
+
+```text
+
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Discovery (mandatory)
+
+Before running the acceptance workflow, gather the following:
+
+1. **Feature slug** (e.g., `005-awesome-thing`). If omitted, detect automatically.
+2. **Acceptance mode**:
+   - `pr` when the feature will merge via hosted pull request.
+   - `local` when the feature will merge locally without a PR.
+   - `checklist` to run the readiness checklist without committing or producing merge instructions.
+3. **Validation commands executed** (tests/builds). Collect each command verbatim; omit if none.
+4. **Acceptance actor** (optional, defaults to the current agent name).
+
+Ask one focused question per item and confirm the summary before continuing. End the discovery turn with `WAITING_FOR_ACCEPTANCE_INPUT` until all answers are provided.
+
+## Execution Plan
+
+1. Compile the acceptance options into an argument list:
+   - Always include `--actor "__AGENT__"`.
+   - Append `--feature "<slug>"` when the user supplied a slug.
+   - Append `--mode <mode>` (`pr`, `local`, or `checklist`).
+   - Append `--test "<command>"` for each validation command provided.
+2. Run `{SCRIPT}` (the CLI wrapper) with the assembled arguments **and** `--json`.
+3. Parse the JSON response. It contains:
+   - `summary.ok` (boolean) and other readiness details.
+   - `summary.outstanding` categories when issues remain.
+   - `instructions` (merge steps) and `cleanup_instructions`.
+   - `notes` (e.g., acceptance commit hash).
+4. Present the outcome:
+   - If `summary.ok` is `false`, list each outstanding category with bullet points and advise the user to resolve them before retrying acceptance.
+   - If `summary.ok` is `true`, display:
+     - Acceptance timestamp, actor, and (if present) acceptance commit hash.
+     - Merge instructions and cleanup instructions as ordered steps.
+     - Validation commands executed (if any).
+5. When the mode is `checklist`, make it clear no commits or merge instructions were produced.
+
+## Output Requirements
+
+- Summaries must be in plain text (no tables). Use short bullet lists for instructions.
+- Surface outstanding issues before any congratulations or success messages.
+- If the JSON payload includes warnings, surface them under an explicit **Warnings** section.
+- Never fabricate results; only report what the JSON contains.
+
+## Error Handling
+
+- If the command fails or returns invalid JSON, report the failure and request user guidance (do not retry automatically).
+- When outstanding issues exist, do **not** attempt to force acceptance—return the checklist and prompt the user to fix the blockers.
+
+---
+
+isn't there alreadty a pr for WP09?
+
+---
+
+[Request interrupted by user]
+
+---
+
+there are issues on 28 that need to be resolved. resolve them
+
+---
+
+<task-notification>
+<task-id>a7ef2ed75de74c390</task-id>
+<tool-use-id>toolu_014ti34zYZEAnAnsZ2gJZN3a</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "Fix 5 code bugs in pipeline framework" completed</summary>
+<result>Now I need Bash access to run the typecheck and commit. Please grant Bash permission so I can complete verification and commit.
+
+Here's a summary of all the changes made so far:
+
+## Changes Made
+
+**Bug 1 — Auth on pipeline routes:**
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/index.ts:316`: Added `requireBearerToken` middleware to the `app.use('/api', ...)` mount
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/routes.ts:58-77`: Rewrote `getTenantId()` to read `req.mcpUser.id` first (set by auth middleware), not the spoofable `x-tenant-id` header
+
+**Bug 2 — ScheduleTriggerHandler wired in:**
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/init.ts`: Imported `ScheduleTriggerHandler`, instantiated it with `db`/`eventBus`, registered it in the trigger registry, called `loadAllSchedules()` during init, and added `stopAll()` to shutdown
+
+**Bug 3 — Review gate resume path:**
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/engine/executor.ts`: Added public `resumeFromGate(executionId)` method that loads remaining steps (position > gate position), runs them sequentially, and tracks in-flight set
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/review/decision.ts`: Added `PipelineExecutor` optional dependency to `DecisionRecorder`, calls `executor.resumeFromGate()` after setting execution back to `running`
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/init.ts`: Passes `executor` to `DecisionRecorder` constructor
+
+**Bug 4 — Double trigger_events row:**
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/engine/executor.ts:89-98`: Removed the `db.insert(triggerEvents)` call; replaced with `const triggerEventId = event.id` to reuse the row already inserted by the bus
+
+**Bug 5 — Update validation parity:**
+- `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/pipelines/routes.ts`: Extracted inline step validation into shared `validateSteps()` helper; called from both POST (create) and PUT (update) handlers</result>
+<usage><total_tokens>70989</total_tokens><tool_uses>38</tool_uses><duration_ms>207358</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>bovqn65m4</task-id>
+<tool-use-id>toolu_0121qVMR6McvJqEuYivroJPR</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Run TypeScript typecheck on the changed files" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+## ⚠️ CRITICAL: Working Directory Requirement
+
+**After running `spec-kitty implement WP##`, you MUST:**
+
+1. **Run the cd command shown in the output** - e.g., `cd .worktrees/###-feature-WP##/`
+2. **ALL file operations happen in this directory** - Read, Write, Edit tools must target files in the workspace
+3. **NEVER write deliverable files to the main repository** - This is a critical workflow error
+
+**Why this matters:**
+- Each WP has an isolated worktree with its own branch
+- Changes in main repository will NOT be seen by reviewers looking at the WP worktree
+- Writing to main instead of the workspace causes review failures and merge conflicts
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion command!
+
+Run this command to get the work package prompt and implementation instructions:
+
+```bash
+spec-kitty agent workflow implement WP01 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is implementing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "planned"` and move it to "doing" for you.
+
+---
+
+## Commit Workflow
+
+**BEFORE moving to for_review**, you MUST commit your implementation:
+
+```bash
+cd .worktrees/###-feature-WP##/
+git add -A
+git commit -m "feat(WP##): <describe your implementation>"
+```
+
+**Then move to review:**
+```bash
+spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
+```
+
+**Why this matters:**
+- `move-task` validates that your worktree has commits beyond main
+- Uncommitted changes will block the move to for_review
+- This prevents lost work and ensures reviewers see complete implementations
+
+---
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+**NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Summary:
+1. Primary Request and Intent:
+   - User asked "what's next?" → initiated Feature 009 acceptance workflow
+   - User confirmed PR #28 already exists for the full feature (not just WP09)
+   - User said "if this is WP11 we should wait on the pr until all the wps are correct" → confirmed all 10 WPs done, proceed with acceptance
+   - User said "there are issues on 28 that need to be resolved" → fix all CI failures and code review bugs
+   - User said "next up should be a plan to deal with https://github.com/zivtech/joyus-ai/issues/29" → create Inngest evaluation spec
+   - User ran `/spec-kitty.implement WP01` → implement WP01 of feature 010-inngest-evaluation
+
+2. Key Technical Concepts:
+   - spec-kitty: spec-driven development toolkit (v0.13.7) with kanban lanes (planned/doing/for_review/done)
+   - Feature 009: Automated Pipelines Framework — 10 WPs all complete
+   - Feature 010: Inngest Evaluation Spike — 6 WPs, just started WP01
+   - Inngest: open-source durable workflow platform for TypeScript (self-hosted with Postgres+Redis)
+   - PR #28: `feat/009-automated-pipelines-framework` → `main`, OPEN
+   - Issue #29: Spike to evaluate Inngest as replacement for ~3,000 LOC custom execution plumbing
+   - Governance check CI: P0 checks for meta.json fields, broken markdown refs, artifact presence
+   - Gitleaks: org repos require license for gitleaks-action@v2; workaround = binary download
+   - Sparse checkout: `git add -f` required for new files in sparse checkout repos
+   - spec-kitty frontmatter: `work_package_id`, `lane`, `agent`, `assignee`, `shell_pid`, `history` required
+
+3. Files and Code Sections:
+
+   - `kitty-specs/009-automated-pipelines-framework/tasks/WP01-WP10.md` (all 10 files)
+     - Fixed frontmatter: added `agent: "claude-sonnet"` and `assignee: "Claude"` to WP03-WP10 (had empty/missing values)
+     - WP01/WP02 force-moved from `doing` to `done` lane
+
+   - `kitty-specs/009-automated-pipelines-framework/meta.json`
+     - Added missing governance fields: `measurement_owner: "Platform Operations"`, `review_cadence: "weekly"`, `risk_class: "platform"`, `lifecycle_state: "done"`
+
+   - `kitty-specs/009-automated-pipelines-framework/checklists/requirements.md`
+     - Created: functional, non-functional, and integration requirements checklist
+
+   - `kitty-specs/005-content-intelligence/tasks/` (14 stub files created)
+     - WP01-WP14 stub markdown files created with `git add -f` (sparse checkout workaround)
+     - Each: `# WPxx: Title\n\nImplementation resides in the private joyus-profile-engine repository.`
+
+   - `kitty-specs/007-org-scale-agentic-governance/tasks/WP03-governance-remediations.md`
+     - Escaped example link refs on line 90 that were being flagged as broken links
+     - Changed: `([text](../path)`, `[text](./path)`)` → `(e.g. \`[text](<path>)\`)`
+
+   - `.github/workflows/secret-scan.yml`
+     - Replaced `gitleaks/gitleaks-action@v2` (requires org license) with binary download:
+     ```yaml
+     - name: Install gitleaks
+       run: |
+         curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz \
+           | tar -xz -C /usr/local/bin gitleaks
+     - name: Run gitleaks
+       run: gitleaks detect --source . --config .gitleaks.toml --redact --exit-code 1
+     ```
+
+   - `.kittify/missions/software-dev/mission.yaml`
+     - Fixed paths: `workspace: "joyus-ai-mcp-server/src/"`, `tests: "joyus-ai-mcp-server/tests/"`
+
+   - `joyus-ai-mcp-server/src/index.ts`
+     - Added `requireBearerToken` middleware to pipeline router mount at `/api`
+
+   - `joyus-ai-mcp-server/src/pipelines/routes.ts`
+     - Rewrote `getTenantId()` to read `req.mcpUser.id` instead of trusting `x-tenant-id` header
+     - Extracted `validateSteps()` shared helper called from both POST (create) and PUT (update) handlers
+
+   - `joyus-ai-mcp-server/src/pipelines/init.ts`
+     - Imported and instantiated `ScheduleTriggerHandler` with db/eventBus
+     - Registered it in trigger registry
+     - Called `loadAllSchedules()` during init, `stopAll()` in shutdown
+     - Passes `executor` to `DecisionRecorder` constructor
+
+   - `joyus-ai-mcp-server/src/pipelines/engine/executor.ts`
+     - Added public `resumeFromGate(executionId: string)` method
+     - Removed duplicate `db.insert(triggerEvents)` call; reuses `event.id` from bus
+
+   - `joyus-ai-mcp-server/src/pipelines/review/decision.ts`
+     - Added optional `PipelineExecutor` dependency
+     - Calls `executor.resumeFromGate(executionId)` after setting execution back to `running`
+
+   - `kitty-specs/010-inngest-evaluation/spec.md`, `plan.md`, `tasks.md`, `meta.json`
+     - Full spec created for Inngest evaluation spike
+     - 6 WPs: WP01 (setup) → WP02 (port pipeline) → WP03/WP04 parallel (review gate, concurrency/cron) → WP05 (perf) → WP06 (decision doc)
+     - meta.json: `"github_issue": 29`, `"lifecycle_state": "planned"`, `"risk_class": "research"`
+
+   - `kitty-specs/010-inngest-evaluation/tasks/WP01-WP06.md` (6 files)
+     - All created with proper spec-kitty frontmatter (lane: "planned", history entries, subtask lists)
+
+   - `.worktrees/010-inngest-evaluation-WP01/deploy/docker-compose.inngest.yml`
+     - New: Inngest server + Redis docker-compose overlay
+     - Inngest on port 8288, Redis on 6379, connects to existing Postgres
+
+   - `.worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/client.ts`
+     - New: Inngest client with PipelineEvents type schema
+     - Events: `pipeline/corpus.changed`, `pipeline/review.decided`, `pipeline/schedule.tick`
+     - Configured via `INNGEST_BASE_URL`, `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` env vars
+
+   - `.worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/functions/stub.ts`
+     - New: Minimal stub function for registration verification
+     - Listens to `pipeline/corpus.changed`, runs one step logging the event
+
+   - `.worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/index.ts`
+     - New: Barrel export for inngest module (`inngest` client, `stubFunction`, `allFunctions`)
+
+4. Errors and fixes:
+   - **spec-kitty accept `ok: false` — WP01/WP02 in "doing" lane**: Used `spec-kitty agent tasks move-task WP01 --to done --force` (force needed due to stale worktrees 60 commits behind main)
+   - **spec-kitty accept `ok: false` — path violations**: Fixed `.kittify/missions/software-dev/mission.yaml` paths from `src/` to `joyus-ai-mcp-server/src/`
+   - **spec-kitty accept `ok: false` — metadata_issues**: Two-pass Python fix needed: first pass missed WP03's `agent:` because it appeared nested in `history` block; second pass fixed empty string `agent: ''` values in WP04-WP10
+   - **005 task stubs not committed**: Sparse checkout silently ignored `git add kitty-specs/005-content-intelligence/tasks/`; fixed with `git add -f`
+   - **Gitleaks CI failure**: org repos require license for `gitleaks-action@v2`; switched to downloading the binary directly
+   - **Governance META-001**: 009 meta.json missing `measurement_owner`, `review_cadence`, `risk_class`, `lifecycle_state`; added all four
+   - **Executor agent denied Bash**: Executor couldn't run typecheck or commit; I ran `npm run typecheck` myself (exit 0), then committed
+   - **spec-kitty create-feature double-prefix**: Passing `010-inngest-evaluation` created `010-010-inngest-evaluation`; renamed with `mv` and `git rm --cached`
+   - **WP files not found by spec-kitty**: Created `tasks.md` but not individual WP prompt files; had to create all 6 WP files with proper frontmatter
+
+5. Problem Solving:
+   - Feature 009 acceptance: resolved 4 rounds of `ok: false` by fixing lane states, git dirty, path conventions, and metadata
+   - PR #28 CI: fixed Gitleaks (binary), governance (meta.json fields, 005 stubs, 007 false-positive)
+   - PR #28 code review: 5 bugs fixed by executor agent (auth, schedule wiring, review gate resume, double event row, update validation parity); typecheck passed (exit 0)
+   - Main branch sync: local main was 68 commits ahead of origin; merged with `--no-ff` and pushed
+   - WP01 implementation started in worktree `.worktrees/010-inngest-evaluation-WP01/`
+
+6. All user messages:
+   - "what's next?"
+   - "isn't there already a pr for WP09?"
+   - "if this is WP11 we should wait on the pr until all the wps are correct"
+   - "there are issues on 28 that need to be resolved. resolve them"
+   - "and next up should be a plan to deal with https://github.com/zivtech/joyus-ai/issues/29"
+   - `/spec-kitty.implement WP01` (command invocation)
+
+7. Pending Tasks:
+   - **WP01 implementation** (in progress): Still need to:
+     - Wait for `npm install inngest` to complete in background (task b37ywevbs)
+     - Modify `joyus-ai-mcp-server/src/index.ts` in worktree to add `serve()` adapter at `/api/inngest`
+     - Create `research/inngest-setup.md` documenting setup steps (T005)
+     - Fix `src/inngest/index.ts` (uses top-level await in a non-ESM-module way — needs revision)
+     - Run typecheck in worktree
+     - Commit in worktree
+     - Mark T001-T005 done via `spec-kitty agent tasks mark-status`
+     - Move WP01 to `for_review`
+   - **PR #28**: All code fixes pushed; awaiting CI re-run and reviewer re-check
+
+8. Current Work:
+   Implementing WP01 of feature 010-inngest-evaluation in worktree `.worktrees/010-inngest-evaluation-WP01/`.
+   
+   Files created so far:
+   - `deploy/docker-compose.inngest.yml` — Inngest server + Redis overlay
+   - `joyus-ai-mcp-server/src/inngest/client.ts` — Inngest client with PipelineEvents type schema
+   - `joyus-ai-mcp-server/src/inngest/functions/stub.ts` — stub function for registration verification
+   - `joyus-ai-mcp-server/src/inngest/index.ts` — barrel export
+
+   Still needed:
+   - Add `serve()` adapter to `joyus-ai-mcp-server/src/index.ts` at `/api/inngest`
+   - Create `research/inngest-setup.md`
+   - Verify npm install completed (background task b37ywevbs)
+   - Run typecheck, commit, mark subtasks done, move to for_review
+
+9. Optional Next Step:
+   Continue WP01 implementation by:
+   1. Checking npm install completion (background task b37ywevbs)
+   2. Adding the Inngest `serve()` adapter to `src/index.ts` in the worktree (at `/api/inngest`)
+   3. Creating `research/inngest-setup.md` with setup documentation
+   4. Running `npm run typecheck` in the worktree
+   5. Committing all changes with `feat(WP01): add Inngest self-hosted setup and stub function`
+   6. Running `spec-kitty agent tasks mark-status T001 T002 T003 T004 T005 --status done --feature 010-inngest-evaluation`
+   7. Running `spec-kitty agent tasks move-task WP01 --to for_review --note "Environment setup complete: docker-compose overlay, Inngest client, stub function, serve() adapter"`
+
+   Direct quote from last work: "T004: Register stub Inngest function in Express server via `serve()` adapter at `/api/inngest`" and "T005: Confirm Inngest dev UI shows the registered stub function; document setup steps in `research/inngest-setup.md`"
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+Continue the conversation from where it left off without asking the user any further questions. Resume directly — do not acknowledge the summary, do not recap what was happening, do not preface with "I'll continue" or similar. Pick up the last task as if the break never happened.
+
+---
+
+[Request interrupted by user]
+
+---
+
+<task-notification>
+<task-id>b37ywevbs</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install inngest package in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>bpw1d86ih</task-id>
+<tool-use-id>toolu_01MdLAtft1bZExHkPNxLzZz3</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install dependencies in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+<task-notification>
+<task-id>bjd4aie79</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install dependencies including inngest" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+Base directory for this skill: /Users/AlexUA/.claude/plugins/cache/omc/oh-my-claudecode/4.4.5/skills/omc-setup
+
+# OMC Setup
+
+This is the **only command you need to learn**. After running this, everything else is automatic.
+
+Note: All `~/.claude/...` paths in this guide respect `CLAUDE_CONFIG_DIR` when that environment variable is set.
+
+## Pre-Setup Check: Already Configured?
+
+**CRITICAL**: Before doing anything else, check if setup has already been completed. This prevents users from having to re-run the full setup wizard after every update.
+
+```bash
+# Check if setup was already completed
+CONFIG_FILE="$HOME/.claude/.omc-config.json"
+
+if [ -f "$CONFIG_FILE" ]; then
+  SETUP_COMPLETED=$(jq -r '.setupCompleted // empty' "$CONFIG_FILE" 2>/dev/null)
+  SETUP_VERSION=$(jq -r '.setupVersion // empty' "$CONFIG_FILE" 2>/dev/null)
+
+  if [ -n "$SETUP_COMPLETED" ] && [ "$SETUP_COMPLETED" != "null" ]; then
+    echo "OMC setup was already completed on: $SETUP_COMPLETED"
+    [ -n "$SETUP_VERSION" ] && echo "Setup version: $SETUP_VERSION"
+    ALREADY_CONFIGURED="true"
+  fi
+fi
+```
+
+### If Already Configured (and no --force flag)
+
+If `ALREADY_CONFIGURED` is true AND the user did NOT pass `--force`, `--local`, or `--global` flags:
+
+Use AskUserQuestion to prompt:
+
+**Question:** "OMC is already configured. What would you like to do?"
+
+**Options:**
+1. **Update CLAUDE.md only** - Download latest CLAUDE.md without re-running full setup
+2. **Run full setup again** - Go through the complete setup wizard
+3. **Cancel** - Exit without changes
+
+**If user chooses "Update CLAUDE.md only":**
+- Detect if local (.claude/CLAUDE.md) or global (~/.claude/CLAUDE.md) config exists
+- If local exists, run the download/merge script from Step 2A
+- If only global exists, run the download/merge script from Step 2B
+- Skip all other steps
+- Report success and exit
+
+**If user chooses "Run full setup again":**
+- Continue with Step 0 (Resume Detection) below
+
+**If user chooses "Cancel":**
+- Exit without any changes
+
+### Force Flag Override
+
+If user passes `--force` flag, skip this check and proceed directly to setup.
+
+## Graceful Interrupt Handling
+
+**IMPORTANT**: This setup process saves progress after each step. If interrupted (Ctrl+C or connection loss), the setup can resume from where it left off.
+
+### State File Location
+- `.omc/state/setup-state.json` - Tracks completed steps
+
+### Resume Detection (Step 0)
+
+Before starting any step, check for existing state:
+
+```bash
+# Check for existing setup state
+STATE_FILE=".omc/state/setup-state.json"
+
+# Cross-platform ISO date to epoch conversion
+iso_to_epoch() {
+  local iso_date=""
+  local epoch=""
+  # Try GNU date first (Linux)
+  epoch=$(date -d "$iso_date" +%s 2>/dev/null)
+  if [ $? -eq 0 ] && [ -n "$epoch" ]; then
+    echo "$epoch"
+    return 0
+  fi
+  # Try BSD/macOS date
+  local clean_date=$(echo "$iso_date" | sed 's/[+-][0-9][0-9]:[0-9][0-9]$//' | sed 's/Z$//' | sed 's/T/ /')
+  epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "$clean_date" +%s 2>/dev/null)
+  if [ $? -eq 0 ] && [ -n "$epoch" ]; then
+    echo "$epoch"
+    return 0
+  fi
+  echo "0"
+}
+
+if [ -f "$STATE_FILE" ]; then
+  # Check if state is stale (older than 24 hours)
+  TIMESTAMP_RAW=$(jq -r '.timestamp // empty' "$STATE_FILE" 2>/dev/null)
+  if [ -n "$TIMESTAMP_RAW" ]; then
+    TIMESTAMP_EPOCH=$(iso_to_epoch "$TIMESTAMP_RAW")
+    NOW_EPOCH=$(date +%s)
+    STATE_AGE=$((NOW_EPOCH - TIMESTAMP_EPOCH))
+  else
+    STATE_AGE=999999  # Force fresh start if no timestamp
+  fi
+  if [ "$STATE_AGE" -gt 86400 ]; then
+    echo "Previous setup state is more than 24 hours old. Starting fresh."
+    rm -f "$STATE_FILE"
+  else
+    LAST_STEP=$(jq -r ".lastCompletedStep // 0" "$STATE_FILE" 2>/dev/null || echo "0")
+    TIMESTAMP=$(jq -r .timestamp "$STATE_FILE" 2>/dev/null || echo "unknown")
+    echo "Found previous setup session (Step $LAST_STEP completed at $TIMESTAMP)"
+  fi
+fi
+```
+
+If state exists, use AskUserQuestion to prompt:
+
+**Question:** "Found a previous setup session. Would you like to resume or start fresh?"
+
+**Options:**
+1. **Resume from step $LAST_STEP** - Continue where you left off
+2. **Start fresh** - Begin from the beginning (clears saved state)
+
+If user chooses "Start fresh":
+```bash
+rm -f ".omc/state/setup-state.json"
+echo "Previous state cleared. Starting fresh setup."
+```
+
+### Save Progress Helper
+
+After completing each major step, save progress:
+
+```bash
+# Save setup progress (call after each step)
+# Usage: save_setup_progress STEP_NUMBER
+save_setup_progress() {
+  mkdir -p .omc/state
+  cat > ".omc/state/setup-state.json" << EOF
+{
+  "lastCompletedStep": ,
+  "timestamp": "$(date -Iseconds)",
+  "configType": "${CONFIG_TYPE:-unknown}"
+}
+EOF
+}
+```
+
+### Clear State on Completion
+
+After successful setup completion (Step 7/8), remove the state file:
+
+```bash
+rm -f ".omc/state/setup-state.json"
+echo "Setup completed successfully. State cleared."
+```
+
+## Usage Modes
+
+This skill handles three scenarios:
+
+1. **Initial Setup (no flags)**: First-time installation wizard
+2. **Local Configuration (`--local`)**: Configure project-specific settings (.claude/CLAUDE.md)
+3. **Global Configuration (`--global`)**: Configure global settings (~/.claude/CLAUDE.md)
+
+## Mode Detection
+
+Check for flags in the user's invocation:
+- If `--local` flag present → Skip Pre-Setup Check, go to Local Configuration (Step 2A)
+- If `--global` flag present → Skip Pre-Setup Check, go to Global Configuration (Step 2B)
+- If `--force` flag present → Skip Pre-Setup Check, run Initial Setup wizard (Step 1)
+- If no flags → Run Pre-Setup Check first, then Initial Setup wizard (Step 1) if needed
+
+## Step 1: Initial Setup Wizard (Default Behavior)
+
+**Note**: If resuming and lastCompletedStep >= 1, skip to the appropriate step based on configType.
+
+Use the AskUserQuestion tool to prompt the user:
+
+**Question:** "Where should I configure oh-my-claudecode?"
+
+**Options:**
+1. **Local (this project)** - Creates `.claude/CLAUDE.md` in current project directory. Best for project-specific configurations.
+2. **Global (all projects)** - Creates `~/.claude/CLAUDE.md` for all Claude Code sessions. Best for consistent behavior everywhere.
+
+## Step 2A: Local Configuration (--local flag or user chose LOCAL)
+
+**CRITICAL**: This ALWAYS downloads fresh CLAUDE.md from GitHub to the local project. DO NOT use the Write tool - use bash curl exclusively.
+
+### Create Local .claude Directory
+
+```bash
+# Create .claude directory in current project
+mkdir -p .claude && echo ".claude directory ready"
+```
+
+### Download Fresh CLAUDE.md
+
+```bash
+# Define target path
+TARGET_PATH=".claude/CLAUDE.md"
+
+# Extract old version before download
+OLD_VERSION=$(grep -m1 "^# oh-my-claudecode" "$TARGET_PATH" 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "none")
+
+# Backup existing
+if [ -f "$TARGET_PATH" ]; then
+  BACKUP_DATE=$(date +%Y-%m-%d_%H%M%S)
+  BACKUP_PATH="${TARGET_PATH}.backup.${BACKUP_DATE}"
+  cp "$TARGET_PATH" "$BACKUP_PATH"
+  echo "Backed up existing CLAUDE.md to $BACKUP_PATH"
+fi
+
+# Download fresh OMC content to temp file
+TEMP_OMC=$(mktemp /tmp/omc-claude-XXXXXX.md)
+trap 'rm -f "$TEMP_OMC"' EXIT
+curl -fsSL "https://raw.githubusercontent.com/Yeachan-Heo/oh-my-claudecode/main/docs/CLAUDE.md" -o "$TEMP_OMC"
+
+if [ ! -s "$TEMP_OMC" ]; then
+  echo "ERROR: Failed to download CLAUDE.md. Aborting."
+  rm -f "$TEMP_OMC"
+  return 1
+fi
+
+# Strip existing markers from downloaded content (idempotency)
+if grep -q '<!-- OMC:START -->' "$TEMP_OMC"; then
+  # Extract content between markers
+  sed -n '/<!-- OMC:START -->/,/<!-- OMC:END -->/{//!p}' "$TEMP_OMC" > "${TEMP_OMC}.clean"
+  mv "${TEMP_OMC}.clean" "$TEMP_OMC"
+fi
+
+if [ ! -f "$TARGET_PATH" ]; then
+  # Fresh install: wrap in markers
+  {
+    echo '<!-- OMC:START -->'
+    cat "$TEMP_OMC"
+    echo '<!-- OMC:END -->'
+  } > "$TARGET_PATH"
+  rm -f "$TEMP_OMC"
+  echo "Installed CLAUDE.md (fresh)"
+else
+  # Merge: preserve user content outside OMC markers
+  if grep -q '<!-- OMC:START -->' "$TARGET_PATH"; then
+    # Has markers: replace OMC section, keep user content
+    BEFORE_OMC=$(sed -n '1,/<!-- OMC:START -->/{ /<!-- OMC:START -->/!p }' "$TARGET_PATH")
+    AFTER_OMC=$(sed -n '/<!-- OMC:END -->/,${  /<!-- OMC:END -->/!p }' "$TARGET_PATH")
+    {
+      [ -n "$BEFORE_OMC" ] && printf '%s\n' "$BEFORE_OMC"
+      echo '<!-- OMC:START -->'
+      cat "$TEMP_OMC"
+      echo '<!-- OMC:END -->'
+      [ -n "$AFTER_OMC" ] && printf '%s\n' "$AFTER_OMC"
+    } > "${TARGET_PATH}.tmp"
+    mv "${TARGET_PATH}.tmp" "$TARGET_PATH"
+    echo "Updated OMC section (user customizations preserved)"
+  else
+    # No markers: wrap new content in markers, append old content as user section
+    OLD_CONTENT=$(cat "$TARGET_PATH")
+    {
+      echo '<!-- OMC:START -->'
+      cat "$TEMP_OMC"
+      echo '<!-- OMC:END -->'
+      echo ""
+      echo "<!-- User customizations (migrated from previous CLAUDE.md) -->"
+      printf '%s\n' "$OLD_CONTENT"
+    } > "${TARGET_PATH}.tmp"
+    mv "${TARGET_PATH}.tmp" "$TARGET_PATH"
+    echo "Migrated existing CLAUDE.md (added OMC markers, preserved old content)"
+  fi
+  rm -f "$TEMP_OMC"
+fi
+
+# Extract new version and report
+NEW_VERSION=$(grep -m1 "^# oh-my-claudecode" "$TARGET_PATH" 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+if [ "$OLD_VERSION" = "none" ]; then
+  echo "Installed CLAUDE.md: $NEW_VERSION"
+elif [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
+  echo "CLAUDE.md unchanged: $NEW_VERSION"
+else
+  echo "Updated CLAUDE.md: $OLD_VERSION -> $NEW_VERSION"
+fi
+```
+
+**Note**: The downloaded CLAUDE.md includes Context Persistence instructions with `<remember>` tags for surviving conversation compaction.
+
+**Note**: If an existing CLAUDE.md is found, it will be backed up to `.claude/CLAUDE.md.backup.YYYY-MM-DD` before downloading the new version.
+
+**MANDATORY**: Always run this command. Do NOT skip. Do NOT use Write tool.
+
+**FALLBACK** if curl fails:
+Tell user to manually download from:
+https://raw.githubusercontent.com/Yeachan-Heo/oh-my-claudecode/main/docs/CLAUDE.md
+
+### Verify Plugin Installation
+
+```bash
+grep -q "oh-my-claudecode" ~/.claude/settings.json && echo "Plugin verified" || echo "Plugin NOT found - run: claude /install-plugin oh-my-claudecode"
+```
+
+### Confirm Local Configuration Success
+
+After completing local configuration, save progress and report:
+
+```bash
+# Save progress - Step 2 complete (Local config)
+mkdir -p .omc/state
+cat > ".omc/state/setup-state.json" << EOF
+{
+  "lastCompletedStep": 2,
+  "timestamp": "$(date -Iseconds)",
+  "configType": "local"
+}
+EOF
+```
+
+**OMC Project Configuration Complete**
+- CLAUDE.md: Updated with latest configuration from GitHub at ./.claude/CLAUDE.md
+- Backup: Previous CLAUDE.md backed up to `.claude/CLAUDE.md.backup.YYYY-MM-DD` (if existed)
+- Scope: **PROJECT** - applies only to this project
+- Hooks: Provided by plugin (no manual installation needed)
+- Agents: 28+ available (base + tiered variants)
+- Model routing: Haiku/Sonnet/Opus based on task complexity
+
+**Note**: This configuration is project-specific and won't affect other projects or global settings.
+
+If `--local` flag was used, clear state and **STOP HERE**:
+```bash
+rm -f ".omc/state/setup-state.json"
+```
+Do not continue to HUD setup or other steps.
+
+## Step 2B: Global Configuration (--global flag or user chose GLOBAL)
+
+**CRITICAL**: This ALWAYS downloads fresh CLAUDE.md from GitHub to global config. DO NOT use the Write tool - use bash curl exclusively.
+
+### Download Fresh CLAUDE.md
+
+```bash
+# Define target path
+TARGET_PATH="$HOME/.claude/CLAUDE.md"
+
+# Extract old version before download
+OLD_VERSION=$(grep -m1 "^# oh-my-claudecode" "$TARGET_PATH" 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "none")
+
+# Backup existing
+if [ -f "$TARGET_PATH" ]; then
+  BACKUP_DATE=$(date +%Y-%m-%d_%H%M%S)
+  BACKUP_PATH="${TARGET_PATH}.backup.${BACKUP_DATE}"
+  cp "$TARGET_PATH" "$BACKUP_PATH"
+  echo "Backed up existing CLAUDE.md to $BACKUP_PATH"
+fi
+
+# Download fresh OMC content to temp file
+TEMP_OMC=$(mktemp /tmp/omc-claude-XXXXXX.md)
+trap 'rm -f "$TEMP_OMC"' EXIT
+curl -fsSL "https://raw.githubusercontent.com/Yeachan-Heo/oh-my-claudecode/main/docs/CLAUDE.md" -o "$TEMP_OMC"
+
+if [ ! -s "$TEMP_OMC" ]; then
+  echo "ERROR: Failed to download CLAUDE.md. Aborting."
+  rm -f "$TEMP_OMC"
+  return 1
+fi
+
+# Strip existing markers from downloaded content (idempotency)
+if grep -q '<!-- OMC:START -->' "$TEMP_OMC"; then
+  # Extract content between markers
+  sed -n '/<!-- OMC:START -->/,/<!-- OMC:END -->/{//!p}' "$TEMP_OMC" > "${TEMP_OMC}.clean"
+  mv "${TEMP_OMC}.clean" "$TEMP_OMC"
+fi
+
+if [ ! -f "$TARGET_PATH" ]; then
+  # Fresh install: wrap in markers
+  {
+    echo '<!-- OMC:START -->'
+    cat "$TEMP_OMC"
+    echo '<!-- OMC:END -->'
+  } > "$TARGET_PATH"
+  rm -f "$TEMP_OMC"
+  echo "Installed CLAUDE.md (fresh)"
+else
+  # Merge: preserve user content outside OMC markers
+  if grep -q '<!-- OMC:START -->' "$TARGET_PATH"; then
+    # Has markers: replace OMC section, keep user content
+    BEFORE_OMC=$(sed -n '1,/<!-- OMC:START -->/{ /<!-- OMC:START -->/!p }' "$TARGET_PATH")
+    AFTER_OMC=$(sed -n '/<!-- OMC:END -->/,${  /<!-- OMC:END -->/!p }' "$TARGET_PATH")
+    {
+      [ -n "$BEFORE_OMC" ] && printf '%s\n' "$BEFORE_OMC"
+      echo '<!-- OMC:START -->'
+      cat "$TEMP_OMC"
+      echo '<!-- OMC:END -->'
+      [ -n "$AFTER_OMC" ] && printf '%s\n' "$AFTER_OMC"
+    } > "${TARGET_PATH}.tmp"
+    mv "${TARGET_PATH}.tmp" "$TARGET_PATH"
+    echo "Updated OMC section (user customizations preserved)"
+  else
+    # No markers: wrap new content in markers, append old content as user section
+    OLD_CONTENT=$(cat "$TARGET_PATH")
+    {
+      echo '<!-- OMC:START -->'
+      cat "$TEMP_OMC"
+      echo '<!-- OMC:END -->'
+      echo ""
+      echo "<!-- User customizations (migrated from previous CLAUDE.md) -->"
+      printf '%s\n' "$OLD_CONTENT"
+    } > "${TARGET_PATH}.tmp"
+    mv "${TARGET_PATH}.tmp" "$TARGET_PATH"
+    echo "Migrated existing CLAUDE.md (added OMC markers, preserved old content)"
+  fi
+  rm -f "$TEMP_OMC"
+fi
+
+# Extract new version and report
+NEW_VERSION=$(grep -m1 "^# oh-my-claudecode" "$TARGET_PATH" 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+if [ "$OLD_VERSION" = "none" ]; then
+  echo "Installed CLAUDE.md: $NEW_VERSION"
+elif [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
+  echo "CLAUDE.md unchanged: $NEW_VERSION"
+else
+  echo "Updated CLAUDE.md: $OLD_VERSION -> $NEW_VERSION"
+fi
+```
+
+**Note**: If an existing CLAUDE.md is found, it will be backed up to `~/.claude/CLAUDE.md.backup.YYYY-MM-DD` before downloading the new version.
+
+### Clean Up Legacy Hooks (if present)
+
+Check if old manual hooks exist and remove them to prevent duplicates:
+
+```bash
+# Remove legacy bash hook scripts (now handled by plugin system)
+rm -f ~/.claude/hooks/keyword-detector.sh
+rm -f ~/.claude/hooks/stop-continuation.sh
+rm -f ~/.claude/hooks/persistent-mode.sh
+rm -f ~/.claude/hooks/session-start.sh
+echo "Legacy hooks cleaned"
+```
+
+Check `~/.claude/settings.json` for manual hook entries. If the "hooks" key exists with UserPromptSubmit, Stop, or SessionStart entries pointing to bash scripts, inform the user:
+
+> **Note**: Found legacy hooks in settings.json. These should be removed since the plugin now provides hooks automatically. Remove the "hooks" section from ~/.claude/settings.json to prevent duplicate hook execution.
+
+### Verify Plugin Installation
+
+```bash
+grep -q "oh-my-claudecode" ~/.claude/settings.json && echo "Plugin verified" || echo "Plugin NOT found - run: claude /install-plugin oh-my-claudecode"
+```
+
+### Confirm Global Configuration Success
+
+After completing global configuration, save progress and report:
+
+```bash
+# Save progress - Step 2 complete (Global config)
+mkdir -p .omc/state
+cat > ".omc/state/setup-state.json" << EOF
+{
+  "lastCompletedStep": 2,
+  "timestamp": "$(date -Iseconds)",
+  "configType": "global"
+}
+EOF
+```
+
+**OMC Global Configuration Complete**
+- CLAUDE.md: Updated with latest configuration from GitHub at ~/.claude/CLAUDE.md
+- Backup: Previous CLAUDE.md backed up to `~/.claude/CLAUDE.md.backup.YYYY-MM-DD` (if existed)
+- Scope: **GLOBAL** - applies to all Claude Code sessions
+- Hooks: Provided by plugin (no manual installation needed)
+- Agents: 28+ available (base + tiered variants)
+- Model routing: Haiku/Sonnet/Opus based on task complexity
+
+**Note**: Hooks are now managed by the plugin system automatically. No manual hook installation required.
+
+If `--global` flag was used, clear state and **STOP HERE**:
+```bash
+rm -f ".omc/state/setup-state.json"
+```
+Do not continue to HUD setup or other steps.
+
+## Step 3: Setup HUD Statusline
+
+**Note**: If resuming and lastCompletedStep >= 3, skip to Step 3.5.
+
+The HUD shows real-time status in Claude Code's status bar. **Invoke the hud skill** to set up and configure:
+
+Use the Skill tool to invoke: `hud` with args: `setup`
+
+This will:
+1. Install the HUD wrapper script to `~/.claude/hud/omc-hud.mjs`
+2. Configure `statusLine` in `~/.claude/settings.json`
+3. Report status and prompt to restart if needed
+
+After HUD setup completes, save progress:
+```bash
+# Save progress - Step 3 complete (HUD setup)
+mkdir -p .omc/state
+CONFIG_TYPE=$(cat ".omc/state/setup-state.json" 2>/dev/null | grep -oE '"configType":\s*"[^"]+"' | cut -d'"' -f4 || echo "unknown")
+cat > ".omc/state/setup-state.json" << EOF
+{
+  "lastCompletedStep": 3,
+  "timestamp": "$(date -Iseconds)",
+  "configType": "$CONFIG_TYPE"
+}
+EOF
+```
+
+## Step 3.5: Clear Stale Plugin Cache
+
+Clear old cached plugin versions to avoid conflicts:
+
+```bash
+# Clear stale plugin cache versions (cross-platform)
+node -e "const p=require('path'),f=require('fs'),h=require('os').homedir(),d=process.env.CLAUDE_CONFIG_DIR||p.join(h,'.claude'),b=p.join(d,'plugins','cache','omc','oh-my-claudecode');try{const v=f.readdirSync(b).filter(x=>/^\d/.test(x)).sort((a,c)=>a.localeCompare(c,void 0,{numeric:true}));if(v.length<=1){console.log('Cache is clean');process.exit()}v.slice(0,-1).forEach(x=>{f.rmSync(p.join(b,x),{recursive:true,force:true})});console.log('Cleared',v.length-1,'stale cache version(s)')}catch{console.log('No cache directory found (normal for new installs)')}"
+```
+
+## Step 3.6: Check for Updates
+
+Notify user if a newer version is available:
+
+```bash
+# Detect installed version (cross-platform)
+node -e "
+const p=require('path'),f=require('fs'),h=require('os').homedir();
+const d=process.env.CLAUDE_CONFIG_DIR||p.join(h,'.claude');
+let v='';
+// Try cache directory first
+const b=p.join(d,'plugins','cache','omc','oh-my-claudecode');
+try{const vs=f.readdirSync(b).filter(x=>/^\d/.test(x)).sort((a,c)=>a.localeCompare(c,void 0,{numeric:true}));if(vs.length)v=vs[vs.length-1]}catch{}
+// Try .omc-version.json second
+if(v==='')try{const j=JSON.parse(f.readFileSync('.omc-version.json','utf-8'));v=j.version||''}catch{}
+// Try CLAUDE.md header third
+if(v==='')for(const c of['.claude/CLAUDE.md',p.join(d,'CLAUDE.md')]){try{const m=f.readFileSync(c,'utf-8').match(/^# oh-my-claudecode.*?(v?\d+\.\d+\.\d+)/m);if(m){v=m[1].replace(/^v/,'');break}}catch{}}
+console.log('Installed:',v||'(not found)');
+"
+
+# Check npm for latest version
+LATEST_VERSION=$(npm view oh-my-claude-sisyphus version 2>/dev/null)
+
+if [ -n "$INSTALLED_VERSION" ] && [ -n "$LATEST_VERSION" ]; then
+  # Simple version comparison (assumes semantic versioning)
+  if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
+    echo ""
+    echo "UPDATE AVAILABLE:"
+    echo "  Installed: v$INSTALLED_VERSION"
+    echo "  Latest:    v$LATEST_VERSION"
+    echo ""
+    echo "To update, run: claude /install-plugin oh-my-claudecode"
+  else
+    echo "You're on the latest version: v$INSTALLED_VERSION"
+  fi
+elif [ -n "$LATEST_VERSION" ]; then
+  echo "Latest version available: v$LATEST_VERSION"
+fi
+```
+
+## Step 3.7: Set Default Execution Mode
+
+Use the AskUserQuestion tool to prompt the user:
+
+**Question:** "Which parallel execution mode should be your default when you say 'fast' or 'parallel'?"
+
+**Options:**
+1. **ultrawork (maximum capability)** - Uses all agent tiers including Opus for complex tasks. Best for challenging work where quality matters most. (Recommended)
+
+Store the preference in `~/.claude/.omc-config.json`:
+
+```bash
+# Read existing config or create empty object
+CONFIG_FILE="$HOME/.claude/.omc-config.json"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+if [ -f "$CONFIG_FILE" ]; then
+  EXISTING=$(cat "$CONFIG_FILE")
+else
+  EXISTING='{}'
+fi
+
+# Set defaultExecutionMode (replace USER_CHOICE with "ultrawork" or "")
+echo "$EXISTING" | jq --arg mode "USER_CHOICE" '. + {defaultExecutionMode: $mode, configuredAt: (now | todate)}' > "$CONFIG_FILE"
+echo "Default execution mode set to: USER_CHOICE"
+```
+
+**Note**: This preference ONLY affects generic keywords ("fast", "parallel"). Explicit keywords ("ulw") always override this preference.
+
+
+## Step 3.8: Install OMC CLI Tool
+
+The OMC CLI (`omc` command) provides standalone token analytics and management commands (`omc stats`, `omc agents`, `omc tui`).
+
+First, check if the CLI is already installed:
+
+```bash
+# Check if omc CLI is already available
+if command -v omc &>/dev/null; then
+  OMC_CLI_VERSION=$(omc --version 2>/dev/null | head -1 || echo "installed")
+  echo "OMC CLI already installed: $OMC_CLI_VERSION"
+  OMC_CLI_INSTALLED="true"
+else
+  OMC_CLI_INSTALLED="false"
+fi
+```
+
+If `OMC_CLI_INSTALLED` is `"true"`, skip the rest of this step.
+
+If `OMC_CLI_INSTALLED` is `"false"`, use the AskUserQuestion tool to prompt the user:
+
+**Question:** "Would you like to install the OMC CLI globally for standalone analytics? (`omc stats`, `omc agents`, `omc tui`)"
+
+**Options:**
+1. **Yes (Recommended)** - Install `oh-my-claude-sisyphus` via `npm install -g`
+2. **No - Skip** - Skip installation (can install manually later with `npm install -g oh-my-claude-sisyphus`)
+
+If user chooses **Yes**:
+
+```bash
+# Check if npm is available
+if ! command -v npm &>/dev/null; then
+  echo "WARNING: npm not found. Cannot install OMC CLI automatically."
+  echo "Install Node.js/npm first, then run: npm install -g oh-my-claude-sisyphus"
+else
+  # Install the CLI globally
+  if npm install -g oh-my-claude-sisyphus 2>&1; then
+    echo "OMC CLI installed successfully."
+    # Verify installation
+    if command -v omc &>/dev/null; then
+      OMC_CLI_VERSION=$(omc --version 2>/dev/null | head -1 || echo "installed")
+      echo "Verified: omc $OMC_CLI_VERSION"
+    else
+      echo "Installed but 'omc' not on PATH. You may need to restart your shell."
+    fi
+  else
+    echo "WARNING: Failed to install OMC CLI (permission issue or network error)."
+    echo "You can install manually later: npm install -g oh-my-claude-sisyphus"
+    echo "Or with sudo: sudo npm install -g oh-my-claude-sisyphus"
+  fi
+fi
+```
+
+If user chooses **No - Skip**, continue to the next step without installing.
+
+**Note**: The CLI is optional. All core functionality is also available through the plugin system (`/oh-my-claudecode:omc-help`, `/oh-my-claudecode:omc-doctor`). The CLI adds standalone terminal commands for analytics outside of Claude Code sessions.
+
+## Step 3.8.5: Select Task Management Tool
+
+First, detect available task tools:
+
+```bash
+# Detect beads (bd)
+BD_VERSION=""
+if command -v bd &>/dev/null; then
+  BD_VERSION=$(bd --version 2>/dev/null | head -1 || echo "installed")
+fi
+
+# Detect beads-rust (br)
+BR_VERSION=""
+if command -v br &>/dev/null; then
+  BR_VERSION=$(br --version 2>/dev/null | head -1 || echo "installed")
+fi
+
+# Report findings
+if [ -n "$BD_VERSION" ]; then
+  echo "Found beads (bd): $BD_VERSION"
+fi
+if [ -n "$BR_VERSION" ]; then
+  echo "Found beads-rust (br): $BR_VERSION"
+fi
+if [ -z "$BD_VERSION" ] && [ -z "$BR_VERSION" ]; then
+  echo "No external task tools found. Using built-in Tasks."
+fi
+```
+
+If **neither** beads nor beads-rust is detected, skip this step (default to built-in).
+
+If beads or beads-rust is detected, use AskUserQuestion:
+
+**Question:** "Which task management tool should I use for tracking work?"
+
+**Options:**
+1. **Built-in Tasks (default)** - Use Claude Code's native TaskCreate/TodoWrite. Tasks are session-only.
+2. **Beads (bd)** - Git-backed persistent tasks. Survives across sessions. [Only if detected]
+3. **Beads-Rust (br)** - Lightweight Rust port of beads. [Only if detected]
+
+(Only show options 2/3 if the corresponding tool is detected)
+
+Store the preference:
+
+```bash
+CONFIG_FILE="$HOME/.claude/.omc-config.json"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+if [ -f "$CONFIG_FILE" ]; then
+  EXISTING=$(cat "$CONFIG_FILE")
+else
+  EXISTING='{}'
+fi
+
+# USER_CHOICE is "builtin", "beads", or "beads-rust" based on user selection
+echo "$EXISTING" | jq --arg tool "USER_CHOICE" '. + {taskTool: $tool, taskToolConfig: {injectInstructions: true, useMcp: false}}' > "$CONFIG_FILE"
+echo "Task tool set to: USER_CHOICE"
+```
+
+**Note:** The beads context instructions will be injected automatically on the next session start. No restart is needed for config to take effect.
+
+## Step 4: Verify Plugin Installation
+
+```bash
+grep -q "oh-my-claudecode" ~/.claude/settings.json && echo "Plugin verified" || echo "Plugin NOT found - run: claude /install-plugin oh-my-claudecode"
+```
+
+## Step 5: Offer MCP Server Configuration
+
+MCP servers extend Claude Code with additional tools (web search, GitHub, etc.).
+
+Ask user: "Would you like to configure MCP servers for enhanced capabilities? (Context7, Exa search, GitHub, etc.)"
+
+If yes, invoke the mcp-setup skill:
+```
+/oh-my-claudecode:mcp-setup
+```
+
+If no, skip to next step.
+
+## Step 5.5: Configure Agent Teams (Optional)
+
+**Note**: If resuming and lastCompletedStep >= 5.5, skip to Step 6.
+
+Agent teams are an experimental Claude Code feature that lets you spawn N coordinated agents working on a shared task list with inter-agent messaging. **Teams are disabled by default** and require enabling via `settings.json`.
+
+Reference: https://code.claude.com/docs/en/agent-teams
+
+Use the AskUserQuestion tool to prompt:
+
+**Question:** "Would you like to enable agent teams? Teams let you spawn coordinated agents (e.g., `/team 3:executor 'fix all errors'`). This is an experimental Claude Code feature."
+
+**Options:**
+1. **Yes, enable teams (Recommended)** - Enable the experimental feature and configure defaults
+2. **No, skip** - Leave teams disabled (can enable later)
+
+### If User Chooses YES:
+
+#### Step 5.5.1: Enable Agent Teams in settings.json
+
+**CRITICAL**: Agent teams require `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` to be set in `~/.claude/settings.json`. This must be done carefully to preserve existing user settings.
+
+First, read the current settings.json:
+
+```bash
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+if [ -f "$SETTINGS_FILE" ]; then
+  echo "Current settings.json found"
+  cat "$SETTINGS_FILE"
+else
+  echo "No settings.json found - will create one"
+fi
+```
+
+Then use the Read tool to read `~/.claude/settings.json` (if it exists). Use the Edit tool to merge the teams configuration while preserving ALL existing settings.
+
+**If settings.json exists and has an `env` key**, merge the new env var into it:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Use jq to safely merge without overwriting existing settings:
+
+```bash
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+if [ -f "$SETTINGS_FILE" ]; then
+  # Merge env var into existing settings, preserving everything else
+  TEMP_FILE=$(mktemp)
+  jq '.env = (.env // {} | . + {"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"})' "$SETTINGS_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$SETTINGS_FILE"
+  echo "Added CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS to existing settings.json"
+else
+  # Create new settings.json with just the teams env var
+  mkdir -p "$(dirname "$SETTINGS_FILE")"
+  cat > "$SETTINGS_FILE" << 'SETTINGS_EOF'
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+SETTINGS_EOF
+  echo "Created settings.json with teams enabled"
+fi
+```
+
+**IMPORTANT**: The Edit tool is preferred for modifying settings.json when possible, since it preserves formatting and comments. The jq approach above is the fallback for when the file needs structural merging.
+
+#### Step 5.5.2: Configure Teammate Display Mode
+
+Use the AskUserQuestion tool:
+
+**Question:** "How should teammates be displayed?"
+
+**Options:**
+1. **Auto (Recommended)** - Uses split panes if in tmux, otherwise in-process. Best for most users.
+2. **In-process** - All teammates in your main terminal. Use Shift+Up/Down to select. Works everywhere.
+3. **Split panes (tmux)** - Each teammate in its own pane. Requires tmux or iTerm2.
+
+If user chooses anything other than "Auto", add `teammateMode` to settings.json:
+
+```bash
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+# TEAMMATE_MODE is "in-process" or "tmux" based on user choice
+# Skip this if user chose "Auto" (that's the default)
+jq --arg mode "TEAMMATE_MODE" '. + {teammateMode: $mode}' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+echo "Teammate display mode set to: TEAMMATE_MODE"
+```
+
+#### Step 5.5.3: Configure Team Defaults in omc-config
+
+Use the AskUserQuestion tool with multiple questions:
+
+**Question 1:** "How many agents should teams spawn by default?"
+
+**Options:**
+1. **3 agents (Recommended)** - Good balance of speed and resource usage
+2. **5 agents (maximum)** - Maximum parallelism for large tasks
+3. **2 agents** - Conservative, for smaller projects
+
+**Question 2:** "Which agent type should teammates use by default?"
+
+**Options:**
+1. **executor (Recommended)** - General-purpose code implementation agent
+2. **build-fixer** - Specialized for build/type error fixing
+3. **designer** - Specialized for UI/frontend work
+
+Store the team configuration in `~/.claude/.omc-config.json`:
+
+```bash
+CONFIG_FILE="$HOME/.claude/.omc-config.json"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+if [ -f "$CONFIG_FILE" ]; then
+  EXISTING=$(cat "$CONFIG_FILE")
+else
+  EXISTING='{}'
+fi
+
+# Replace MAX_AGENTS, AGENT_TYPE with user choices
+echo "$EXISTING" | jq \
+  --argjson maxAgents MAX_AGENTS \
+  --arg agentType "AGENT_TYPE" \
+  '. + {team: {maxAgents: $maxAgents, defaultAgentType: $agentType, monitorIntervalMs: 30000, shutdownTimeoutMs: 15000}}' > "$CONFIG_FILE"
+
+echo "Team configuration saved:"
+echo "  Max agents: MAX_AGENTS"
+echo "  Default agent: AGENT_TYPE"
+echo "  Model: teammates inherit your session model"
+```
+
+**Note:** Teammates do not have a separate model default. Each teammate is a full Claude Code session that inherits your configured model. Subagents spawned by teammates can use any model tier.
+
+#### Verify settings.json Integrity
+
+After all modifications, verify settings.json is valid JSON and contains the expected keys:
+
+```bash
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+# Verify JSON is valid
+if jq empty "$SETTINGS_FILE" 2>/dev/null; then
+  echo "settings.json: valid JSON"
+else
+  echo "ERROR: settings.json is invalid JSON! Restoring from backup..."
+  # The backup from Step 2 should still exist
+  exit 1
+fi
+
+# Verify teams env var is present
+if jq -e '.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS' "$SETTINGS_FILE" > /dev/null 2>&1; then
+  echo "Agent teams: ENABLED"
+else
+  echo "WARNING: Agent teams env var not found in settings.json"
+fi
+
+# Show final settings.json for user review
+echo ""
+echo "Final settings.json:"
+jq '.' "$SETTINGS_FILE"
+```
+
+### If User Chooses NO:
+
+Skip this step. Agent teams will remain disabled. User can enable later by adding to `~/.claude/settings.json`:
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Or by running `/oh-my-claudecode:omc-setup --force` and choosing to enable teams.
+
+### Save Progress
+
+```bash
+# Save progress - Step 5.5 complete (Teams configured)
+mkdir -p .omc/state
+CONFIG_TYPE=$(cat ".omc/state/setup-state.json" 2>/dev/null | grep -oE '"configType":\s*"[^"]+"' | cut -d'"' -f4 || echo "unknown")
+cat > ".omc/state/setup-state.json" << EOF
+{
+  "lastCompletedStep": 5.5,
+  "timestamp": "$(date -Iseconds)",
+  "configType": "$CONFIG_TYPE"
+}
+EOF
+```
+
+## Step 6: Detect Upgrade from 2.x
+
+Check if user has existing configuration:
+```bash
+# Check for existing 2.x artifacts
+ls ~/.claude/commands/ralph-loop.md 2>/dev/null || ls ~/.claude/commands/ultrawork.md 2>/dev/null
+```
+
+If found, this is an upgrade from 2.x.
+
+## Step 7: Show Welcome Message
+
+### For New Users:
+
+```
+OMC Setup Complete!
+
+You don't need to learn any commands. I now have intelligent behaviors that activate automatically.
+
+WHAT HAPPENS AUTOMATICALLY:
+- Complex tasks -> I parallelize and delegate to specialists
+- "plan this" -> I start a planning interview
+- "don't stop until done" -> I persist until verified complete
+- "stop" or "cancel" -> I intelligently stop current operation
+
+MAGIC KEYWORDS (optional power-user shortcuts):
+Just include these words naturally in your request:
+
+| Keyword | Effect | Example |
+|---------|--------|---------|
+| ralph | Persistence mode | "ralph: fix the auth bug" |
+| ralplan | Iterative planning | "ralplan this feature" |
+| ulw | Max parallelism | "ulw refactor the API" |
+| plan | Planning interview | "plan the new endpoints" |
+| team | Coordinated agents | "/team 3:executor fix errors" |
+
+**ralph includes ultrawork:** When you activate ralph mode, it automatically includes ultrawork's parallel execution. No need to combine keywords.
+
+TEAMS:
+Spawn coordinated agents with shared task lists and real-time messaging:
+- /oh-my-claudecode:team 3:executor "fix all TypeScript errors"
+- /oh-my-claudecode:team 5:build-fixer "fix build errors in src/"
+Teams use Claude Code native tools (TeamCreate/SendMessage/TaskCreate).
+
+MCP SERVERS:
+Run /oh-my-claudecode:mcp-setup to add tools like web search, GitHub, etc.
+
+HUD STATUSLINE:
+The status bar now shows OMC state. Restart Claude Code to see it.
+
+CLI ANALYTICS (if installed):
+- omc           - Full dashboard (stats + agents + cost)
+- omc stats     - View token usage and costs
+- omc agents    - See agent breakdown by cost
+- omc tui       - Launch interactive TUI dashboard
+
+That's it! Just use Claude Code normally.
+```
+
+### For Users Upgrading from 2.x:
+
+```
+OMC Setup Complete! (Upgraded from 2.x)
+
+GOOD NEWS: Your existing commands still work!
+- /ralph, /ultrawork, /plan, etc. all still function
+
+WHAT'S NEW in 3.0:
+You no longer NEED those commands. Everything is automatic now:
+- Just say "don't stop until done" instead of /ralph
+- Just say "fast" or "parallel" instead of /ultrawork
+- Just say "plan this" instead of /plan
+- Just say "stop" instead of /cancel
+
+MAGIC KEYWORDS (power-user shortcuts):
+| Keyword | Same as old... | Example |
+|---------|----------------|---------|
+| ralph | /ralph | "ralph: fix the bug" |
+| ralplan | /ralplan | "ralplan this feature" |
+| ulw | /ultrawork | "ulw refactor API" |
+| plan | /plan | "plan the endpoints" |
+| team | (new!) | "/team 3:executor fix errors" |
+
+TEAMS (NEW!):
+Spawn coordinated agents with shared task lists and real-time messaging:
+- /oh-my-claudecode:team 3:executor "fix all TypeScript errors"
+- Uses Claude Code native tools (TeamCreate/SendMessage/TaskCreate)
+
+HUD STATUSLINE:
+The status bar now shows OMC state. Restart Claude Code to see it.
+
+CLI ANALYTICS (if installed):
+- omc           - Full dashboard (stats + agents + cost)
+- omc stats     - View token usage and costs
+- omc agents    - See agent breakdown by cost
+- omc tui       - Launch interactive TUI dashboard
+
+Your workflow won't break - it just got easier!
+```
+
+## Step 8: Ask About Starring Repository
+
+First, check if `gh` CLI is available and authenticated:
+
+```bash
+gh auth status &>/dev/null
+```
+
+### If gh is available and authenticated:
+
+**Before prompting, check if the repository is already starred:**
+
+```bash
+gh api user/starred/Yeachan-Heo/oh-my-claudecode &>/dev/null
+```
+
+**If already starred (exit code 0):**
+- Skip the prompt entirely
+- Continue to next step silently
+
+**If NOT starred (exit code non-zero):**
+
+Use the AskUserQuestion tool to prompt the user:
+
+**Question:** "If you're enjoying oh-my-claudecode, would you like to support the project by starring it on GitHub?"
+
+**Options:**
+1. **Yes, star it!** - Star the repository
+2. **No thanks** - Skip without further prompts
+3. **Maybe later** - Skip without further prompts
+
+If user chooses "Yes, star it!":
+
+```bash
+gh api -X PUT /user/starred/Yeachan-Heo/oh-my-claudecode 2>/dev/null && echo "Thanks for starring! ⭐" || true
+```
+
+**Note:** Fail silently if the API call doesn't work - never block setup completion.
+
+### If gh is NOT available or not authenticated:
+
+```bash
+echo ""
+echo "If you enjoy oh-my-claudecode, consider starring the repo:"
+echo "  https://github.com/Yeachan-Heo/oh-my-claudecode"
+echo ""
+```
+
+### Clear Setup State and Mark Completion
+
+After Step 8 completes (regardless of star choice), clear the temporary state and mark setup as completed:
+
+```bash
+# Setup complete - clear temporary state file
+rm -f ".omc/state/setup-state.json"
+
+# Mark setup as completed in persistent config (prevents re-running full setup on updates)
+CONFIG_FILE="$HOME/.claude/.omc-config.json"
+mkdir -p "$(dirname "$CONFIG_FILE")"
+
+# Get current OMC version from CLAUDE.md
+OMC_VERSION=""
+if [ -f ".claude/CLAUDE.md" ]; then
+  OMC_VERSION=$(grep -m1 "^# oh-my-claudecode" .claude/CLAUDE.md 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+elif [ -f "$HOME/.claude/CLAUDE.md" ]; then
+  OMC_VERSION=$(grep -m1 "^# oh-my-claudecode" "$HOME/.claude/CLAUDE.md" 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+fi
+
+if [ -f "$CONFIG_FILE" ]; then
+  EXISTING=$(cat "$CONFIG_FILE")
+else
+  EXISTING='{}'
+fi
+
+# Add setupCompleted timestamp and version
+echo "$EXISTING" | jq --arg ts "$(date -Iseconds)" --arg ver "$OMC_VERSION" \
+  '. + {setupCompleted: $ts, setupVersion: $ver}' > "$CONFIG_FILE"
+
+echo "Setup completed successfully!"
+echo "Note: Future updates will only refresh CLAUDE.md, not the full setup wizard."
+```
+
+## Keeping Up to Date
+
+After installing oh-my-claudecode updates (via npm or plugin update):
+
+**Automatic**: Just run `/oh-my-claudecode:omc-setup` - it will detect you've already configured and offer a quick "Update CLAUDE.md only" option that skips the full wizard.
+
+**Manual options**:
+- `/oh-my-claudecode:omc-setup --local` to update project config only
+- `/oh-my-claudecode:omc-setup --global` to update global config only
+- `/oh-my-claudecode:omc-setup --force` to re-run the full wizard (reconfigure preferences)
+
+This ensures you have the newest features and agent configurations without the token cost of repeating the full setup.
+
+## Help Text
+
+When user runs `/oh-my-claudecode:omc-setup --help` or just `--help`, display:
+
+```
+OMC Setup - Configure oh-my-claudecode
+
+USAGE:
+  /oh-my-claudecode:omc-setup           Run initial setup wizard (or update if already configured)
+  /oh-my-claudecode:omc-setup --local   Configure local project (.claude/CLAUDE.md)
+  /oh-my-claudecode:omc-setup --global  Configure global settings (~/.claude/CLAUDE.md)
+  /oh-my-claudecode:omc-setup --force   Force full setup wizard even if already configured
+  /oh-my-claudecode:omc-setup --help    Show this help
+
+MODES:
+  Initial Setup (no flags)
+    - Interactive wizard for first-time setup
+    - Configures CLAUDE.md (local or global)
+    - Sets up HUD statusline
+    - Checks for updates
+    - Offers MCP server configuration
+    - Configures team mode defaults (agent count, type, model)
+    - If already configured, offers quick update option
+
+  Local Configuration (--local)
+    - Downloads fresh CLAUDE.md to ./.claude/
+    - Backs up existing CLAUDE.md to .claude/CLAUDE.md.backup.YYYY-MM-DD
+    - Project-specific settings
+    - Use this to update project config after OMC upgrades
+
+  Global Configuration (--global)
+    - Downloads fresh CLAUDE.md to ~/.claude/
+    - Backs up existing CLAUDE.md to ~/.claude/CLAUDE.md.backup.YYYY-MM-DD
+    - Applies to all Claude Code sessions
+    - Cleans up legacy hooks
+    - Use this to update global config after OMC upgrades
+
+  Force Full Setup (--force)
+    - Bypasses the "already configured" check
+    - Runs the complete setup wizard from scratch
+    - Use when you want to reconfigure preferences
+
+EXAMPLES:
+  /oh-my-claudecode:omc-setup           # First time setup (or update CLAUDE.md if configured)
+  /oh-my-claudecode:omc-setup --local   # Update this project
+  /oh-my-claudecode:omc-setup --global  # Update all projects
+  /oh-my-claudecode:omc-setup --force   # Re-run full setup wizard
+
+For more info: https://github.com/Yeachan-Heo/oh-my-claudecode
+```
+
+## Optional Rule Templates
+
+OMC includes rule templates you can copy to your project's `.claude/rules/` directory for automatic context injection:
+
+| Template | Purpose |
+|----------|---------|
+| `coding-style.md` | Code style, immutability, file organization |
+| `testing.md` | TDD workflow, 80% coverage target |
+| `security.md` | Secret management, input validation |
+| `performance.md` | Model selection, context management |
+| `git-workflow.md` | Commit conventions, PR workflow |
+| `karpathy-guidelines.md` | Coding discipline — think before coding, simplicity, surgical changes |
+
+Copy with:
+```bash
+mkdir -p .claude/rules
+cp "/Users/AlexUA/.claude/plugins/cache/omc/oh-my-claudecode/4.4.5/templates/rules/"*.md .claude/rules/
+```
+
+See `templates/rules/README.md` for details.
+
+---
+
+3
+
+---
+
+okay, you got interupted earlier, continue
+
+---
+
+## ⚠️ CRITICAL: Working Directory Requirement
+
+**After running `spec-kitty implement WP##`, you MUST:**
+
+1. **Run the cd command shown in the output** - e.g., `cd .worktrees/###-feature-WP##/`
+2. **ALL file operations happen in this directory** - Read, Write, Edit tools must target files in the workspace
+3. **NEVER write deliverable files to the main repository** - This is a critical workflow error
+
+**Why this matters:**
+- Each WP has an isolated worktree with its own branch
+- Changes in main repository will NOT be seen by reviewers looking at the WP worktree
+- Writing to main instead of the workspace causes review failures and merge conflicts
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion command!
+
+Run this command to get the work package prompt and implementation instructions:
+
+```bash
+spec-kitty agent workflow implement WP02-WP04 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is implementing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "planned"` and move it to "doing" for you.
+
+---
+
+## Commit Workflow
+
+**BEFORE moving to for_review**, you MUST commit your implementation:
+
+```bash
+cd .worktrees/###-feature-WP##/
+git add -A
+git commit -m "feat(WP##): <describe your implementation>"
+```
+
+**Then move to review:**
+```bash
+spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
+```
+
+**Why this matters:**
+- `move-task` validates that your worktree has commits beyond main
+- Uncommitted changes will block the move to for_review
+- This prevents lost work and ensures reviewers see complete implementations
+
+---
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+**NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion commands!
+
+Run this command to get the work package prompt and review instructions:
+
+```bash
+spec-kitty agent workflow review WP01 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is reviewing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "for_review"` and move it to "doing" for you.
+
+## Dependency checks (required)
+
+- dependency_check: If the WP frontmatter lists `dependencies`, confirm each dependency WP is merged to main before you review this WP.
+- dependent_check: Identify any WPs that list this WP as a dependency and note their current lanes.
+- rebase_warning: If you request changes AND any dependents exist, warn those agents to rebase and provide a concrete command (example: `cd .worktrees/FEATURE-WP02 && git rebase FEATURE-WP01`).
+- verify_instruction: Confirm dependency declarations match actual code coupling (imports, shared modules, API contracts).
+
+**After reviewing, scroll to the bottom and run ONE of these commands**:
+- ✅ Approve: `spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"`
+- ❌ Reject: Write feedback to the temp file path shown in the prompt, then run `spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>`
+
+**The prompt will provide a unique temp file path for feedback - use that exact path to avoid conflicts with other agents!**
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion commands!
+
+Run this command to get the work package prompt and review instructions:
+
+```bash
+spec-kitty agent workflow review WP02 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is reviewing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "for_review"` and move it to "doing" for you.
+
+## Dependency checks (required)
+
+- dependency_check: If the WP frontmatter lists `dependencies`, confirm each dependency WP is merged to main before you review this WP.
+- dependent_check: Identify any WPs that list this WP as a dependency and note their current lanes.
+- rebase_warning: If you request changes AND any dependents exist, warn those agents to rebase and provide a concrete command (example: `cd .worktrees/FEATURE-WP02 && git rebase FEATURE-WP01`).
+- verify_instruction: Confirm dependency declarations match actual code coupling (imports, shared modules, API contracts).
+
+**After reviewing, scroll to the bottom and run ONE of these commands**:
+- ✅ Approve: `spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"`
+- ❌ Reject: Write feedback to the temp file path shown in the prompt, then run `spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>`
+
+**The prompt will provide a unique temp file path for feedback - use that exact path to avoid conflicts with other agents!**
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+---
+
+## ⚠️ CRITICAL: Working Directory Requirement
+
+**After running `spec-kitty implement WP##`, you MUST:**
+
+1. **Run the cd command shown in the output** - e.g., `cd .worktrees/###-feature-WP##/`
+2. **ALL file operations happen in this directory** - Read, Write, Edit tools must target files in the workspace
+3. **NEVER write deliverable files to the main repository** - This is a critical workflow error
+
+**Why this matters:**
+- Each WP has an isolated worktree with its own branch
+- Changes in main repository will NOT be seen by reviewers looking at the WP worktree
+- Writing to main instead of the workspace causes review failures and merge conflicts
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion command!
+
+Run this command to get the work package prompt and implementation instructions:
+
+```bash
+spec-kitty agent workflow implement WP03-WP04 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is implementing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "planned"` and move it to "doing" for you.
+
+---
+
+## Commit Workflow
+
+**BEFORE moving to for_review**, you MUST commit your implementation:
+
+```bash
+cd .worktrees/###-feature-WP##/
+git add -A
+git commit -m "feat(WP##): <describe your implementation>"
+```
+
+**Then move to review:**
+```bash
+spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
+```
+
+**Why this matters:**
+- `move-task` validates that your worktree has commits beyond main
+- Uncommitted changes will block the move to for_review
+- This prevents lost work and ensures reviewers see complete implementations
+
+---
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+**NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
+
+---
+
+<task-notification>
+<task-id>b14tfi30a</task-id>
+<tool-use-id>toolu_01AzEMwS5vzM61VkpUiD5CCu</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install node modules in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+## ⚠️ CRITICAL: Working Directory Requirement
+
+**After running `spec-kitty implement WP##`, you MUST:**
+
+1. **Run the cd command shown in the output** - e.g., `cd .worktrees/###-feature-WP##/`
+2. **ALL file operations happen in this directory** - Read, Write, Edit tools must target files in the workspace
+3. **NEVER write deliverable files to the main repository** - This is a critical workflow error
+
+**Why this matters:**
+- Each WP has an isolated worktree with its own branch
+- Changes in main repository will NOT be seen by reviewers looking at the WP worktree
+- Writing to main instead of the workspace causes review failures and merge conflicts
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion command!
+
+Run this command to get the work package prompt and implementation instructions:
+
+```bash
+spec-kitty agent workflow implement WP05 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is implementing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "planned"` and move it to "doing" for you.
+
+---
+
+## Commit Workflow
+
+**BEFORE moving to for_review**, you MUST commit your implementation:
+
+```bash
+cd .worktrees/###-feature-WP##/
+git add -A
+git commit -m "feat(WP##): <describe your implementation>"
+```
+
+**Then move to review:**
+```bash
+spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
+```
+
+**Why this matters:**
+- `move-task` validates that your worktree has commits beyond main
+- Uncommitted changes will block the move to for_review
+- This prevents lost work and ensures reviewers see complete implementations
+
+---
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+**NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
+
+---
+
+[Request interrupted by user]
+
+---
+
+<task-notification>
+<task-id>bjk0iy2bf</task-id>
+<tool-use-id>toolu_01TotdetFUPKpSmU5BDjVGTB</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Run Vitest for inngest tests" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+go ahead
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Summary:
+1. Primary Request and Intent:
+   - Continue WP01 implementation of Feature 010 (Inngest evaluation spike) from previous session
+   - Implement, review, and accept WP01-WP05 of Feature 010 using spec-kitty workflow
+   - `/spec-kitty.review WP01` → review WP02 → implement WP03-WP04 in parallel → review WP03-WP04 → implement WP05
+   - Check open PRs for Feature 010 and close any that are unnecessary (another agent duplicated work)
+   - `/spec-kitty.implement WP05` was the most recent skill invocation
+
+2. Key Technical Concepts:
+   - **spec-kitty**: spec-driven development toolkit with kanban lanes (planned/doing/for_review/done), worktrees per WP
+   - **Feature 010**: Inngest Evaluation Spike — 6 WPs evaluating Inngest as replacement for custom execution plumbing
+   - **Inngest v3**: self-hosted durable workflow platform; `EventSchemas().fromRecord<PipelineEvents>()` for typed events; `serve()` Express adapter; `step.run()`, `step.waitForEvent()`; concurrency keys; cron triggers
+   - **InngestStepHandlerAdapter**: wraps existing `PipelineStepHandler.execute()` for `step.run()` checkpointing
+   - **PipelineEvents schema**: `pipeline/corpus.changed`, `pipeline/review.decided`, `pipeline/schedule.tick`
+   - **Worktree isolation**: all implementation happens in `.worktrees/010-inngest-evaluation-WP##/`; `git rebase main` required before `move-task`
+   - **Sparse checkout**: `kitty-specs/` excluded from worktrees; status tracked on main
+   - **DecisionRecorder**: sends `pipeline/review.decided` Inngest event with idempotency key `review-decided-{executionId}`
+   - **Concurrency keys**: CEL expressions — `'event.data.tenantId'` for event-triggered; `'"schedule-tick-global"'` (quoted literal) for cron (cron events have no tenantId)
+   - **vi.mock**: required in `gate.test.ts` to prevent `ECONNREFUSED` when `DecisionRecorder` calls `inngest.send()`
+
+3. Files and Code Sections:
+
+   - `.worktrees/010-inngest-evaluation-WP01/deploy/docker-compose.inngest.yml`
+     - Fixed: changed hardcoded `"local-dev-key"` to `"${INNGEST_EVENT_KEY:-local-dev-key}"` (and signing key) for env var interpolation
+   
+   - `.worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/inngest/client.ts`
+     - Inngest v3 client using `EventSchemas().fromRecord<PipelineEvents>()` (not legacy generic type param)
+     - `PipelineEvents` defines `pipeline/corpus.changed`, `pipeline/review.decided`, `pipeline/schedule.tick`
+   
+   - `.worktrees/010-inngest-evaluation-WP01/joyus-ai-mcp-server/src/index.ts`
+     - Added `import { serve } from 'inngest/express'` and `import { inngest, allFunctions } from './inngest/index.js'`
+     - Mounted: `app.use('/api/inngest', serve({ client: inngest, functions: allFunctions }))`
+   
+   - `.worktrees/010-inngest-evaluation-WP02/joyus-ai-mcp-server/src/inngest/adapter.ts`
+     - `InngestStep` interface (only `run` — `waitForEvent` excluded, SDK generic incompatible with simplified version; documented in JSDoc)
+     - `InngestStepHandlerAdapter` interface and `createInngestAdapter(handler)` factory
+   
+   - `.worktrees/010-inngest-evaluation-WP02/joyus-ai-mcp-server/src/inngest/functions/corpus-update-pipeline.ts`
+     - `createCorpusUpdatePipeline(registry)` factory triggering on `pipeline/corpus.changed`
+     - Two steps via adapter; stub fallback when handler not in registry
+     - Added in WP03: Step 3 `step.waitForEvent('wait-for-review', { event: 'pipeline/review.decided', timeout: '7d', if: \`async.data.executionId == '${executionId}'\` })` with approve/reject/timeout branches
+     - Added in WP04: `concurrency: { key: 'event.data.tenantId', limit: 1 }`
+   
+   - `.worktrees/010-inngest-evaluation-WP03/joyus-ai-mcp-server/src/pipelines/review/decision.ts`
+     - Added `inngest.send()` call after `resumeExecution()` with idempotency key:
+     ```typescript
+     await inngest.send({
+       id: `review-decided-${decision.executionId}`,
+       name: 'pipeline/review.decided',
+       data: { tenantId, executionId, decision: status, feedback: ... },
+     });
+     ```
+   
+   - `.worktrees/010-inngest-evaluation-WP03/joyus-ai-mcp-server/tests/pipelines/review/gate.test.ts`
+     - Added at top (CRITICAL fix — prevents ECONNREFUSED):
+     ```typescript
+     vi.mock('../../../src/inngest/client.js', () => ({
+       inngest: { send: vi.fn().mockResolvedValue(undefined) },
+     }));
+     ```
+   
+   - `.worktrees/010-inngest-evaluation-WP04/joyus-ai-mcp-server/src/inngest/functions/schedule-tick-pipeline.ts`
+     - `createScheduleTickPipeline()` with `{ cron: '0 * * * *' }` trigger
+     - Concurrency: `{ key: '"schedule-tick-global"', limit: 1 }` (static quoted string, NOT `event.data.tenantId`)
+   
+   - `.worktrees/010-inngest-evaluation-WP04/joyus-ai-mcp-server/src/inngest/adapter.test.ts`
+     - T017: asserts `fnDef.opts?.concurrency?.key === 'event.data.tenantId'` and `limit === 1`
+     - T019: asserts `fn.opts?.concurrency?.key === '"schedule-tick-global"'` and `limit === 1`
+     - T020: constructs timezone variant `{ cron: '0 9 * * *', timezone: 'America/New_York' }` and asserts defined
+   
+   - `.worktrees/010-inngest-evaluation-WP05/research/benchmarks/benchmark-custom-executor.mjs`
+     - 50-run benchmark with p50/p95/p99; real numbers: p50=5.34ms, p95=9.08ms, p99=10.03ms
+   
+   - `.worktrees/010-inngest-evaluation-WP05/research/benchmarks/benchmark-inngest-methodology.md`
+     - Live-server measurement procedure for Inngest benchmarking
+   
+   - `.worktrees/010-inngest-evaluation-WP05/research/performance-comparison.md`
+     - Full comparison with latency sources, cost-benefit table, 4 flagged anomalies, directional recommendation
+
+4. Errors and Fixes:
+   - **Inngest `new Inngest<PipelineEvents>` type error**: Inngest v3 doesn't use a type param on the constructor — fixed to `new Inngest({ id: '...', schemas: new EventSchemas().fromRecord<PipelineEvents>(), ... })`
+   - **Top-level await in `inngest/index.ts`**: replaced dynamic imports with static imports for `allFunctions` array
+   - **npm install peer deps conflict**: used `--legacy-peer-deps` in worktree
+   - **`InngestStep` interface + `waitForEvent`**: adding `waitForEvent` to the interface caused incompatibility with the real SDK's complex generic. Reverted; added JSDoc explaining why it's excluded
+   - **WP03 `gate.test.ts` ECONNREFUSED (HIGH)**: `DecisionRecorder.recordDecision()` now calls `inngest.send()`, causing 2 tests to fail with network error. Fixed by adding `vi.mock` for inngest client at top of test file
+   - **WP04 cron concurrency key (HIGH)**: `key: 'event.data.tenantId'` evaluates to `undefined` for cron-triggered events (no tenantId in payload). Fixed to static `key: '"schedule-tick-global"'`
+   - **WP04 T017/T019/T020 weak assertions (MEDIUM)**: Tests only checked `toBeDefined()`, not actual config. Fixed to assert `opts?.concurrency?.key` and `limit` values
+   - **WP04 T020 missing `inngest` import in test**: Added `import { inngest } from './client.js'` to use in timezone variant construction
+   - **spec-kitty `move-task` behind main**: rebase required before each `move-task`; occurred repeatedly as status commits from other operations landed on main
+   - **spec-kitty double-prefix**: passing `010-inngest-evaluation` as feature ID created `010-010-inngest-evaluation` — handled in previous session
+   - **PostToolUse hook "Edit operation failed"**: Hook fires spuriously; edits actually succeeded (verified with grep)
+
+5. Problem Solving:
+   - All WP01-WP05 implemented, reviewed (with change requests addressed), and approved (done) except WP05 which is just committed but not yet moved to for_review
+   - Another agent independently created PRs #30 (WP03), #31 (WP04), #32 (WP05) — these are duplicates of our spec-kitty managed worktree work and need to be closed
+   - Feature 010 spec-kitty kanban: WP01-WP04 all in `done`; WP05 committed but still needs mark-status and move-task; WP06 still planned
+
+6. All User Messages:
+   - "Tool loaded." (after ToolSearch for TaskOutput)
+   - "okay, you got interupted earlier, continue"
+   - `/spec-kitty.review WP01` (skill invocation)
+   - "3" (cancel omc-setup)
+   - "okay, you got interupted earlier, continue" (second time, after omc-setup)
+   - `/spec-kitty.review WP02` (skill invocation)
+   - `/exit` then `/spec-kitty.implement WP03-WP04` (skill invocation)
+   - "go ahead" (after task notification interruption)
+   - `/spec-kitty.review` then `WP02` args (skill invocation, though review was already done)
+   - (various system-reminder messages acknowledged silently)
+   - `/spec-kitty.implement WP05` (skill invocation)
+   - "go ahead" (after interruption during WP05 delegation)
+   - "can you also check the latest prs, I tihnk another agent also tried to do your work. If the PRs for feature 10 are unessasary then close them" (mid-task interrupt message)
+
+7. Pending Tasks:
+   - Mark WP05 subtasks T021-T025 as done
+   - Move WP05 to for_review, then review and approve it
+   - **Close PRs #30, #31, #32** (Feature 010 WP03/WP04/WP05 duplicate PRs from another agent)
+   - Implement WP06 (decision document — final WP of Feature 010)
+
+8. Current Work:
+   WP05 was just committed in the worktree:
+   ```
+   [010-inngest-evaluation-WP05 333c2e8] feat(WP05): performance comparison — custom executor vs Inngest
+    3 files changed, 434 insertions(+)
+    create mode 100644 research/benchmarks/benchmark-custom-executor.mjs
+    create mode 100644 research/benchmarks/benchmark-inngest-methodology.md
+    create mode 100644 research/performance-comparison.md
+   ```
+   
+   Simultaneously, a `gh pr list` was run revealing PRs #30, #31, #32 are duplicates from another agent working on Feature 010 WP03/WP04/WP05 independently. User asked: "can you also check the latest prs, I tihnk another agent also tried to do your work. If the PRs for feature 10 are unessasary then close them"
+
+9. Optional Next Step:
+   Two immediate actions based on user's request and current state:
+   1. Close PRs #30 (WP03), #31 (WP04), #32 (WP05) as duplicate/unnecessary — user said "If the PRs for feature 10 are unessasary then close them"
+   2. Mark WP05 subtasks done and move to for_review:
+      - `spec-kitty agent tasks mark-status T021 T022 T023 T024 T025 --status done --feature 010-inngest-evaluation`
+      - Rebase WP05 worktree then `spec-kitty agent tasks move-task WP05 --to for_review`
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+Continue the conversation from where it left off without asking the user any further questions. Resume directly — do not acknowledge the summary, do not recap what was happening, do not preface with "I'll continue" or similar. Pick up the last task as if the break never happened.
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion commands!
+
+Run this command to get the work package prompt and review instructions:
+
+```bash
+spec-kitty agent workflow review WP05 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is reviewing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "for_review"` and move it to "doing" for you.
+
+## Dependency checks (required)
+
+- dependency_check: If the WP frontmatter lists `dependencies`, confirm each dependency WP is merged to main before you review this WP.
+- dependent_check: Identify any WPs that list this WP as a dependency and note their current lanes.
+- rebase_warning: If you request changes AND any dependents exist, warn those agents to rebase and provide a concrete command (example: `cd .worktrees/FEATURE-WP02 && git rebase FEATURE-WP01`).
+- verify_instruction: Confirm dependency declarations match actual code coupling (imports, shared modules, API contracts).
+
+**After reviewing, scroll to the bottom and run ONE of these commands**:
+- ✅ Approve: `spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"`
+- ❌ Reject: Write feedback to the temp file path shown in the prompt, then run `spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>`
+
+**The prompt will provide a unique temp file path for feedback - use that exact path to avoid conflicts with other agents!**
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+---
+
+## ⚠️ CRITICAL: Working Directory Requirement
+
+**After running `spec-kitty implement WP##`, you MUST:**
+
+1. **Run the cd command shown in the output** - e.g., `cd .worktrees/###-feature-WP##/`
+2. **ALL file operations happen in this directory** - Read, Write, Edit tools must target files in the workspace
+3. **NEVER write deliverable files to the main repository** - This is a critical workflow error
+
+**Why this matters:**
+- Each WP has an isolated worktree with its own branch
+- Changes in main repository will NOT be seen by reviewers looking at the WP worktree
+- Writing to main instead of the workspace causes review failures and merge conflicts
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion command!
+
+Run this command to get the work package prompt and implementation instructions:
+
+```bash
+spec-kitty agent workflow implement WP06 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is implementing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "planned"` and move it to "doing" for you.
+
+---
+
+## Commit Workflow
+
+**BEFORE moving to for_review**, you MUST commit your implementation:
+
+```bash
+cd .worktrees/###-feature-WP##/
+git add -A
+git commit -m "feat(WP##): <describe your implementation>"
+```
+
+**Then move to review:**
+```bash
+spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
+```
+
+**Why this matters:**
+- `move-task` validates that your worktree has commits beyond main
+- Uncommitted changes will block the move to for_review
+- This prevents lost work and ensures reviewers see complete implementations
+
+---
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+**NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
+
+---
+
+**IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
+
+**You MUST scroll to the BOTTOM** to see the completion commands!
+
+Run this command to get the work package prompt and review instructions:
+
+```bash
+spec-kitty agent workflow review WP06 --agent <your-name>
+```
+
+**CRITICAL**: You MUST provide `--agent <your-name>` to track who is reviewing!
+
+If no WP ID is provided, it will automatically find the first work package with `lane: "for_review"` and move it to "doing" for you.
+
+## Dependency checks (required)
+
+- dependency_check: If the WP frontmatter lists `dependencies`, confirm each dependency WP is merged to main before you review this WP.
+- dependent_check: Identify any WPs that list this WP as a dependency and note their current lanes.
+- rebase_warning: If you request changes AND any dependents exist, warn those agents to rebase and provide a concrete command (example: `cd .worktrees/FEATURE-WP02 && git rebase FEATURE-WP01`).
+- verify_instruction: Confirm dependency declarations match actual code coupling (imports, shared modules, API contracts).
+
+**After reviewing, scroll to the bottom and run ONE of these commands**:
+- ✅ Approve: `spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"`
+- ❌ Reject: Write feedback to the temp file path shown in the prompt, then run `spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>`
+
+**The prompt will provide a unique temp file path for feedback - use that exact path to avoid conflicts with other agents!**
+
+**The Python script handles all file updates automatically - no manual editing required!**
+
+---
+
+# /spec-kitty.accept - Validate Feature Readiness
+
+**Version**: 0.11.0+
+**Purpose**: Validate all work packages are complete and feature is ready to merge.
+
+## 📍 WORKING DIRECTORY: Run from MAIN repository
+
+**IMPORTANT**: Accept runs from the main repository root, NOT from a WP worktree.
+
+```bash
+# If you're in a worktree, return to main first:
+cd $(git rev-parse --show-toplevel)
+
+# Then run accept:
+spec-kitty accept
+```
+
+## User Input
+
+```text
+010-inngest-evaluation
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Discovery (mandatory)
+
+Before running the acceptance workflow, gather the following:
+
+1. **Feature slug** (e.g., `005-awesome-thing`). If omitted, detect automatically.
+2. **Acceptance mode**:
+   - `pr` when the feature will merge via hosted pull request.
+   - `local` when the feature will merge locally without a PR.
+   - `checklist` to run the readiness checklist without committing or producing merge instructions.
+3. **Validation commands executed** (tests/builds). Collect each command verbatim; omit if none.
+4. **Acceptance actor** (optional, defaults to the current agent name).
+
+Ask one focused question per item and confirm the summary before continuing. End the discovery turn with `WAITING_FOR_ACCEPTANCE_INPUT` until all answers are provided.
+
+## Execution Plan
+
+1. Compile the acceptance options into an argument list:
+   - Always include `--actor "__AGENT__"`.
+   - Append `--feature "<slug>"` when the user supplied a slug.
+   - Append `--mode <mode>` (`pr`, `local`, or `checklist`).
+   - Append `--test "<command>"` for each validation command provided.
+2. Run `{SCRIPT}` (the CLI wrapper) with the assembled arguments **and** `--json`.
+3. Parse the JSON response. It contains:
+   - `summary.ok` (boolean) and other readiness details.
+   - `summary.outstanding` categories when issues remain.
+   - `instructions` (merge steps) and `cleanup_instructions`.
+   - `notes` (e.g., acceptance commit hash).
+4. Present the outcome:
+   - If `summary.ok` is `false`, list each outstanding category with bullet points and advise the user to resolve them before retrying acceptance.
+   - If `summary.ok` is `true`, display:
+     - Acceptance timestamp, actor, and (if present) acceptance commit hash.
+     - Merge instructions and cleanup instructions as ordered steps.
+     - Validation commands executed (if any).
+5. When the mode is `checklist`, make it clear no commits or merge instructions were produced.
+
+## Output Requirements
+
+- Summaries must be in plain text (no tables). Use short bullet lists for instructions.
+- Surface outstanding issues before any congratulations or success messages.
+- If the JSON payload includes warnings, surface them under an explicit **Warnings** section.
+- Never fabricate results; only report what the JSON contains.
+
+## Error Handling
+
+- If the command fails or returns invalid JSON, report the failure and request user guidance (do not retry automatically).
+- When outstanding issues exist, do **not** attempt to force acceptance—return the checklist and prompt the user to fix the blockers.
+
+---
+
+# /spec-kitty.accept - Validate Feature Readiness
+
+**Version**: 0.11.0+
+**Purpose**: Validate all work packages are complete and feature is ready to merge.
+
+## 📍 WORKING DIRECTORY: Run from MAIN repository
+
+**IMPORTANT**: Accept runs from the main repository root, NOT from a WP worktree.
+
+```bash
+# If you're in a worktree, return to main first:
+cd $(git rev-parse --show-toplevel)
+
+# Then run accept:
+spec-kitty accept
+```
+
+## User Input
+
+```text
+
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Discovery (mandatory)
+
+Before running the acceptance workflow, gather the following:
+
+1. **Feature slug** (e.g., `005-awesome-thing`). If omitted, detect automatically.
+2. **Acceptance mode**:
+   - `pr` when the feature will merge via hosted pull request.
+   - `local` when the feature will merge locally without a PR.
+   - `checklist` to run the readiness checklist without committing or producing merge instructions.
+3. **Validation commands executed** (tests/builds). Collect each command verbatim; omit if none.
+4. **Acceptance actor** (optional, defaults to the current agent name).
+
+Ask one focused question per item and confirm the summary before continuing. End the discovery turn with `WAITING_FOR_ACCEPTANCE_INPUT` until all answers are provided.
+
+## Execution Plan
+
+1. Compile the acceptance options into an argument list:
+   - Always include `--actor "__AGENT__"`.
+   - Append `--feature "<slug>"` when the user supplied a slug.
+   - Append `--mode <mode>` (`pr`, `local`, or `checklist`).
+   - Append `--test "<command>"` for each validation command provided.
+2. Run `{SCRIPT}` (the CLI wrapper) with the assembled arguments **and** `--json`.
+3. Parse the JSON response. It contains:
+   - `summary.ok` (boolean) and other readiness details.
+   - `summary.outstanding` categories when issues remain.
+   - `instructions` (merge steps) and `cleanup_instructions`.
+   - `notes` (e.g., acceptance commit hash).
+4. Present the outcome:
+   - If `summary.ok` is `false`, list each outstanding category with bullet points and advise the user to resolve them before retrying acceptance.
+   - If `summary.ok` is `true`, display:
+     - Acceptance timestamp, actor, and (if present) acceptance commit hash.
+     - Merge instructions and cleanup instructions as ordered steps.
+     - Validation commands executed (if any).
+5. When the mode is `checklist`, make it clear no commits or merge instructions were produced.
+
+## Output Requirements
+
+- Summaries must be in plain text (no tables). Use short bullet lists for instructions.
+- Surface outstanding issues before any congratulations or success messages.
+- If the JSON payload includes warnings, surface them under an explicit **Warnings** section.
+- Never fabricate results; only report what the JSON contains.
+
+## Error Handling
+
+- If the command fails or returns invalid JSON, report the failure and request user guidance (do not retry automatically).
+- When outstanding issues exist, do **not** attempt to force acceptance—return the checklist and prompt the user to fix the blockers.
+
+---
+
+010
+
+---
+
+local
+
+---
+
+you decide
+
+---
+
+okay, what's next?
+
+---
+
+# /spec-kitty.specify - Create Feature Specification
+
+**Version**: 0.11.0+
+
+## 📍 WORKING DIRECTORY: Stay in MAIN repository
+
+**IMPORTANT**: Specify works in the main repository. NO worktrees are created.
+
+```bash
+# Run from project root:
+cd /path/to/project/root  # Your main repository
+
+# All planning artifacts are created in main and committed:
+# - kitty-specs/###-feature/spec.md → Created in main
+# - Committed to main branch
+# - NO worktrees created
+```
+
+**Worktrees are created later** during `/spec-kitty.implement`, not during planning.
+
+## User Input
+
+```text
+011
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Discovery Gate (mandatory)
+
+Before running any scripts or writing to disk you **must** conduct a structured discovery interview.
+
+- **Scope proportionality (CRITICAL)**: FIRST, gauge the inherent complexity of the request:
+  - **Trivial/Test Features** (hello world, simple pages, proof-of-concept): Ask 1-2 questions maximum, then proceed. Examples: "a simple hello world page", "tic-tac-toe game", "basic contact form"
+  - **Simple Features** (small UI additions, minor enhancements): Ask 2-3 questions covering purpose and basic constraints
+  - **Complex Features** (new subsystems, integrations): Ask 3-5 questions covering goals, users, constraints, risks
+  - **Platform/Critical Features** (authentication, payments, infrastructure): Full discovery with 5+ questions
+
+- **User signals to reduce questioning**: If the user says "just testing", "quick prototype", "skip to next phase", "stop asking questions" - recognize this as a signal to minimize discovery and proceed with reasonable defaults.
+
+- **First response rule**:
+  - For TRIVIAL features (hello world, simple test): Ask ONE clarifying question, then if the answer confirms it's simple, proceed directly to spec generation
+  - For other features: Ask a single focused discovery question and end with `WAITING_FOR_DISCOVERY_INPUT`
+
+- If the user provides no initial description (empty command), stay in **Interactive Interview Mode**: keep probing with one question at a time.
+
+- **Conversational cadence**: After each user reply, decide if you have ENOUGH context for this feature's complexity level. For trivial features, 1-2 questions is sufficient. Only continue asking if truly necessary for the scope.
+
+Discovery requirements (scale to feature complexity):
+
+1. Maintain a **Discovery Questions** table internally covering questions appropriate to the feature's complexity (1-2 for trivial, up to 5+ for complex). Track columns `#`, `Question`, `Why it matters`, and `Current insight`. Do **not** render this table to the user.
+2. For trivial features, reasonable defaults are acceptable. Only probe if truly ambiguous.
+3. When you have sufficient context for the feature's scope, paraphrase into an **Intent Summary** and confirm. For trivial features, this can be very brief.
+4. If user explicitly asks to skip questions or says "just testing", acknowledge and proceed with minimal discovery.
+
+## Mission Selection
+
+After completing discovery and confirming the Intent Summary, determine the appropriate mission for this feature.
+
+### Available Missions
+
+- **software-dev**: For building software features, APIs, CLI tools, applications
+  - Phases: research → design → implement → test → review
+  - Best for: code changes, new features, bug fixes, refactoring
+
+- **research**: For investigations, literature reviews, technical analysis
+  - Phases: question → methodology → gather → analyze → synthesize → publish
+  - Best for: feasibility studies, market research, technology evaluation
+
+### Mission Inference
+
+1. **Analyze the feature description** to identify the primary goal:
+   - Building, coding, implementing, creating software → **software-dev**
+   - Researching, investigating, analyzing, evaluating → **research**
+
+2. **Check for explicit mission requests** in the user's description:
+   - If user mentions "research project", "investigation", "analysis" → use research
+   - If user mentions "build", "implement", "create feature" → use software-dev
+
+3. **Confirm with user** (unless explicit):
+   > "Based on your description, this sounds like a **[software-dev/research]** project.
+   > I'll use the **[mission name]** mission. Does that work for you?"
+
+4. **Handle user response**:
+   - If confirmed: proceed with selected mission
+   - If user wants different mission: use their choice
+
+5. **Handle --mission flag**: If the user provides `--mission <key>` in their command, skip inference and use the specified mission directly.
+
+Store the final mission selection in your notes and include it in the spec output. Do not pass a `--mission` flag to feature creation.
+
+## Workflow (0.11.0+)
+
+**Planning happens in main repository - NO worktree created!**
+
+1. Creates `kitty-specs/###-feature/spec.md` directly in main repo
+2. Automatically commits to main branch
+3. No worktree created during specify
+
+**Worktrees created later**: Use `spec-kitty implement WP##` to create a workspace for each work package. Worktrees are created later during implement (e.g., `.worktrees/###-feature-WP##`).
+
+## Location
+
+- Work in: **Main repository** (not a worktree)
+- Creates: `kitty-specs/###-feature/spec.md`
+- Commits to: `main` branch
+
+## Outline
+
+### 0. Generate a Friendly Feature Title
+
+- Summarize the agreed intent into a short, descriptive title (aim for ≤7 words; avoid filler like "feature" or "thing").
+- Read that title back during the Intent Summary and revise it if the user requests changes.
+- Use the confirmed title to derive the kebab-case feature slug for the create-feature command.
+
+The text the user typed after `/spec-kitty.specify` in the triggering message **is** the initial feature description. Capture it verbatim, but treat it only as a starting point for discovery—not the final truth. Your job is to interrogate the request, surface gaps, and co-create a complete specification with the user.
+
+Given that feature description, do this:
+
+- **Generation Mode (arguments provided)**: Use the provided text as a starting point, validate it through discovery, and fill gaps with explicit questions or clearly documented assumptions (limit `[NEEDS CLARIFICATION: …]` to at most three critical decisions the user has postponed).
+- **Interactive Interview Mode (no arguments)**: Use the discovery interview to elicit all necessary context, synthesize the working feature description, and confirm it with the user before you generate any specification artifacts.
+
+1. **Check discovery status**:
+   - If this is your first message or discovery questions remain unanswered, stay in the one-question loop, capture the user's response, update your internal table, and end with `WAITING_FOR_DISCOVERY_INPUT`. Do **not** surface the table; keep it internal. Do **not** call the creation command yet.
+   - Only proceed once every discovery question has an explicit answer and the user has acknowledged the Intent Summary.
+   - Empty invocation rule: stay in interview mode until you can restate the agreed-upon feature description. Do **not** call the creation command while the description is missing or provisional.
+
+2. When discovery is complete and the intent summary, **title**, and **mission** are confirmed, run the feature creation command from repo root:
+
+   ```bash
+   spec-kitty agent feature create-feature "<slug>" --json
+   ```
+
+   Where `<slug>` is a kebab-case version of the friendly title (e.g., "Checkout Upsell Flow" → "checkout-upsell-flow").
+
+   The command returns JSON with:
+   - `result`: "success" or error message
+   - `feature`: Feature number and slug (e.g., "014-checkout-upsell-flow")
+   - `feature_dir`: Absolute path to the feature directory inside the main repo
+
+   Parse these values for use in subsequent steps. All file paths are absolute.
+
+   **IMPORTANT**: You must only ever run this command once. The JSON is provided in the terminal output - always refer to it to get the actual paths you're looking for.
+3. **Stay in the main repository**: No worktree is created during specify.
+
+4. The spec template is bundled with spec-kitty at `src/specify_cli/missions/software-dev/templates/spec-template.md`. The template defines required sections for software development features.
+
+5. Create meta.json in the feature directory with:
+   ```json
+   {
+     "feature_number": "<number>",
+     "slug": "<full-slug>",
+     "friendly_name": "<Friendly Title>",
+     "mission": "<selected-mission>",
+     "source_description": "011",
+     "created_at": "<ISO timestamp>",
+     "measurement_owner": "<owner role>",
+     "review_cadence": "<weekly|biweekly|monthly>",
+     "risk_class": "<low|platform|critical>",
+     "lifecycle_state": "<spec-only|planning|execution|done>"
+   }
+   ```
+
+6. Generate the specification content by following this flow:
+    - Use the discovery answers as your authoritative source of truth (do **not** rely on raw `011`)
+    - For empty invocations, treat the synthesized interview summary as the canonical feature description
+    - Identify: actors, actions, data, constraints, motivations, success metrics
+    - For any remaining ambiguity:
+      * Ask the user a focused follow-up question immediately and halt work until they answer
+      * Only use `[NEEDS CLARIFICATION: …]` when the user explicitly defers the decision
+      * Record any interim assumption in the Assumptions section
+      * Prioritize clarifications by impact: scope > outcomes > risks/security > user experience > technical details
+    - Fill User Scenarios & Testing section (ERROR if no clear user flow can be determined)
+    - Generate Functional Requirements (each requirement must be testable)
+    - Define Success Criteria (measurable, technology-agnostic outcomes)
+    - Identify Key Entities (if data involved)
+    - For platform-level or critical features (`risk_class` = `platform` or `critical`), include required sections:
+      * `Adoption Plan`
+      * `ROI Metrics`
+      * `Security + MCP Governance`
+
+7. Write the specification to `<feature_dir>/spec.md` using the template structure, replacing placeholders with concrete details derived from the feature description while preserving section order and headings.
+
+8. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+
+   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
+   
+      ```markdown
+      # Specification Quality Checklist: [FEATURE NAME]
+      
+      **Purpose**: Validate specification completeness and quality before proceeding to planning
+      **Created**: [DATE]
+      **Feature**: [Link to spec.md]
+      
+      ## Content Quality
+      
+      - [ ] No implementation details (languages, frameworks, APIs)
+      - [ ] Focused on user value and business needs
+      - [ ] Written for non-technical stakeholders
+      - [ ] All mandatory sections completed
+      
+      ## Requirement Completeness
+      
+      - [ ] No [NEEDS CLARIFICATION] markers remain
+      - [ ] Requirements are testable and unambiguous
+      - [ ] Success criteria are measurable
+      - [ ] Success criteria are technology-agnostic (no implementation details)
+      - [ ] All acceptance scenarios are defined
+      - [ ] Edge cases are identified
+      - [ ] Scope is clearly bounded
+      - [ ] Dependencies and assumptions identified
+      
+      ## Feature Readiness
+      
+      - [ ] All functional requirements have clear acceptance criteria
+      - [ ] User scenarios cover primary flows
+      - [ ] Feature meets measurable outcomes defined in Success Criteria
+      - [ ] No implementation details leak into specification
+
+      ## Platform Governance Completeness (Required when `risk_class` is `platform` or `critical`)
+
+      - [ ] Adoption Plan section is present and explicit
+      - [ ] ROI Metrics section includes owner and review cadence
+      - [ ] Security + MCP Governance section includes approval and audit lifecycle
+      
+      ## Notes
+      
+      - Items marked incomplete require spec updates before `/spec-kitty.clarify` or `/spec-kitty.plan`
+      ```
+   
+   b. **Run Validation Check**: Review the spec against each checklist item:
+      - For each item, determine if it passes or fails
+      - Document specific issues found (quote relevant spec sections)
+   
+   c. **Handle Validation Results**:
+      
+      - **If all items pass**: Mark checklist complete and proceed to step 6
+      
+      - **If items fail (excluding [NEEDS CLARIFICATION])**:
+        1. List the failing items and specific issues
+        2. Update the spec to address each issue
+        3. Re-run validation until all items pass (max 3 iterations)
+        4. If still failing after 3 iterations, document remaining issues in checklist notes and warn user
+      
+      - **If [NEEDS CLARIFICATION] markers remain**:
+        1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
+        2. Re-confirm with the user whether each outstanding decision truly needs to stay unresolved. Do not assume away critical gaps.
+        3. For each clarification the user has explicitly deferred, present options using plain text—no tables:
+        
+           ```
+           Question [N]: [Topic]
+           Context: [Quote relevant spec section]
+           Need: [Specific question from NEEDS CLARIFICATION marker]
+           Options: (A) [First answer — implications] · (B) [Second answer — implications] · (C) [Third answer — implications] · (D) Custom (describe your own answer)
+           Reply with a letter or a custom answer.
+           ```
+        
+        4. Number questions sequentially (Q1, Q2, Q3 - max 3 total)
+        5. Present all questions together before waiting for responses
+        6. Wait for user to respond with their choices for all questions (e.g., "Q1: A, Q2: Custom - [details], Q3: B")
+        7. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the user's selected or provided answer
+        9. Re-run validation after all clarifications are resolved
+   
+   d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
+
+9. Report completion with feature directory, spec file path, checklist results, and readiness for the next phase (`/spec-kitty.clarify` or `/spec-kitty.plan`).
+
+**NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
+
+## General Guidelines
+
+## Quick Guidelines
+
+- Focus on **WHAT** users need and **WHY**.
+- Avoid HOW to implement (no tech stack, APIs, code structure).
+- Written for business stakeholders, not developers.
+- DO NOT create any checklists that are embedded in the spec. That will be a separate command.
+
+### Section Requirements
+
+- **Mandatory sections**: Must be completed for every feature
+- **Optional sections**: Include only when relevant to the feature
+- When a section doesn't apply, remove it entirely (don't leave as "N/A")
+- For `risk_class` of `platform` or `critical`, `Adoption Plan`, `ROI Metrics`, and `Security + MCP Governance` are mandatory
+
+### For AI Generation
+
+When creating this spec from a user prompt:
+
+1. **Make informed guesses**: Use context, industry standards, and common patterns to fill gaps
+2. **Document assumptions**: Record reasonable defaults in the Assumptions section
+3. **Limit clarifications**: Maximum 3 [NEEDS CLARIFICATION] markers - use only for critical decisions that:
+   - Significantly impact feature scope or user experience
+   - Have multiple reasonable interpretations with different implications
+   - Lack any reasonable default
+4. **Prioritize clarifications**: scope > security/privacy > user experience > technical details
+5. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
+6. **Common areas needing clarification** (only if no reasonable default exists):
+   - Feature scope and boundaries (include/exclude specific use cases)
+   - User types and permissions (if multiple conflicting interpretations possible)
+   - Security/compliance requirements (when legally/financially significant)
+   
+**Examples of reasonable defaults** (don't ask about these):
+
+- Data retention: Industry-standard practices for the domain
+- Performance targets: Standard web/mobile app expectations unless specified
+- Error handling: User-friendly messages with appropriate fallbacks
+- Authentication method: Standard session-based or OAuth2 for web apps
+- Integration patterns: RESTful APIs unless specified otherwise
+
+### Success Criteria Guidelines
+
+Success criteria must be:
+
+1. **Measurable**: Include specific metrics (time, percentage, count, rate)
+2. **Technology-agnostic**: No mention of frameworks, languages, databases, or tools
+3. **User-focused**: Describe outcomes from user/business perspective, not system internals
+4. **Verifiable**: Can be tested/validated without knowing implementation details
+
+**Good examples**:
+
+- "Users can complete checkout in under 3 minutes"
+- "System supports 10,000 concurrent users"
+- "95% of searches return results in under 1 second"
+- "Task completion rate improves by 40%"
+
+**Bad examples** (implementation-focused):
+
+- "API response time is under 200ms" (too technical, use "Users see results instantly")
+- "Database can handle 1000 TPS" (implementation detail, use user-facing metric)
+- "React components render efficiently" (framework-specific)
+- "Redis cache hit rate above 80%" (technology-specific)
+
+---
+
+clean cutover
+
+---
+
+also, this should all be on a wp 011 branch, no?
+
+---
+
+yes
+
+---
+
+shouldn't we be on a workbranch??
+
+---
+
+but we will want a PR for all this work, how is it okay to push to main?
+
+---
+
+[Request interrupted by user]
+
+---
+
+# /spec-kitty.plan - Create Implementation Plan
+
+**Version**: 0.11.0+
+
+## 📍 WORKING DIRECTORY: Stay in MAIN repository
+
+**IMPORTANT**: Plan works in the main repository. NO worktrees created.
+
+```bash
+# Run from project root (same directory as /spec-kitty.specify):
+# You should already be here if you just ran /spec-kitty.specify
+
+# Creates:
+# - kitty-specs/###-feature/plan.md → In main repository
+# - Commits to main branch
+# - NO worktrees created
+```
+
+**Do NOT cd anywhere**. Stay in the main repository root.
+
+## User Input
+
+```text
+011
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Location Check (0.11.0+)
+
+This command runs in the **main repository**, not in a worktree.
+
+- Verify you're on `main` (or `master`) before scaffolding plan.md
+- Planning artifacts live in `kitty-specs/###-feature/`
+- The plan template is committed to the main branch after generation
+
+**Path reference rule:** When you mention directories or files, provide either the absolute path or a path relative to the project root (for example, `kitty-specs/<feature>/tasks/`). Never refer to a folder by name alone.
+
+## Planning Interrogation (mandatory)
+
+Before executing any scripts or generating artifacts you must interrogate the specification and stakeholders.
+
+- **Scope proportionality (CRITICAL)**: FIRST, assess the feature's complexity from the spec:
+  - **Trivial/Test Features** (hello world, simple static pages, basic demos): Ask 1-2 questions maximum about tech stack preference, then proceed with sensible defaults
+  - **Simple Features** (small components, minor API additions): Ask 2-3 questions about tech choices and constraints
+  - **Complex Features** (new subsystems, multi-component features): Ask 3-5 questions covering architecture, NFRs, integrations
+  - **Platform/Critical Features** (core infrastructure, security, payments): Full interrogation with 5+ questions
+
+- **User signals to reduce questioning**: If the user says "use defaults", "just make it simple", "skip to implementation", "vanilla HTML/CSS/JS" - recognize these as signals to minimize planning questions and use standard approaches.
+
+- **First response rule**:
+  - For TRIVIAL features: Ask ONE tech stack question, then if answer is simple (e.g., "vanilla HTML"), proceed directly to plan generation
+  - For other features: Ask a single architecture question and end with `WAITING_FOR_PLANNING_INPUT`
+
+- If the user has not provided plan context, keep interrogating with one question at a time.
+
+- **Conversational cadence**: After each reply, assess if you have SUFFICIENT context for this feature's scope. For trivial features, knowing the basic stack is enough. Only continue if critical unknowns remain.
+
+Planning requirements (scale to complexity):
+
+1. Maintain a **Planning Questions** table internally covering questions appropriate to the feature's complexity (1-2 for trivial, up to 5+ for platform-level). Track columns `#`, `Question`, `Why it matters`, and `Current insight`. Do **not** render this table to the user.
+2. For trivial features, standard practices are acceptable (vanilla HTML, simple file structure, no build tools). Only probe if the user's request suggests otherwise.
+3. When you have sufficient context for the scope, summarize into an **Engineering Alignment** note and confirm.
+4. If user explicitly asks to skip questions or use defaults, acknowledge and proceed with best practices for that feature type.
+
+## Outline
+
+1. **Check planning discovery status**:
+   - If any planning questions remain unanswered or the user has not confirmed the **Engineering Alignment** summary, stay in the one-question cadence, capture the user's response, update your internal table, and end with `WAITING_FOR_PLANNING_INPUT`. Do **not** surface the table. Do **not** run the setup command yet.
+   - Once every planning question has a concrete answer and the alignment summary is confirmed by the user, continue.
+
+2. **Setup**: Run `spec-kitty agent feature setup-plan --json` from the repository root and parse JSON for:
+   - `result`: "success" or error message
+   - `plan_file`: Absolute path to the created plan.md
+   - `feature_dir`: Absolute path to the feature directory
+
+3. **Load context**: Read FEATURE_SPEC and `.kittify/memory/constitution.md` if it exists. If the constitution file is missing, skip Constitution Check and note that it is absent. Load IMPL_PLAN template (already copied).
+
+4. **Execute plan workflow**: Follow the structure in IMPL_PLAN template, using the validated planning answers as ground truth:
+   - Update Technical Context with explicit statements from the user or discovery research; mark `[NEEDS CLARIFICATION: …]` only when the user deliberately postpones a decision
+   - If a constitution exists, fill Constitution Check section from it and challenge any conflicts directly with the user. If no constitution exists, mark the section as skipped.
+   - Evaluate gates (ERROR if violations unjustified or questions remain unanswered)
+   - Phase 0: Generate research.md (commission research to resolve every outstanding clarification)
+   - Phase 1: Generate data-model.md, contracts/, quickstart.md based on confirmed intent
+   - Phase 1: Update agent context by running the agent script
+   - Re-evaluate Constitution Check post-design, asking the user to resolve new gaps before proceeding
+
+5. **STOP and report**: This command ends after Phase 1 planning. Report branch, IMPL_PLAN path, and generated artifacts.
+
+   **⚠️ CRITICAL: DO NOT proceed to task generation!** The user must explicitly run `/spec-kitty.tasks` to generate work packages. Your job is COMPLETE after reporting the planning artifacts.
+
+## Phases
+
+### Phase 0: Outline & Research
+
+1. **Extract unknowns from Technical Context** above:
+   - For each NEEDS CLARIFICATION → research task
+   - For each dependency → best practices task
+   - For each integration → patterns task
+
+2. **Generate and dispatch research agents**:
+   ```
+   For each unknown in Technical Context:
+     Task: "Research {unknown} for {feature context}"
+   For each technology choice:
+     Task: "Find best practices for {tech} in {domain}"
+   ```
+
+3. **Consolidate findings** in `research.md` using format:
+   - Decision: [what was chosen]
+   - Rationale: [why chosen]
+   - Alternatives considered: [what else evaluated]
+
+**Output**: research.md with all NEEDS CLARIFICATION resolved
+
+### Phase 1: Design & Contracts
+
+**Prerequisites:** `research.md` complete
+
+1. **Extract entities from feature spec** → `data-model.md`:
+   - Entity name, fields, relationships
+   - Validation rules from requirements
+   - State transitions if applicable
+
+2. **Generate API contracts** from functional requirements:
+   - For each user action → endpoint
+   - Use standard REST/GraphQL patterns
+   - Output OpenAPI/GraphQL schema to `/contracts/`
+
+3. **Agent context update**:
+   - Run `{AGENT_SCRIPT}`
+   - These scripts detect which AI agent is in use
+   - Update the appropriate agent-specific context file
+   - Add only new technology from current plan
+   - Preserve manual additions between markers
+
+**Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
+
+## Key rules
+
+- Use absolute paths
+- ERROR on gate failures or unresolved clarifications
+
+---
+
+## ⛔ MANDATORY STOP POINT
+
+**This command is COMPLETE after generating planning artifacts.**
+
+After reporting:
+- `plan.md` path
+- `research.md` path (if generated)
+- `data-model.md` path (if generated)
+- `contracts/` contents (if generated)
+- Agent context file updated
+
+**YOU MUST STOP HERE.**
+
+Do NOT:
+- ❌ Generate `tasks.md`
+- ❌ Create work package (WP) files
+- ❌ Create `tasks/` subdirectories
+- ❌ Proceed to implementation
+
+The user will run `/spec-kitty.tasks` when they are ready to generate work packages.
+
+**Next suggested command**: `/spec-kitty.tasks` (user must invoke this explicitly)
+
+---
+
+that works
+
+---
+
+# /spec-kitty.tasks - Generate Work Packages
+
+**Version**: 0.11.0+
+
+## ⚠️ CRITICAL: THIS IS THE MOST IMPORTANT PLANNING WORK
+
+**You are creating the blueprint for implementation**. The quality of work packages determines:
+- How easily agents can implement the feature
+- How parallelizable the work is
+- How reviewable the code will be
+- Whether the feature succeeds or fails
+
+**QUALITY OVER SPEED**: This is NOT the time to save tokens or rush. Take your time to:
+- Understand the full scope deeply
+- Break work into clear, manageable pieces
+- Write detailed, actionable guidance
+- Think through risks and edge cases
+
+**Token usage is EXPECTED and GOOD here**. A thorough task breakdown saves 10x the effort during implementation. Do not cut corners.
+
+---
+
+## 📍 WORKING DIRECTORY: Stay in MAIN repository
+
+**IMPORTANT**: Tasks works in the main repository. NO worktrees created.
+
+```bash
+# Run from project root (same directory as /spec-kitty.plan):
+# You should already be here if you just ran /spec-kitty.plan
+
+# Creates:
+# - kitty-specs/###-feature/tasks/WP01-*.md → In main repository
+# - kitty-specs/###-feature/tasks/WP02-*.md → In main repository
+# - Commits ALL to main branch
+# - NO worktrees created
+```
+
+**Do NOT cd anywhere**. Stay in the main repository root.
+
+**Worktrees created later**: After tasks are generated, use `spec-kitty implement WP##` to create workspace for each WP.
+
+## User Input
+
+```text
+011
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Location Check (0.11.0+)
+
+Before proceeding, verify you are in the main repository:
+
+**Check your current branch:**
+```bash
+git branch --show-current
+```
+
+**Expected output:** `main` (or `master`)
+**If you see a feature branch:** You're in the wrong place. Return to main:
+```bash
+cd $(git rev-parse --show-toplevel)
+git checkout main
+```
+
+Work packages are generated directly in `kitty-specs/###-feature/` and committed to main. Worktrees are created later when implementing each work package.
+
+## Outline
+
+1. **Setup**: Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks` from the repository root and capture `FEATURE_DIR` plus `AVAILABLE_DOCS`. All paths must be absolute.
+
+   **CRITICAL**: The command returns JSON with `FEATURE_DIR` as an ABSOLUTE path (e.g., `/Users/robert/Code/new_specify/kitty-specs/001-feature-name`).
+
+   **YOU MUST USE THIS PATH** for ALL subsequent file operations. Example:
+   ```
+   FEATURE_DIR = "/Users/robert/Code/new_specify/kitty-specs/001-a-simple-hello"
+   tasks.md location: FEATURE_DIR + "/tasks.md"
+   prompt location: FEATURE_DIR + "/tasks/WP01-slug.md"
+   ```
+
+   **DO NOT CREATE** paths like:
+   - ❌ `tasks/WP01-slug.md` (missing FEATURE_DIR prefix)
+   - ❌ `/tasks/WP01-slug.md` (wrong root)
+   - ❌ `REDACTED.md` (WRONG - no subdirectories!)
+   - ❌ `WP01-slug.md` (wrong directory)
+
+2. **Load design documents** from `FEATURE_DIR` (only those present):
+   - **Required**: plan.md (tech architecture, stack), spec.md (user stories & priorities)
+   - **Optional**: data-model.md (entities), contracts/ (API schemas), research.md (decisions), quickstart.md (validation scenarios)
+   - Scale your effort to the feature: simple UI tweaks deserve lighter coverage, multi-system releases require deeper decomposition.
+
+3. **Derive fine-grained subtasks** (IDs `T001`, `T002`, ...):
+   - Parse plan/spec to enumerate concrete implementation steps, tests (only if explicitly requested), migrations, and operational work.
+   - Capture prerequisites, dependencies, and parallelizability markers (`[P]` means safe to parallelize per file/concern).
+   - Maintain the subtask list internally; it feeds the work-package roll-up and the prompts.
+
+4. **Roll subtasks into work packages** (IDs `WP01`, `WP02`, ...):
+
+   **IDEAL WORK PACKAGE SIZE** (most important guideline):
+   - **Target: 3-7 subtasks per WP** (results in 200-500 line prompts)
+   - **Maximum: 10 subtasks per WP** (results in ~700 line prompts)
+   - **If more than 10 subtasks needed**: Create additional WPs, don't pack them in
+
+   **WHY SIZE MATTERS**:
+   - **Too large** (>10 subtasks, >700 lines): Agents get overwhelmed, skip details, make mistakes
+   - **Too small** (<3 subtasks, <150 lines): Overhead of worktree creation not worth it
+   - **Just right** (3-7 subtasks, 200-500 lines): Agent can hold entire context, implements thoroughly
+
+   **NUMBER OF WPs**: Let the work dictate the count
+   - Simple feature (5-10 subtasks total): 2-3 WPs
+   - Medium feature (20-40 subtasks): 5-8 WPs
+   - Complex feature (50+ subtasks): 10-20 WPs ← **This is OK!**
+   - **Better to have 20 focused WPs than 5 overwhelming WPs**
+
+   **GROUPING PRINCIPLES**:
+   - Each WP should be independently implementable
+   - Root in a single user story or cohesive subsystem
+   - Ensure every subtask appears in exactly one work package
+   - Name with succinct goal (e.g., "User Story 1 – Real-time chat happy path")
+   - Record metadata: priority, success criteria, risks, dependencies, included subtasks
+
+5. **Write `tasks.md`** using the bundled tasks template (`src/specify_cli/missions/software-dev/templates/tasks-template.md`):
+   - **Location**: Write to `FEATURE_DIR/tasks.md` (use the absolute FEATURE_DIR path from step 1)
+   - Populate the Work Package sections (setup, foundational, per-story, polish) with the `WPxx` entries
+   - Under each work package include:
+     - Summary (goal, priority, independent test)
+     - Included subtasks (checkbox list referencing `Txxx`)
+     - Implementation sketch (high-level sequence)
+     - Parallel opportunities, dependencies, and risks
+   - Preserve the checklist style so implementers can mark progress
+
+6. **Generate prompt files (one per work package)**:
+   - **CRITICAL PATH RULE**: All work package files MUST be created in a FLAT `FEATURE_DIR/tasks/` directory, NOT in subdirectories!
+   - Correct structure: `FEATURE_DIR/tasks/WPxx-slug.md` (flat, no subdirectories)
+   - WRONG (do not create): `FEATURE_DIR/tasks/planned/`, `FEATURE_DIR/tasks/doing/`, or ANY lane subdirectories
+   - WRONG (do not create): `/tasks/`, `tasks/`, or any path not under FEATURE_DIR
+   - Ensure `FEATURE_DIR/tasks/` exists (create as flat directory, NO subdirectories)
+   - For each work package:
+     - Derive a kebab-case slug from the title; filename: `WPxx-slug.md`
+     - Full path example: `REDACTED.md` (use ABSOLUTE path from FEATURE_DIR variable)
+     - Use the bundled task prompt template (`src/specify_cli/missions/software-dev/templates/task-prompt-template.md`) to capture:
+     - Frontmatter with `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, history entry
+       - Objective, context, detailed guidance per subtask
+       - Test strategy (only if requested)
+       - Definition of Done, risks, reviewer guidance
+     - Update `tasks.md` to reference the prompt filename
+   - **TARGET PROMPT SIZE**: 200-500 lines per WP (results from 3-7 subtasks)
+   - **MAXIMUM PROMPT SIZE**: 700 lines per WP (10 subtasks max)
+   - **If prompts are >700 lines**: Split the WP - it's too large
+
+   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `spec-kitty agent tasks move-task`.
+
+7. **Finalize tasks with dependency parsing and commit**:
+   After generating all WP prompt files, run the finalization command to:
+   - Parse dependencies from tasks.md
+   - Update WP frontmatter with dependencies field
+   - Validate dependencies (check for cycles, invalid references)
+   - Commit all tasks to main branch
+
+   **CRITICAL**: Run this command from repo root:
+   ```bash
+   spec-kitty agent feature finalize-tasks --json
+   ```
+
+   This step is MANDATORY for workspace-per-WP features. Without it:
+   - Dependencies won't be in frontmatter
+   - Agents won't know which --base flag to use
+   - Tasks won't be committed to main
+
+8. **Report**: Provide a concise outcome summary:
+   - Path to `tasks.md`
+   - Work package count and per-package subtask tallies
+   - **Average prompt size** (estimate lines per WP)
+   - **Validation**: Flag if any WP has >10 subtasks or >700 estimated lines
+   - Parallelization highlights
+   - MVP scope recommendation (usually Work Package 1)
+   - Prompt generation stats (files written, directory structure, any skipped items with rationale)
+   - Finalization status (dependencies parsed, X WP files updated, committed to main)
+   - Next suggested command (e.g., `/spec-kitty.analyze` or `/spec-kitty.implement`)
+
+Context for work-package planning: {ARGS}
+
+The combination of `tasks.md` and the bundled prompt files must enable a new engineer to pick up any work package and deliver it end-to-end without further specification spelunking.
+
+## Dependency Detection (0.11.0+)
+
+**Parse dependencies from tasks.md structure**:
+
+The LLM should analyze tasks.md for dependency relationships:
+- Explicit phrases: "Depends on WP##", "Dependencies: WP##"
+- Phase grouping: Phase 2 WPs typically depend on Phase 1
+- Default to empty if unclear
+
+**Generate dependencies in WP frontmatter**:
+
+Each WP prompt file MUST include a `dependencies` field:
+```yaml
+---
+work_package_id: "WP02"
+title: "Build API"
+lane: "planned"
+dependencies: ["WP01"]  # Generated from tasks.md
+subtasks: ["T001", "T002"]
+---
+```
+
+**Include the correct implementation command**:
+- No dependencies: `spec-kitty implement WP01`
+- With dependencies: `spec-kitty implement WP02 --base WP01`
+
+The WP prompt must show the correct command so agents don't branch from the wrong base.
+
+## Work Package Sizing Guidelines (CRITICAL)
+
+### Ideal WP Size
+
+**Target: 3-7 subtasks per WP**
+- Results in 200-500 line prompt files
+- Agent can hold entire context in working memory
+- Clear scope - easy to review
+- Parallelizable - multiple agents can work simultaneously
+
+**Examples of well-sized WPs**:
+- WP01: Foundation Setup (5 subtasks, ~300 lines)
+  - T001: Create database schema
+  - T002: Set up migration system
+  - T003: Create base models
+  - T004: Add validation layer
+  - T005: Write foundation tests
+
+- WP02: User Authentication (6 subtasks, ~400 lines)
+  - T006: Implement login endpoint
+  - T007: Implement logout endpoint
+  - T008: Add session management
+  - T009: Add password reset flow
+  - T010: Write auth tests
+  - T011: Add rate limiting
+
+### Maximum WP Size
+
+**Hard limit: 10 subtasks, ~700 lines**
+- Beyond this, agents start making mistakes
+- Prompts become overwhelming
+- Reviews take too long
+- Integration risk increases
+
+**If you need more than 10 subtasks**: SPLIT into multiple WPs.
+
+### Number of WPs: No Arbitrary Limit
+
+**DO NOT limit based on WP count. Limit based on SIZE.**
+
+- ✅ **20 WPs of 5 subtasks each** = 100 subtasks, manageable prompts
+- ❌ **5 WPs of 20 subtasks each** = 100 subtasks, overwhelming 1400-line prompts
+
+**Feature complexity scales with subtask count, not WP count**:
+- Simple feature: 10-15 subtasks → 2-4 WPs
+- Medium feature: 30-50 subtasks → 6-10 WPs
+- Complex feature: 80-120 subtasks → 15-20 WPs ← **Totally fine!**
+- Very complex: 150+ subtasks → 25-30 WPs ← **Also fine!**
+
+**The goal is manageable WP size, not minimizing WP count.**
+
+### When to Split a WP
+
+**Split if ANY of these are true**:
+- More than 10 subtasks
+- Prompt would exceed 700 lines
+- Multiple independent concerns mixed together
+- Different phases or priorities mixed
+- Agent would need to switch contexts multiple times
+
+**How to split**:
+- By phase: Foundation WP01, Implementation WP02, Testing WP03
+- By component: Database WP01, API WP02, UI WP03
+- By user story: Story 1 WP01, Story 2 WP02, Story 3 WP03
+- By type of work: Code WP01, Tests WP02, Migration WP03, Docs WP04
+
+### When to Merge WPs
+
+**Merge if ALL of these are true**:
+- Each WP has <3 subtasks
+- Combined would be <7 subtasks
+- Both address the same concern/component
+- No natural parallelization opportunity
+- Implementation is highly coupled
+
+**Don't merge just to hit a WP count target!**
+
+## Task Generation Rules
+
+**Tests remain optional**. Only include testing tasks/steps if the feature spec or user explicitly demands them.
+
+1. **Subtask derivation**:
+   - Assign IDs `Txxx` sequentially in execution order.
+   - Use `[P]` for parallel-safe items (different files/components).
+   - Include migrations, data seeding, observability, and operational chores.
+   - **Ideal subtask granularity**: One clear action (e.g., "Create user model", "Add login endpoint")
+   - **Too granular**: "Add import statement", "Fix typo" (bundle these)
+   - **Too coarse**: "Build entire API" (split into endpoints)
+
+2. **Work package grouping**:
+   - **Focus on SIZE first, count second**
+   - Target 3-7 subtasks per WP (200-500 line prompts)
+   - Maximum 10 subtasks per WP (700 line prompts)
+   - Keep each work package laser-focused on a single goal
+   - Avoid mixing unrelated concerns
+   - **Let complexity dictate WP count**: 20+ WPs is fine for complex features
+
+3. **Prioritisation & dependencies**:
+   - Sequence work packages: setup → foundational → story phases (priority order) → polish.
+   - Call out inter-package dependencies explicitly in both `tasks.md` and the prompts.
+   - Front-load infrastructure/foundation WPs (enable parallelization)
+
+4. **Prompt composition**:
+   - Mirror subtask order inside the prompt.
+   - Provide actionable implementation and test guidance per subtask—short for trivial work, exhaustive for complex flows.
+   - **Aim for 30-70 lines per subtask** in the prompt (includes purpose, steps, files, validation)
+   - Surface risks, integration points, and acceptance gates clearly so reviewers know what to verify.
+   - Include examples where helpful (API request/response shapes, config file structures, test cases)
+
+5. **Quality checkpoints**:
+   - After drafting WPs, review each prompt size estimate
+   - If any WP >700 lines: **STOP and split it**
+   - If most WPs <200 lines: Consider merging related ones
+   - Aim for consistency: Most WPs should be similar size (within 200-line range)
+   - **Think like an implementer**: Can I complete this WP in one focused session? If not, it's too big.
+
+6. **Think like a reviewer**: Any vague requirement should be tightened until a reviewer can objectively mark it done or not done.
+
+## Step-by-Step Process
+
+### Step 1: Setup
+
+Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks` and capture `FEATURE_DIR`.
+
+### Step 2: Load Design Documents
+
+Read from `FEATURE_DIR`:
+- spec.md (required)
+- plan.md (required)
+- data-model.md (optional)
+- research.md (optional)
+- contracts/ (optional)
+
+### Step 3: Derive ALL Subtasks
+
+Create complete list of subtasks with IDs T001, T002, etc.
+
+**Don't worry about count yet - capture EVERYTHING needed.**
+
+### Step 4: Group into Work Packages
+
+**SIZING ALGORITHM**:
+
+```
+For each cohesive unit of work:
+  1. List related subtasks
+  2. Count subtasks
+  3. Estimate prompt lines (subtasks × 50 lines avg)
+
+  If subtasks <= 7 AND estimated lines <= 500:
+    ✓ Good WP size - create it
+
+  Else if subtasks > 10 OR estimated lines > 700:
+    ✗ Too large - split into 2+ WPs
+
+  Else if subtasks < 3 AND can merge with related WP:
+    → Consider merging (but don't force it)
+```
+
+**Examples**:
+
+**Good sizing**:
+- WP01: Database Foundation (5 subtasks, ~300 lines) ✓
+- WP02: User Authentication (7 subtasks, ~450 lines) ✓
+- WP03: Admin Dashboard (6 subtasks, ~400 lines) ✓
+
+**Too large - MUST SPLIT**:
+- ❌ WP01: Entire Backend (25 subtasks, ~1500 lines)
+  - ✓ Split into: DB Layer (5), Business Logic (6), API Layer (7), Auth (7)
+
+**Too small - CONSIDER MERGING**:
+- WP01: Add config file (2 subtasks, ~100 lines)
+- WP02: Add logging (2 subtasks, ~120 lines)
+  - ✓ Merge into: WP01: Infrastructure Setup (4 subtasks, ~220 lines)
+
+### Step 5: Write tasks.md
+
+Create work package sections with:
+- Summary (goal, priority, test criteria)
+- Included subtasks (checkbox list)
+- Implementation notes
+- Parallel opportunities
+- Dependencies
+- **Estimated prompt size** (e.g., "~400 lines")
+
+### Step 6: Generate WP Prompt Files
+
+For each WP, generate `FEATURE_DIR/tasks/WPxx-slug.md` using the template.
+
+**CRITICAL VALIDATION**: After generating each prompt:
+1. Count lines in the prompt
+2. If >700 lines: GO BACK and split the WP
+3. If >1000 lines: **STOP - this will fail** - you MUST split it
+
+**Self-check**:
+- Subtask count: 3-7? ✓ | 8-10? ⚠️ | 11+? ❌ SPLIT
+- Estimated lines: 200-500? ✓ | 500-700? ⚠️ | 700+? ❌ SPLIT
+- Can implement in one session? ✓ | Multiple sessions needed? ❌ SPLIT
+
+### Step 7: Finalize Tasks
+
+Run `spec-kitty agent feature finalize-tasks --json` to:
+- Parse dependencies
+- Update frontmatter
+- Validate (cycles, invalid refs)
+- Commit to main
+
+### Step 8: Report
+
+Provide summary with:
+- WP count and subtask tallies
+- **Size distribution** (e.g., "6 WPs ranging from 250-480 lines")
+- **Size validation** (e.g., "✓ All WPs within ideal range" OR "⚠️ WP05 is 820 lines - consider splitting")
+- Parallelization opportunities
+- MVP scope
+- Next command
+
+## Dependency Detection (0.11.0+)
+
+**Parse dependencies from tasks.md structure**:
+
+The LLM should analyze tasks.md for dependency relationships:
+- Explicit phrases: "Depends on WP##", "Dependencies: WP##"
+- Phase grouping: Phase 2 WPs typically depend on Phase 1
+- Default to empty if unclear
+
+**Generate dependencies in WP frontmatter**:
+
+Each WP prompt file MUST include a `dependencies` field:
+```yaml
+---
+work_package_id: "WP02"
+title: "Build API"
+lane: "planned"
+dependencies: ["WP01"]  # Generated from tasks.md
+subtasks: ["T001", "T002"]
+---
+```
+
+**Include the correct implementation command**:
+- No dependencies: `spec-kitty implement WP01`
+- With dependencies: `spec-kitty implement WP02 --base WP01`
+
+The WP prompt must show the correct command so agents don't branch from the wrong base.
+
+## ⚠️ Common Mistakes to Avoid
+
+### ❌ MISTAKE 1: Optimizing for WP Count
+
+**Bad thinking**: "I'll create exactly 5-7 WPs to keep it manageable"
+→ Results in: 20 subtasks per WP, 1200-line prompts, overwhelmed agents
+
+**Good thinking**: "Each WP should be 3-7 subtasks (200-500 lines). If that means 15 WPs, that's fine."
+→ Results in: Focused WPs, successful implementation, happy agents
+
+### ❌ MISTAKE 2: Token Conservation During Planning
+
+**Bad thinking**: "I'll save tokens by writing brief prompts with minimal guidance"
+→ Results in: Agents confused during implementation, asking clarifying questions, doing work wrong, requiring rework
+
+**Good thinking**: "I'll invest tokens now to write thorough prompts with examples and edge cases"
+→ Results in: Agents implement correctly the first time, no rework needed, net token savings
+
+### ❌ MISTAKE 3: Mixing Unrelated Concerns
+
+**Bad example**: WP03: Misc Backend Work (12 subtasks)
+- T010: Add user model
+- T011: Configure logging
+- T012: Set up email service
+- T013: Add admin dashboard
+- ... (8 more unrelated tasks)
+
+**Good approach**: Split by concern
+- WP03: User Management (T010-T013, 4 subtasks)
+- WP04: Infrastructure Services (T014-T017, 4 subtasks)
+- WP05: Admin Dashboard (T018-T021, 4 subtasks)
+
+### ❌ MISTAKE 4: Insufficient Prompt Detail
+
+**Bad prompt** (~20 lines per subtask):
+```markdown
+### Subtask T001: Add user authentication
+
+**Purpose**: Implement login
+
+**Steps**:
+1. Create endpoint
+2. Add validation
+3. Test it
+```
+
+**Good prompt** (~60 lines per subtask):
+```markdown
+### Subtask T001: Implement User Login Endpoint
+
+**Purpose**: Create POST /api/auth/login endpoint that validates credentials and returns JWT token.
+
+**Steps**:
+1. Create endpoint handler in `src/api/auth.py`:
+   - Route: POST /api/auth/login
+   - Request body: `{email: string, password: string}`
+   - Response: `{token: string, user: UserProfile}` on success
+   - Error codes: 400 (invalid input), 401 (bad credentials), 429 (rate limited)
+
+2. Implement credential validation:
+   - Hash password with bcrypt (matches registration hash)
+   - Compare against stored hash from database
+   - Use constant-time comparison to prevent timing attacks
+
+3. Generate JWT token on success:
+   - Include: user_id, email, issued_at, expires_at (24 hours)
+   - Sign with SECRET_KEY from environment
+   - Algorithm: HS256
+
+4. Add rate limiting:
+   - Max 5 attempts per IP per 15 minutes
+   - Return 429 with Retry-After header
+
+**Files**:
+- `src/api/auth.py` (new file, ~80 lines)
+- `tests/api/test_auth.py` (new file, ~120 lines)
+
+**Validation**:
+- [ ] Valid credentials return 200 with token
+- [ ] Invalid credentials return 401
+- [ ] Missing fields return 400
+- [ ] Rate limit enforced (test with 6 requests)
+- [ ] JWT token is valid and contains correct claims
+- [ ] Token expires after 24 hours
+
+**Edge Cases**:
+- Account doesn't exist: Return 401 (same as wrong password - don't leak info)
+- Empty password: Return 400
+- SQL injection in email field: Prevented by parameterized queries
+- Concurrent login attempts: Handle with database locking
+```
+
+## Remember
+
+**This is the most important planning work you'll do.**
+
+A well-crafted set of work packages with detailed prompts makes implementation smooth and parallelizable.
+
+A rushed job with vague, oversized WPs causes:
+- Agents getting stuck
+- Implementation taking 2-3x longer
+- Rework and review cycles
+- Feature failure
+
+**Invest the tokens now. Be thorough. Future agents will thank you.**
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Summary:
+1. Primary Request and Intent:
+   - Continue Feature 010 (Inngest Evaluation Spike) from prior session: complete WP05 review/approval, implement WP06 (decision document), review/approve WP06, close duplicate PRs #30/#31/#32 from another agent, merge all WP01-WP06 to main, push
+   - Create Feature 011 (Inngest Migration) spec via `/spec-kitty.specify 011` (clean cutover, no parallel operation)
+   - Create Feature 011 plan via `/spec-kitty.plan 011` (4 WPs confirmed by user)
+   - Create Feature 011 tasks via `/spec-kitty.tasks 011` (currently executing)
+
+2. Key Technical Concepts:
+   - **spec-kitty workflow**: planned → doing → for_review → done; worktrees per WP; specs/plans/tasks on main; `move-task`, `mark-status`, `workflow review/implement`
+   - **Feature 010 complete**: Inngest v3 evaluation spike — all 7 success criteria passed, GO decision
+   - **Inngest v3**: self-hosted durable workflow; `serve()` Express adapter; `step.run()`, `step.waitForEvent()`; typed `PipelineEvents`; concurrency keys (`event.data.tenantId` for events; `'"schedule-tick-global"'` static string for cron)
+   - **InngestStepHandlerAdapter**: wraps `PipelineStepHandler.execute()` inside `step.run()`
+   - **WP06 Decision**: GO — 1,493 LOC deletion inventory across `engine/`(655), `event-bus/`(315), `triggers/`(413), `init.ts`(110)
+   - **Feature 011 migration**: clean cutover (no parallel operation); port `content-audit-pipeline` and `regulatory-change-monitor-pipeline`; update `routes.ts` to use `inngest.send()`; delete custom plumbing; integration tests
+   - **Pipeline templates**: `content-audit` (schedule_tick trigger, 4 steps: fidelity_check→content_generation→review_gate(72h)→notification); `regulatory-change-monitor` (schedule_tick trigger, 4 steps: source_query→content_generation→review_gate(48h)→notification)
+   - **Merge strategy**: each WP branch was rebased on prior WP; `--theirs` used to resolve add/add conflicts during sequential merges to main
+   - **spec-kitty rebase loop**: `move-task` blocked unless worktree rebased on latest main; spec-kitty status commits land on main frequently requiring repeated rebases
+   - **Constitution §2.10**: client-informed, platform-generic — no client names/terminology anywhere
+
+3. Files and Code Sections:
+   - **`research/decision.md`** (WP06 deliverable, `.worktrees/010-inngest-evaluation-WP06/`)
+     - GO recommendation, 7/7 success criteria scored with evidence, 1,493 LOC deletion inventory, 4-phase Feature 011 migration sequence, risk register, Adoption Plan, ROI Metrics, Security governance
+   
+   - **`kitty-specs/011-inngest-migration/spec.md`**
+     - Platform-risk feature spec: 3 pipeline templates to port, clean cutover, 7 success criteria, 11 FRs, 4 user scenarios, Dependencies on Feature 009+010, Adoption/ROI/Security sections (required for `risk_class: platform`)
+   
+   - **`kitty-specs/011-inngest-migration/plan.md`**
+     - Technical context: TypeScript 5.x, Inngest v3, vitest; Constitution check (all 6 principles pass); Project structure; 4-WP summary table; Deletion inventory table (15 files, 1,493 LOC); Inngest function pattern reference; No new data model or API contracts
+   
+   - **`kitty-specs/011-inngest-migration/research.md`**
+     - 5 decisions from Feature 010 spike: self-hosted viable, adapter pattern (no handler changes), `step.waitForEvent()` works, concurrency key strategy, latency acceptable; Alternatives considered
+   
+   - **`kitty-specs/011-inngest-migration/tasks.md`**
+     - 18 subtasks (T001–T018) across 4 WPs; WP summaries with estimated prompt sizes (280-420 lines each); parallelization opportunities noted
+   
+   - **`kitty-specs/011-inngest-migration/tasks/WP01-port-remaining-pipelines.md`**
+     - T001: `content-audit-pipeline.ts` (schedule_tick, 3 steps + 72h review gate)
+     - T002: `regulatory-change-monitor-pipeline.ts` (schedule_tick, 3 steps + 48h review gate)
+     - T003: Register both in `inngest/index.ts` `allFunctions`
+     - T004: Unit tests (stub, handler, approve/reject/timeout branches)
+     - Key risk: `waitForEvent` not on `InngestStep` interface — call directly from Inngest `step` param
+   
+   - **`kitty-specs/011-inngest-migration/tasks/WP02-update-routes.md`**
+     - T005: Remove `EventBus` from `PipelineRouterDeps`
+     - T006: Replace `eventBus.publish()` with `inngest.send()`
+     - T007: Update imports in `routes.ts`
+     - T008: Update route tests (mock `inngest.send` instead of `eventBus.publish`)
+   
+   - **`kitty-specs/011-inngest-migration/tasks/WP03-delete-custom-plumbing.md`**
+     - T009-T012: Delete `engine/`, `event-bus/`, `triggers/`, `init.ts`
+     - T013: Fix all import errors; `tsc --noEmit` must pass with zero errors
+     - Key risk: `StepHandlerRegistry`/`ExecutionContext` types need relocation to `pipelines/types.ts`
+   
+   - **`kitty-specs/011-inngest-migration/tasks/WP04-integration-tests.md`** (just written)
+     - T014: corpus-update-pipeline integration test (4 cases)
+     - T015: content-audit-pipeline with review gate (5 cases including reject + timeout)
+     - T016: regulatory-change-monitor with review gate (5 cases, 48h timeout)
+     - T017: per-tenant concurrency config verification (5 assertions)
+     - T018: acceptance gate (tsc, vitest, LOC count ≥1400, no dangling imports)
+
+4. Errors and Fixes:
+   - **`spec-kitty move-task` blocked by stale worktree**: Occurred repeatedly — status commits on main caused worktree to fall behind. Fix: `git rebase main` in the WP worktree before each `move-task`
+   - **WP06 workspace creation failed (merge conflicts)**: `spec-kitty implement WP06` failed because WP01-WP05 branches had not been merged to main. Fix: Manually merged WP01–WP05 to main using `--no-ff`, resolving add/add conflicts with `git checkout --theirs` (WP branches contained cumulative changes from prior WPs)
+   - **`spec-kitty accept` `ok: false`**: Path violations (`src/`, `tests/`, `contracts/`, `docs/` not found in feature dir) — "Software Dev Kitty" template mismatch for a research spike. Non-blocking; feature was already merged and pushed. Proceeded without formal acceptance
+   - **`spec-kitty move-task WP05/WP06` from wrong directory**: Ran rebase from main instead of worktree. Fix: `cd .worktrees/010-inngest-evaluation-WP05` then rebase
+   - **`gh pr close` multiple args**: `gh pr close` doesn't accept multiple PR numbers. Fix: Chained three separate `gh pr close` calls with `&&`
+   - **`spec-kitty mark-status` invalid status 'doing'**: Only accepts `done` or `pending`. Benign — subtasks were marked done at end of WP
+
+5. Problem Solving:
+   - Feature 010 fully complete: all 6 WPs implemented, reviewed, approved, merged to main, pushed
+   - PRs #30, #31, #32 (duplicate from another agent) closed
+   - Feature 011 spec/plan/tasks created on main (standard spec-kitty workflow)
+   - WP04 task file just written; finalization command still pending
+
+6. All User Messages:
+   - "okay, you got interrupted earlier, continue"
+   - "go ahead" (during WP05 delegation)
+   - "can you also check the latest prs, I think another agent also tried to do your work. If the PRs for feature 10 are unnecessary then close them"
+   - "okay, what's next?"
+   - "is there a pr for 010?"
+   - `/spec-kitty.specify 011` (with args `011`)
+   - "also, this should all be on a wp 011 branch, no? yes"
+   - "that works" (confirming 4-WP plan structure)
+   - "clean cutover" (specifying migration approach)
+   - `/spec-kitty.accept` (no args — re-ran accept for 010)
+   - "010" (feature to accept)
+   - "local" (acceptance mode)
+   - "you decide" (validation commands)
+   - `/spec-kitty.plan 011`
+   - "that works" (confirming 4-WP plan)
+   - `/spec-kitty.tasks 011`
+   - "shouldn't we be on a workbranch??" (clarified that spec-kitty.specify/plan/tasks all commit to main by design; WP branches created during implement)
+
+7. Pending Tasks:
+   - Run `spec-kitty agent feature finalize-tasks --json` to parse dependencies, update WP frontmatter, validate, and commit all task files to main
+   - Push main after finalization
+
+8. Current Work:
+   Just completed writing all 4 WP task prompt files for Feature 011:
+   - `kitty-specs/011-inngest-migration/tasks/WP01-port-remaining-pipelines.md` ✓
+   - `kitty-specs/011-inngest-migration/tasks/WP02-update-routes.md` ✓
+   - `kitty-specs/011-inngest-migration/tasks/WP03-delete-custom-plumbing.md` ✓
+   - `kitty-specs/011-inngest-migration/tasks/WP04-integration-tests.md` ✓ (just written)
+   
+   The `/spec-kitty.tasks` skill instructions explicitly require running `spec-kitty agent feature finalize-tasks --json` as a mandatory final step to parse dependencies, update frontmatter, validate, and commit all tasks to main.
+
+9. Optional Next Step:
+   Run the mandatory finalization command as required by the `/spec-kitty.tasks` workflow:
+   ```bash
+   spec-kitty agent feature finalize-tasks --json
+   ```
+   Then push main to origin. This was the final required step from the `/spec-kitty.tasks` instructions: "Run `spec-kitty agent feature finalize-tasks --json` to parse dependencies, update frontmatter, validate (cycles, invalid refs), commit to main."
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/AlexUA/.REDACTED.jsonl
+Continue the conversation from where it left off without asking the user any further questions. Resume directly — do not acknowledge the summary, do not recap what was happening, do not preface with "I'll continue" or similar. Pick up the last task as if the break never happened.
