@@ -1,15 +1,15 @@
 ---
 work_package_id: WP02
 title: Event Bus
-lane: "doing"
+lane: "done"
 dependencies: []
 subtasks: [T008, T009, T010, T011]
 phase: Phase B - Event & Trigger Layer
 assignee: ''
 agent: "claude-opus"
 shell_pid: "34769"
-review_status: ''
-reviewed_by: ''
+review_status: "approved"
+reviewed_by: "Alex Urevick-Ackelsberg"
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
@@ -243,3 +243,4 @@ The event bus is the pipeline framework's primary event delivery mechanism. It s
 
 ## Activity Log
 - 2026-03-16T18:18:52Z – claude-opus – shell_pid=34769 – lane=doing – Started implementation via workflow command
+- 2026-03-19T00:51:05Z – claude-opus – shell_pid=34769 – lane=done – All subtasks complete, merged to feature branch
