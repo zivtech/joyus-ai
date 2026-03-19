@@ -86,8 +86,8 @@ Layer 4: WP06 (decision — depends on all)
 **Priority**: P2 | **Dependencies**: WP01-WP05 | **Est. ~200 lines**
 
 **Subtasks**:
-- [ ] T026: Summarize spike findings across all WPs (environment, correctness, performance)
-- [ ] T027: Score against success criteria matrix from spec
-- [ ] T028: Write go/no-go recommendation with rationale
-- [ ] T029: If "go": produce deletion inventory (009 files/LOC removable), migration sequence, Feature 011 scope estimate
-- [ ] T030: If "no-go": document blockers and recommended fixes for custom implementation
+- [x] T026: Summarize spike findings across all WPs (environment, correctness, performance)
+- [x] T027: Score against success criteria matrix from spec
+- [x] T028: Write go/no-go recommendation with rationale
+- [x] T029: If "go": produce deletion inventory (009 files/LOC removable), migration sequence, Feature 011 scope estimate
+- [x] T030: If "no-go": document blockers and recommended fixes for custom implementation
