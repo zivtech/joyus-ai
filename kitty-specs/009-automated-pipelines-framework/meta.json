@@ -43,5 +43,9 @@
   "slug": "009-automated-pipelines-framework",
   "source_description": "Event-driven pipeline execution framework with triggers, retry policies, review gates, templates, and analytics for content-and-profile workflows",
   "vcs": "git",
-  "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00"
+  "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00",
+  "measurement_owner": "Platform Operations",
+  "review_cadence": "weekly",
+  "risk_class": "platform",
+  "lifecycle_state": "done"
 }

@@ -87,7 +87,7 @@ health indicator alongside test pass rates and deployment frequency.
 
 **Steps**:
 
-1. Scan all markdown files in `joyus-ai/kitty-specs/` and `joyus-ai/spec/` for internal links (`[text](../path)`, `[text](./path)`, anchor refs `#section`).
+1. Scan all markdown files in `joyus-ai/kitty-specs/` and `joyus-ai/spec/` for internal links (e.g. `[text](<path>)`, anchor refs `#section`).
 2. For each link, verify the target file exists. Record broken links in a working list.
 3. Categorize breaks:
    - **Missing file**: target `.md` file does not exist → create a stub (T012 handles stub content)
