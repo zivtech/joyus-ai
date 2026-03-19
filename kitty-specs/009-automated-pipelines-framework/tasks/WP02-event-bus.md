@@ -5,7 +5,7 @@ lane: "done"
 dependencies: []
 subtasks: [T008, T009, T010, T011]
 phase: Phase B - Event & Trigger Layer
-assignee: ''
+assignee: "Claude"
 agent: "claude-opus"
 shell_pid: "34769"
 review_status: "approved"

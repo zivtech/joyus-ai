@@ -14,6 +14,7 @@ history:
 - date: '2026-03-14'
   action: created
   agent: claude-opus
+assignee: "Claude"
 ---
 
 # WP03: Trigger System
