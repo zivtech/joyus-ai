@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "16dc631d3396",
+  "strategy": "manual-commit",
+  "branch": "feat/009-automated-pipelines-framework",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/secret-scan.yml",
+    ".kittify/missions/software-dev/mission.yaml",
+    "kitty-specs/007-org-scale-agentic-governance/tasks/WP03-governance-remediations.md",
+    "kitty-specs/009-automated-pipelines-framework/checklists/requirements.md",
+    "kitty-specs/009-automated-pipelines-framework/meta.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/16/dc631d3396/0/metadata.json",
+      "transcript": "/16/dc631d3396/0/full.jsonl",
+      "context": "/16/dc631d3396/0/context.md",
+      "content_hash": "/16/dc631d3396/0/content_hash.txt",
+      "prompt": "/16/dc631d3396/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 233,
+    "cache_creation_tokens": 262933,
+    "cache_read_tokens": 6644402,
+    "output_tokens": 32702,
+    "api_call_count": 79
+  }
+}
