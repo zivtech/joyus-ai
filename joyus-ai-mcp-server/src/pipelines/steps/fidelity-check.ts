@@ -4,9 +4,8 @@
  * A low score is a successful check result with passed=false, NOT a step failure.
  */
 
-import type { ExecutionContext } from '../engine/step-runner.js';
 import type { StepType, StepResult } from '../types.js';
-
+import type { ExecutionContext } from '../types.js';
 import type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
 
 export class FidelityCheckHandler implements PipelineStepHandler {
@@ -41,7 +40,7 @@ export class FidelityCheckHandler implements PipelineStepHandler {
     }
 
     const profileId = config['profileId'] as string;
-    const contentIds: string[] = Array.isArray(config['contentIds'])
+    let contentIds: string[] = Array.isArray(config['contentIds'])
       ? (config['contentIds'] as string[])
       : [];
 

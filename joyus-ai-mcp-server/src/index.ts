@@ -24,7 +24,9 @@ import { authRouter } from './auth/routes.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
 import { inngest, allFunctions } from './inngest/index.js';
-import { initializePipelineModule, type PipelineModule } from './pipelines/init.js';
+import { DecisionRecorder } from './pipelines/review/decision.js';
+import { createPipelineRouter } from './pipelines/routes.js';
+import { createStepRegistry } from './pipelines/steps/registry.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
 import { executeTool, setPipelineContext } from './tools/executor.js';
@@ -310,22 +312,18 @@ const server = app.listen(PORT, async () => {
   }
 
   // Initialize pipeline module (failure is isolated — won't crash the server)
-  let pipelineModule: PipelineModule | null = null;
   try {
-    pipelineModule = await initializePipelineModule({
-      db: db as unknown as import('drizzle-orm/node-postgres').NodePgDatabase,
-      connectionString: process.env.DATABASE_URL ?? '',
-    });
+    const stepRegistry = createStepRegistry({});
+    const decisionRecorder = new DecisionRecorder(
+      db as unknown as import('drizzle-orm/node-postgres').NodePgDatabase,
+    );
+    const pipelineRouter = createPipelineRouter({ db: db as unknown as import('drizzle-orm/node-postgres').NodePgDatabase, stepRegistry, decisionRecorder });
 
     // Mount pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
-    app.use('/api', requireBearerToken, pipelineModule.router);
+    app.use('/api', requireBearerToken, pipelineRouter);
 
     // Inject pipeline deps into tool executor
-    setPipelineContext({
-      stepRegistry: pipelineModule.stepRegistry,
-      decisionRecorder: pipelineModule.decisionRecorder,
-      eventBus: pipelineModule.eventBus,
-    });
+    setPipelineContext({ stepRegistry, decisionRecorder });
 
     console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
     console.log(`   Inngest:   http://localhost:${PORT}/api/inngest`);
@@ -335,9 +333,6 @@ const server = app.listen(PORT, async () => {
 
   // Graceful shutdown
   const shutdown = async () => {
-    if (pipelineModule) {
-      await pipelineModule.shutdown();
-    }
     process.exit(0);
   };
   process.on('SIGTERM', shutdown);

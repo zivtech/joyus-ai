@@ -2,9 +2,8 @@
  * ProfileGenerationHandler — regenerates one or more profiles via the profile engine.
  */
 
-import type { ExecutionContext } from '../engine/step-runner.js';
 import type { StepType, StepResult } from '../types.js';
-
+import type { ExecutionContext } from '../types.js';
 import type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
 
 export class ProfileGenerationHandler implements PipelineStepHandler {

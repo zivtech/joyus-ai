@@ -9,9 +9,6 @@ import { createId } from '@paralleldrive/cuid2';
 import { eq, and, desc, or, isNull, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import type { EventBus } from '../../pipelines/event-bus/interface.js';
-import { validateNoCycle } from '../../pipelines/graph/cycle-detector.js';
-import type { DecisionRecorder } from '../../pipelines/review/decision.js';
 import {
   pipelines,
   pipelineSteps,
@@ -19,10 +16,12 @@ import {
   reviewDecisions,
   pipelineTemplates,
 } from '../../pipelines/schema.js';
-import type { StepRegistry } from '../../pipelines/steps/registry.js';
 import type { StepType } from '../../pipelines/types.js';
 import { MAX_PIPELINES_PER_TENANT } from '../../pipelines/types.js';
 import { CreatePipelineInput, PipelineQueryInput, ExecutionQueryInput } from '../../pipelines/validation.js';
+import { validateNoCycle } from '../../pipelines/graph/cycle-detector.js';
+import type { StepRegistry } from '../../pipelines/steps/registry.js';
+import type { DecisionRecorder } from '../../pipelines/review/decision.js';
 
 // ============================================================
 // CONTEXT
@@ -33,7 +32,6 @@ export interface PipelineExecutorContext {
   db: NodePgDatabase;
   stepRegistry: StepRegistry;
   decisionRecorder: DecisionRecorder;
-  eventBus: EventBus;
 }
 
 // ============================================================
@@ -45,7 +43,7 @@ export async function executePipelineTool(
   input: Record<string, unknown>,
   context: PipelineExecutorContext,
 ): Promise<unknown> {
-  const { db, tenantId, stepRegistry, decisionRecorder, eventBus } = context;
+  const { db, tenantId, stepRegistry, decisionRecorder } = context;
 
   switch (toolName) {
     // ── Pipeline Management ──────────────────────────────────────────────────
@@ -187,9 +185,11 @@ export async function executePipelineTool(
       }
 
       const payload = (input.payload as Record<string, unknown>) ?? {};
-      const eventId = await eventBus.publish(tenantId, 'manual_request', {
-        pipelineId: pipeline.id,
-        ...payload,
+      const { inngest } = await import('../../inngest/client.js');
+      const eventId = createId();
+      await inngest.send({
+        name: 'pipeline/manual.triggered',
+        data: { tenantId, pipelineId: pipeline.id, payload },
       });
 
       return { eventId, pipelineId: pipeline.id, status: 'triggered' };
