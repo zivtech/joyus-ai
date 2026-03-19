@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "631838901f66",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "kitty-specs/010-inngest-evaluation/meta.json",
+    "kitty-specs/010-inngest-evaluation/plan.md",
+    "kitty-specs/010-inngest-evaluation/spec.md",
+    "kitty-specs/010-inngest-evaluation/tasks.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/63/1838901f66/0/metadata.json",
+      "transcript": "/63/1838901f66/0/full.jsonl",
+      "context": "/63/1838901f66/0/context.md",
+      "content_hash": "/63/1838901f66/0/content_hash.txt",
+      "prompt": "/63/1838901f66/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 27,
+    "cache_creation_tokens": 132251,
+    "cache_read_tokens": 1199477,
+    "output_tokens": 6601,
+    "api_call_count": 9
+  }
+}
