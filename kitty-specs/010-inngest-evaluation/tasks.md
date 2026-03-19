@@ -49,11 +49,11 @@ Layer 4: WP06 (decision — depends on all)
 **Priority**: P1 | **Dependencies**: WP02 | **Est. ~250 lines**
 
 **Subtasks**:
-- [ ] T011: Implement review gate step using `step.waitForEvent('pipeline/review.decided', { timeout: '7d' })`
-- [ ] T012: Update `DecisionRecorder` to send Inngest event after recording decision
-- [ ] T013: Test approve path — execution resumes with approved artifacts
-- [ ] T014: Test reject path — execution receives rejection feedback, records failure
-- [ ] T015: Test timeout path — execution escalates after 7-day timeout
+- [x] T011: Implement review gate step using `step.waitForEvent('pipeline/review.decided', { timeout: '7d' })`
+- [x] T012: Update `DecisionRecorder` to send Inngest event after recording decision
+- [x] T013: Test approve path — execution resumes with approved artifacts
+- [x] T014: Test reject path — execution receives rejection feedback, records failure
+- [x] T015: Test timeout path — execution escalates after 7-day timeout
 
 ### WP04 — Per-Tenant Concurrency and Cron Scheduling
 **Prompt**: [`tasks/WP04-concurrency-cron.md`](tasks/WP04-concurrency-cron.md)
