@@ -1,13 +1,13 @@
 ---
 work_package_id: "WP01"
 title: "Local Inngest Server Setup"
-lane: "for_review"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005"]
 phase: "Phase A - Environment"
 assignee: ""
-agent: "claude"
-shell_pid: "57375"
+agent: "claude-sonnet"
+shell_pid: "40083"
 review_status: ""
 reviewed_by: ""
 history:
@@ -41,3 +41,4 @@ spec-kitty implement WP01
 
 - 2026-03-19T02:03:33Z – claude – shell_pid=57375 – lane=doing – Started implementation via workflow command
 - 2026-03-19T02:22:18Z – claude – shell_pid=57375 – lane=for_review – Environment setup complete: docker-compose overlay, Inngest client (v3 EventSchemas API), stub function, serve() adapter at /api/inngest, research/inngest-setup.md. Typecheck passes.
+- 2026-03-19T02:33:03Z – claude-sonnet – shell_pid=40083 – lane=doing – Started review via workflow command
