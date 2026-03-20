@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "fd7d2e1083a4",
+  "session_id": "e2ac6498-e3c5-4d3b-b9db-1cd6b8682933",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-20T17:50:20.805068Z",
+  "branch": "fix/meta-critic-tiers-1-3",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "joyus-ai-mcp-server/src/config.ts",
+    "joyus-ai-mcp-server/src/inngest/registry.ts",
+    "joyus-ai-mcp-server/tests/auth/routes.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "b612bbd1-90b3-43a9-8c29-40ff3b35340d",
+  "token_usage": {
+    "input_tokens": 91,
+    "cache_creation_tokens": 559423,
+    "cache_read_tokens": 3915496,
+    "output_tokens": 40764,
+    "api_call_count": 32
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-20T17:50:20.656912Z",
+    "agent_lines": 812,
+    "human_added": 3083847,
+    "human_modified": 64,
+    "human_removed": 0,
+    "total_committed": 3084723,
+    "agent_percentage": 0.026323271165676787
+  }
+}

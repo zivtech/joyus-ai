@@ -2,12 +2,15 @@
   "cli_version": "0.4.2",
   "checkpoint_id": "fd7d2e1083a4",
   "strategy": "manual-commit",
-  "branch": "main",
-  "checkpoints_count": 1,
+  "branch": "fix/meta-critic-tiers-1-3",
+  "checkpoints_count": 3,
   "files_touched": [
     ".github/workflows/secret-scan.yml",
     ".gitignore",
-    "joyus-ai-mcp-server/src/db/client.ts"
+    "joyus-ai-mcp-server/src/config.ts",
+    "joyus-ai-mcp-server/src/db/client.ts",
+    "joyus-ai-mcp-server/src/inngest/registry.ts",
+    "joyus-ai-mcp-server/tests/auth/routes.test.ts"
   ],
   "sessions": [
     {
@@ -16,13 +19,20 @@
       "context": "/fd/7d2e1083a4/0/context.md",
       "content_hash": "/fd/7d2e1083a4/0/content_hash.txt",
       "prompt": "/fd/7d2e1083a4/0/prompt.txt"
+    },
+    {
+      "metadata": "/fd/7d2e1083a4/1/metadata.json",
+      "transcript": "/fd/7d2e1083a4/1/full.jsonl",
+      "context": "/fd/7d2e1083a4/1/context.md",
+      "content_hash": "/fd/7d2e1083a4/1/content_hash.txt",
+      "prompt": "/fd/7d2e1083a4/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 130,
-    "cache_creation_tokens": 102861,
-    "cache_read_tokens": 4351310,
-    "output_tokens": 17615,
-    "api_call_count": 44
+    "input_tokens": 221,
+    "cache_creation_tokens": 662284,
+    "cache_read_tokens": 8266806,
+    "output_tokens": 58379,
+    "api_call_count": 76
   }
 }
