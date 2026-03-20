@@ -241,6 +241,55 @@ This list is not exhaustive — the skill and tenant configuration system is des
 - Graceful degradation over hard failures
 - Human handoff for critical failures
 
+### 5.4 MCP Architecture
+
+**Background**: Each MCP tool schema costs 400–1,400 tokens to load into a client's context window. The platform currently ships ~80 tools across three servers; at ~600 tokens average, a monolithic client session would consume ~48K tokens of context before a single user message. Anthropic's Tool Search (shipped January 2026) mitigates this by deferring all tool definitions above 10K tokens and replacing them with a single semantic-search tool — clients load only 3–5 relevant tools per turn. Every client connecting to joyus-ai already triggers Tool Search. These principles ensure the platform stays compatible with that mechanism and avoids re-creating the problem internally.
+
+#### Four-server boundary
+
+| Server | Tools | Availability | Notes |
+|--------|-------|--------------|-------|
+| `joyus-ai-platform` | `content_*`, `pipeline_*`, `ops_*`, future `governance_*` | Always loaded, tenant-scoped | Platform brain — no external auth required |
+| `joyus-ai-integrations` | `jira_*`, `github_*`, `slack_*`, `google_*`, future connectors | Connection-gated per integration | Currently co-located in `joyus-ai-mcp-server`; split when integration count warrants |
+| `joyus-ai-profile` | `build_profile`, `verify_content`, `identify_author`, `check_drift`, etc. | Always loaded, tenant-scoped | Already separate (Python) |
+| `joyus-ai-state` | `get_context`, `run_gates`, `verify_branch`, etc. | Dev/local only | Already separate; not shipped to end clients |
+
+**Current state**: Platform Core and Integrations are co-located in `joyus-ai-mcp-server` (55 tools). Tool Search handles the context tax. Split into separate servers when: (a) integration count exceeds 6–8 connectors, or (b) a client use case needs platform tools but never integration tools.
+
+#### Domain prefixing is mandatory
+
+Every tool has a domain prefix that determines its server home. No "misc" tools — new domains get new prefixes before any tools are added.
+
+| Prefix | Domain | Server |
+|--------|--------|--------|
+| `content_` | Content infrastructure | Platform |
+| `pipeline_` | Automated pipelines | Platform |
+| `governance_` | Org-scale governance (Spec 007) | Platform |
+| `jira_` | Jira integration | Integrations |
+| `github_` | GitHub integration | Integrations |
+| `slack_` | Slack integration | Integrations |
+| `google_` | Google Workspace integration | Integrations |
+
+#### Tool descriptions are search-optimized
+
+Tool descriptions must encode *use-case keywords*, not just "what it does" prose. Tool Search selects tools via semantic search — descriptions that read like marketing copy fail; descriptions that name the task the agent is trying to accomplish succeed.
+
+Good: `"Create a new automated pipeline for a tenant. Use when an operator or agent needs to define a trigger-to-step-sequence workflow, schedule recurring jobs, or set up corpus-change automation."`
+
+Bad: `"Creates a pipeline object in the database with the specified configuration."`
+
+Write descriptions as if answering: *"What would a Claude agent type into a search box to find this tool?"*
+
+#### No MCP loading for internal integrations
+
+External service integrations used by pipeline step handlers (Slack notifications, email delivery, webhook calls, profile generation) are implemented as **TypeScript service interfaces with direct HTTP/SDK calls** — not as MCP server tool loading. MCP is a client-facing surface; it is not an internal integration mechanism.
+
+Rationale: loading a Slack MCP server internally would add 15,000+ tokens to every pipeline execution context. The TypeScript interface + null client stub pattern (already established in Spec 009) is the correct approach. This rule applies to all future step handler integrations.
+
+#### Per-agent MCP isolation requires custom orchestration
+
+The Anthropic Agent SDK's `AgentDefinition` has no `mcp_servers` field — sub-agents inherit the parent's MCP configuration and can only filter it, not extend it. When building orchestration layers where different sub-agents need different MCP connections (e.g., a Jira sub-agent and a Slack sub-agent in the same pipeline), use **separate `query()` calls with independent `ClaudeAgentOptions`** per sub-agent rather than the built-in `Agent` tool delegation. This achieves true MCP isolation at the cost of manual orchestration code.
+
 ---
 
 ## 6. Quality Standards
@@ -297,9 +346,10 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.6*
+*Constitution Version: 1.7*
 *Established: January 29, 2026*
-*Last Updated: February 19, 2026*
+*Last Updated: March 19, 2026*
+*Changes v1.7: Added §5.4 "MCP Architecture" — four-server domain boundary (Platform Core, Integrations, Profile Engine, Dev Enforcement); mandatory domain prefixing table; Tool Search-optimized description guidelines; rule against MCP loading for internal integrations; per-agent MCP isolation pattern for orchestration layers*
 *Changes v1.6: Added §2.10 "Client-Informed, Platform-Generic" — client needs inform abstract platform capabilities; no client names, terminology, or domain-specific examples in the public repo; agents must generalize at point of creation*
 *Changes v1.5: Open source audience rewrite — generalized "Zivtech" to "deploying organization" throughout; renamed §2.2 from "Skills as Guardrails" to "Skills as Encoded Knowledge" (skills now include operational context, business rules, report definitions, compliance, not just constraints); renamed §2.6 from "Claude Code Alternative" to "Mediated AI Access" (model-agnostic framing); added single-org and multi-org deployment models; added first validated use case (ice cream manufacturer/distributor/retailer) and early use case breadth (healthcare, legal, higher ed, museum, assessment/credentialing); expanded stakeholders to include open source community and deploying organizations; broadened monitoring to include operational accuracy; added skill ecosystem concept (community packs, archetype packs); added §3.2 Compliance Framework Awareness (HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA) with hard-failure enforcement; updated Section 8 for multi-industry, model-agnostic positioning*
 *Changes v1.4: Added Principle 2.8 (Open Source by Default) with repository separation model; added Principle 2.9 (Assumption Awareness) for proactive tracking of design assumptions; updated Section 8 to reflect open source posture; removed "consumer product" constraint (open source inherently broadens audience)*

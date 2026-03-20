@@ -9,7 +9,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_list_sources',
-    description: 'List content sources configured for this tenant. Optionally filter by status.',
+    description: 'List data sources (websites, document libraries, knowledge bases) connected to this tenant. Use when setting up a pipeline, checking what content is available for search or generation, or auditing connected sources.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -24,7 +24,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_get_source',
-    description: 'Get details for a specific content source, including recent sync runs.',
+    description: 'Get configuration and sync history for a specific content source. Use when diagnosing sync failures, checking when content was last updated, or verifying source connectivity.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -39,7 +39,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_sync_source',
-    description: 'Trigger a manual sync for a content source. Returns a sync run ID to track progress.',
+    description: 'Force a content source to re-sync immediately, pulling the latest documents into the content corpus. Use when content has been updated externally and you need it available for search or generation before the next scheduled sync.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -54,7 +54,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_get_sync_status',
-    description: 'Get the status and details of a specific sync run.',
+    description: 'Check whether a content sync has completed and see what was ingested, updated, or failed. Use to poll progress after triggering a manual sync.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -71,7 +71,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_search',
-    description: 'Search content items across accessible sources using full-text search.',
+    description: 'Search the content corpus for documents, articles, or knowledge items matching a query. Use when finding source material to ground a response, locating relevant documents for a pipeline, or retrieving information from connected knowledge bases.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -99,7 +99,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_get_item',
-    description: 'Get a specific content item by ID.',
+    description: 'Retrieve the full content of a specific document or item from the corpus by ID. Use after a search to read the complete text of a result, or to fetch a known document for use in generation.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -116,7 +116,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_resolve_entitlements',
-    description: 'Resolve which content products the current user is entitled to access.',
+    description: 'Determine which content collections and knowledge bases the current user is authorized to access. Use when checking permissions before searching or generating content, or when a user reports missing or inaccessible content.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -130,7 +130,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_list_products',
-    description: 'List content products accessible to this tenant.',
+    description: 'List the content collections and knowledge base packages available to this tenant. Use to understand what data is licensed or configured for use in search and generation.',
     inputSchema: {
       type: 'object',
       properties: {}
@@ -141,7 +141,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_generate',
-    description: 'Generate a response to a query grounded in content sources, with citations.',
+    description: 'Generate an AI-written response, summary, or document grounded in the tenant\'s content corpus with citations to source materials. Use when producing content that must be based on specific organizational knowledge rather than general AI knowledge. Supports voice profile application for brand-consistent, attribution-accurate output.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -171,7 +171,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_state_dashboard',
-    description: 'Get an overview of content state: source counts by status, item totals, stale items, and recent sync activity.',
+    description: 'Get a health-check overview of the content corpus: source counts by sync status, total items, stale content, and recent sync activity. Use for monitoring content freshness or diagnosing why search results seem outdated.',
     inputSchema: {
       type: 'object',
       properties: {}
@@ -182,7 +182,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_drift_report',
-    description: 'Get drift report(s) for a specific profile showing how generated content deviates from the profile voice.',
+    description: 'Get a quality drift report showing whether AI-generated content is diverging from a voice profile over time. Use when monitoring content fidelity, diagnosing output quality degradation, or auditing whether generated content still matches the intended author voice.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -201,7 +201,7 @@ export const contentTools: ToolDefinition[] = [
 
   {
     name: 'content_drift_summary',
-    description: 'Get an aggregated drift overview across all profiles for this tenant.',
+    description: 'Get a summary of voice and quality drift across all profiles for this tenant. Use for a high-level fidelity health check — surfaces which profiles are degrading and need attention.',
     inputSchema: {
       type: 'object',
       properties: {}

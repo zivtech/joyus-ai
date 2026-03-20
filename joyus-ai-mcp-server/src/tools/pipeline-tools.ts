@@ -13,7 +13,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'pipeline_create',
     description:
-      'Create a new automated pipeline with trigger configuration and step definitions.',
+      'Define and create a new automated workflow pipeline. Use when setting up recurring content generation, scheduled reports, corpus-change triggers that kick off profile updates, or any multi-step automation. Supports schedule (cron), corpus-change, and manual triggers.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -71,7 +71,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'pipeline_list',
     description:
-      'List automated pipelines for this tenant. Optionally filter by status.',
+      'List all automated pipelines configured for this tenant. Use to see what workflows are active, find a pipeline ID before triggering or inspecting it, or audit the automation setup.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -95,7 +95,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'pipeline_trigger',
     description:
-      'Manually trigger an active pipeline. Returns an event ID to track the execution.',
+      'Manually kick off a pipeline run on demand. Use when you want to run an automated workflow immediately rather than waiting for its scheduled or corpus-change trigger. Returns an event ID to poll for execution status.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -115,7 +115,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'pipeline_status',
     description:
-      'Get details for a specific pipeline, including its step definitions.',
+      'Get the full configuration for a specific pipeline, including trigger setup and step definitions. Use when you need to understand what a pipeline does, verify its setup, or look up details before updating or triggering it.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -131,7 +131,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'pipeline_history',
     description:
-      'Get execution history for a pipeline. Optionally filter by execution status.',
+      'Get the run history for a pipeline showing past executions and their outcomes. Use when diagnosing failures, checking whether a recent trigger fired correctly, or auditing how long executions typically take.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -170,7 +170,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'review_decide',
     description:
-      'Approve or reject a pending review decision for a pipeline gate step.',
+      'Approve or reject AI-generated content paused at a human review gate in a pipeline. Use when a pipeline execution is in paused_at_gate status and requires a reviewer decision to continue or cancel. NOTE: this tool will be renamed pipeline_review_decide in a future release.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -210,7 +210,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'template_list',
     description:
-      'List available pipeline templates. Includes built-in templates and tenant-specific templates.',
+      'Browse available pipeline templates to use as starting points for new automated workflows. Use when creating a pipeline and you want to start from a pre-built template rather than configuring from scratch. NOTE: this tool will be renamed pipeline_template_list in a future release.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -225,7 +225,7 @@ export const pipelineTools: ToolDefinition[] = [
   {
     name: 'template_instantiate',
     description:
-      'Create a new pipeline from a template, optionally overriding parameters.',
+      'Create a new pipeline by instantiating a template. Use when setting up a standard workflow (weekly content brief, profile refresh, reviewed outreach) using a pre-built starting point rather than configuring from scratch. NOTE: this tool will be renamed pipeline_template_instantiate in a future release.',
     inputSchema: {
       type: 'object',
       properties: {
