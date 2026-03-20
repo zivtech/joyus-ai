@@ -75,6 +75,10 @@ kitty-specs/**/tasks/*.md
 !kitty-specs/009-automated-pipelines-framework/tasks/WP08-api-mcp-tools.md
 !kitty-specs/009-automated-pipelines-framework/tasks/WP09-analytics.md
 !kitty-specs/009-automated-pipelines-framework/tasks/WP10-integration-validation.md
+!kitty-specs/011-inngest-migration/tasks/WP01-port-remaining-pipelines.md
+!kitty-specs/011-inngest-migration/tasks/WP02-update-routes.md
+!kitty-specs/011-inngest-migration/tasks/WP03-delete-custom-plumbing.md
+!kitty-specs/011-inngest-migration/tasks/WP04-integration-tests.md
 
 # Generated artifacts
 **/tmp/
