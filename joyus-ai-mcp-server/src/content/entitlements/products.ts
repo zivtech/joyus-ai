@@ -6,7 +6,6 @@
  */
 
 import { eq, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 
 import {
@@ -17,8 +16,7 @@ import {
 } from '../schema.js';
 import type { ResolvedEntitlements } from '../types.js';
 import type { CreateProductInput } from '../validation.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 // ============================================================
 // PRODUCT WITH RELATIONS TYPE

@@ -24,6 +24,34 @@ export interface ExecutorContext {
 }
 
 // ============================================================
+// TOOL PREFIX REGISTRY
+// ============================================================
+
+/**
+ * OAuth-backed executors: require a service connection from the DB.
+ * Each entry maps a tool name prefix to the service name and executor function.
+ */
+type OAuthHandler = (name: string, input: Record<string, unknown>, context: ExecutorContext) => Promise<unknown>;
+
+interface OAuthEntry {
+  service: Service;
+  handler: OAuthHandler;
+}
+
+/**
+ * Registry for OAuth-backed tool prefixes.
+ * Entries are checked in order; the first match wins.
+ */
+const OAUTH_PREFIX_REGISTRY: ReadonlyArray<readonly [prefix: string, entry: OAuthEntry]> = [
+  ['jira_',  { service: 'JIRA',   handler: executeJiraTool  }],
+  ['slack_', { service: 'SLACK',  handler: executeSlackTool }],
+  ['github_',{ service: 'GITHUB', handler: executeGithubTool }],
+  ['gmail_', { service: 'GOOGLE', handler: executeGoogleTool }],
+  ['drive_', { service: 'GOOGLE', handler: executeGoogleTool }],
+  ['docs_',  { service: 'GOOGLE', handler: executeGoogleTool }],
+] as const;
+
+// ============================================================
 // PIPELINE CONTEXT (injected during server startup)
 // ============================================================
 
@@ -47,6 +75,8 @@ export function setPipelineContext(deps: PipelineContextDeps): void {
  * Execute a tool by name with the given input
  */
 export async function executeTool(userId: string, toolName: string, input: Record<string, unknown>): Promise<unknown> {
+  // --- Direct executors (no OAuth required) ---
+
   if (toolName.startsWith('ops_')) {
     return executeOpsTool(toolName, input, { userId });
   }
@@ -69,25 +99,13 @@ export async function executeTool(userId: string, toolName: string, input: Recor
     });
   }
 
-  // Determine which service this tool belongs to
-  let service: Service;
-  let executeFunction: (name: string, input: Record<string, unknown>, context: ExecutorContext) => Promise<unknown>;
+  // --- OAuth-backed executors: look up handler via prefix registry ---
 
-  if (toolName.startsWith('jira_')) {
-    service = 'JIRA';
-    executeFunction = executeJiraTool;
-  } else if (toolName.startsWith('slack_')) {
-    service = 'SLACK';
-    executeFunction = executeSlackTool;
-  } else if (toolName.startsWith('github_')) {
-    service = 'GITHUB';
-    executeFunction = executeGithubTool;
-  } else if (toolName.startsWith('gmail_') || toolName.startsWith('drive_') || toolName.startsWith('docs_')) {
-    service = 'GOOGLE';
-    executeFunction = executeGoogleTool;
-  } else {
+  const oauthEntry = OAUTH_PREFIX_REGISTRY.find(([prefix]) => toolName.startsWith(prefix));
+  if (!oauthEntry) {
     throw new Error(`Unknown tool: ${toolName}`);
   }
+  const { service, handler: executeFunction } = oauthEntry[1];
 
   // Get connection for this service
   const [connection] = await db

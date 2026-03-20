@@ -8,8 +8,8 @@ describe('handleCheckHygiene', () => {
     auditDir: '/tmp/audit-hygiene-test',
   };
 
-  it('returns hygiene report with required fields', () => {
-    const result = handleCheckHygiene(ctx);
+  it('returns hygiene report with required fields', async () => {
+    const result = await handleCheckHygiene(ctx);
     expect(Array.isArray(result.staleBranches)).toBe(true);
     expect(typeof result.activeBranchCount).toBe('number');
     expect(typeof result.branchLimit).toBe('number');
@@ -17,14 +17,14 @@ describe('handleCheckHygiene', () => {
     expect(typeof result.staleDaysThreshold).toBe('number');
   });
 
-  it('returns default config values', () => {
-    const result = handleCheckHygiene(ctx);
+  it('returns default config values', async () => {
+    const result = await handleCheckHygiene(ctx);
     expect(result.branchLimit).toBe(10);
     expect(result.staleDaysThreshold).toBe(14);
   });
 
-  it('returns non-negative branch count', () => {
-    const result = handleCheckHygiene(ctx);
+  it('returns non-negative branch count', async () => {
+    const result = await handleCheckHygiene(ctx);
     expect(result.activeBranchCount).toBeGreaterThanOrEqual(0);
   });
 });

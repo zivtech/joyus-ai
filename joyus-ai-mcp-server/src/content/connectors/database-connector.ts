@@ -41,7 +41,7 @@ function buildPool(cfg: DatabaseConnectorConfig): Pool {
     database: cfg.database,
     user: cfg.user as string | undefined,
     password,
-    ssl: cfg.ssl ? { rejectUnauthorized: false } : false,
+    ssl: cfg.ssl ? { rejectUnauthorized: process.env.NODE_ENV !== 'development' } : false,
     max: 3,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 5_000,

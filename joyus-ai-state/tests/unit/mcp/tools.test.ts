@@ -305,8 +305,16 @@ describe('share_state', () => {
     const exportResult = await handleShareState({ action: 'export', note: 'test handoff' }, tmpDir);
     const exportData = JSON.parse((exportResult.content[0] as { text: string }).text);
 
-    // Now import it
-    const importResult = await handleShareState({ action: 'import', path: exportData.sharedFile }, tmpDir);
+    // Copy the exported file to the incoming directory (simulates receiving a shared file)
+    const { getStateDir } = await import('../../../src/state/store.js');
+    const stateDir = getStateDir(tmpDir);
+    const incomingDir = path.join(stateDir, 'shared', 'incoming');
+    fs.mkdirSync(incomingDir, { recursive: true });
+    const incomingPath = path.join(incomingDir, path.basename(exportData.sharedFile));
+    fs.copyFileSync(exportData.sharedFile, incomingPath);
+
+    // Now import from the incoming directory
+    const importResult = await handleShareState({ action: 'import', path: incomingPath }, tmpDir);
     expect(importResult.isError).toBeUndefined();
     const importData = JSON.parse((importResult.content[0] as { text: string }).text);
     expect(importData.snapshot).toBeDefined();

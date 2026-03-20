@@ -6,11 +6,9 @@
  */
 
 import { eq, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 import { contentMediationSessions } from '../schema.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 export interface MediationSessionResult {
   sessionId: string;

@@ -9,7 +9,6 @@
  */
 
 import { eq, desc, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
 import {
   contentEntitlements,
@@ -22,8 +21,7 @@ import type { ResolvedEntitlements } from '../types.js';
 import type { EntitlementResolver, ResolverContext } from './interface.js';
 import type { EntitlementCache } from './cache.js';
 import { createId } from '@paralleldrive/cuid2';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 // ============================================================
 // ENTITLEMENT SERVICE

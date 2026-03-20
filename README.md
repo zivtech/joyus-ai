@@ -87,7 +87,7 @@ Production deployment configuration is maintained in a separate private reposito
 
 This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`.
 
-Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23):
+Current status snapshot (source: `python scripts/pride-status.py` on 2026-03-20):
 
 | Spec | Description | Status |
 |------|-------------|--------|
@@ -98,6 +98,10 @@ Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23)
 | `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
 | `006` | Content Infrastructure | Complete (WP01–WP12) |
 | `007` | Org-Scale Agentic Governance | Planning |
+| `008` | Profile Isolation and Scale | Spec-Only |
+| `009` | Automated Pipelines Framework | Spec-Only |
+| `010` | Inngest Evaluation Spike | Complete |
+| `011` | Inngest Migration | In Progress (WP01–WP02 merged; WP03–WP04 in PR) |
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 

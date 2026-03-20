@@ -12,6 +12,12 @@ import { chromium } from 'playwright';
 
 const PORT = parseInt(process.env.PORT || '3002', 10);
 
+/**
+ * Bearer token for authenticating incoming requests.
+ * Set PLAYWRIGHT_AUTH_TOKEN in the environment before starting the server.
+ */
+const AUTH_TOKEN = process.env.PLAYWRIGHT_AUTH_TOKEN;
+
 /** @type {import('playwright').Browser | null} */
 let browser = null;
 
@@ -19,10 +25,30 @@ async function getBrowser() {
   if (!browser || !browser.isConnected()) {
     browser = await chromium.launch({
       headless: true,
+      // TODO: Remove --no-sandbox once the container runs as a non-root user.
+      // The flag is required when Chromium is launched as root (default in many
+      // base images) but should not be used in production deployments that run
+      // as an unprivileged user.
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
   }
   return browser;
+}
+
+/**
+ * Validate a file path argument to prevent command injection.
+ * Rejects any path containing shell metacharacters.
+ *
+ * @param {string} value - The path value to validate.
+ * @returns {string} The validated path.
+ * @throws {Error} If the path contains disallowed characters.
+ */
+function validateConfigPath(value) {
+  // Reject shell metacharacters that could enable command injection
+  if (/[;|&$`\\'"<>(){}[\]!#~]/.test(value)) {
+    throw new Error(`Invalid config path: contains disallowed characters`);
+  }
+  return value;
 }
 
 /**
@@ -64,9 +90,9 @@ async function handleToolCall(toolName, args) {
     }
 
     case 'backstop_reference': {
-      const { execSync } = await import('node:child_process');
-      const configPath = args.config || '/app/backstop.json';
-      const output = execSync(`npx backstop reference --config=${configPath}`, {
+      const { execFileSync } = await import('node:child_process');
+      const configPath = validateConfigPath(args.config || '/app/backstop.json');
+      const output = execFileSync('npx', ['backstop', 'reference', `--config=${configPath}`], {
         encoding: 'utf-8',
         timeout: 120000,
         cwd: '/app',
@@ -75,10 +101,10 @@ async function handleToolCall(toolName, args) {
     }
 
     case 'backstop_test': {
-      const { execSync } = await import('node:child_process');
-      const configPath = args.config || '/app/backstop.json';
+      const { execFileSync } = await import('node:child_process');
+      const configPath = validateConfigPath(args.config || '/app/backstop.json');
       try {
-        const output = execSync(`npx backstop test --config=${configPath}`, {
+        const output = execFileSync('npx', ['backstop', 'test', `--config=${configPath}`], {
           encoding: 'utf-8',
           timeout: 120000,
           cwd: '/app',
@@ -95,10 +121,32 @@ async function handleToolCall(toolName, args) {
 }
 
 /**
+ * Authenticate a request using a Bearer token.
+ * Returns true if the request is authorized, false otherwise.
+ * The /health endpoint is intentionally exempt so orchestration infrastructure
+ * can monitor liveness without credentials.
+ *
+ * @param {import('node:http').IncomingMessage} req
+ * @returns {boolean}
+ */
+function isAuthorized(req) {
+  if (!AUTH_TOKEN) {
+    // No token configured — log a warning and allow the request so the server
+    // remains functional during local development, but operators should always
+    // set PLAYWRIGHT_AUTH_TOKEN in deployed environments.
+    console.error('[playwright-server] WARNING: PLAYWRIGHT_AUTH_TOKEN is not set. All requests are accepted.');
+    return true;
+  }
+  const authHeader = req.headers['authorization'] || '';
+  const match = authHeader.match(/^Bearer (.+)$/i);
+  return match !== null && match[1] === AUTH_TOKEN;
+}
+
+/**
  * HTTP server for MCP tool calls and health checks
  */
 const server = http.createServer(async (req, res) => {
-  // Health endpoint
+  // Health endpoint — exempt from auth so infrastructure probes work without credentials
   if (req.method === 'GET' && req.url === '/health') {
     const connected = browser?.isConnected() ?? false;
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -108,6 +156,13 @@ const server = http.createServer(async (req, res) => {
       browserConnected: connected,
       uptime: process.uptime(),
     }));
+    return;
+  }
+
+  // All non-health endpoints require a valid Bearer token
+  if (!isAuthorized(req)) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Unauthorized' }));
     return;
   }
 

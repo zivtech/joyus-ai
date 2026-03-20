@@ -13,11 +13,11 @@ import { checkBranchNaming } from '../../enforcement/git/branch-hygiene.js';
 import { loadEnforcementConfig } from '../../enforcement/config.js';
 import { AuditWriter } from '../../enforcement/audit/writer.js';
 
-export function handleVerifyBranch(
+export async function handleVerifyBranch(
   args: { operation: 'commit' | 'push' | 'merge' },
   ctx: ToolContext,
 ) {
-  const currentBranch = getCurrentBranch();
+  const currentBranch = await getCurrentBranch();
   const expectedBranch: string | null = null; // Placeholder for 002 session state integration
 
   const { config } = loadEnforcementConfig(ctx.projectRoot);
@@ -58,7 +58,7 @@ export function register(server: McpServer, ctx: ToolContext): void {
       operation: z.enum(['commit', 'push', 'merge']),
     },
     async (args) => {
-      const result = handleVerifyBranch(args, ctx);
+      const result = await handleVerifyBranch(args, ctx);
       return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
     },
   );

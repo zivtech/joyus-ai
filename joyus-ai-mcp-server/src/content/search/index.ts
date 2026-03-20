@@ -10,18 +10,15 @@
  */
 
 import { eq, inArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
-
 import { contentItems, contentProductSources, contentSources } from '../schema.js';
 import type { ContentItem, ContentSource } from '../schema.js';
 import type { ResolvedEntitlements, SearchResult } from '../types.js';
 import type { SearchOptions, SearchProvider } from './interface.js';
 import { PgFtsProvider } from './pg-fts-provider.js';
+import type { DrizzleClient } from '../../db/types.js';
 
 export type { SearchOptions, SearchProvider } from './interface.js';
 export { PgFtsProvider } from './pg-fts-provider.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 // ============================================================
 // FORMATTED RESULT (T021)

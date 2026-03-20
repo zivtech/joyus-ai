@@ -3,7 +3,6 @@
  *   retrieve → generate → extract citations → audit log
  */
 
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
@@ -15,8 +14,7 @@ import {
   type GenerationOutput,
 } from './generator.js';
 import { CitationManager, type CitationResult } from './citations.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 export interface GenerateOptions {
   profileId?: string;

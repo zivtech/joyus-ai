@@ -140,13 +140,7 @@ export class PipelineExecutor {
       : 0;
 
     const triggerContext: TriggerContext = {
-      event: {
-        eventId: event.id,
-        tenantId: event.tenantId,
-        eventType: event.eventType,
-        payload: event.payload,
-        timestamp: event.createdAt,
-      },
+      event,
       tenantId: event.tenantId,
       currentDepth: chainDepth,
     };

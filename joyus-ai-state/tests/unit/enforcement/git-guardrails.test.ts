@@ -51,16 +51,16 @@ describe('checkForcePush', () => {
 });
 
 describe('checkUncommittedChanges', () => {
-  it('runs without error in current directory', () => {
-    const result = checkUncommittedChanges();
+  it('runs without error in current directory', async () => {
+    const result = await checkUncommittedChanges();
     expect(typeof result.hasChanges).toBe('boolean');
     expect(typeof result.modified).toBe('number');
     expect(typeof result.untracked).toBe('number');
     expect(typeof result.summary).toBe('string');
   });
 
-  it('handles non-git directory', () => {
-    const result = checkUncommittedChanges('/tmp');
+  it('handles non-git directory', async () => {
+    const result = await checkUncommittedChanges('/tmp');
     expect(result.hasChanges).toBe(false);
   });
 });

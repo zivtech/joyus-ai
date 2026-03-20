@@ -8,14 +8,14 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.platform
     ports:
-      - "3000:3000"
-      - "3001:3001"
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3001:3001"
     env_file:
       - path: .env
         required: false
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-jawn_ai}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-jawn_ai}
     depends_on:
       postgres:
         condition: service_healthy
@@ -27,7 +27,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.playwright
     ports:
-      - "3002:3002"
+      - "127.0.0.1:3002:3002"
     env_file:
       - path: .env
         required: false
@@ -39,7 +39,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-jawn_ai}
       POSTGRES_USER: ${POSTGRES_USER:-jawn}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:

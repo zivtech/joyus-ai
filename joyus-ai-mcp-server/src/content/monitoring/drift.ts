@@ -4,12 +4,10 @@
  */
 
 import { eq, and, isNull, gte, isNotNull, desc } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 import { contentGenerationLogs, contentDriftReports } from '../schema.js';
 import type { VoiceAnalyzer, DriftAnalysis } from './voice-analyzer.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 const MAX_BATCH = 100;
 

@@ -7,17 +7,11 @@
  */
 
 import { eq, desc, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 
 import { contentSyncRuns, contentItems, contentSources } from '../schema.js';
 import type { SyncTrigger, SyncRunStatus } from '../types.js';
-
-// ============================================================
-// TYPES
-// ============================================================
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 export interface SyncRunStats {
   itemsDiscovered: number;
