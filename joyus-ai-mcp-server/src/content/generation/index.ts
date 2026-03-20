@@ -6,8 +6,8 @@
 import { createId } from '@paralleldrive/cuid2';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
-import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { SearchService } from '../search/index.js';
+import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 
 import { CitationManager } from './citations.js';
