@@ -22,7 +22,6 @@ import { CreatePipelineInput, PipelineQueryInput, ExecutionQueryInput } from '..
 import { validateNoCycle } from '../../pipelines/graph/cycle-detector.js';
 import type { StepRegistry } from '../../pipelines/steps/registry.js';
 import type { DecisionRecorder } from '../../pipelines/review/decision.js';
-import type { EventBus } from '../../pipelines/event-bus/interface.js';
 
 // ============================================================
 // CONTEXT
@@ -33,7 +32,6 @@ export interface PipelineExecutorContext {
   db: NodePgDatabase;
   stepRegistry: StepRegistry;
   decisionRecorder: DecisionRecorder;
-  eventBus: EventBus;
 }
 
 // ============================================================
@@ -45,7 +43,7 @@ export async function executePipelineTool(
   input: Record<string, unknown>,
   context: PipelineExecutorContext,
 ): Promise<unknown> {
-  const { db, tenantId, stepRegistry, decisionRecorder, eventBus } = context;
+  const { db, tenantId, stepRegistry, decisionRecorder } = context;
 
   switch (toolName) {
     // ── Pipeline Management ──────────────────────────────────────────────────
@@ -187,9 +185,11 @@ export async function executePipelineTool(
       }
 
       const payload = (input.payload as Record<string, unknown>) ?? {};
-      const eventId = await eventBus.publish(tenantId, 'manual_request', {
-        pipelineId: pipeline.id,
-        ...payload,
+      const { inngest } = await import('../../inngest/client.js');
+      const eventId = createId();
+      await inngest.send({
+        name: 'pipeline/manual.triggered',
+        data: { tenantId, pipelineId: pipeline.id, payload },
       });
 
       return { eventId, pipelineId: pipeline.id, status: 'triggered' };

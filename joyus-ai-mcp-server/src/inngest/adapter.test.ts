@@ -9,7 +9,7 @@ import { inngest } from './client.js';
 import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.js';
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import type { InngestStep } from './adapter.js';
-import type { PipelineStepHandler, ExecutionContext, StepHandlerRegistry } from '../pipelines/engine/step-runner.js';
+import type { PipelineStepHandler, ExecutionContext, StepHandlerRegistry } from '../pipelines/types.js';
 import type { StepResult } from '../pipelines/types.js';
 
 // ---------------------------------------------------------------------------

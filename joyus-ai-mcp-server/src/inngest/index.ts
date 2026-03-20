@@ -5,7 +5,7 @@
  * Import `allFunctions` to pass to the serve() adapter in index.ts.
  *
  * `allFunctions` registers all pipeline functions with an empty step registry
- * (stub mode). When a real StepHandlerRegistry is available (see pipelines/init.ts),
+ * (stub mode). When a real StepHandlerRegistry is wired in server startup,
  * construct the pipeline functions with it and replace allFunctions at serve() time.
  */
 export { inngest } from './client.js';
@@ -22,7 +22,7 @@ import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.j
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
 import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
-import type { StepHandlerRegistry } from '../pipelines/engine/step-runner.js';
+import type { StepHandlerRegistry } from '../pipelines/types.js';
 
 // Empty registry — functions run in stub mode until a real registry is provided.
 // WP03 (deletion cleanup) will restructure how the registry is wired.

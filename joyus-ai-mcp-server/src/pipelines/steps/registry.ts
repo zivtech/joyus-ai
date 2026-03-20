@@ -6,7 +6,7 @@
  */
 
 import type { StepType } from '../types.js';
-import type { StepHandlerRegistry } from '../engine/step-runner.js';
+import type { StepHandlerRegistry } from '../types.js';
 import type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
 import { ProfileGenerationHandler } from './profile-generation.js';
 import { FidelityCheckHandler } from './fidelity-check.js';
