@@ -7,7 +7,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
 import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
-import { ContentRetriever, type SearchService, type RetrievalResult, type RetrievedItem } from './retriever.js';
+import { ContentRetriever, type RetrievalResult, type RetrievedItem } from './retriever.js';
+import type { SearchService } from '../search/index.js';
 import {
   ContentGenerator,
   PlaceholderGenerationProvider,
@@ -110,7 +111,6 @@ export class GenerationService {
 // Re-exports so callers can import everything from this module
 export {
   ContentRetriever,
-  type SearchService,
   type RetrievalResult,
   type RetrievedItem,
 } from './retriever.js';

@@ -1,14 +1,15 @@
 /**
  * ContentRetriever — fetches relevant content items for generation.
  *
- * Filters accessible sources by entitlements, runs a search, then hydrates
- * full item bodies from the database for context assembly.
+ * Delegates search to the real SearchService (entitlement-filtered FTS),
+ * then hydrates full item bodies from the database for context assembly.
  */
 
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import { contentItems } from '../schema.js';
-import type { ResolvedEntitlements, SearchResult } from '../types.js';
+import type { ResolvedEntitlements } from '../types.js';
+import type { SearchService } from '../search/index.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -26,14 +27,6 @@ export interface RetrievedItem {
   metadata: Record<string, unknown>;
 }
 
-export interface SearchService {
-  search(
-    query: string,
-    accessibleSourceIds: string[],
-    options?: { limit?: number },
-  ): Promise<SearchResult[]>;
-}
-
 export class ContentRetriever {
   constructor(
     private searchService: SearchService,
@@ -45,18 +38,13 @@ export class ContentRetriever {
     entitlements: ResolvedEntitlements,
     options?: { sourceIds?: string[]; maxSources?: number },
   ): Promise<RetrievalResult> {
-    // 1. Filter sourceIds by entitlements
-    const accessibleSourceIds = options?.sourceIds
-      ? options.sourceIds.filter(id => entitlements.sourceIds.includes(id))
-      : entitlements.sourceIds;
-
-    // 2. Search via SearchService
+    // 1. Search via SearchService (handles entitlement → sourceId resolution internally)
     const maxSources = options?.maxSources ?? 5;
-    const results = await this.searchService.search(query, accessibleSourceIds, {
+    const results = await this.searchService.search(query, entitlements, {
       limit: maxSources,
     });
 
-    // 3. Fetch full content for each result
+    // 2. Fetch full content for each result
     const items: RetrievedItem[] = [];
     for (const result of results) {
       const rows = await this.db
@@ -77,7 +65,7 @@ export class ContentRetriever {
       }
     }
 
-    // 4. Format context text with numbered source labels
+    // 3. Format context text with numbered source labels
     const contextText = items
       .map((item, i) => `[Source ${i + 1}: "${item.title}"] ${item.body}`)
       .join('\n\n');

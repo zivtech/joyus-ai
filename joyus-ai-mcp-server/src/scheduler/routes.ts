@@ -17,6 +17,10 @@ import { scheduleTask, unscheduleTask, runTask, reloadTask, getSchedulerStatus }
 
 export const taskRouter = Router();
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // ============================================================
 // Task Management UI
 // ============================================================
@@ -97,15 +101,15 @@ taskRouter.get('/', requireSessionOrRedirect, async (req: Request, res: Response
         <div class="task-card">
           <div class="task-header">
             <div>
-              <span class="task-name">${task.name}</span>
+              <span class="task-name">${escapeHtml(task.name)}</span>
               <span class="task-status ${task.enabled ? 'status-enabled' : 'status-disabled'}">
                 ${task.enabled ? 'Enabled' : 'Disabled'}
               </span>
             </div>
             <div>
-              <button class="btn btn-secondary" onclick="runTaskNow('${task.id}')">Run Now</button>
-              <a href="/tasks/${task.id}/edit" class="btn">Edit</a>
-              <form method="POST" action="/tasks/${task.id}/toggle" style="display:inline">
+              <button class="btn btn-secondary" onclick="runTaskNow('${escapeHtml(task.id)}')">Run Now</button>
+              <a href="/tasks/${escapeHtml(task.id)}/edit" class="btn">Edit</a>
+              <form method="POST" action="/tasks/${escapeHtml(task.id)}/toggle" style="display:inline">
                 <button class="btn ${task.enabled ? 'btn-danger' : 'btn-success'}">
                   ${task.enabled ? 'Disable' : 'Enable'}
                 </button>
@@ -113,21 +117,21 @@ taskRouter.get('/', requireSessionOrRedirect, async (req: Request, res: Response
             </div>
           </div>
 
-          <p>${task.description || 'No description'}</p>
+          <p>${escapeHtml(task.description || 'No description')}</p>
 
           <table>
             <tr>
-              <td><strong>Type:</strong> ${task.taskType.replace(/_/g, ' ')}</td>
-              <td><strong>Schedule:</strong> <code>${task.schedule}</code></td>
-              <td><strong>Timezone:</strong> ${task.timezone}</td>
+              <td><strong>Type:</strong> ${escapeHtml(task.taskType.replace(/_/g, ' '))}</td>
+              <td><strong>Schedule:</strong> <code>${escapeHtml(task.schedule)}</code></td>
+              <td><strong>Timezone:</strong> ${escapeHtml(task.timezone)}</td>
             </tr>
             <tr>
               <td><strong>Last Run:</strong> ${task.lastRunAt ? new Date(task.lastRunAt).toLocaleString() : 'Never'}</td>
               <td><strong>Next Run:</strong> ${task.nextRunAt ? new Date(task.nextRunAt).toLocaleString() : 'N/A'}</td>
               <td>
                 <strong>Notify:</strong>
-                ${task.notifySlack ? `Slack: ${task.notifySlack}` : ''}
-                ${task.notifyEmail ? `Email: ${task.notifyEmail}` : ''}
+                ${task.notifySlack ? `Slack: ${escapeHtml(task.notifySlack)}` : ''}
+                ${task.notifyEmail ? `Email: ${escapeHtml(task.notifyEmail)}` : ''}
                 ${!task.notifySlack && !task.notifyEmail ? 'None' : ''}
               </td>
             </tr>
@@ -397,22 +401,22 @@ taskRouter.get('/:id/edit', requireSessionOrRedirect, async (req: Request, res: 
       </style>
     </head>
     <body>
-      <h1>Edit Task: ${task.name}</h1>
+      <h1>Edit Task: ${escapeHtml(task.name)}</h1>
 
-      <form method="POST" action="/tasks/${task.id}/update">
+      <form method="POST" action="/tasks/${escapeHtml(task.id)}/update">
         <div class="form-group">
           <label>Task Name</label>
-          <input type="text" name="name" value="${task.name}" required>
+          <input type="text" name="name" value="${escapeHtml(task.name)}" required>
         </div>
 
         <div class="form-group">
           <label>Description</label>
-          <textarea name="description" rows="2">${task.description || ''}</textarea>
+          <textarea name="description" rows="2">${escapeHtml(task.description || '')}</textarea>
         </div>
 
         <div class="form-group">
           <label>Schedule (Cron Expression)</label>
-          <input type="text" name="schedule" value="${task.schedule}" required>
+          <input type="text" name="schedule" value="${escapeHtml(task.schedule)}" required>
         </div>
 
         <div class="form-group">
@@ -428,17 +432,17 @@ taskRouter.get('/:id/edit', requireSessionOrRedirect, async (req: Request, res: 
 
         <div class="form-group">
           <label>Configuration (JSON)</label>
-          <textarea name="config" rows="4">${JSON.stringify(task.config, null, 2)}</textarea>
+          <textarea name="config" rows="4">${escapeHtml(JSON.stringify(task.config, null, 2))}</textarea>
         </div>
 
         <div class="form-group">
           <label>Notify on Success (Slack channel)</label>
-          <input type="text" name="notifySlack" value="${task.notifySlack || ''}" placeholder="#general">
+          <input type="text" name="notifySlack" value="${escapeHtml(task.notifySlack || '')}" placeholder="#general">
         </div>
 
         <div class="form-group">
           <label>Notify on Error (Email)</label>
-          <input type="email" name="notifyEmail" value="${task.notifyEmail || ''}" placeholder="you@example.com">
+          <input type="email" name="notifyEmail" value="${escapeHtml(task.notifyEmail || '')}" placeholder="you@example.com">
         </div>
 
         <button type="submit" class="btn">Save Changes</button>
@@ -447,7 +451,7 @@ taskRouter.get('/:id/edit', requireSessionOrRedirect, async (req: Request, res: 
 
       <hr style="margin: 30px 0">
 
-      <form method="POST" action="/tasks/${task.id}/delete" onsubmit="return confirm('Delete this task?')">
+      <form method="POST" action="/tasks/${escapeHtml(task.id)}/delete" onsubmit="return confirm('Delete this task?')">
         <button type="submit" class="btn btn-danger">Delete Task</button>
       </form>
     </body>

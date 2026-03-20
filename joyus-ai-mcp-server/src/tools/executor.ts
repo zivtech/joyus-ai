@@ -43,6 +43,26 @@ export function setPipelineContext(deps: PipelineContextDeps): void {
   _pipelineContext = deps;
 }
 
+// ============================================================
+// CONTENT CONTEXT (injected during content module startup)
+// ============================================================
+
+import type { SearchService } from '../content/search/index.js';
+
+interface ContentContextDeps {
+  searchService: SearchService;
+}
+
+let _contentContext: ContentContextDeps | null = null;
+
+/**
+ * Inject content module dependencies for tool execution.
+ * Called once during content module initialization.
+ */
+export function setContentContext(deps: ContentContextDeps): void {
+  _contentContext = deps;
+}
+
 /**
  * Execute a tool by name with the given input
  */
@@ -53,7 +73,12 @@ export async function executeTool(userId: string, toolName: string, input: Recor
 
   if (toolName.startsWith('content_')) {
     const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
-    return executeContentTool(toolName, input, { userId, tenantId, db });
+    return executeContentTool(toolName, input, {
+      userId,
+      tenantId,
+      db,
+      searchService: _contentContext?.searchService,
+    });
   }
 
   if (toolName.startsWith('pipeline_') || toolName.startsWith('template_') || toolName.startsWith('review_')) {

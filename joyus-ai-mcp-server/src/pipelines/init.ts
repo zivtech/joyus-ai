@@ -25,6 +25,7 @@ import { startEscalationJob, stopEscalationJob } from './review/index.js';
 import { createPipelineRouter, type PipelineRouterDeps } from './routes.js';
 import type { ToolDefinition } from '../tools/index.js';
 import { pipelineTools } from '../tools/pipeline-tools.js';
+import { setStepRegistry } from '../inngest/registry.js';
 
 // ============================================================
 // CONFIG & MODULE INTERFACE
@@ -63,6 +64,9 @@ export async function initializePipelineModule(
   // 2. Registries
   const triggerRegistry = defaultTriggerRegistry;
   const stepRegistry = createStepRegistry(stepHandlerDeps ?? {});
+
+  // Populate the Inngest lazy registry so pipeline functions see real handlers
+  setStepRegistry(stepRegistry);
 
   // 3. Step runner
   const stepRunner = new StepRunner(db, stepRegistry);
