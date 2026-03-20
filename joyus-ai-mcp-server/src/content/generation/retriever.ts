@@ -6,13 +6,11 @@
  */
 
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
+import type { DrizzleClient } from '../../db/types.js';
 import { contentItems } from '../schema.js';
 import type { SearchService } from '../search/index.js';
 import type { ResolvedEntitlements } from '../types.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 export interface RetrievalResult {
   items: RetrievedItem[];
@@ -39,7 +37,7 @@ export class ContentRetriever {
     entitlements: ResolvedEntitlements,
     options?: { sourceIds?: string[]; maxSources?: number },
   ): Promise<RetrievalResult> {
-    // 1. Search via SearchService (handles entitlement → sourceId resolution internally)
+    // 1. Search via SearchService (handles entitlement -> sourceId resolution internally)
     const maxSources = options?.maxSources ?? 5;
     const results = await this.searchService.search(query, entitlements, {
       limit: maxSources,

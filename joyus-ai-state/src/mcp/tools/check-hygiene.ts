@@ -9,10 +9,10 @@ import type { ToolContext } from '../types.js';
 import { detectStaleBranches, checkBranchCount } from '../../enforcement/git/branch-hygiene.js';
 import { loadEnforcementConfig } from '../../enforcement/config.js';
 
-export function handleCheckHygiene(ctx: ToolContext) {
+export async function handleCheckHygiene(ctx: ToolContext) {
   const { config } = loadEnforcementConfig(ctx.projectRoot);
-  const staleBranches = detectStaleBranches(config.branchRules);
-  const branchCount = checkBranchCount(config.branchRules);
+  const staleBranches = await detectStaleBranches(config.branchRules);
+  const branchCount = await checkBranchCount(config.branchRules);
 
   return {
     staleBranches,
@@ -25,7 +25,7 @@ export function handleCheckHygiene(ctx: ToolContext) {
 
 export function register(server: McpServer, ctx: ToolContext): void {
   server.tool('check_hygiene', async () => {
-    const result = handleCheckHygiene(ctx);
+    const result = await handleCheckHygiene(ctx);
     return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
   });
 }

@@ -21,40 +21,7 @@ export interface SkillReloadResult {
   auditEntryIds: string[];
 }
 
-// --- Debounce state ---
-
-let pendingFiles: string[] = [];
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-const DEBOUNCE_MS = 2000;
-
-export function resetDebounceState(): void {
-  pendingFiles = [];
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-    debounceTimer = null;
-  }
-}
-
-export function onFileChange(
-  changedFiles: string[],
-  config: MergedEnforcementConfig,
-  ctx: { sessionId: string; auditDir: string; repoPath: string; previousSkillIds?: string[] },
-): Promise<SkillReloadResult> {
-  return new Promise((resolve) => {
-    pendingFiles.push(...changedFiles);
-
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-
-    debounceTimer = setTimeout(() => {
-      const files = [...pendingFiles];
-      pendingFiles = [];
-      debounceTimer = null;
-      resolve(processFileChange(files, config, ctx));
-    }, DEBOUNCE_MS);
-  });
-}
+export const DEBOUNCE_MS = 2000;
 
 export function processFileChange(
   changedFiles: string[],

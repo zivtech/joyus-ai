@@ -8,6 +8,7 @@
 
 import { readFile, writeFile, rename, mkdir, access, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { CanonicalDeclarationSchema } from '../core/schema.js';
 import type { CanonicalStatus } from '../core/types.js';
 
 // --- Types ---
@@ -42,8 +43,9 @@ export async function loadCanonical(projectRoot: string): Promise<CanonicalDecla
   try {
     const raw = await readFile(canonicalFilePath(projectRoot), 'utf-8');
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === 'object' && parsed.documents) {
-      return parsed as CanonicalDeclarations;
+    const result = CanonicalDeclarationSchema.safeParse(parsed);
+    if (result.success) {
+      return result.data;
     }
     return { documents: {} };
   } catch {

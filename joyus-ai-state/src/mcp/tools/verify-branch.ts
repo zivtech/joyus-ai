@@ -12,18 +12,13 @@ import { getCurrentBranch, verifyBranch, auditBranchVerify } from '../../enforce
 import { checkBranchNaming } from '../../enforcement/git/branch-hygiene.js';
 import { loadEnforcementConfig } from '../../enforcement/config.js';
 import { AuditWriter } from '../../enforcement/audit/writer.js';
-import { StateStore, getSnapshotsDir } from '../../state/store.js';
 
 export async function handleVerifyBranch(
   args: { operation: 'commit' | 'push' | 'merge' },
   ctx: ToolContext,
 ) {
-  const currentBranch = getCurrentBranch();
-
-  const snapshotsDir = getSnapshotsDir(ctx.projectRoot);
-  const store = new StateStore(snapshotsDir);
-  const latest = await store.readLatest();
-  const expectedBranch: string | null = latest?.git?.branch ?? null;
+  const currentBranch = await getCurrentBranch();
+  const expectedBranch: string | null = null; // Placeholder for 002 session state integration
 
   const { config } = loadEnforcementConfig(ctx.projectRoot);
 

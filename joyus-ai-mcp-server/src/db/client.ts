@@ -6,12 +6,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
-import * as contentSchema from '../content/schema.js';
-import * as eventAdapterSchema from '../event-adapter/schema.js';
-import * as pipelinesSchema from '../pipelines/schema.js';
-import * as profilesSchema from '../profiles/schema.js';
-
-import * as schema from './schema.js';
+import { allSchemas } from './schemas.js';
 
 // Create PostgreSQL connection pool
 const pool = new Pool({
@@ -21,17 +16,11 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-// Create Drizzle client with public, content, pipelines, event_adapter, and profiles schemas
-export const db = drizzle(pool, {
-  schema: { ...schema, ...contentSchema, ...pipelinesSchema, ...eventAdapterSchema, ...profilesSchema },
-});
+// Create Drizzle client with all registered domain schemas
+export const db = drizzle(pool, { schema: allSchemas });
 
-// Export schemas for convenience
-export * from './schema.js';
-export * from '../content/schema.js';
-export * from '../pipelines/schema.js';
-export * from '../event-adapter/schema.js';
-export * from '../profiles/schema.js';
+// Re-export all schema symbols so callers can import tables/types from this module
+export * from './schemas.js';
 
 // Helper to close pool on shutdown
 export async function closeDb() {

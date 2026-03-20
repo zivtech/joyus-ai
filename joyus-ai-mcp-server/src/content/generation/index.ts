@@ -4,17 +4,20 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
-import type { SearchService } from '../search/index.js';
+import type { DrizzleClient } from '../../db/types.js';
 import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
+import type { SearchService } from '../search/index.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 
-import { CitationManager } from './citations.js';
-import { ContentGenerator, type GenerationProvider } from './generator.js';
-import { ContentRetriever } from './retriever.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import { CitationManager, type CitationResult } from './citations.js';
+import {
+  ContentGenerator,
+  PlaceholderGenerationProvider,
+  type GenerationProvider,
+  type GenerationOutput,
+} from './generator.js';
+import { ContentRetriever, type RetrievalResult, type RetrievedItem } from './retriever.js';
 
 export interface GenerateOptions {
   profileId?: string;
@@ -106,12 +109,13 @@ export class GenerationService {
 }
 
 // Re-exports so callers can import everything from this module
-export { AnthropicGenerationProvider } from './anthropic-provider.js';
 export {
   ContentRetriever,
   type RetrievalResult,
   type RetrievedItem,
 } from './retriever.js';
+export type { SearchService } from '../search/index.js';
+export { AnthropicGenerationProvider } from './anthropic-provider.js';
 export {
   ContentGenerator,
   PlaceholderGenerationProvider,

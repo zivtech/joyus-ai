@@ -49,8 +49,16 @@ export function createIpcServer(
             }
 
             if (req.method === 'POST' && req.url === '/capture') {
+              const BODY_LIMIT = 1024 * 1024; // 1MB
               let body = '';
-              for await (const chunk of req) body += chunk;
+              for await (const chunk of req) {
+                body += chunk;
+                if (Buffer.byteLength(body) > BODY_LIMIT) {
+                  res.writeHead(413, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ error: 'Request body too large' }));
+                  return;
+                }
+              }
               const parsed = body ? JSON.parse(body) : {};
               const event = parsed.event ?? 'manual';
 

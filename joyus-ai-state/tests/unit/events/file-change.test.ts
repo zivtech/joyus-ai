@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { processFileChange, resetDebounceState } from '../../../src/enforcement/events/file-change.js';
+import { processFileChange } from '../../../src/enforcement/events/file-change.js';
 import { EnforcementConfigSchema } from '../../../src/enforcement/schemas.js';
 import { mergeConfig } from '../../../src/enforcement/config.js';
 import type { DeveloperConfig } from '../../../src/enforcement/types.js';
@@ -27,11 +27,9 @@ describe('processFileChange', () => {
 
   beforeEach(() => {
     auditDir = join(tmpdir(), `event-filechange-test-${Date.now()}`);
-    resetDebounceState();
   });
 
   afterEach(() => {
-    resetDebounceState();
     rmSync(auditDir, { recursive: true, force: true });
   });
 

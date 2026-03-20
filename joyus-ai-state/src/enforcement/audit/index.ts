@@ -196,6 +196,7 @@ export class AuditIndex {
       if (!startProcessing) {
         if (fileName === state.last_synced_file) {
           startProcessing = true;
+          // Do not continue — fall through so new entries appended to this file are picked up.
         } else {
           continue;
         }

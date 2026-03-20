@@ -1,21 +1,21 @@
 # Joyus AI Platform — Implementation Plan
 
 **Project:** Joyus AI Platform
-**Date:** January 29, 2026 (Updated February 11, 2026)
-**Status:** Phase 1 Starting — Asset Sharing Pipeline
+**Date:** January 29, 2026 (Updated March 20, 2026)
+**Status:** Phase 2.7 Active — Content Infrastructure complete; Automated Pipelines (Feature 011) in progress
 
 ---
 
-## 0. Phased Roadmap (Updated Feb 11, 2026)
+## 0. Phased Roadmap (Updated March 20, 2026)
 
 ### Phase Ordering
 
 | Phase | Name | Status | Description |
 |-------|------|--------|-------------|
-| **1** | Asset Sharing Pipeline | **Starting** | GitHub Pages + StatiCrypt for sharing PoCs behind passwords |
-| **2** | MCP Server Deployment | Planned | Deploy existing MCP server to AWS EC2 |
-| **2.5** | Profile Engine + Content Fidelity | **Priority** | Standalone library: corpus → profiles → skill files + two-tier verification. Platform's moat. |
-| **2.7** | Content Infrastructure | **Planned** | Corpus connectors, search abstraction, access enforcement, bot mediation, generate-then-verify chat (Feature 006) |
+| **1** | Asset Sharing Pipeline | **Complete** | GitHub Pages + StatiCrypt for sharing PoCs behind passwords |
+| **2** | MCP Server Deployment | **Complete** | Deploy existing MCP server to AWS EC2 |
+| **2.5** | Profile Engine + Content Fidelity | **Complete** | Standalone library: corpus → profiles → skill files + two-tier verification. Platform's moat. (Feature 005) |
+| **2.7** | Content Infrastructure | **Complete** | Corpus connectors, search abstraction, access enforcement, bot mediation, generate-then-verify chat (Feature 006) |
 | **3** | Platform Framework | Planned | Internal AI portal — web app, multi-tenant, skills system (imports profile engine + content infrastructure) |
 | **4** | Additional Tools | Future | Presentation toolkit, document generator, analysis tools |
 
@@ -977,7 +977,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 | ├─ PR detection: GitHub webhooks, manual trigger, or CI integration? | | | |
 | ├─ Branch change detection: how to know when to prompt for baseline update? | | | |
 | └─ Execution environment: platform EC2, client infra, or ephemeral containers? | | | |
-| **Content Infrastructure (Feature 006)** | Alex + Claude | Phase 2.7 | Open |
+| **Content Infrastructure (Feature 006)** | Alex + Claude | Phase 2.7 | **Complete** |
 | ├─ Search backend: Solr, Elasticsearch, Drupal Search API, or abstraction layer? | | | Recommendation: platform defines search interface, deployment wires backend |
 | ├─ Content ingestion: what source types must be supported at launch? | | | XML publications, Drupal CMS, web scraping — listservs and file shares deferred |
 | ├─ Content state model: draft → staged → published → superseded? | | | Needs validation against the client's existing XML version control |
@@ -987,6 +987,7 @@ After Phases 1-2 (Asset Sharing + MCP Deployment):
 ---
 
 *Plan created: January 29, 2026*
+*Updated: March 20, 2026 — Reflected completed phases: Phase 1 (Asset Sharing), Phase 2 (MCP Server Deployment), Phase 2.5 (Profile Engine / Feature 005), Phase 2.7 (Content Infrastructure / Feature 006). Marked Content Infrastructure open questions resolved. Feature 009 (Automated Pipelines) spec-only; Feature 010 (Inngest Evaluation) complete; Feature 011 (Inngest Migration) in progress (WP01–WP02 merged, WP03–WP04 in PR).*
 *Updated: February 19, 2026 — Added Phase 2.7 (Content Infrastructure, Feature 006) as new phase between Profile Engine and Platform Framework (Decision #22). Added platform-agnostic auth provider interface with JWT first implementation (Decision #20). Added VoiceContext 3-layer voice architecture (Decision #21). Added Content Infrastructure open questions. Based on architecture research report (5 parallel agents + cross-validation, 22 systems mapped).*
 *Updated: February 17, 2026 — Added Phase 2.5 (Profile Engine + Content Fidelity) as priority standalone library (Decision #19). Boris Cherny (Claude Code creator) analysis: replaced OMC with thin server orchestrator + native Claude Code (Decision #16), added two-tier content fidelity verification (Decision #17), added "thick domain, thin orchestration" architectural principle (Decision #18), resolved attribution timing and OMC open questions. Prior: Feb 15 — Client Profile Building pipeline, author verification, Attribution Service, decisions #14-15. Feb 13 — Manus-MCP evaluation: code execution sandbox, job management, browser abstraction, research tool, visual regression testing service*
 *For: Joyus AI Platform*

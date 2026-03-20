@@ -22,8 +22,8 @@ export async function onSessionStart(
   config: MergedEnforcementConfig,
   ctx: { sessionId: string; auditDir: string },
 ): Promise<SessionStartReport> {
-  const staleBranches = detectStaleBranches(config.branchRules);
-  const branchCount = checkBranchCount(config.branchRules);
+  const staleBranches = await detectStaleBranches(config.branchRules);
+  const branchCount = await checkBranchCount(config.branchRules);
 
   const suggestions: string[] = [];
 

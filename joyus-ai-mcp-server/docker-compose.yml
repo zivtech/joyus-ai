@@ -5,15 +5,15 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: joyus_ai_mcp
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-joyus_ai_mcp}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,17 +25,14 @@ services:
       dockerfile: Dockerfile
       target: builder
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/joyus_ai_mcp
+      - DATABASE_URL=postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-joyus_ai_mcp}
       - BASE_URL=http://localhost:3000
-      - SESSION_SECRET=${SESSION_SECRET:-dev-secret-change-me}
-      - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY:-dev-key-change-me-in-prod}
-      - ENABLE_DEV_AUTH_BYPASS=${ENABLE_DEV_AUTH_BYPASS:-false}
-      - DEV_AUTH_EMAIL=${DEV_AUTH_EMAIL:-local-dev@example.test}
-      - DEV_AUTH_NAME=${DEV_AUTH_NAME:-Local Developer}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET must be set}
+      - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY:?TOKEN_ENCRYPTION_KEY must be set}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GOOGLE_HOSTED_DOMAIN=${GOOGLE_HOSTED_DOMAIN:-example.com}
@@ -50,8 +47,8 @@ services:
       - PLAYWRIGHT_MCP_BASE_URL=http://playwright:3002
       - INNGEST_DEV=1
       - INNGEST_BASE_URL=http://inngest:8288
-      - INNGEST_EVENT_KEY=${INNGEST_EVENT_KEY:-local-dev-key}
-      - INNGEST_SIGNING_KEY=${INNGEST_SIGNING_KEY:-local-signing-key}
+      - INNGEST_EVENT_KEY=${INNGEST_EVENT_KEY:?INNGEST_EVENT_KEY must be set}
+      - INNGEST_SIGNING_KEY=${INNGEST_SIGNING_KEY:?INNGEST_SIGNING_KEY must be set}
     volumes:
       - ./src:/app/src
       - ./drizzle:/app/drizzle
@@ -61,7 +58,7 @@ services:
       playwright:
         condition: service_healthy
     command: >
-      sh -c "npm run db:migrate && npm run dev"
+      sh -c "npm run db:push && npm run dev"
 
   # Playwright MCP dependency
   playwright:
@@ -69,7 +66,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.playwright
     ports:
-      - "3002:3002"
+      - "127.0.0.1:3002:3002"
     healthcheck:
       test: ["CMD", "node", "-e", "const c=new AbortController(); const t=setTimeout(() => c.abort(), 2000); fetch('http://127.0.0.1:3002/sse', { signal: c.signal }).then((r) => { clearTimeout(t); process.exit(r.ok ? 0 : 1); }).catch(() => process.exit(1));"]
       interval: 10s
@@ -80,11 +77,11 @@ services:
   # Production should use Inngest Cloud or a separately deployed self-hosted
   # Inngest server, not `inngest dev`.
   inngest:
-    image: inngest/inngest:v1.17.2
+    image: inngest/inngest:v1.17.5
     command: inngest dev -u http://server:3000/api/inngest
     ports:
-      - "8288:8288"
-      - "8289:8289"
+      - "127.0.0.1:8288:8288"
+      - "127.0.0.1:8289:8289"
     depends_on:
       - server
 
