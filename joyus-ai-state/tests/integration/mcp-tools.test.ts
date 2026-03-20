@@ -107,8 +107,16 @@ describe('MCP Tools E2E', () => {
     const exportData = parse(exportResult);
     expect(exportData.sharedFile).toBeTruthy();
 
+    // Copy exported file to incoming directory (simulates receiving a shared file)
+    const { getStateDir } = await import('../../src/state/store.js');
+    const stateDir = getStateDir(tmpDir);
+    const incomingDir = path.join(stateDir, 'shared', 'incoming');
+    fs.mkdirSync(incomingDir, { recursive: true });
+    const incomingPath = path.join(incomingDir, path.basename(exportData.sharedFile as string));
+    fs.copyFileSync(exportData.sharedFile as string, incomingPath);
+
     const importResult = await handleShareState(
-      { action: 'import', path: exportData.sharedFile as string },
+      { action: 'import', path: incomingPath },
       tmpDir,
     );
     const importData = parse(importResult);
@@ -147,9 +155,16 @@ describe('MCP Tools E2E', () => {
     ));
     expect(share.sharedFile).toBeTruthy();
 
-    // 7. Load shared state
+    // 7. Load shared state (copy to incoming dir first — path traversal containment)
+    const { getStateDir: getSD } = await import('../../src/state/store.js');
+    const lcStateDir = getSD(tmpDir);
+    const incomingDir = path.join(lcStateDir, 'shared', 'incoming');
+    fs.mkdirSync(incomingDir, { recursive: true });
+    const incomingPath = path.join(incomingDir, path.basename(share.sharedFile as string));
+    fs.copyFileSync(share.sharedFile as string, incomingPath);
+
     const load = parse(await handleShareState(
-      { action: 'import', path: share.sharedFile as string },
+      { action: 'import', path: incomingPath },
       tmpDir,
     ));
     expect(load.snapshot).toBeDefined();

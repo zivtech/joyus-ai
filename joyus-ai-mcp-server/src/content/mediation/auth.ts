@@ -8,13 +8,11 @@
 import crypto from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { Request, Response, NextFunction } from 'express';
 import * as jose from 'jose';
 
+import type { DrizzleClient } from '../../db/types.js';
 import { contentApiKeys } from '../schema.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 // Extend Express Request with auth context
 declare global {

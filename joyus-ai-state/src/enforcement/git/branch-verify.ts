@@ -5,7 +5,10 @@
  * Enforcement level varies by user tier.
  */
 
-import { execSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 import { randomUUID } from 'node:crypto';
 import { AuditWriter } from '../audit/writer.js';
 import type { UserTier, AuditEntry } from '../types.js';
@@ -63,14 +66,13 @@ export function verifyBranch(config: BranchVerifyConfig): BranchVerifyResult {
   };
 }
 
-export function getCurrentBranch(cwd?: string): string {
+export async function getCurrentBranch(cwd?: string): Promise<string> {
   try {
-    const result = execSync('git rev-parse --abbrev-ref HEAD', {
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
       cwd,
       encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
     });
-    return result.trim();
+    return stdout.trim();
   } catch {
     return 'HEAD'; // Detached HEAD or not a git repo
   }

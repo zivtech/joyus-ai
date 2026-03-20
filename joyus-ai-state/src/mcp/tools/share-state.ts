@@ -6,7 +6,8 @@
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { validateInput, createSuccessResponse, createErrorResponse, ShareStateInputSchema } from './utils.js';
-import { exportSharedState, loadSharedState } from '../../state/share.js';
+import { exportSharedState, loadSharedState, getSharedIncomingDir } from '../../state/share.js';
+import { getStateDir } from '../../state/store.js';
 
 export const shareStateToolDef = {
   name: 'share_state',
@@ -45,8 +46,10 @@ export async function handleShareState(
       return createSuccessResponse(result);
     }
 
-    // import mode
-    const result = await loadSharedState(input.path);
+    // import mode — constrain the path to the incoming shared state directory
+    const stateDir = getStateDir(projectRoot);
+    const allowedDir = getSharedIncomingDir(stateDir);
+    const result = await loadSharedState(input.path, allowedDir);
     return createSuccessResponse(result);
   } catch (err) {
     return createErrorResponse((err as Error).message);

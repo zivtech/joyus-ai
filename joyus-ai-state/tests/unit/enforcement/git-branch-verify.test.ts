@@ -64,14 +64,14 @@ describe('verifyBranch', () => {
 });
 
 describe('getCurrentBranch', () => {
-  it('returns a branch name in the current repo', () => {
-    const branch = getCurrentBranch();
+  it('returns a branch name in the current repo', async () => {
+    const branch = await getCurrentBranch();
     expect(branch).toBeTruthy();
     expect(typeof branch).toBe('string');
   });
 
-  it('returns HEAD for non-git directory', () => {
-    const branch = getCurrentBranch('/tmp');
+  it('returns HEAD for non-git directory', async () => {
+    const branch = await getCurrentBranch('/tmp');
     expect(branch).toBe('HEAD');
   });
 });

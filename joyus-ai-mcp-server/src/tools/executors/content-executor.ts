@@ -1,11 +1,9 @@
 /**
  * Content Tool Executor
  * Routes content_ tool calls to database operations.
- * Service integrations (search, entitlements, generation) will be wired in WP12.
  */
 
 import { eq, desc, and, inArray, sql, like, or } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
 import {
   contentSources,
@@ -18,8 +16,7 @@ import {
 } from '../../content/schema.js';
 import type { SearchService } from '../../content/search/index.js';
 import type { ResolvedEntitlements } from '../../content/types.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 export interface ContentExecutorContext {
   userId: string;
@@ -216,9 +213,8 @@ export async function executeContentTool(
       const limit = Math.min((input.limit as number | undefined) ?? 10, 50);
       const offset = (input.offset as number | undefined) ?? 0;
 
-      // Use SearchService with FTS when available
+      // Use SearchService with FTS when available.
       if (context.searchService) {
-        // Build minimal entitlements from tenant's active products
         const tenantProducts = await db
           .select({ id: contentProducts.id })
           .from(contentProducts)
@@ -257,7 +253,7 @@ export async function executeContentTool(
         };
       }
 
-      // Fallback: LIKE search when SearchService is not wired
+      // Fallback: LIKE search when SearchService is not wired.
       const tenantSources = await db
         .select({ id: contentSources.id })
         .from(contentSources)

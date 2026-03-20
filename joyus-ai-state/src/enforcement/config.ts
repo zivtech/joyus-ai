@@ -55,9 +55,17 @@ export function validateAndFallback<T>(
       warnings.push(`${label}: unexpected validation error`);
     }
 
-    // Fall back to safe defaults by parsing an empty object
-    const config = schema.parse({});
-    return { valid: false, config, warnings };
+    // Fall back to safe defaults. Use safeParse so a schema that cannot
+    // parse {} does not throw inside this catch block and mask the original
+    // validation warnings collected above.
+    const fallback = schema.safeParse({});
+    if (!fallback.success) {
+      // Schema has no usable defaults — surface original warnings and rethrow.
+      throw new Error(
+        `Config validation failed and no safe defaults available for ${label}: ${warnings.join('; ')}`,
+      );
+    }
+    return { valid: false, config: fallback.data, warnings };
   }
 }
 

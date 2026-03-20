@@ -7,8 +7,8 @@
 
 import { createId } from '@paralleldrive/cuid2';
 import { eq, and } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
+import type { DrizzleClient } from '../../db/types.js';
 import {
   contentProducts,
   contentProductSources,
@@ -17,8 +17,6 @@ import {
 } from '../schema.js';
 import type { ResolvedEntitlements } from '../types.js';
 import type { CreateProductInput } from '../validation.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 // ============================================================
 // PRODUCT WITH RELATIONS TYPE

@@ -5,7 +5,10 @@
  * and active branch count warnings.
  */
 
-import { execSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 import type { BranchRule } from '../types.js';
 
 // --- T027: Branch naming convention ---
@@ -66,8 +69,8 @@ export interface StaleBranch {
   daysSinceModified: number;
 }
 
-export function detectStaleBranches(rules: BranchRule, cwd?: string): StaleBranch[] {
-  const branches = listBranchesWithDates(cwd);
+export async function detectStaleBranches(rules: BranchRule, cwd?: string): Promise<StaleBranch[]> {
+  const branches = await listBranchesWithDates(cwd);
   const now = Date.now();
   const staleDaysMs = rules.staleDays * 24 * 60 * 60 * 1000;
 
@@ -81,14 +84,15 @@ export function detectStaleBranches(rules: BranchRule, cwd?: string): StaleBranc
     .sort((a, b) => b.daysSinceModified - a.daysSinceModified);
 }
 
-export function listBranchesWithDates(cwd?: string): { name: string; lastModified: string }[] {
+export async function listBranchesWithDates(cwd?: string): Promise<{ name: string; lastModified: string }[]> {
   try {
-    const output = execSync(
-      "git for-each-ref --sort=-committerdate --format='%(refname:short) %(committerdate:iso8601)' refs/heads/",
-      { cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+    const { stdout } = await execFileAsync(
+      'git',
+      ['for-each-ref', '--sort=-committerdate', '--format=%(refname:short) %(committerdate:iso8601)', 'refs/heads/'],
+      { cwd, encoding: 'utf-8' },
     );
 
-    return output
+    return stdout
       .trim()
       .split('\n')
       .filter((line) => line.trim())
@@ -112,8 +116,8 @@ export interface BranchCountResult {
   overLimit: boolean;
 }
 
-export function checkBranchCount(rules: BranchRule, cwd?: string): BranchCountResult {
-  const branches = listBranchesWithDates(cwd);
+export async function checkBranchCount(rules: BranchRule, cwd?: string): Promise<BranchCountResult> {
+  const branches = await listBranchesWithDates(cwd);
   const count = branches.length;
   return {
     count,

@@ -7,13 +7,11 @@
 
 import { createId } from '@paralleldrive/cuid2';
 import { and, eq, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { alias } from 'drizzle-orm/pg-core';
 
+import type { DrizzleClient } from '../../db/types.js';
 import { CACHE_TTL_SECONDS } from '../generation/cost.js';
 import { contentMediationSessions, contentOperationLogs } from '../schema.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 export interface MediationSessionResult {
   sessionId: string;

@@ -114,5 +114,4 @@ export const DEFAULT_FRESHNESS_WINDOW_MINUTES = 1440; // 24 hours
 // DB CLIENT TYPE
 // ============================================================
 
-import { drizzle } from 'drizzle-orm/node-postgres';
-export type DrizzleClient = ReturnType<typeof drizzle>;
+export type { DrizzleClient } from '../db/types.js';

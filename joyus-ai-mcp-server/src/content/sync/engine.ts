@@ -8,8 +8,8 @@
 
 import { createId } from '@paralleldrive/cuid2';
 import { eq, and, sql, notInArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
+import type { DrizzleClient } from '../../db/types.js';
 import type { ContentConnector, ContentPayload } from '../connectors/interface.js';
 import type { ConnectorRegistry } from '../connectors/registry.js';
 import { contentSources, contentItems, contentSyncRuns } from '../schema.js';
@@ -24,11 +24,6 @@ import {
   type SyncRunStats,
 } from './state.js';
 
-// ============================================================
-// TYPES
-// ============================================================
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 // ============================================================
 // SYNC ENGINE

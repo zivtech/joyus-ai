@@ -18,6 +18,7 @@ export interface Violation {
 export interface ValidationResult {
   valid: boolean;
   violations: Violation[];
+  readError?: string;
 }
 
 export function validateAgainstSkills(content: string, skills: Skill[]): ValidationResult {
@@ -52,12 +53,13 @@ export function validateAgainstSkills(content: string, skills: Skill[]): Validat
 }
 
 export function validateFile(filePath: string, skills: Skill[]): ValidationResult {
+  let content: string;
   try {
-    const content = readFileSync(filePath, 'utf-8');
-    return validateAgainstSkills(content, skills);
-  } catch {
-    return { valid: true, violations: [] };
+    content = readFileSync(filePath, 'utf-8');
+  } catch (err) {
+    return { valid: false, violations: [], readError: (err as Error).message };
   }
+  return validateAgainstSkills(content, skills);
 }
 
 function toRegex(pattern: string): RegExp | null {

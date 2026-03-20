@@ -14,17 +14,15 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import type { DrizzleClient } from '../../db/types.js';
 import type { EntitlementCache } from '../entitlements/cache.js';
 import type { EntitlementService } from '../entitlements/index.js';
 import type { GenerationService } from '../generation/index.js';
 
 import { createAuthMiddleware } from './auth.js';
 import { MediationSessionService } from './session.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 export interface MediationDependencies {
   db: DrizzleClient;

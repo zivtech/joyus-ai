@@ -5,7 +5,7 @@
  * (which may differ per branch) and reports what changed.
  */
 
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { loadEnforcementConfig } from '../config.js';
 import { checkBranchNaming } from '../git/branch-hygiene.js';
 import { AuditWriter } from '../audit/writer.js';
@@ -26,6 +26,10 @@ export interface ConfigReloadResult {
   auditEntryId: string;
 }
 
+function contentHash(value: unknown): string {
+  return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
 export function onBranchSwitch(
   newBranch: string,
   previousConfig: MergedEnforcementConfig,
@@ -35,19 +39,23 @@ export function onBranchSwitch(
 
   const changes: ConfigChange[] = [];
 
-  if (previousConfig.gates.length !== newConfig.gates.length) {
+  const prevGatesHash = contentHash(previousConfig.gates);
+  const newGatesHash = contentHash(newConfig.gates);
+  if (prevGatesHash !== newGatesHash) {
     changes.push({
       field: 'gates',
-      previous: previousConfig.gates.length,
-      current: newConfig.gates.length,
+      previous: prevGatesHash,
+      current: newGatesHash,
     });
   }
 
-  if (previousConfig.skillMappings.length !== newConfig.skillMappings.length) {
+  const prevSkillsHash = contentHash(previousConfig.skillMappings);
+  const newSkillsHash = contentHash(newConfig.skillMappings);
+  if (prevSkillsHash !== newSkillsHash) {
     changes.push({
       field: 'skillMappings',
-      previous: previousConfig.skillMappings.length,
-      current: newConfig.skillMappings.length,
+      previous: prevSkillsHash,
+      current: newSkillsHash,
     });
   }
 

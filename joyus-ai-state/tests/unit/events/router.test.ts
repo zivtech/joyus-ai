@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EnforcementEventRouter } from '../../../src/enforcement/events/router.js';
-import { resetDebounceState } from '../../../src/enforcement/events/file-change.js';
 import { EnforcementConfigSchema } from '../../../src/enforcement/schemas.js';
 import { mergeConfig } from '../../../src/enforcement/config.js';
 import type { DeveloperConfig, MergedEnforcementConfig } from '../../../src/enforcement/types.js';
@@ -19,11 +18,9 @@ describe('EnforcementEventRouter', () => {
 
   beforeEach(() => {
     auditDir = join(tmpdir(), `event-router-test-${Date.now()}`);
-    resetDebounceState();
   });
 
   afterEach(() => {
-    resetDebounceState();
     rmSync(auditDir, { recursive: true, force: true });
   });
 

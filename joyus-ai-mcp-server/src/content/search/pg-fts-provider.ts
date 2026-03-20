@@ -11,15 +11,13 @@
  */
 
 import { sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
+import type { DrizzleClient } from '../../db/types.js';
 import type { ContentItem } from '../schema.js';
 import { contentItems } from '../schema.js';
 import type { SearchResult } from '../types.js';
 
 import type { SearchOptions, SearchProvider } from './interface.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
 
 interface FtsRow {
   [key: string]: unknown;
