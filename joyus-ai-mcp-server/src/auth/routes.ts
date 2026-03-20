@@ -212,7 +212,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
           </div>
         </div>
         ${connectedServices.has('GOOGLE')
-          ? '<a href="/auth/google/disconnect" class="btn disconnect">Disconnect</a>'
+          ? '<form method="POST" action="/auth/google/disconnect" style="display:inline"><button class="btn disconnect">Disconnect</button></form>'
           : '<a href="/auth/google/start" class="btn">Connect</a>'}
       </div>
 
@@ -224,7 +224,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
           </div>
         </div>
         ${connectedServices.has('JIRA')
-          ? '<a href="/auth/jira/disconnect" class="btn disconnect">Disconnect</a>'
+          ? '<form method="POST" action="/auth/jira/disconnect" style="display:inline"><button class="btn disconnect">Disconnect</button></form>'
           : '<a href="/auth/jira/start" class="btn">Connect</a>'}
       </div>
 
@@ -236,7 +236,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
           </div>
         </div>
         ${connectedServices.has('SLACK')
-          ? '<a href="/auth/slack/disconnect" class="btn disconnect">Disconnect</a>'
+          ? '<form method="POST" action="/auth/slack/disconnect" style="display:inline"><button class="btn disconnect">Disconnect</button></form>'
           : '<a href="/auth/slack/start" class="btn">Connect</a>'}
       </div>
 
@@ -248,7 +248,7 @@ authRouter.get('/', async (req: Request, res: Response) => {
           </div>
         </div>
         ${connectedServices.has('GITHUB')
-          ? '<a href="/auth/github/disconnect" class="btn disconnect">Disconnect</a>'
+          ? '<form method="POST" action="/auth/github/disconnect" style="display:inline"><button class="btn disconnect">Disconnect</button></form>'
           : '<a href="/auth/github/start" class="btn">Connect</a>'}
       </div>
 
@@ -729,7 +729,7 @@ authRouter.get('/github/callback', async (req: Request, res: Response) => {
 // Disconnect & Logout
 // ============================================================
 
-authRouter.get('/:service/disconnect', requireSessionOrRedirect, async (req: Request, res: Response) => {
+authRouter.post('/:service/disconnect', requireSessionOrRedirect, async (req: Request, res: Response) => {
   const userId = req.session!.userId!;
 
   const service = req.params.service.toUpperCase() as Service;

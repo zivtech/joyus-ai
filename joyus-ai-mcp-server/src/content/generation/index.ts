@@ -6,12 +6,13 @@
 import { createId } from '@paralleldrive/cuid2';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import type { SearchService } from '../search/index.js';
 import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 
 import { CitationManager } from './citations.js';
 import { ContentGenerator, type GenerationProvider } from './generator.js';
-import { ContentRetriever, type SearchService } from './retriever.js';
+import { ContentRetriever } from './retriever.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -108,7 +109,6 @@ export class GenerationService {
 export { AnthropicGenerationProvider } from './anthropic-provider.js';
 export {
   ContentRetriever,
-  type SearchService,
   type RetrievalResult,
   type RetrievedItem,
 } from './retriever.js';

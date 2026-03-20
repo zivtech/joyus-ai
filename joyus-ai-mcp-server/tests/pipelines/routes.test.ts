@@ -103,7 +103,7 @@ function makeReq(overrides: Partial<Request> = {}): Request {
     params: {},
     query: {},
     body: {},
-    session: {},
+    session: { userId: 'tenant-a' },
     // Simulate authenticated user set by requireBearerToken middleware
     mcpUser: { id: 'tenant-a' },
     ...overrides,
@@ -288,7 +288,7 @@ describe('Pipeline Routes', () => {
       expect(handler).toBeDefined();
 
       // Simulate unauthenticated request: no mcpUser, no session
-      const req = makeReq({ headers: {}, mcpUser: undefined } as unknown as Partial<Request>);
+      const req = makeReq({ session: {} as Request['session'], mcpUser: undefined } as unknown as Partial<Request>);
       const res = makeRes();
       await handler!(req, res);
 

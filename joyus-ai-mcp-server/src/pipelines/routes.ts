@@ -55,7 +55,7 @@ export interface PipelineRouterDeps {
 /**
  * Extract tenantId from the authenticated request context.
  * userId === tenantId until formal tenant resolution exists (see #37).
- * Matches the pattern in tools/executor.ts.
+ * Never trust request headers for tenant identity.
  */
 function getTenantId(req: Request): string {
   if (req.mcpUser?.id) {
