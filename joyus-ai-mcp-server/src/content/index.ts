@@ -7,13 +7,14 @@
 
 import type { Express } from 'express';
 
+import { setContentContext } from '../tools/executor.js';
+
 import { connectorRegistry } from './connectors/index.js';
 import { EntitlementCache, EntitlementService, HttpEntitlementResolver } from './entitlements/index.js';
 import {
   AnthropicGenerationProvider,
   GenerationService,
   PlaceholderGenerationProvider,
-  type SearchService as GenSearchService,
 } from './generation/index.js';
 import { createMediationRouter } from './mediation/router.js';
 import { DriftMonitor } from './monitoring/drift.js';
@@ -39,16 +40,18 @@ export async function initializeContentModule(
     // 1. Search
     const searchProvider = new PgFtsProvider(db);
     const searchService = new SearchService(searchProvider, db);
-    const generationSearchService: GenSearchService = {
-      search: (query, accessibleSourceIds, options) =>
-        searchProvider.search(query, accessibleSourceIds, {
-          limit: options?.limit ?? 5,
-          offset: 0,
-        }),
-    };
+    // Inject SearchService into content tool executor
+    setContentContext({ searchService });
 
     // 2. Entitlements
     const entitlementCache = new EntitlementCache();
+
+    // Clean up expired cache entries every 5 minutes
+    const cacheCleanupInterval = setInterval(() => {
+      entitlementCache.cleanup();
+    }, 5 * 60 * 1000);
+    cacheCleanupInterval.unref();
+
     const entitlementResolver = new HttpEntitlementResolver({
       name: 'default',
       defaultTtlSeconds: 300,
@@ -62,14 +65,14 @@ export async function initializeContentModule(
     });
     const entitlementService = new EntitlementService(entitlementResolver, entitlementCache, db);
 
-    // 3. Generation (bridge search service to generation's expected interface)
+    // 3. Generation
     const hasAnthropicKey = (process.env.ANTHROPIC_API_KEY ?? '').trim().length > 0;
     const generationProvider = hasAnthropicKey
       ? new AnthropicGenerationProvider()
       : new PlaceholderGenerationProvider();
     console.log(`[content] Generation provider: ${hasAnthropicKey ? 'Anthropic' : 'Placeholder'}`);
     const generationService = new GenerationService(
-      generationSearchService,
+      searchService,
       generationProvider,
       db,
     );
