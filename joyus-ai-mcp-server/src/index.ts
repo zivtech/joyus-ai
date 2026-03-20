@@ -11,9 +11,12 @@
  * Transport: Streamable HTTP (recommended for remote MCP servers)
  */
 
+import './config.js'; // Env validation — must be first
+
 import cors from 'cors';
 import { config } from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import helmet from 'helmet';
 
@@ -37,9 +40,38 @@ config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Session secret fail-closed in production
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('FATAL: SESSION_SECRET is required in production');
+}
+
+// Rate limiters
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // stricter for auth
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Security middleware
 app.use(helmet({
-  contentSecurityPolicy: false // Disable for API
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+    },
+  },
 }));
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
@@ -48,12 +80,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For form submissions
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'change-me-in-production',
+  secret: SESSION_SECRET || 'dev-only-secret-not-for-production',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -160,7 +193,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Auth routes (OAuth callbacks, token management)
-app.use('/auth', authRouter);
+app.use('/auth', authLimiter, authRouter);
 
 // Task management routes (scheduled tasks)
 app.use('/tasks', taskRouter);
@@ -319,8 +352,8 @@ app.listen(PORT, async () => {
       connectionString: process.env.DATABASE_URL ?? '',
     });
 
-    // Mount pipeline routes
-    app.use('/api', pipelineModule.router);
+    // Mount pipeline routes (auth + rate limit)
+    app.use('/api', apiLimiter, requireBearerToken, pipelineModule.router);
 
     // Inject pipeline deps into tool executor
     setPipelineContext({

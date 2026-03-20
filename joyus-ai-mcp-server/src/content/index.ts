@@ -11,7 +11,8 @@ import type { DrizzleClient } from './types.js';
 import { connectorRegistry } from './connectors/index.js';
 import { PgFtsProvider, SearchService } from './search/index.js';
 import { EntitlementCache, EntitlementService, HttpEntitlementResolver } from './entitlements/index.js';
-import { GenerationService, PlaceholderGenerationProvider, type SearchService as GenSearchService } from './generation/index.js';
+import { GenerationService, PlaceholderGenerationProvider } from './generation/index.js';
+import { setContentContext } from '../tools/executor.js';
 import { SyncEngine, initializeSyncScheduler } from './sync/index.js';
 import { HealthChecker } from './monitoring/health.js';
 import { MetricsCollector } from './monitoring/metrics.js';
@@ -35,8 +36,17 @@ export async function initializeContentModule(
     const searchProvider = new PgFtsProvider(db);
     const searchService = new SearchService(searchProvider, db);
 
+    // Inject SearchService into content tool executor
+    setContentContext({ searchService });
+
     // 2. Entitlements
     const entitlementCache = new EntitlementCache();
+
+    // Clean up expired cache entries every 5 minutes
+    const cacheCleanupInterval = setInterval(() => {
+      entitlementCache.cleanup();
+    }, 5 * 60 * 1000);
+    cacheCleanupInterval.unref();
     const entitlementResolver = new HttpEntitlementResolver({
       name: 'default',
       defaultTtlSeconds: 300,
@@ -50,10 +60,10 @@ export async function initializeContentModule(
     });
     const entitlementService = new EntitlementService(entitlementResolver, entitlementCache, db);
 
-    // 3. Generation (bridge search service to generation's expected interface)
+    // 3. Generation
     const generationProvider = new PlaceholderGenerationProvider();
     const generationService = new GenerationService(
-      searchService as unknown as GenSearchService,
+      searchService,
       generationProvider,
       db,
     );

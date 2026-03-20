@@ -16,6 +16,8 @@ import {
   contentDriftReports,
   contentEntitlements,
 } from '../../content/schema.js';
+import type { SearchService } from '../../content/search/index.js';
+import type { ResolvedEntitlements } from '../../content/types.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -23,6 +25,7 @@ export interface ContentExecutorContext {
   userId: string;
   tenantId: string;
   db: DrizzleClient;
+  searchService?: SearchService;
 }
 
 /**
@@ -213,7 +216,48 @@ export async function executeContentTool(
       const limit = Math.min((input.limit as number | undefined) ?? 10, 50);
       const offset = (input.offset as number | undefined) ?? 0;
 
-      // Get sources this tenant can access
+      // Use SearchService with FTS when available
+      if (context.searchService) {
+        // Build minimal entitlements from tenant's active products
+        const tenantProducts = await db
+          .select({ id: contentProducts.id })
+          .from(contentProducts)
+          .where(and(eq(contentProducts.tenantId, tenantId), eq(contentProducts.isActive, true)));
+
+        const entitlements: ResolvedEntitlements = {
+          productIds: tenantProducts.map((p) => p.id),
+          sourceIds: [],
+          profileIds: [],
+          resolvedFrom: 'tool-executor',
+          resolvedAt: new Date(),
+        };
+
+        const results = await context.searchService.search(query, entitlements, {
+          limit,
+          offset,
+          sourceId: sourceIds?.[0],
+        });
+
+        return {
+          items: results.map((r) => ({
+            id: r.itemId,
+            sourceId: r.sourceId,
+            title: r.title,
+            excerpt: r.excerpt,
+            score: r.score,
+            sourceName: r.sourceName,
+            sourceType: r.sourceType,
+            isStale: r.isStale,
+            stalenessWarning: r.stalenessWarning,
+          })),
+          total: results.length,
+          query,
+          limit,
+          offset,
+        };
+      }
+
+      // Fallback: LIKE search when SearchService is not wired
       const tenantSources = await db
         .select({ id: contentSources.id })
         .from(contentSources)
@@ -224,7 +268,6 @@ export async function executeContentTool(
         return { items: [], total: 0, query };
       }
 
-      // Restrict to requested sourceIds if provided, intersected with tenant sources
       const effectiveSourceIds =
         sourceIds && sourceIds.length > 0
           ? sourceIds.filter((id) => tenantSourceIds.includes(id))
@@ -234,7 +277,6 @@ export async function executeContentTool(
         return { items: [], total: 0, query };
       }
 
-      // Simple LIKE search on title and body (FTS wired via SearchService in WP12)
       const searchPattern = `%${query}%`;
       const rows = await db
         .select({
@@ -270,7 +312,6 @@ export async function executeContentTool(
         query,
         limit,
         offset,
-        note: 'Full-text search will be available after SearchService integration (WP12).',
       };
     }
 

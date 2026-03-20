@@ -4,8 +4,8 @@
 
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 
-// Mock environment variable before importing
-vi.stubEnv('TOKEN_ENCRYPTION_KEY', 'test-encryption-key-32-bytes!!');
+// AES-256 requires a 32-byte key (64 hex characters)
+vi.stubEnv('TOKEN_ENCRYPTION_KEY', 'a'.repeat(64));
 
 // Dynamic import to ensure env is set first
 let encryptToken: (token: string) => string;
@@ -36,10 +36,10 @@ describe('Encryption Utilities', () => {
       const encrypted1 = encryptToken(token);
       const encrypted2 = encryptToken(token);
 
-      // AES with random IV should produce different ciphertexts
-      // (though both decrypt to the same value)
+      // AES-GCM with random IV should produce different ciphertexts
       expect(encrypted1).not.toBe(token);
       expect(encrypted2).not.toBe(token);
+      expect(encrypted1).not.toBe(encrypted2);
     });
 
     it('should handle empty strings', () => {
@@ -63,6 +63,27 @@ describe('Encryption Utilities', () => {
       const decrypted = decryptToken(encrypted);
 
       expect(decrypted).toBe(longToken);
+    });
+
+    it('should produce iv:tag:ciphertext format', () => {
+      const encrypted = encryptToken('test-token');
+      const parts = encrypted.split(':');
+
+      expect(parts).toHaveLength(3);
+      // IV = 16 bytes = 32 hex chars
+      expect(parts[0]).toHaveLength(32);
+      // Auth tag = 16 bytes = 32 hex chars
+      expect(parts[1]).toHaveLength(32);
+      // Ciphertext is non-empty
+      expect(parts[2].length).toBeGreaterThan(0);
+    });
+
+    it('should return plaintext for legacy unencrypted values', () => {
+      // Values without the iv:tag:enc format are returned as-is
+      const plaintext = 'legacy-unencrypted-token';
+      const result = decryptToken(plaintext);
+
+      expect(result).toBe(plaintext);
     });
   });
 

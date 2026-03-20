@@ -51,28 +51,16 @@ export interface PipelineRouterDeps {
 // ============================================================
 
 /**
- * Extract tenantId from request. Uses x-tenant-id header, falling back
- * to the authenticated user ID (matching the content executor pattern).
+ * Extract tenantId from request. Derives from authenticated user only
+ * — never trust headers for tenant identity.
  */
 function getTenantId(req: Request): string {
-  const header = req.headers['x-tenant-id'];
-  if (typeof header === 'string' && header.length > 0) {
-    return header;
-  }
-  // Fall back to mcpUser id (matches content executor pattern)
+  // Derive from authenticated user — never trust headers
+  if (req.session?.userId) return req.session.userId;
   const user = (req as unknown as Record<string, unknown>)['mcpUser'] as
     | { id: string }
     | undefined;
-  if (user?.id) {
-    return user.id;
-  }
-  // Last resort: session userId
-  if (req.session) {
-    const session = req.session as unknown as Record<string, unknown>;
-    if (session['userId']) {
-      return session['userId'] as string;
-    }
-  }
+  if (user?.id) return user.id;
   return '';
 }
 
