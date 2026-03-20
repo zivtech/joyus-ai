@@ -319,8 +319,8 @@ app.listen(PORT, async () => {
       connectionString: process.env.DATABASE_URL ?? '',
     });
 
-    // Mount pipeline routes
-    app.use('/api', pipelineModule.router);
+    // Mount pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
+    app.use('/api', requireBearerToken, pipelineModule.router);
 
     // Inject pipeline deps into tool executor
     setPipelineContext({
