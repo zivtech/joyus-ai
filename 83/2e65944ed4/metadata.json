@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "832e65944ed4",
+  "strategy": "manual-commit",
+  "branch": "fix/meta-critic-tiers-4-5",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".mcp.json",
+    "joyus-ai-mcp-server/src/db/schemas.ts",
+    "joyus-ai-mcp-server/src/db/types.ts",
+    "joyus-ai-state/tests/integration/mcp-tools.test.ts",
+    "joyus-ai-state/tests/unit/collectors/git.test.ts",
+    "joyus-ai-state/tests/unit/enforcement/git-branch-verify.test.ts",
+    "joyus-ai-state/tests/unit/enforcement/git-guardrails.test.ts",
+    "joyus-ai-state/tests/unit/enforcement/skill-validator.test.ts",
+    "joyus-ai-state/tests/unit/mcp/check-hygiene.test.ts",
+    "joyus-ai-state/tests/unit/mcp/tools.test.ts",
+    "joyus-ai-state/tests/unit/mcp/verify-branch.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/83/2e65944ed4/0/metadata.json",
+      "transcript": "/83/2e65944ed4/0/full.jsonl",
+      "context": "/83/2e65944ed4/0/context.md",
+      "content_hash": "/83/2e65944ed4/0/content_hash.txt",
+      "prompt": "/83/2e65944ed4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 188,
+    "cache_creation_tokens": 646113,
+    "cache_read_tokens": 6523905,
+    "output_tokens": 37234,
+    "api_call_count": 64
+  }
+}

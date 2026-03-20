@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "832e65944ed4",
+  "session_id": "0fb88000-7b68-4f27-bfb3-b8f8028baca9",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-20T19:12:47.512595Z",
+  "branch": "fix/meta-critic-tiers-4-5",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".mcp.json",
+    "joyus-ai-mcp-server/src/db/schemas.ts",
+    "joyus-ai-mcp-server/src/db/types.ts",
+    "joyus-ai-state/tests/integration/mcp-tools.test.ts",
+    "joyus-ai-state/tests/unit/collectors/git.test.ts",
+    "joyus-ai-state/tests/unit/enforcement/git-branch-verify.test.ts",
+    "joyus-ai-state/tests/unit/enforcement/git-guardrails.test.ts",
+    "joyus-ai-state/tests/unit/enforcement/skill-validator.test.ts",
+    "joyus-ai-state/tests/unit/mcp/check-hygiene.test.ts",
+    "joyus-ai-state/tests/unit/mcp/tools.test.ts",
+    "joyus-ai-state/tests/unit/mcp/verify-branch.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "23e0c370-5893-40d5-a696-b86db7099262",
+  "token_usage": {
+    "input_tokens": 188,
+    "cache_creation_tokens": 646113,
+    "cache_read_tokens": 6523905,
+    "output_tokens": 37234,
+    "api_call_count": 64
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-20T19:12:47.425424Z",
+    "agent_lines": 0,
+    "human_added": 3083694,
+    "human_modified": 148,
+    "human_removed": 0,
+    "total_committed": 3083809,
+    "agent_percentage": 0
+  }
+}
