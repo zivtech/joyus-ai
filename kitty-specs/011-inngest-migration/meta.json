@@ -5,7 +5,7 @@
   "mission": "software-dev",
   "source_description": "Replace Feature 009 custom pipeline execution engine with Inngest via clean cutover",
   "created_at": "2026-03-19T00:00:00Z",
-  "measurement_owner": "platform team",
+  "measurement_owner": "Engineering Operations",
   "review_cadence": "weekly",
   "risk_class": "platform",
   "lifecycle_state": "spec-only"
