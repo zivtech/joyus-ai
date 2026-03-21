@@ -87,17 +87,21 @@ Production deployment configuration is maintained in a separate private reposito
 
 This project uses [Spec Kitty](https://github.com/Priivacy-ai/spec-kitty) for spec-driven development. Feature specifications live in `kitty-specs/`.
 
-Current status snapshot (source: `python scripts/pride-status.py` on 2026-02-23):
+Current status snapshot (source: `kitty-specs/*/meta.json`, updated 2026-03-21):
 
-| Spec | Description | Status |
-|------|-------------|--------|
-| `001` | MCP Server AWS Deployment | Complete |
-| `002` | Session Context Management | Complete |
-| `003` | Platform Architecture Overview | Spec-Only |
-| `004` | Workflow Enforcement | Complete |
-| `005` | Content Intelligence (Profile Engine) | Complete (Phases A–C, WP01–WP14) |
-| `006` | Content Infrastructure | Complete (WP01–WP12) |
-| `007` | Org-Scale Agentic Governance | Planning |
+| Spec | Description | Lifecycle State |
+|------|-------------|-----------------|
+| `001` | MCP Server AWS Deployment | done |
+| `002` | Session Context Management | done |
+| `003` | Platform Architecture Overview | spec-only |
+| `004` | Workflow Enforcement | done |
+| `005` | Content Intelligence (Profile Engine) | done |
+| `006` | Content Infrastructure | done |
+| `007` | Org-Scale Agentic Governance | planning |
+| `008` | Profile Isolation and Scale | spec-only |
+| `009` | Automated Pipelines Framework | spec-only |
+| `010` | Inngest Evaluation Spike | planned |
+| `011` | Inngest Migration | spec-only |
 
 Project-level architecture decisions, implementation plan, and constitution are in `spec/`.
 

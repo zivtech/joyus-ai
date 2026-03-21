@@ -221,7 +221,7 @@ Governance checks run in CI. P0 check failures block merge. See: [../scripts/gov
 
 ## 5. Autonomy Level Classification
 
-See: [autonomy-levels.md](./autonomy-levels.md)
+See: [autonomy-levels.md](../../../governance/autonomy-levels.md)
 
 Near-term default target: Level 3 (agent implements, human judges via diffs).
 Level 4 is opt-in by workflow once scenario readiness criteria pass.
