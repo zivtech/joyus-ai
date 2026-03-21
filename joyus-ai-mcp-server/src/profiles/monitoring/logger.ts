@@ -6,8 +6,8 @@
  * Append-only: no UPDATE or DELETE per data governance policy.
  */
 
-import { desc } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import { desc } from 'drizzle-orm';
 
 import { db } from '../../db/client.js';
 import { profileOperationLogs, type ProfileOperationLog } from '../schema.js';

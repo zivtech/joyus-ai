@@ -5,15 +5,15 @@
  * Enforces acyclicity and maximum depth constraints before persisting.
  */
 
-import { eq, and } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import { eq, and } from 'drizzle-orm';
 
 import { db } from '../../db/client.js';
+import { ProfileOperationLogger } from '../monitoring/logger.js';
 import { profileInheritance, type ProfileInheritance } from '../schema.js';
 import { requireTenantId, tenantWhere } from '../tenant-scope.js';
 import type { ProfileTier } from '../types.js';
 import { MAX_HIERARCHY_DEPTH } from '../types.js';
-import { ProfileOperationLogger } from '../monitoring/logger.js';
 
 // ============================================================
 // TYPES

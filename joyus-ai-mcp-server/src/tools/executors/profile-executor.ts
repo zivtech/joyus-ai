@@ -8,20 +8,20 @@
 import { eq, and, desc } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import { ProfileCacheService } from '../../profiles/cache/service.js';
+import { CorpusSnapshotService } from '../../profiles/generation/corpus-snapshot.js';
+import { ProfileGenerationPipeline } from '../../profiles/generation/pipeline.js';
+import { ProfileHierarchyService } from '../../profiles/inheritance/hierarchy.js';
+import { InheritanceResolver } from '../../profiles/inheritance/resolver.js';
+import { ProfileOperationLogger } from '../../profiles/monitoring/logger.js';
 import {
   tenantProfiles,
   corpusDocuments,
   corpusSnapshots,
   generationRuns,
 } from '../../profiles/schema.js';
-import { ProfileVersionService } from '../../profiles/versioning/service.js';
 import { ProfileVersionHistory } from '../../profiles/versioning/history.js';
-import { ProfileGenerationPipeline } from '../../profiles/generation/pipeline.js';
-import { CorpusSnapshotService } from '../../profiles/generation/corpus-snapshot.js';
-import { ProfileHierarchyService } from '../../profiles/inheritance/hierarchy.js';
-import { InheritanceResolver } from '../../profiles/inheritance/resolver.js';
-import { ProfileCacheService } from '../../profiles/cache/service.js';
-import { ProfileOperationLogger } from '../../profiles/monitoring/logger.js';
+import { ProfileVersionService } from '../../profiles/versioning/service.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 

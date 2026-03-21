@@ -11,8 +11,9 @@
 
 import { ProfileHierarchyService } from '../inheritance/hierarchy.js';
 import { ProfileOperationLogger } from '../monitoring/logger.js';
-import { ProfileCacheService, CACHE_WARM_THRESHOLD } from './service.js';
 import { requireTenantId } from '../tenant-scope.js';
+
+import { ProfileCacheService, CACHE_WARM_THRESHOLD } from './service.js';
 
 // ============================================================
 // CONSTANTS

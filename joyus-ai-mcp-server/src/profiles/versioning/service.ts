@@ -9,13 +9,13 @@
  * any given time. All state transitions happen inside a single DB transaction.
  */
 
-import { and, eq, lt, max, sql } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import { and, eq, lt, max, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client.js';
+import { ProfileOperationLogger } from '../monitoring/logger.js';
 import { tenantProfiles, type TenantProfile, type NewTenantProfile } from '../schema.js';
 import { requireTenantId, tenantWhere } from '../tenant-scope.js';
-import { ProfileOperationLogger } from '../monitoring/logger.js';
 
 // ============================================================
 // TYPES
