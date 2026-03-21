@@ -5,8 +5,8 @@
   "mission": "software-dev",
   "source_description": "Multi-tenant profile isolation, versioning, inheritance, self-service corpus intake, and caching for the stylometric profile engine",
   "created_at": "2026-03-10T08:28:00Z",
-  "measurement_owner": "platform team",
+  "measurement_owner": "Engineering Operations",
   "review_cadence": "monthly",
-  "risk_class": "standard",
-  "lifecycle_state": "spec-only"
+  "risk_class": "critical",
+  "lifecycle_state": "execution"
 }
