@@ -7,11 +7,11 @@
 
 import { z } from 'zod';
 import { join } from 'node:path';
-import { mkdirSync } from 'node:fs';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ToolContext } from '../types.js';
 import { AuditIndex } from '../../enforcement/audit/index.js';
 import type { AuditActionType, AuditResult } from '../../enforcement/types.js';
+import { ensureDir } from '../../utils/fs.js';
 
 const MAX_LIMIT = 1000;
 
@@ -27,7 +27,7 @@ export function handleQueryAudit(
   },
   ctx: ToolContext,
 ) {
-  mkdirSync(ctx.auditDir, { recursive: true });
+  ensureDir(ctx.auditDir);
   const dbPath = join(ctx.auditDir, 'audit-index.sqlite');
   const index = new AuditIndex(dbPath);
 

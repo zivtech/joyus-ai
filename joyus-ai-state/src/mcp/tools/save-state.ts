@@ -12,14 +12,11 @@ import { collectGitState } from '../../collectors/git.js';
 import { collectFileState } from '../../collectors/files.js';
 import { carryForwardDecisions } from '../../collectors/decisions.js';
 import { loadCanonical, getCanonicalStatuses } from '../../state/canonical.js';
-import { SnapshotSchema } from '../../core/schema.js';
+import { SnapshotSchema, EventTypeSchema } from '../../core/schema.js';
 import type { Snapshot, EventType } from '../../core/types.js';
 import path from 'node:path';
 
-const VALID_EVENTS: EventType[] = [
-  'commit', 'branch-switch', 'test-run', 'session-start',
-  'session-end', 'manual', 'file-change', 'compaction', 'canonical-update', 'share',
-];
+const VALID_EVENTS: EventType[] = EventTypeSchema.options;
 
 export const saveStateToolDef = {
   name: 'save_state',

@@ -6,14 +6,15 @@
 
 services:
   inngest-server:
-    image: inngest/inngest:latest
+    image: inngest/inngest:v1.17.5
     ports:
-      - "8288:8288"   # Inngest dev UI + API
+      - "127.0.0.1:8288:8288"   # Inngest dev UI + API
     environment:
-      INNGEST_EVENT_KEY: "local-dev-key"
-      INNGEST_SIGNING_KEY: "local-signing-key"
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?INNGEST_EVENT_KEY must be set}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?INNGEST_SIGNING_KEY must be set}
       # Connect to existing Postgres for state storage
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-jawn_ai}?sslmode=disable"
+      # sslmode=prefer used; disable only if your local Postgres truly has no TLS support
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-jawn_ai}?sslmode=prefer"
       REDIS_URL: "redis://redis:6379"
     depends_on:
       postgres:
@@ -27,7 +28,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

@@ -14,14 +14,12 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createAuthMiddleware } from './auth.js';
 import { MediationSessionService } from './session.js';
 import type { GenerationService } from '../generation/index.js';
 import type { EntitlementService } from '../entitlements/index.js';
 import type { EntitlementCache } from '../entitlements/cache.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 export interface MediationDependencies {
   db: DrizzleClient;

@@ -115,13 +115,7 @@ export type StepConfig =
 
 // --- Event bus ---
 
-export interface EventEnvelope {
-  eventId: string;
-  tenantId: string;
-  eventType: TriggerEventType;
-  payload: Record<string, unknown>;
-  timestamp: Date;
-}
+export type { EventEnvelope } from './event-bus/interface.js';
 
 // --- Step execution results ---
 

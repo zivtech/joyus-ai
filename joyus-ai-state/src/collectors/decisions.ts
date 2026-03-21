@@ -30,12 +30,12 @@ export function carryForwardDecisions(
   }
 
   if (resolvedId) {
-    const target = decisions.find((d) => d.id === resolvedId);
-    if (target) {
-      target.resolved = true;
-      target.answer = resolvedAnswer ?? null;
-      target.resolvedAt = new Date().toISOString();
-    }
+    const resolvedAt = new Date().toISOString();
+    return decisions.map((d) =>
+      d.id === resolvedId
+        ? { ...d, resolved: true, answer: resolvedAnswer ?? null, resolvedAt }
+        : d,
+    );
   }
 
   return decisions;

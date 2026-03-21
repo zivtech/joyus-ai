@@ -54,5 +54,5 @@ An open-source, multi-tenant AI agent platform that encodes organizational knowl
 
 ---
 
-*Platform core is open source. Constitution v1.6 published.*
-*github.com/joyus-ai/joyus-ai*
+*Platform core is open source. Constitution v1.7 published.*
+*github.com/zivtech/joyus-ai*

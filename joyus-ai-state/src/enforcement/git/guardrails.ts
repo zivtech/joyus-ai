@@ -5,7 +5,10 @@
  * and audit trail integration for all git guardrail actions.
  */
 
-import { execSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 import { randomUUID } from 'node:crypto';
 import { AuditWriter } from '../audit/writer.js';
 import type { BranchRule, UserTier, AuditEntry } from '../types.js';
@@ -57,8 +60,8 @@ export interface UncommittedResult {
   summary: string;
 }
 
-export function checkUncommittedChanges(cwd?: string): UncommittedResult {
-  const lines = getStatusLines(cwd);
+export async function checkUncommittedChanges(cwd?: string): Promise<UncommittedResult> {
+  const lines = await getStatusLines(cwd);
 
   let modified = 0;
   let untracked = 0;
@@ -91,14 +94,13 @@ export function checkUncommittedChanges(cwd?: string): UncommittedResult {
   };
 }
 
-export function getStatusLines(cwd?: string): string[] {
+export async function getStatusLines(cwd?: string): Promise<string[]> {
   try {
-    const output = execSync('git status --porcelain', {
+    const { stdout } = await execFileAsync('git', ['status', '--porcelain'], {
       cwd,
       encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
     });
-    return output.split('\n').filter((l) => l.trim());
+    return stdout.split('\n').filter((l) => l.trim());
   } catch {
     return [];
   }

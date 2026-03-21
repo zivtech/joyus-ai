@@ -5,11 +5,10 @@
  * Standalone module that can be wired into 002's companion service.
  */
 
-import { AuditWriter } from '../audit/writer.js';
 import type { MergedEnforcementConfig } from '../types.js';
 import { onSessionStart } from './session-start.js';
 import type { SessionStartReport } from './session-start.js';
-import { onFileChange } from './file-change.js';
+import { processFileChange, DEBOUNCE_MS } from './file-change.js';
 import type { SkillReloadResult } from './file-change.js';
 import { onBranchSwitch } from './branch-switch.js';
 import type { ConfigReloadResult } from './branch-switch.js';
@@ -28,6 +27,10 @@ export class EnforcementEventRouter {
   private readonly projectRoot: string;
   private previousSkillIds: string[] = [];
 
+  // Instance-scoped debounce state (replaces module-level vars in file-change.ts)
+  private pendingFiles: string[] = [];
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(
     config: MergedEnforcementConfig,
     ctx: { sessionId: string; auditDir: string; projectRoot: string },
@@ -36,6 +39,39 @@ export class EnforcementEventRouter {
     this.sessionId = ctx.sessionId;
     this.auditDir = ctx.auditDir;
     this.projectRoot = ctx.projectRoot;
+  }
+
+  /** Reset debounce state — useful in tests to avoid timer leaks between cases. */
+  resetDebounceState(): void {
+    this.pendingFiles = [];
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+  }
+
+  private debouncedFileChange(files: string[]): Promise<SkillReloadResult> {
+    return new Promise((resolve) => {
+      this.pendingFiles.push(...files);
+
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+      }
+
+      this.debounceTimer = setTimeout(() => {
+        const accumulated = [...this.pendingFiles];
+        this.pendingFiles = [];
+        this.debounceTimer = null;
+        resolve(
+          processFileChange(accumulated, this.config, {
+            sessionId: this.sessionId,
+            auditDir: this.auditDir,
+            repoPath: this.projectRoot,
+            previousSkillIds: this.previousSkillIds,
+          }),
+        );
+      }, DEBOUNCE_MS);
+    });
   }
 
   async handleEvent(event: EnforcementEvent): Promise<EventResult> {
@@ -47,12 +83,7 @@ export class EnforcementEventRouter {
         });
 
       case 'file-change': {
-        const result = await onFileChange(event.files, this.config, {
-          sessionId: this.sessionId,
-          auditDir: this.auditDir,
-          repoPath: this.projectRoot,
-          previousSkillIds: this.previousSkillIds,
-        });
+        const result = await this.debouncedFileChange(event.files);
         if (result.reloaded) {
           this.previousSkillIds = [
             ...new Set([...this.previousSkillIds, ...result.newSkillIds]),

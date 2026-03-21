@@ -7,7 +7,7 @@ import fs from 'node:fs';
 describe('collectGitState', () => {
   it('returns valid GitState from the current repo', async () => {
     // Use the repo root (joyus-ai) which is definitely a git repo
-    const repoRoot = path.resolve(import.meta.dirname, '../../../../..');
+    const repoRoot = path.resolve(import.meta.dirname, '../../../..');
     const state = await collectGitState(repoRoot);
 
     expect(state.branch).toBeTruthy();

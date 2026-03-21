@@ -7,12 +7,10 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import crypto from 'node:crypto';
 import * as jose from 'jose';
 import { contentApiKeys } from '../schema.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 // Extend Express Request with auth context
 declare global {

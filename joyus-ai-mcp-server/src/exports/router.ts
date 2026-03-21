@@ -10,26 +10,23 @@ function inferredBaseUrl(req: Request): string {
   return process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 }
 
-async function writeAudit(
+function writeAudit(
   userId: string,
   tool: string,
   input: Record<string, unknown>,
   success: boolean,
   duration: number,
   error?: string
-): Promise<void> {
-  try {
-    await db.insert(auditLogs).values({
-      userId,
-      tool,
-      input,
-      success,
-      duration,
-      error,
-    });
-  } catch (auditError) {
-    console.warn('Failed to persist export audit log', auditError);
-  }
+): void {
+  // Fire-and-forget — audit logging must not delay or fail the response
+  db.insert(auditLogs).values({
+    userId,
+    tool,
+    input,
+    success,
+    duration,
+    error,
+  }).catch((auditError: unknown) => console.error('audit log failed', auditError));
 }
 
 export const exportRouter = Router();
@@ -54,7 +51,7 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
       baseUrl: inferredBaseUrl(req),
     });
 
-    await writeAudit(
+    writeAudit(
       user.id,
       'ops_export_excel_api_create',
       {
@@ -83,7 +80,7 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Export generation failed';
 
-    await writeAudit(
+    writeAudit(
       user.id,
       'ops_export_excel_api_create',
       {

@@ -206,14 +206,14 @@ app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
         try {
           const toolResult = await executeTool(user.id, name, args || {});
 
-          // Audit log
-          await db.insert(auditLogs).values({
+          // Audit log — fire-and-forget so logging never delays or fails the response
+          db.insert(auditLogs).values({
             userId: user.id,
             tool: name,
             input: args || {},
             success: true,
             duration: Date.now() - startTime
-          });
+          }).catch((err: unknown) => console.error('audit log failed', err));
 
           result = {
             content: [{ type: 'text', text: JSON.stringify(toolResult, null, 2) }]
@@ -221,15 +221,15 @@ app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
         } catch (toolError: unknown) {
           const errorMessage = toolError instanceof Error ? toolError.message : 'Unknown error';
 
-          // Audit log failure
-          await db.insert(auditLogs).values({
+          // Audit log failure — fire-and-forget so logging never delays or fails the response
+          db.insert(auditLogs).values({
             userId: user.id,
             tool: name,
             input: args || {},
             success: false,
             error: errorMessage,
             duration: Date.now() - startTime
-          });
+          }).catch((err: unknown) => console.error('audit log failed', err));
 
           result = {
             content: [{ type: 'text', text: `Error: ${errorMessage}` }],

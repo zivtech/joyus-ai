@@ -98,8 +98,9 @@ describe('validateFile', () => {
     expect(result.valid).toBe(false);
   });
 
-  it('returns valid for non-existent file', () => {
+  it('returns invalid with readError for non-existent file', () => {
     const result = validateFile('/nonexistent/file.php', [makeSkill()]);
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBe(false);
+    expect(result.readError).toBeTruthy();
   });
 });

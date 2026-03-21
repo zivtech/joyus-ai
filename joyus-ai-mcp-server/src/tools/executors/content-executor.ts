@@ -5,7 +5,6 @@
  */
 
 import { eq, desc, and, inArray, sql, like, or } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 
 import {
   contentSources,
@@ -16,8 +15,7 @@ import {
   contentDriftReports,
   contentEntitlements,
 } from '../../content/schema.js';
-
-type DrizzleClient = ReturnType<typeof drizzle>;
+import type { DrizzleClient } from '../../db/types.js';
 
 export interface ContentExecutorContext {
   userId: string;

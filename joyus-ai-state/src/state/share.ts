@@ -120,8 +120,17 @@ export interface LoadResult {
   sharerNote: SharerNote | null;
 }
 
-export async function loadSharedState(filePath: string): Promise<LoadResult> {
+export async function loadSharedState(filePath: string, allowedDir?: string): Promise<LoadResult> {
   const resolved = path.resolve(filePath);
+
+  // Path traversal containment: when an allowed directory is provided, ensure
+  // the resolved path stays within it (no ../ escapes).
+  if (allowedDir) {
+    const containingDir = path.resolve(allowedDir);
+    if (!resolved.startsWith(containingDir + path.sep) && resolved !== containingDir) {
+      throw new Error('Path is outside the allowed directory');
+    }
+  }
 
   let raw: string;
   try {

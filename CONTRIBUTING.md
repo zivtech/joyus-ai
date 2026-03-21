@@ -10,7 +10,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ### Reporting Issues
 
-File issues on the [GitHub issue tracker](https://github.com/Priivacy-ai/joyus-ai/issues). Include:
+File issues on the [GitHub issue tracker](https://github.com/zivtech/joyus-ai/issues). Include:
 - A clear description of the problem or feature request
 - Steps to reproduce (for bugs)
 - Expected vs. actual behavior
@@ -113,4 +113,4 @@ Keep the summary line under 72 characters. Use the body to explain _why_, not _w
 
 ## Questions
 
-Open a [GitHub Discussion](https://github.com/Priivacy-ai/joyus-ai/discussions) for design questions or ideas that aren't yet a concrete issue.
+Open a [GitHub Discussion](https://github.com/zivtech/joyus-ai/discussions) for design questions or ideas that aren't yet a concrete issue.
