@@ -41,6 +41,7 @@ import { createAllFunctions, inngest } from './inngest/index.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
 import { createStepRegistry } from './pipelines/steps/registry.js';
+import { initializeProfiles } from './profiles/index.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
 import { executeTool, setPipelineContext } from './tools/executor.js';
@@ -509,6 +510,15 @@ const server = app.listen(PORT, async () => {
     await eventAdapterBufferDrainWorker.start();
   } catch (error) {
     console.error('Failed to initialize event adapter workers:', error);
+  }
+
+  // Initialize profiles module (failure is isolated — won't crash the server)
+  try {
+    const profilesModule = initializeProfiles(db);
+    void profilesModule; // module reference retained; services are stateless
+    console.log('   Profiles: initialized');
+  } catch (error) {
+    console.error('Failed to initialize profiles module:', error);
   }
 
   console.log(`   Mediation: http://localhost:${PORT}/api/mediation`);
