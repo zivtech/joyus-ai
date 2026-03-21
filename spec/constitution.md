@@ -346,9 +346,42 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.7*
+## 10. Governance
+
+These principles govern how agentic work is authorized, checked, and continuously improved across the platform.
+
+### G.1 Spec Artifact Required Before Level 3+ Execution
+
+All agentic workflows operating at autonomy Level 3 or above must have a corresponding spec artifact in `kitty-specs/` before execution begins. A spec artifact is a directory containing at minimum a `spec.md` and a `tasks.md`. Work that proceeds without a spec artifact is ungoverned and must be halted until the artifact exists.
+
+### G.2 Governance Checks Apply to All Features and Run in CI
+
+The governance check suite (Feature 007) applies to every feature in this repository without exception. Governance checks run automatically on every pull request via CI. Check failures at the P0 level block merge. Governance cannot be bypassed by feature authors — exceptions require an explicit constitution amendment.
+
+### G.3 Autonomy Level Assignments Are Documented, Versioned, and Reviewed
+
+Every team, workflow, or capability that operates with agentic autonomy must have its level assigned, documented in `governance/autonomy-levels.md`, and kept under version control. Autonomy level assignments are reviewed on the cadence defined in `governance/autonomy-levels.md`. Changes to a team's level require documented rationale and a review by the assigned measurement owner.
+
+### G.4 Measured-vs-Perceived Productivity Divergence Is a First-Class Health Indicator
+
+The gap between how productive a team believes AI assistance makes them and how productive they actually are — as measured by objective metrics — is a primary signal of governance health. When divergence exceeds threshold, it triggers a review of skill quality, guardrail calibration, and assumption freshness. This divergence is tracked, surfaced in the governance dashboard, and treated with the same urgency as a reliability incident.
+
+---
+
+## 11. Amendment Process
+
+This constitution can be amended by:
+1. Identifying the principle to change
+2. Documenting the rationale
+3. Updating this document with version history
+4. Communicating the change to all stakeholders
+
+---
+
+*Constitution Version: 1.8*
 *Established: January 29, 2026*
-*Last Updated: March 19, 2026*
+*Last Updated: March 21, 2026*
+*Changes v1.8: Added §10 "Governance" — four principles: G.1 spec artifact required before Level 3+ agentic execution; G.2 governance checks (Spec 007) apply to all features and run in CI on every PR; G.3 autonomy level assignments documented, versioned, and reviewed per governance/autonomy-levels.md; G.4 measured-vs-perceived productivity divergence is a first-class health indicator. Renumbered former §9 (Amendment Process) to §11.*
 *Changes v1.7: Added §5.4 "MCP Architecture" — four-server domain boundary (Platform Core, Integrations, Profile Engine, Dev Enforcement); mandatory domain prefixing table; Tool Search-optimized description guidelines; rule against MCP loading for internal integrations; per-agent MCP isolation pattern for orchestration layers*
 *Changes v1.6: Added §2.10 "Client-Informed, Platform-Generic" — client needs inform abstract platform capabilities; no client names, terminology, or domain-specific examples in the public repo; agents must generalize at point of creation*
 *Changes v1.5: Open source audience rewrite — generalized "Zivtech" to "deploying organization" throughout; renamed §2.2 from "Skills as Guardrails" to "Skills as Encoded Knowledge" (skills now include operational context, business rules, report definitions, compliance, not just constraints); renamed §2.6 from "Claude Code Alternative" to "Mediated AI Access" (model-agnostic framing); added single-org and multi-org deployment models; added first validated use case (ice cream manufacturer/distributor/retailer) and early use case breadth (healthcare, legal, higher ed, museum, assessment/credentialing); expanded stakeholders to include open source community and deploying organizations; broadened monitoring to include operational accuracy; added skill ecosystem concept (community packs, archetype packs); added §3.2 Compliance Framework Awareness (HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA) with hard-failure enforcement; updated Section 8 for multi-industry, model-agnostic positioning*
