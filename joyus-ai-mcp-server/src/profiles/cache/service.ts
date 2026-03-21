@@ -11,12 +11,12 @@
 import { eq, and, min, max, count, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client.js';
+import { InheritanceResolver } from '../inheritance/resolver.js';
+import { ProfileOperationLogger } from '../monitoring/logger.js';
+import { ProfileMetrics } from '../monitoring/metrics.js';
 import { profileCache, tenantProfiles } from '../schema.js';
 import { requireTenantId, tenantWhere } from '../tenant-scope.js';
 import type { ResolvedProfile } from '../types.js';
-import { ProfileOperationLogger } from '../monitoring/logger.js';
-import { ProfileMetrics } from '../monitoring/metrics.js';
-import { InheritanceResolver } from '../inheritance/resolver.js';
 
 // ============================================================
 // CONSTANTS

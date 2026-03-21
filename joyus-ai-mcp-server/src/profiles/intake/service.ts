@@ -12,11 +12,13 @@
 import { createId } from '@paralleldrive/cuid2';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
 import { corpusDocuments, corpusSnapshots } from '../schema.js';
 import { requireTenantId } from '../tenant-scope.js';
+
+import { DeduplicationService } from './dedup.js';
 import type { DocumentParser } from './parsers/interface.js';
 import { ParserRegistry } from './parsers/registry.js';
-import { DeduplicationService } from './dedup.js';
 
 // ============================================================
 // PUBLIC TYPES

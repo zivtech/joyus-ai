@@ -12,11 +12,12 @@
 import { eq, and } from 'drizzle-orm';
 
 import { db } from '../../db/client.js';
+import { ProfileOperationLogger } from '../monitoring/logger.js';
 import { tenantProfiles } from '../schema.js';
 import { requireTenantId } from '../tenant-scope.js';
 import type { ResolvedProfile, ProfileTier } from '../types.js';
 import { FEATURE_COUNT } from '../types.js';
-import { ProfileOperationLogger } from '../monitoring/logger.js';
+
 import { ProfileHierarchyService } from './hierarchy.js';
 import { mergeFeatureVectors, mergeMarkers, type ProfileVersion } from './merge.js';
 

@@ -11,6 +11,7 @@ import { db } from '../../db/client.js';
 import { tenantProfiles, type TenantProfile } from '../schema.js';
 import { requireTenantId, tenantWhere } from '../tenant-scope.js';
 import type { ProfileTier, VersionComparison } from '../types.js';
+
 import { ProfileNotFoundError } from './service.js';
 
 // ============================================================

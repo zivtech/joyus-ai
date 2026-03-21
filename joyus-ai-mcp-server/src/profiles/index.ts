@@ -9,23 +9,23 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
-import { ProfileVersionService } from './versioning/service.js';
-import { ProfileVersionHistory } from './versioning/history.js';
-import { ProfileGenerationPipeline } from './generation/pipeline.js';
-import { EngineBridge } from './generation/engine-bridge.js';
+import { CacheInvalidationService } from './cache/invalidation.js';
+import { ProfileCacheService } from './cache/service.js';
 import { CorpusSnapshotService } from './generation/corpus-snapshot.js';
+import { EngineBridge } from './generation/engine-bridge.js';
+import { ProfileGenerationPipeline } from './generation/pipeline.js';
 import { ProfileHierarchyService } from './inheritance/hierarchy.js';
 import { InheritanceResolver } from './inheritance/resolver.js';
-import { IntakeService } from './intake/service.js';
+import { DeduplicationService } from './intake/dedup.js';
+import { DocxParser } from './intake/parsers/docx-parser.js';
+import { PdfParser } from './intake/parsers/pdf-parser.js';
 import { ParserRegistry } from './intake/parsers/registry.js';
 import { TextParser } from './intake/parsers/text-parser.js';
-import { PdfParser } from './intake/parsers/pdf-parser.js';
-import { DocxParser } from './intake/parsers/docx-parser.js';
-import { DeduplicationService } from './intake/dedup.js';
-import { ProfileCacheService } from './cache/service.js';
-import { CacheInvalidationService } from './cache/invalidation.js';
+import { IntakeService } from './intake/service.js';
 import { ProfileOperationLogger } from './monitoring/logger.js';
 import { ProfileMetrics } from './monitoring/metrics.js';
+import { ProfileVersionHistory } from './versioning/history.js';
+import { ProfileVersionService } from './versioning/service.js';
 
 // ============================================================
 // TYPES

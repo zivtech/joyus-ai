@@ -8,8 +8,10 @@
  */
 
 import { createHash } from 'node:crypto';
+
 import { eq, and, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
 import { corpusDocuments } from '../schema.js';
 import { requireTenantId } from '../tenant-scope.js';
 

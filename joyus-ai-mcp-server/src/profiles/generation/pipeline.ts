@@ -8,10 +8,12 @@
  * T010: Concurrent execution guard via pg_try_advisory_xact_lock
  */
 
-import { eq, max, sql } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import { eq, max, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client.js';
+import { ProfileOperationLogger } from '../monitoring/logger.js';
+import { ProfileMetrics } from '../monitoring/metrics.js';
 import {
   generationRuns,
   tenantProfiles,
@@ -21,10 +23,9 @@ import {
 } from '../schema.js';
 import { requireTenantId, tenantWhere } from '../tenant-scope.js';
 import type { PipelineResult, ProfileTier } from '../types.js';
-import type { EngineBridge, EngineOptions } from './engine-bridge.js';
+
 import type { CorpusSnapshotService } from './corpus-snapshot.js';
-import { ProfileOperationLogger } from '../monitoring/logger.js';
-import { ProfileMetrics } from '../monitoring/metrics.js';
+import type { EngineBridge, EngineOptions } from './engine-bridge.js';
 
 // ============================================================
 // TYPES

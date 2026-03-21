@@ -7,7 +7,9 @@
  */
 
 import mammoth from 'mammoth';
+
 import type { ParseResult } from '../../types.js';
+
 import type { DocumentParser } from './interface.js';
 import { normalizeText } from './normalize.js';
 
