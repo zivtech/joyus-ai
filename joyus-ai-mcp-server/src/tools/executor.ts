@@ -14,6 +14,7 @@ import { executeGoogleTool } from './executors/google-executor.js';
 import { executeJiraTool } from './executors/jira-executor.js';
 import { executeOpsTool } from './executors/ops-executor.js';
 import { executePipelineTool, type PipelineExecutorContext } from './executors/pipeline-executor.js';
+import { executeProfileTool } from './executors/profile-executor.js';
 import { executeSlackTool } from './executors/slack-executor.js';
 
 export interface ExecutorContext {
@@ -54,6 +55,11 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   if (toolName.startsWith('content_')) {
     const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
     return executeContentTool(toolName, input, { userId, tenantId, db });
+  }
+
+  if (toolName.startsWith('profile_')) {
+    const tenantId = userId; // tenant resolution deferred; use userId as tenantId for now
+    return executeProfileTool(toolName, input, { userId, tenantId, db });
   }
 
   if (toolName.startsWith('pipeline_') || toolName.startsWith('template_') || toolName.startsWith('review_')) {
