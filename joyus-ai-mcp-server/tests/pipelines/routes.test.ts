@@ -99,11 +99,13 @@ function makeMockDecisionRecorder() {
 
 function makeReq(overrides: Partial<Request> = {}): Request {
   return {
-    headers: { 'x-tenant-id': 'tenant-a' },
+    headers: {},
     params: {},
     query: {},
     body: {},
     session: {},
+    // Simulate authenticated user set by requireBearerToken middleware
+    mcpUser: { id: 'tenant-a' },
     ...overrides,
   } as unknown as Request;
 }
@@ -285,7 +287,8 @@ describe('Pipeline Routes', () => {
       const handler = getHandler(router, 'post', '/pipelines');
       expect(handler).toBeDefined();
 
-      const req = makeReq({ headers: {} });
+      // Simulate unauthenticated request: no mcpUser, no session
+      const req = makeReq({ headers: {}, mcpUser: undefined } as unknown as Partial<Request>);
       const res = makeRes();
       await handler!(req, res);
 
