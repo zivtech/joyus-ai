@@ -3,7 +3,7 @@
   "feature_number": "011",
   "friendly_name": "Inngest Migration",
   "lifecycle_state": "spec-only",
-  "measurement_owner": "platform team",
+  "measurement_owner": "Engineering Operations",
   "mission": "software-dev",
   "mission_number": "011",
   "mission_slug": "011-inngest-migration",
