@@ -13,7 +13,7 @@
 export type ProfileTier = 'base' | 'domain' | 'specialized' | 'contextual';
 
 /** Lifecycle status of a profile version. Mirrors `profiles.profile_status` enum. */
-export type ProfileStatus = 'active' | 'archived' | 'draft' | 'superseded';
+export type ProfileStatus = 'active' | 'archived' | 'draft' | 'superseded' | 'rolled_back' | 'deleted';
 
 /** Execution status of a generation run. Mirrors `profiles.generation_run_status` enum. */
 export type GenerationRunStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';

@@ -37,7 +37,7 @@ export const profileTierEnum = profilesSchema.enum('profile_tier', [
 ]);
 
 export const profileStatusEnum = profilesSchema.enum('profile_status', [
-  'active', 'archived', 'draft', 'superseded',
+  'active', 'archived', 'draft', 'superseded', 'rolled_back', 'deleted',
 ]);
 
 export const generationRunStatusEnum = profilesSchema.enum('generation_run_status', [
