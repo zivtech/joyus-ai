@@ -26,6 +26,7 @@ import { requireBearerToken } from './auth/middleware.js';
 import { inngest, allFunctions } from './inngest/index.js';
 import { db, auditLogs } from './db/client.js';
 import { initializeContentModule } from './content/index.js';
+import { initializeProfiles } from './profiles/index.js';
 import { initializePipelineModule, type PipelineModule } from './pipelines/init.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
@@ -309,6 +310,15 @@ app.listen(PORT, async () => {
     await initializeContentModule(app, { db });
   } catch (error) {
     console.error('Failed to initialize content module:', error);
+  }
+
+  // Initialize profiles module (failure is isolated — won't crash the server)
+  try {
+    const profilesModule = initializeProfiles(db);
+    void profilesModule; // module reference retained; services are stateless
+    console.log('   Profiles: initialized');
+  } catch (error) {
+    console.error('Failed to initialize profiles module:', error);
   }
 
   // Initialize pipeline module (failure is isolated — won't crash the server)
