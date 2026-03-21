@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "a3fe5c9f5e37",
+  "strategy": "manual-commit",
+  "branch": "feat/011-inngest-migration-wp03-wp04",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "joyus-ai-mcp-server/src/inngest/functions/manual-trigger-pipeline.ts",
+    "joyus-ai-mcp-server/src/inngest/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a3/fe5c9f5e37/0/metadata.json",
+      "transcript": "/a3/fe5c9f5e37/0/full.jsonl",
+      "context": "/a3/fe5c9f5e37/0/context.md",
+      "content_hash": "/a3/fe5c9f5e37/0/content_hash.txt",
+      "prompt": "/a3/fe5c9f5e37/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 322,
+    "cache_creation_tokens": 1814496,
+    "cache_read_tokens": 20126339,
+    "output_tokens": 53227,
+    "api_call_count": 114
+  }
+}

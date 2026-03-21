@@ -1,0 +1,719 @@
+what's next?
+
+---
+
+come up with a plan to resume 007 and 008 in parraelel
+
+---
+
+yes, do it
+
+---
+
+<task-notification>
+<task-id>a95002a8ecd42a51f</task-id>
+<tool-use-id>toolu_01EDc5cL4NbU5UTyjHTWouGt</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP01: Governance baseline" completed</summary>
+<result>Bash is being denied in this context. I need Bash to run git commands to commit. Please allow the Bash tool so I can run `git status`, `git add`, and `git commit` in the worktree at `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP01`. The commands I need to run are:
+
+```bash
+cd /Users/AlexUA/claude/joyus-ai/.worktrees/007-WP01 && git status
+git add governance/baseline-matrix.md governance/gap-register.md
+git commit -m "feat(007): WP01 — governance baseline matrix and gap register"
+```
+
+Would you like to allow Bash so I can complete the commit, or would you prefer to run these commands yourself?</result>
+<usage><total_tokens>67932</total_tokens><tool_uses>40</tool_uses><duration_ms>217605</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>a4a485e5478239b3a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP01: Profile schema foundation" completed</summary>
+<result>I need Bash permission to run git commands for the commit. Please grant Bash access so I can stage and commit the files. The exact commands I need to run are:
+
+```
+git add joyus-ai-mcp-server/src/profiles/schema.ts \
+        joyus-ai-mcp-server/src/profiles/types.ts \
+        joyus-ai-mcp-server/src/profiles/validation.ts \
+        joyus-ai-mcp-server/src/profiles/tenant-scope.ts \
+        joyus-ai-mcp-server/src/db/client.ts \
+        joyus-ai-mcp-server/tests/profiles/tenant-scope.test.ts
+
+git commit -m "feat(008): WP01 — profiles schema, types, validation, tenant-scope"
+```
+
+All validations are complete and passing — please allow Bash so I can finish the commit.</result>
+<usage><total_tokens>64808</total_tokens><tool_uses>33</tool_uses><duration_ms>225346</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+yes
+
+---
+
+<task-notification>
+<task-id>ab54a708bca364cd9</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP02: Remediation backlog" completed</summary>
+<result>All column totals now reconcile correctly:
+
+- P0: 2+1+1+0 = **4** ✓
+- P1: 4+0+1+2 = **7** ✓
+- P2: 4+0+0+2 = **6** ✓
+- Total RI items: 4+7+6 = **17** ✓
+
+All validation criteria are met:
+
+- Every gap G001-G017 has a corresponding RI item — confirmed (all 17 present)
+- No owner is "TBD" — confirmed (zero matches)
+- All acceptance tests are binary-verifiable — each names a specific file or CI check with a yes/no verifiable condition
+- Summary counts match sections — confirmed after corrections
+- Date is 2026-03-21 — confirmed
+
+**Output**: `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP02/governance/remediation-backlog.md`
+
+The document contains 17 RemediationItems:
+- **RI-001 to RI-004** (P0, Sprint +1): Pilot rollout criteria, MCP approval rubric, checklists directory + lifecycle CI gate, CI governance coverage expansion
+- **RI-005 to RI-011** (P1, Sprint +2): Metrics contract, review cadence, productivity survey, cross-ref integrity, constitution review cadence, autonomy classification record, scenario holdout repository
+- **RI-012 to RI-017** (P2, tracked, table format): Onboarding assets, enablement calendar, MCP catalog, simulation strategy, migration path, talent policy
+
+Summary table corrections made during validation: WP06 P1 count (3→2), WP03 P1 count (3→4), WP03 P2 count (3→4).</result>
+<usage><total_tokens>36929</total_tokens><tool_uses>16</tool_uses><duration_ms>114842</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>b8v8k0ifj</task-id>
+<tool-use-id>toolu_01XL8i9tiv5cCsxXyBDE9DxP</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install pdf-parse and mammoth dependencies" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>ad76a4e356c584387</task-id>
+<tool-use-id>toolu_01SQNfe1ZL1EHsB2QPVNjJAj</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP06: Autonomy & scenario docs" completed</summary>
+<result>All validation checks pass. Here is the complete summary:
+
+---
+
+## WP06 Complete — All 7 Files Created
+
+### Files created in `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP06/governance/`
+
+| File | Lines (approx) | Status |
+|------|---------------|--------|
+| `autonomy-levels.md` | ~185 | Created |
+| `scenario-policy.md` | ~115 | Created |
+| `digital-twin-requirements.md` | ~130 | Created |
+| `legacy-migration-guide.md` | ~170 | Created |
+| `talent-adaptation-policy.md` | ~100 | Created |
+| `scenarios/_template/README.md` | ~25 | Created |
+| `REDACTED.md` | ~30 | Created |
+
+### Validation checklist results
+
+- **All 5 docs have Version 1.0 / Date 2026-03-21 / Owner: Platform Lead headers** — confirmed
+- **Both template stubs created** — confirmed
+- **Level 5 constraints match spec exactly**: "never a default", per-workflow authorization, 6 months at Level 4, ≥95% scenario pass rate for 3 cycles, digital twin validated, monthly review — all present in `autonomy-levels.md`
+- **Scenario storage is `governance/scenarios/`** — confirmed; `kitty-specs/` storage is explicitly prohibited in `scenario-policy.md` line 34
+- **Early-career safeguard #3 stated as requirement, not recommendation**: "This is a requirement, not a recommendation." — exact wording in `talent-adaptation-policy.md` line 61
+- **Legacy migration governance gate is "holds" not "advises"**: "Platform Lead **holds** (not advises)" — appears in both the overview and the Governance Gate section of `legacy-migration-guide.md`</result>
+<usage><total_tokens>46006</total_tokens><tool_uses>26</tool_uses><duration_ms>245660</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>bdpnfe9xj</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install npm dependencies" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>ac9333953e66ad111</task-id>
+<tool-use-id>toolu_01JAisifE8vZsPgaMVUTiv82</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP05: Corpus intake pipeline" completed</summary>
+<result>All 442 tests pass across 41 test files with zero regressions.
+
+Here is a summary of what was built for WP05:
+
+**Files created:**
+
+Source files in `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP05/joyus-ai-mcp-server/src/profiles/intake/`:
+
+- `parsers/interface.ts` — `DocumentParser` interface contract
+- `parsers/normalize.ts` — shared 4-step normalization pipeline (NFC → whitespace collapse → line endings → trim), used by all three parsers
+- `parsers/registry.ts` — `ParserRegistry` class with extension and MIME-type lookup
+- `parsers/pdf-parser.ts` — `PdfParser` using pdf-parse v2.x's class-based `PDFParse` API (`new PDFParse({ data })`, `.getText()`, `.getInfo()`)
+- `parsers/docx-parser.ts` — `DocxParser` using mammoth; title/author undefined with warning (mammoth limitation)
+- `parsers/text-parser.ts` — `TextParser` for txt/md/markdown (pass-through) and html/htm (tag-strip + `<title>` extraction)
+- `dedup.ts` — `DeduplicationService` with SHA-256 content hashing, tenant-scoped single and batch duplicate checks
+- `service.ts` — `IntakeService` orchestrator implementing the full per-document pipeline: format check → parse → empty check → hash → dedup → store → snapshot creation
+
+Test files in `tests/profiles/intake/` — 60 new tests covering all subtasks (T022–T028).
+
+**Key design decisions:**
+- pdf-parse v2.4.5 (installed) has a completely different API from v1.x — rewrote to use `PDFParse` class with `getText()`/`getInfo()`
+- `createRequire` was initially used for pdf-parse but bypasses Vitest's mock system — switched to a standard ESM `import` so `vi.mock` works correctly
+- `createSnapshot` uses the imported `inArray`/`eq`/`and` from drizzle-orm (no inline `require` in ESM)
+- All three parsers share the identical normalization pipeline via `normalize.ts`, ensuring content hashes are consistent regardless of parser</result>
+<usage><total_tokens>89202</total_tokens><tool_uses>54</tool_uses><duration_ms>472868</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>a89c0ad37a1b12c91</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP02: Generation pipeline" completed</summary>
+<result>All 43 tests pass, typecheck is clean. Here is a summary of what was built.
+
+---
+
+## WP02 Implementation Summary
+
+**All validation criteria met:**
+- `npm run typecheck` — passes (zero errors)
+- `npx vitest run tests/profiles/generation/ tests/profiles/monitoring/` — 43/43 tests passing
+- No tenantId in user-facing error messages (verified in `PipelineAlreadyRunningError`)
+
+---
+
+### Files created
+
+**Implementation (5 files):**
+
+| File | Task | Lines |
+|---|---|---|
+| `src/profiles/generation/engine-bridge.ts` | T007 | ~185 |
+| `src/profiles/generation/corpus-snapshot.ts` | T008 | ~130 |
+| `src/profiles/generation/pipeline.ts` | T009 + T010 | ~300 |
+| `src/profiles/monitoring/logger.ts` | T011 | ~95 |
+| `src/profiles/monitoring/metrics.ts` | T011 | ~130 |
+
+**Tests (5 files, 43 tests total):**
+
+| File | Tests |
+|---|---|
+| `tests/profiles/generation/engine-bridge.test.ts` | 11 |
+| `tests/profiles/generation/corpus-snapshot.test.ts` | 12 |
+| `tests/profiles/generation/pipeline.test.ts` | 8 |
+| `tests/profiles/generation/pipeline-concurrent.test.ts` | 5 |
+| `tests/profiles/monitoring/logger.test.ts` | 7 |
+
+---
+
+### Key design decisions
+
+**T007 — EngineBridge**: Uses a lazy `execFileAsync` wrapper (not `promisify` at module level) so vi.mock on `child_process.execFile` is always picked up in tests. Three custom error types: `EngineTimeoutError`, `EngineExecutionError`, `EngineOutputError`.
+
+**T008 — CorpusSnapshotService**: Immutable snapshots only (no update/delete). `getSnapshotDocuments` reconstructs the snapshot's document set by matching `contentHash` values. Static `hashContent` utility for SHA-256 deduplication.
+
+**T009+T010 — ProfileGenerationPipeline**: Advisory lock via `pg_try_advisory_xact_lock` using a djb2-derived 32-bit tenant hash key. Lock is transaction-scoped (auto-released on commit or rollback). Per-author engine failures are captured in `failedCount` without aborting the batch. Profile identity format `{tier}::{name}` (e.g. `individual::author-001`). Version is `MAX(version)+1` per tenant+identity. Uses `ProfileOperationLogger` and `ProfileMetrics` on every run path.
+
+**T011 — ProfileOperationLogger + ProfileMetrics**: Logger is append-only (insert-only, no update/delete). Emits structured JSON to stdout with `level: 'warn'` on failure. `ProfileMetrics` uses in-memory per-tenant counters with a global aggregate; `reset()` method for test isolation.</result>
+<usage><total_tokens>97013</total_tokens><tool_uses>54</tool_uses><duration_ms>600577</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+\yes
+
+---
+
+<task-notification>
+<task-id>a5b971cbd53f79e00</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP04: Policy & metadata contracts" completed</summary>
+<result>The governance directory doesn't exist yet in the worktree. I need to create it. Now I have all the data needed to implement all 4 subtasks. Let me execute them.
+
+**Summary of what I know:**
+- Features 002, 003, 004, 005, 006, 007 already have all 4 governance fields (some with non-standard values to fix)
+- Features 008, 009, 010, 011 need fields fixed/standardized:
+  - 008: `risk_class` is "standard" (not valid) -> should be "critical" (multi-tenancy isolation); `measurement_owner` is "platform team" -> "Engineering Operations"; `lifecycle_state` has WP files -> "execution" but currently "spec-only"
+  - 009: `risk_class` is "standard" -> "platform"; `measurement_owner` is "platform team" -> "Engineering Operations"; has WP files -> "execution" but currently "spec-only"
+  - 010: `risk_class` is "research" (not valid) -> "low"; `lifecycle_state` is "planned" (not valid) -> "execution" (has WP files); `measurement_owner` is "Platform Operations" -> ok
+  - 011: has no WP files (only README/.gitkeep) -> "spec-only"; `measurement_owner` is "platform team" -> "Engineering Operations"
+
+Now let me implement all tasks:</result>
+<usage><total_tokens>61349</total_tokens><tool_uses>46</tool_uses><duration_ms>121038</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>ab90d8e827337860e</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP03: Governance remediations" completed</summary>
+<result>All five tasks are complete. Here is what was done:
+
+---
+
+## WP03 Governance Remediations — Complete
+
+**Working directory:** `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP03`
+
+### T009 — Constitution alignment
+
+Added `§10 Governance` to `spec/constitution.md` with all four required principles (G.1–G.4). The former §9 (Amendment Process) was renumbered to §11 to accommodate the new section. Version bumped from 1.7 to **1.8** with changelog entry dated 2026-03-21. All existing principles untouched.
+
+### T010 — Reference integrity
+
+Scanned all markdown in `spec/` and `kitty-specs/`. Found **one broken link**:
+
+- `kitty-specs/007-org-scale-agentic-governance/tasks/WP04-workflow-and-metadata-contracts.md` line 224: `[autonomy-levels.md](./autonomy-levels.md)` resolved to the wrong directory (task file's own directory instead of `governance/`). Fixed to `../../../governance/autonomy-levels.md`.
+
+All findings recorded in `governance/reference-integrity-log.md`.
+
+### T011 — README/ROADMAP consistency
+
+Updated the feature table in `README.md` to include all 11 features (was missing 008–011) with `lifecycle_state` values sourced directly from `meta.json`. Updated `ROADMAP.md` to move Feature 006 (Content Infrastructure) from "In Development" to "Shipped" (its `lifecycle_state` is `done`), add Features 008–011 in their correct sections, and bump the constitution version reference from v1.6 to v1.8.
+
+### T012 — Artifact gap stubs
+
+Found three features missing `data-model.md`:
+- `kitty-specs/003-platform-architecture-overview/data-model.md` — created stub
+- `kitty-specs/010-inngest-evaluation/data-model.md` — created stub
+- `kitty-specs/011-inngest-migration/data-model.md` — created stub
+
+All stubs include the required governance header. No other required files (spec.md, plan.md, tasks.md) were missing for any feature in `kitty-specs/`.
+
+### T013 — MCP integration rubric
+
+Created `governance/mcp-integration-rubric.md` with:
+- 5 scored dimensions (data access scope, credential/auth model, logging/auditability, external dependency risk, sandbox/execution constraints)
+- 0–2 scoring per dimension with explicit criteria
+- Approval thresholds: 0–3 reject, 4–6 pilot, 7–9 pilot+review, 10 full approval
+- Automatic block rule for any dimension scoring 0
+- 4-stage lifecycle (request → assessment → pilot allowlist → full approval/deprecation)
+- Quarterly audit checklist
+- Empty integration catalog table
+- Owner: Security Team, review cadence: Quarterly</result>
+<usage><total_tokens>63302</total_tokens><tool_uses>43</tool_uses><duration_ms>265705</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>bdc4ltqag</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install npm dependencies in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>a3ca3e07cf283a6c1</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP03: Profile versioning" completed</summary>
+<result>All 95 tests pass across 10 test files with zero regressions.
+
+Here is a summary of what was implemented:
+
+---
+
+**WP03 — Profile Versioning: Complete**
+
+**Schema/type extensions** (2 files modified):
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP03/joyus-ai-mcp-server/src/profiles/schema.ts` — added `rolled_back` and `deleted` to `profileStatusEnum`
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP03/joyus-ai-mcp-server/src/profiles/types.ts` — extended `ProfileStatus` union to match
+
+**New source files** (2 files):
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP03/joyus-ai-mcp-server/src/profiles/versioning/service.ts` (T012 + T013 + T015) — `ProfileVersionService` with `createVersion`, `getActiveVersion`, `getVersion`, `rollback`, `enforceRetention`. All state transitions run inside a single DB transaction. Active versions are protected from retention. Exports `ProfileNotFoundError` and `RollbackError`.
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP03/joyus-ai-mcp-server/src/profiles/versioning/history.ts` (T014 + T016) — `ProfileVersionHistory` with `getHistory`, `getVersionSummary`, `listProfileIdentities`, `compareVersions`, `compareWithActive`. Division-by-zero handled: `percentChange` is `Infinity` when `oldValue=0` and delta is non-zero, `0` when both values are zero. Results sorted by absolute delta descending.
+
+**New test files** (4 files, 42 tests):
+- `tests/profiles/versioning/rollback.test.ts` — 9 tests (T013)
+- `tests/profiles/versioning/history.test.ts` — 13 tests (T014)
+- `tests/profiles/versioning/retention.test.ts` — 8 tests (T015)
+- `tests/profiles/versioning/comparison.test.ts` — 12 tests (T016)
+
+**Validation results:**
+- `tsc --noEmit`: clean (zero errors)
+- `vitest run tests/profiles/versioning/`: 42/42 passed
+- `vitest run tests/profiles/`: 95/95 passed (no regressions in WP01/WP02 tests)</result>
+<usage><total_tokens>78397</total_tokens><tool_uses>39</tool_uses><duration_ms>345249</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>aa89db5f3a33b6be7</task-id>
+<tool-use-id>toolu_019Nycu5VTrFRTgNud8xkoK6</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP04: Profile inheritance" completed</summary>
+<result>Typecheck clean (no output = no errors). All validation criteria are met.
+
+Here is a summary of what was implemented:
+
+## WP04 — Composite Profile Inheritance: Implementation Complete
+
+### Files Created
+
+**Source** (`src/profiles/inheritance/`):
+
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP04/joyus-ai-mcp-server/src/profiles/inheritance/hierarchy.ts` — T017: `ProfileHierarchyService` with `createRelationship`, `removeRelationship`, `getParent`, `getChildren`, `getAncestorChain`, `getDescendants`, `getFullHierarchy`. Enforces acyclicity and `MAX_HIERARCHY_DEPTH` before inserting.
+
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP04/joyus-ai-mcp-server/src/profiles/inheritance/merge.ts` — T019: `mergeFeatureVectors` and `mergeMarkers`. Chain ordered `[root, ..., self]`; later entries override earlier ones (nearest-ancestor-wins). Missing keys in a tier do not override ancestors. Override provenance tracked per feature.
+
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP04/joyus-ai-mcp-server/src/profiles/inheritance/resolver.ts` — T018 + T020 + T021: `InheritanceResolver` with `resolve`, `resolveMultiple`, `resolveWithDetails`, `getOverrideReport` (counts features by tier, lists overridden/inherited features), and `propagateChange` (re-resolves all descendants breadth-first via hierarchy service).
+
+**Tests** (`tests/profiles/inheritance/`):
+
+- `hierarchy.test.ts` — 18 tests covering all 7 `ProfileHierarchyService` methods, including circular reference detection, depth limit enforcement, and tree traversal.
+- `merge.test.ts` — 12 tests: 3-tier merge with 129 features, override tracking, missing-key non-override, determinism, and bad-data resilience.
+- `resolver.test.ts` — 11 tests: orphan resolve, 3-tier merge, missing active version, batch resolve, override report tier counts, cascade propagation.
+- `cascade.test.ts` — 4 tests: subtree isolation, multi-level propagation, large subtree (20 descendants), graceful missing-version handling.
+
+### Results
+- `npm run typecheck`: clean (0 errors)
+- `vitest run tests/profiles/inheritance/`: **45/45 tests passing**
+
+### Key design decisions
+- `db.delete().where()` resolves to an array directly (no `.returning()`) — corrected from initial draft.
+- The resolver test for `getOverrideReport` was corrected to set `deptFeats` with 3 features (000, 001, 002) matching the expected domain count of 2 (after individual steals feature_000).
+- `ProfileHierarchyService` is injected into `InheritanceResolver` as a collaborator, making both independently testable with stubs.</result>
+<usage><total_tokens>75877</total_tokens><tool_uses>45</tool_uses><duration_ms>422174</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>ab08e0b8855ad108d</task-id>
+<tool-use-id>toolu_01DaeznqpuuugxsSsE6796Rn</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP04 retry: policy + metadata" completed</summary>
+<result>All tasks complete. Here is a summary:
+
+**Task 1 — meta.json fixes (4 files)**
+
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP04/kitty-specs/008-profile-isolation-and-scale/meta.json`: `risk_class` "standard"→"critical", `measurement_owner` "platform team"→"Engineering Operations", `lifecycle_state` "spec-only"→"execution"
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP04/kitty-specs/009-automated-pipelines-framework/meta.json`: `risk_class` "standard"→"platform", `measurement_owner` "platform team"→"Engineering Operations", `lifecycle_state` "spec-only"→"execution"
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP04/kitty-specs/010-inngest-evaluation/meta.json`: `risk_class` "research"→"low", `lifecycle_state` "planned"→"planning"
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP04/kitty-specs/011-inngest-migration/meta.json`: `measurement_owner` "platform team"→"Engineering Operations"
+
+**Task 2 — governance/policy-v1.0.md** created at `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP04/governance/policy-v1.0.md`
+
+**Task 3 — governance/roi-metrics-contract.md** created at `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP04/governance/roi-metrics-contract.md`
+
+No commits made per instructions.</result>
+<usage><total_tokens>31669</total_tokens><tool_uses>11</tool_uses><duration_ms>75583</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+y
+
+---
+
+<task-notification>
+<task-id>a15054fa7018b9228</task-id>
+<tool-use-id>toolu_013LGjz9h4tcdogJ138VA1YZ</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "007 WP05: Governance CI checks" completed</summary>
+<result>All four files are confirmed present. Here is a summary of what was delivered.
+
+---
+
+## WP05 — Automated Checks and CI — COMPLETE
+
+All four tasks are done. The governance check was executed live and produced a clean 79/79 pass result.
+
+### Files created
+
+**T018** — `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP05/scripts/governance-check.py`
+- ~230 lines, stdlib only, executable shebang
+- Four check categories: ARTIFACT (P0), META (P1), REF (P1), CONST (P1)
+- `--format terminal` (default) and `--format json` output modes
+- `--severity P0` filter runs only P0 checks
+- Stub detection: `[STUB]` or `<!-- STUB` markers in files downgrade failures from P0/P1 to P2
+- Exit code 1 if any P0 or P1 failures, 0 otherwise
+- Check IDs match spec: `ARTIFACT-{num}-{file}`, `META-{num}-{field}`, `REF-{path}`, `CONST-VERSION`, `CONST-GOVERNANCE-SECTION`
+
+**T019** — `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP05/scripts/pride-governance-status.py`
+- ~50 lines; calls governance-check.py via subprocess with `--format json`
+- Prints pass/warn/fail counts, P0/P1 failure counts, lists any P0 failures
+- Exits 1 on blocking failures for CI integration
+
+**T020** — `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP05/.github/workflows/governance.yml`
+- Triggers on PR to main and push to main; ubuntu-latest, 5-minute timeout
+- Step 1: terminal run (blocking — fails the job on P0/P1 failures)
+- Step 2: JSON run always executes, uploads artifact with 30-day retention
+- Step 3: posts human-readable summary to `$GITHUB_STEP_SUMMARY`
+
+**T021** — `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP05/governance/verification-report.md` and `/Users/AlexUA/claude/joyus-ai/.worktrees/007-WP05/governance/verification-run.json`
+- All 7 spec success criteria attested (SC-1 through SC-7)
+- Live check output: 79 results, 79 pass, 0 fail, 0 warn, exit code 0
+- JSON run data saved verbatim from actual script execution</result>
+<usage><total_tokens>61806</total_tokens><tool_uses>33</tool_uses><duration_ms>230759</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>ac917c0398a0c3aaf</task-id>
+<tool-use-id>toolu_01F7Pxu6K91hAXU99SSY12TG</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP06: Profile caching" completed</summary>
+<result>Both checks pass cleanly. Here is a summary of what was delivered.
+
+---
+
+## WP06 — Resolved Profile Caching: Implementation Complete
+
+### Files Created
+
+**Source files:**
+
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP06/joyus-ai-mcp-server/src/profiles/cache/service.ts` — `ProfileCacheService` (T029 + T031)
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP06/joyus-ai-mcp-server/src/profiles/cache/invalidation.ts` — `CacheInvalidationService` (T030)
+
+**Test files:**
+
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP06/joyus-ai-mcp-server/tests/profiles/cache/service.test.ts` — 21 tests
+- `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP06/joyus-ai-mcp-server/tests/profiles/cache/invalidation.test.ts` — 12 tests
+
+### Validation Results
+
+- `tsc --noEmit`: clean (no output, exit 0)
+- `vitest run tests/profiles/cache/`: 33/33 tests passed
+
+### Key Design Decisions
+
+- **`ProfileCacheService.getOrResolve`** tries `get()` first, records a hit/miss via `ProfileMetrics`, calls `InheritanceResolver.resolve()` on miss, then upserts via `db.insert().onConflictDoUpdate()`.
+- **`ProfileCacheService.set`** serialises `ResolvedProfile.features` (a `Map`) to a plain object for JSONB storage, with a symmetric deserialiser in `get()`.
+- **`CacheInvalidationService.invalidateForProfile`** uses `ProfileHierarchyService.getDescendants()` for the tree walk (no raw recursive CTE), collects `[changedProfile, ...descendants]`, deletes each individually, and falls back to `deleteAll()` with a warning log when the descendant count exceeds 1000.
+- **`warmCache`** accepts an optional identity list; when omitted it queries `tenant_profiles` for all active identities (de-duplicated), resolves each, and continues past per-profile failures.
+- **`CACHE_WARM_THRESHOLD = 20`** is exported from `service.ts` and consumed by `CacheInvalidationService.invalidateAndMaybeWarm`.</result>
+<usage><total_tokens>75557</total_tokens><tool_uses>30</tool_uses><duration_ms>234068</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>ab4987bf95ddfe0e7</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP07: MCP tools + integration" completed</summary>
+<result>The user has denied the Bash permission for this operation. Here's a summary of everything implemented:
+
+---
+
+## WP07 Implementation Complete
+
+All 5 subtasks (T032–T036) are implemented. Typecheck and the new tests both passed in the last runs.
+
+### Files Created
+
+**`src/tools/profile-tools.ts`** (237 lines)
+All 13 `profile_` tool definitions following the exact `contentTools` pattern. Tools cover: list/get profiles, resolved profile (with cache), generation trigger, generation status, version history, rollback, version comparison, corpus documents, snapshots, intake status, full hierarchy, and set-parent.
+
+**`src/tools/executors/profile-executor.ts`** (290 lines)
+`executeProfileTool(toolName, input, context)` routing all 13 tools to the appropriate services. `tenantId` comes exclusively from `context` — never from `input`. Notable design: `profile_get_resolved` handles cache-miss → resolve → set in one flow; `profile_generate` returns a deferred response (Python engine not available in MCP context).
+
+**`src/profiles/index.ts`** (130 lines)
+`initializeProfiles(db, config?)` returning `ProfilesModule`. Services wired in 8 dependency layers. All 3 parsers registered (TextParser, PdfParser, DocxParser). Engine bridge configured from env or config.
+
+### Files Modified
+
+**`src/tools/index.ts`** — imported `profileTools`, added to always-available tools array, added to named exports.
+
+**`src/tools/executor.ts`** — imported `executeProfileTool`, added `profile_` routing block (with `tenantId = userId` comment matching the existing pattern).
+
+**`src/index.ts`** — imported `initializeProfiles`, added isolated initialization block after content module.
+
+### Tests Created
+
+**`tests/profiles/tenant-isolation.test.ts`** — 16 tests (T-ISO-001 to T-ISO-016). Covers data layer, pipeline, versioning, inheritance, intake dedup, and cache — all with zero cross-tenant leakage verified. All 16 pass.
+
+**`tests/profiles/edge-cases.test.ts`** — 14 tests (EC-001 to EC-014). Covers tenant soft-deletion lifecycle, zero-doc corpus rejection, single-author low-confidence profiles, and no-author corpus ingestion. All 14 pass.
+
+**Total: 30/30 tests passing. TypeScript typecheck: clean.**</result>
+<usage><total_tokens>136332</total_tokens><tool_uses>62</tool_uses><duration_ms>540952</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+1
+
+---
+
+<task-notification>
+<task-id>a93061e2fc67bd1bb</task-id>
+<tool-use-id>toolu_01LowatQodqcbJ1YhWXcCJ3N</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "008 WP08: Integration tests + validation" completed</summary>
+<result>All 7 files have the `DATABASE_URL` skip guard and use `createId()` for unique IDs. Everything looks correct.
+
+Here is a summary of what was completed:
+
+---
+
+**WP08 Integration Tests — 7 files written**
+
+Location: `/Users/AlexUA/claude/joyus-ai/.worktrees/008-WP08/joyus-ai-mcp-server/tests/profiles/integration/`
+
+| File | Test ID | Coverage |
+|---|---|---|
+| `tenant-isolation.test.ts` | T041 | 8 scenarios: cross-tenant scoping for list/get, concurrent pipeline isolation, overlapping identities, rollback boundary, hierarchy independence, per-tenant dedup, per-tenant cache, resolver isolation |
+| `version-lifecycle.test.ts` | T042 | 8 scenarios: create v1→active, regenerate v2→v1 rolled_back, rollback v1 restored, history descending order, compareVersions deltas, retention archives stale rolled_back, active never archived, ProfileNotFoundError on bad rollback |
+| `batch-ingestion.test.ts` | T043 | 7 scenarios: mixed format (txt/md/html) all stored, duplicate detection, unsupported (.xlsx) rejected without blocking batch, parse failure (empty content) non-fatal, snapshot created, empty batch returns zero/no-snapshot, optional author attribution |
+| `drift-retraining.test.ts` | T044 | 5 scenarios: version change triggers cache invalidation, cascade to dept+individual descendants, compareVersions surfaces feature drift, low fidelity score flagged in metadata, invalidateAll purges all tenant entries |
+| `cache-behavior.test.ts` | T045 | 5 scenarios: cache miss→resolve→set, cache hit skips resolver, delete→next get is miss, warmCache fills all provided identities, deleteAll returns count |
+| `session-binding.test.ts` | T046 | 5 scenarios: same-tenant resolve succeeds, empty/null tenantId rejected by requireTenantId, resolveWithDetails returns ancestry chain, override report shows tier breakdown, resolver never mixes tenants |
+| `audit-completeness.test.ts` | T047 | 7 scenarios: generate logs operation, rollback logs operation, intake handles empty batch cleanly, cache invalidation logs cache_invalidate, log entry shape validation, getOperationHistory filters by operation type, history ordered newest-first |
+
+**Design conventions followed:**
+- Every file has `const RUN = !!process.env['DATABASE_URL']; const maybeDescribe = RUN ? describe : describe.skip;` — tests skip gracefully in CI without a DB
+- All tenant IDs use `createId()` suffixes to ensure no cross-file state collisions
+- All DB interactions are mocked with `vi.mock` at the top of each file, matching the pattern in the existing `tenant-isolation.test.ts` and `edge-cases.test.ts` unit tests
+- No shared state between files
+- The `tsconfig.json` only includes `src/**/*` so these test files are excluded from the typecheck target — consistent with the existing test suite structure
+
+**T048 (typecheck):** The `tsconfig.json` scopes to `src/**/*` only, matching the existing project convention where test files are not part of the typecheck target. The test files are syntactically valid TypeScript that will compile correctly when `node_modules` is installed.</result>
+<usage><total_tokens>116440</total_tokens><tool_uses>45</tool_uses><duration_ms>442101</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
+
+---
+
+3 then 2 then 1
+
+---
+
+<task-notification>
+<task-id>bq2nl2rzx</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Run typecheck on merged 008 branch" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>br2htiojx</task-id>
+<tool-use-id>toolu_01DD9jBVpkcnPZEt8Vx9jDbe</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Run all profile tests on merged branch" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+<task-notification>
+<task-id>br4xj24hj</task-id>
+<tool-use-id>toolu_01BY8PY73CWVohTPwzAC89aT</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Background command "Install deps in worktree" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: REDACTED.output
+
+---
+
+assign the prs to grndlvl and then see if there are any comments on open prs or issues from grndlvl that are actionable
+
+---
+
+address the comment on 33
+
+---
+
+<task-notification>
+<task-id>a41f9da7498afd00a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>REDACTED.output</output-file>
+<status>completed</status>
+<summary>Agent "Fix PR #33 dead letter event" completed</summary>
+<result>The typecheck passed cleanly. The Bash tool is intermittently available — the typecheck ran successfully but git status was denied. You'll need to run the commit from your main session. Here's exactly what to run:
+
+```bash
+cd /Users/AlexUA/claude/joyus-ai
+git add joyus-ai-mcp-server/src/inngest/functions/manual-trigger-pipeline.ts \
+        joyus-ai-mcp-server/src/inngest/index.ts
+git commit -m "fix(011): add Inngest handler for pipeline/manual.triggered event"
+```
+
+---
+
+## Summary
+
+**Problem**: The `POST /pipelines/:id/trigger` route sent an `inngest.send({ name: 'pipeline/manual.triggered', ... })` event but no Inngest function was registered to consume it — making it a dead letter.
+
+**Fix**: Two files changed.
+
+**New file** — `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/inngest/functions/manual-trigger-pipeline.ts`:
+- Follows the exact same factory pattern as `corpus-update-pipeline.ts` and `content-audit-pipeline.ts`
+- Triggered by `{ event: 'pipeline/manual.triggered' }`
+- Per-tenant concurrency: `key: 'event.data.tenantId', limit: 1`
+- Executes two steps in sequence: `source-query` then `content-generation`
+- Stub fallback for unregistered handlers (consistent with all other pipeline functions)
+- Forwards the operator-supplied `payload` as `triggerPayload` into `ExecutionContext`
+
+**Updated file** — `/Users/AlexUA/claude/joyus-ai/joyus-ai-mcp-server/src/inngest/index.ts`:
+- Added `export { createManualTriggerPipeline }` to the barrel
+- Added `createManualTriggerPipeline(emptyRegistry)` to `allFunctions` so it gets registered with the Inngest serve adapter
+
+**Verification**: `npm run typecheck` passed with zero errors.</result>
+<usage><total_tokens>56115</total_tokens><tool_uses>18</tool_uses><duration_ms>123998</duration_ms></usage>
+</task-notification>
+Full transcript available at: REDACTED.output
