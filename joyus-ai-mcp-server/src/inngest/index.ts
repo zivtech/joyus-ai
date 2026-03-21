@@ -14,6 +14,7 @@ export { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.j
 export { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 export { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
 export { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
+export { createManualTriggerPipeline } from './functions/manual-trigger-pipeline.js';
 export { createInngestAdapter } from './adapter.js';
 export type { InngestStep, InngestStepHandlerAdapter } from './adapter.js';
 
@@ -22,6 +23,7 @@ import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.j
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
 import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
+import { createManualTriggerPipeline } from './functions/manual-trigger-pipeline.js';
 import type { StepHandlerRegistry } from '../pipelines/types.js';
 
 // Empty registry — functions run in stub mode until a real registry is provided.
@@ -36,4 +38,5 @@ export const allFunctions = [
   createContentAuditPipeline(emptyRegistry),
   createRegulatoryChangeMonitorPipeline(emptyRegistry),
   createScheduleTickPipeline(),
+  createManualTriggerPipeline(emptyRegistry),
 ];
