@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP10"
-lane: "done"
+work_package_id: WP10
+lane: done
+dependencies: []
 ---
 # WP10-cascade-attribution: Completed
 

@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP07"
-title: "MCP Tools & Integration"
-lane: "planned"
-dependencies: ["WP02", "WP03", "WP04", "WP05"]
-subtasks: ["T032", "T033", "T034", "T035", "T036"]
-phase: "Phase 7 - MCP Tools & Integration"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP07
+title: MCP Tools & Integration
+lane: planned
+dependencies: [WP02, WP03, WP04, WP05]
+subtasks: [T032, T033, T034, T035, T036]
+phase: Phase 7 - MCP Tools & Integration
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP07: MCP Tools & Integration

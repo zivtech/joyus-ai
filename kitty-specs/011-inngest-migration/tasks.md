@@ -40,7 +40,7 @@
 **Dependencies**: None (Feature 010 foundation already on main)
 **Estimated prompt size**: ~380 lines
 **Subtasks**: T001, T002, T003, T004
-**Prompt**: [WP01-port-remaining-pipelines.md](tasks/WP01-port-remaining-pipelines.md)
+**Prompt**: [WP01-port-remaining-pipelines.md](tasks/WP01-port-remaining-pipelines.md
 
 Implementation sequence:
 1. Create `content-audit-pipeline.ts` following `corpus-update-pipeline.ts` pattern
@@ -59,7 +59,7 @@ Parallel opportunity: T001 and T002 can be developed concurrently (different fil
 **Dependencies**: WP01
 **Estimated prompt size**: ~280 lines
 **Subtasks**: T005, T006, T007, T008
-**Prompt**: [WP02-update-routes.md](tasks/WP02-update-routes.md)
+**Prompt**: [WP02-update-routes.md](tasks/WP02-update-routes.md
 
 Implementation sequence:
 1. Remove `EventBus` import and `eventBus` field from `PipelineRouterDeps`
@@ -76,7 +76,7 @@ Implementation sequence:
 **Dependencies**: WP02
 **Estimated prompt size**: ~300 lines
 **Subtasks**: T009, T010, T011, T012, T013
-**Prompt**: [WP03-delete-custom-plumbing.md](tasks/WP03-delete-custom-plumbing.md)
+**Prompt**: [WP03-delete-custom-plumbing.md](tasks/WP03-delete-custom-plumbing.md
 
 Implementation sequence:
 1. Delete all four module groups
@@ -92,7 +92,7 @@ Implementation sequence:
 **Dependencies**: WP03
 **Estimated prompt size**: ~420 lines
 **Subtasks**: T014, T015, T016, T017, T018
-**Prompt**: [WP04-integration-tests.md](tasks/WP04-integration-tests.md)
+**Prompt**: [WP04-integration-tests.md](tasks/WP04-integration-tests.md
 
 Implementation sequence:
 1. Write integration tests for all three pipelines
@@ -110,3 +110,11 @@ Implementation sequence:
 ## MVP Scope
 
 WP01 + WP02 + WP03 is the migration. WP04 is the verification. All 4 WPs must complete for the feature to be accepted.
+
+<!-- status-model:start -->
+## Canonical Status (Generated)
+- WP01: done
+- WP02: done
+- WP03: done
+- WP04: done
+<!-- status-model:end -->

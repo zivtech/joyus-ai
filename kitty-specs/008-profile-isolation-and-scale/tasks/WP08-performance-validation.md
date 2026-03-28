@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP08"
-title: "Performance Validation"
-lane: "planned"
-dependencies: ["WP06", "WP07"]
-subtasks: ["T037", "T038", "T039", "T040", "T041"]
-phase: "Phase 8 - Performance Validation & Hardening"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP08
+title: Performance Validation
+lane: planned
+dependencies: [WP06, WP07]
+subtasks: [T037, T038, T039, T040, T041]
+phase: Phase 8 - Performance Validation & Hardening
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP08: Performance Validation

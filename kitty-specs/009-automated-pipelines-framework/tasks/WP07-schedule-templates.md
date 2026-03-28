@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: Schedule Triggers & Templates
-lane: "done"
+lane: done
 dependencies: []
 base_branch: main
 base_commit: 7efaca018cd3063d2769cd4b6b6666a69277dc89
@@ -10,9 +10,9 @@ subtasks: [T036, T037, T038, T039, T040, T041]
 phase: Phase D - Review Gates & Scheduling
 assignee: ''
 agent: ''
-shell_pid: "58980"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+shell_pid: '58980'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned

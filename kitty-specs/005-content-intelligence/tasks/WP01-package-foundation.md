@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP01"
-lane: "done"
+work_package_id: WP01
+lane: done
+dependencies: []
 ---
 # WP01-package-foundation: Completed
 

@@ -1,13 +1,13 @@
 ---
 work_package_id: WP02
 title: Event Bus
-lane: "doing"
+lane: in_progress
 dependencies: []
 subtasks: [T008, T009, T010, T011]
 phase: Phase B - Event & Trigger Layer
 assignee: ''
-agent: "claude-opus"
-shell_pid: "34769"
+agent: claude-opus
+shell_pid: '34769'
 review_status: ''
 reviewed_by: ''
 history:

@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP13"
-lane: "done"
+work_package_id: WP13
+lane: done
+dependencies: []
 ---
 # WP13-diagnosis-repair: Completed
 

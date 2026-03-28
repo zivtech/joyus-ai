@@ -1,14 +1,16 @@
 {
-  "feature_number": "010",
-  "slug": "010-inngest-evaluation",
-  "friendly_name": "Inngest Evaluation Spike",
-  "mission": "software-dev",
-  "source_description": "Spike to evaluate Inngest as a replacement for the custom pipeline execution engine in Feature 009",
   "created_at": "2026-03-19T00:00:00Z",
-  "vcs": "git",
+  "feature_number": "010",
+  "feature_slug": "010-inngest-evaluation",
+  "friendly_name": "Inngest Evaluation Spike",
+  "github_issue": 29,
+  "lifecycle_state": "planned",
   "measurement_owner": "Platform Operations",
+  "mission": "software-dev",
   "review_cadence": "weekly",
   "risk_class": "research",
-  "lifecycle_state": "planned",
-  "github_issue": 29
+  "slug": "010-inngest-evaluation",
+  "source_description": "Spike to evaluate Inngest as a replacement for the custom pipeline execution engine in Feature 009",
+  "target_branch": "main",
+  "vcs": "git"
 }

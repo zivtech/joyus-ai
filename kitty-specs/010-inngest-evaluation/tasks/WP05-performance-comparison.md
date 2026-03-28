@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP05"
-title: "Performance Comparison"
-lane: "done"
-dependencies: ["WP02", "WP03", "WP04"]
-subtasks: ["T021", "T022", "T023", "T024", "T025"]
-phase: "Phase C - Assessment"
-assignee: ""
-agent: "claude-sonnet"
-shell_pid: "1588"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+work_package_id: WP05
+title: Performance Comparison
+lane: done
+dependencies: [WP02, WP03, WP04]
+subtasks: [T021, T022, T023, T024, T025]
+phase: Phase C - Assessment
+assignee: ''
+agent: claude-sonnet
+shell_pid: '1588'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
-  - timestamp: "2026-03-19T05:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-19T05:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP05: Performance Comparison
