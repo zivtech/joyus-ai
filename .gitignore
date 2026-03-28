@@ -22,9 +22,6 @@ _private/
 .amazonq/
 .github/copilot/
 .omc/
-# Block WP status files (managed in main repo, prevents merge conflicts)
-# Research artifacts in kitty-specs/**/research/ are allowed
-kitty-specs/**/tasks/*.md
 !kitty-specs/005-content-intelligence/tasks/WP01-package-foundation.md
 !kitty-specs/005-content-intelligence/tasks/WP02-corpus-ingestion.md
 !kitty-specs/005-content-intelligence/tasks/WP03-feature-extraction.md
@@ -85,3 +82,10 @@ kitty-specs/**/tasks/*.md
 
 # Deploy secrets (never commit actual .env files)
 deploy/.env
+
+# Added by Spec Kitty CLI (auto-managed)
+.kittify/runtime/
+.kittify/merge-state.json
+.kittify/events/
+.kittify/dossiers/
+kitty-specs/**/.kittify/dossiers/
