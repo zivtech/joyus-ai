@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Pipeline API & MCP Tools
-lane: "done"
+lane: done
 dependencies: []
 base_branch: main
 base_commit: 7ed6195c2aabbed155812edcf7d46fc58aefdf19
@@ -10,9 +10,9 @@ subtasks: [T042, T043, T044, T045, T046, T047, T048]
 phase: Phase E - API & Tools
 assignee: ''
 agent: ''
-shell_pid: "58980"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+shell_pid: '58980'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned

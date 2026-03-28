@@ -1,15 +1,15 @@
 ---
 work_package_id: WP09
 title: Mediation API Endpoints
-lane: "done"
+lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:54:10.792964+00:00'
 subtasks: [T042, T043, T044, T045]
-shell_pid: "59609"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+shell_pid: '59609'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created

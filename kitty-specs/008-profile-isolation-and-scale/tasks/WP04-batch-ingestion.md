@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP04"
-title: "Batch Ingestion Pipeline"
-lane: "planned"
-dependencies: ["WP03"]
-subtasks: ["T018", "T019", "T020", "T021", "T022"]
+work_package_id: WP04
+title: Batch Ingestion Pipeline
+lane: planned
+dependencies: [WP03]
+subtasks: [T018, T019, T020, T021, T022]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP04: Batch Ingestion Pipeline

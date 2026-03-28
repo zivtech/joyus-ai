@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP06"
-title: "Engine Interface & Drift-Triggered Retraining"
-lane: "planned"
-dependencies: ["WP03"]
-subtasks: ["T027", "T028", "T029", "T030", "T031"]
+work_package_id: WP06
+title: Engine Interface & Drift-Triggered Retraining
+lane: planned
+dependencies: [WP03]
+subtasks: [T027, T028, T029, T030, T031]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP06: Engine Interface & Drift-Triggered Retraining

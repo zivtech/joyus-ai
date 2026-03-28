@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP02"
-title: "Backlog and Ownership"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T005", "T006", "T007", "T008"]
+work_package_id: WP02
+title: Backlog and Ownership
+lane: planned
+dependencies: [WP01]
+subtasks: [T005, T006, T007, T008]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-sonnet"
+- date: '2026-03-14'
+  action: created
+  agent: claude-sonnet
 ---
 
 # WP02: Backlog and Ownership

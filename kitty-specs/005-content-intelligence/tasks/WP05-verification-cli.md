@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP05"
-lane: "done"
+work_package_id: WP05
+lane: done
+dependencies: []
 ---
 # WP05-verification-cli: Completed
 

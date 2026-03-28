@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP06"
-lane: "done"
+work_package_id: WP06
+lane: done
+dependencies: []
 ---
 # WP06-mcp-server: Completed
 

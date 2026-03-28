@@ -403,3 +403,21 @@ These are tracked in `plan.md` § Deferred Scope. The monitoring infrastructure 
 
 Average subtasks per WP: **5.2** (range: 3-7)
 Estimated prompt size: **300-500 lines** per WP (all within ideal range)
+
+<!-- status-model:start -->
+## Canonical Status (Generated)
+- WP01: done
+- WP02: done
+- WP03: done
+- WP04: done
+- WP05: done
+- WP06: done
+- WP07: done
+- WP08: done
+- WP09: done
+- WP10: done
+- WP11: done
+- WP12: done
+- WP13: done
+- WP14: done
+<!-- status-model:end -->

@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP01"
-title: "Profile Schema & Tenant Scoping"
-lane: "planned"
+work_package_id: WP01
+title: Profile Schema & Tenant Scoping
+lane: planned
 dependencies: []
-subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
+subtasks: [T001, T002, T003, T004, T005, T006, T007]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP01: Profile Schema & Tenant Scoping

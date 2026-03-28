@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP02"
-title: "Profile Generation Pipeline"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T007", "T008", "T009", "T010", "T011"]
-phase: "Phase 2 - Profile Generation Pipeline"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP02
+title: Profile Generation Pipeline
+lane: planned
+dependencies: [WP01]
+subtasks: [T007, T008, T009, T010, T011]
+phase: Phase 2 - Profile Generation Pipeline
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP02: Profile Generation Pipeline

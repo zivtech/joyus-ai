@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP07"
-title: "Profile API & MCP Tools"
-lane: "planned"
-dependencies: ["WP02", "WP03", "WP04", "WP05", "WP06"]
-subtasks: ["T032", "T033", "T034", "T035", "T036", "T037", "T038", "T039", "T040"]
+work_package_id: WP07
+title: Profile API & MCP Tools
+lane: planned
+dependencies: [WP02, WP03, WP04, WP05, WP06]
+subtasks: [T032, T033, T034, T035, T036, T037, T038, T039, T040]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP07: Profile API & MCP Tools

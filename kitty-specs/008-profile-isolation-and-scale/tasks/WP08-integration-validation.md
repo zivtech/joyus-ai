@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP08"
-title: "Integration & Validation"
-lane: "planned"
-dependencies: ["WP01", "WP02", "WP03", "WP04", "WP05", "WP06", "WP07"]
-subtasks: ["T041", "T042", "T043", "T044", "T045", "T046", "T047", "T048"]
+work_package_id: WP08
+title: Integration & Validation
+lane: planned
+dependencies: [WP01, WP02, WP03, WP04, WP05, WP06, WP07]
+subtasks: [T041, T042, T043, T044, T045, T046, T047, T048]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP08: Integration & Validation

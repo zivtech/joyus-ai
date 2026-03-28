@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP06"
-title: "Autonomy Leveling and Scenario Policy"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T022", "T023", "T024", "T025", "T026"]
+work_package_id: WP06
+title: Autonomy Leveling and Scenario Policy
+lane: planned
+dependencies: [WP01]
+subtasks: [T022, T023, T024, T025, T026]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-sonnet"
+- date: '2026-03-14'
+  action: created
+  agent: claude-sonnet
 ---
 
 # WP06: Autonomy Leveling and Scenario Policy

@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP03"
-lane: "done"
+work_package_id: WP03
+lane: done
+dependencies: []
 ---
 # WP03-feature-extraction: Completed
 

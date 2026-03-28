@@ -1,7 +1,7 @@
 ---
 work_package_id: WP09
 title: Analytics & Quality Signals
-lane: "done"
+lane: done
 dependencies: []
 base_branch: main
 base_commit: 1b04d3d8f7128e468b3c4dc7139f02bd4fe299e3
@@ -10,9 +10,9 @@ subtasks: [T049, T050, T051, T052, T053, T054]
 phase: Phase F - Analytics
 assignee: ''
 agent: ''
-shell_pid: "81465"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+shell_pid: '81465'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned

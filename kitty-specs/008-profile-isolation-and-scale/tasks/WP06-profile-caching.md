@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP06"
-title: "Resolved Profile Caching"
-lane: "planned"
-dependencies: ["WP04"]
-subtasks: ["T029", "T030", "T031"]
-phase: "Phase 6 - Resolved Profile Caching"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP06
+title: Resolved Profile Caching
+lane: planned
+dependencies: [WP04]
+subtasks: [T029, T030, T031]
+phase: Phase 6 - Resolved Profile Caching
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP06: Resolved Profile Caching

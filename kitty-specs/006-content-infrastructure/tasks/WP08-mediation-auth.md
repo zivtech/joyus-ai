@@ -1,15 +1,15 @@
 ---
 work_package_id: WP08
 title: Mediation API Auth & Sessions
-lane: "done"
+lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:42:02.153674+00:00'
 subtasks: [T038, T039, T040, T041]
-shell_pid: "98895"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+shell_pid: '98895'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created

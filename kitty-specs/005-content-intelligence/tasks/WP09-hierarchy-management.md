@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP09"
-lane: "done"
+work_package_id: WP09
+lane: done
+dependencies: []
 ---
 # WP09-hierarchy-management: Completed
 

@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP03"
-title: "Profile Versioning"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T013", "T014", "T015", "T016", "T017"]
+work_package_id: WP03
+title: Profile Versioning
+lane: planned
+dependencies: [WP01]
+subtasks: [T013, T014, T015, T016, T017]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP03: Profile Versioning
