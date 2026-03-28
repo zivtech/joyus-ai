@@ -1,17 +1,17 @@
 ---
-work_package_id: "WP01"
-title: "Content Schema & Foundation"
-lane: "done"
+work_package_id: WP01
+title: Content Schema & Foundation
+lane: done
 dependencies: []
-subtasks: ["T001", "T002", "T003", "T004", "T005"]
-agent: "claude-opus"
-shell_pid: "34619"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+subtasks: [T001, T002, T003, T004, T005]
+agent: claude-opus
+shell_pid: '34619'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
-  - date: "2026-02-21"
-    action: "created"
-    by: "spec-kitty.tasks"
+- date: '2026-02-21'
+  action: created
+  by: spec-kitty.tasks
 ---
 
 # WP01: Content Schema & Foundation

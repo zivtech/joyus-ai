@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP04"
-title: "Composite Profile Inheritance"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T017", "T018", "T019", "T020", "T021"]
-phase: "Phase 4 - Composite Profile Inheritance"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP04
+title: Composite Profile Inheritance
+lane: planned
+dependencies: [WP01]
+subtasks: [T017, T018, T019, T020, T021]
+phase: Phase 4 - Composite Profile Inheritance
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP04: Composite Profile Inheritance

@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP12"
-lane: "done"
+work_package_id: WP12
+lane: done
+dependencies: []
 ---
 # WP12-monitoring-drift: Completed
 

@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP04"
-title: "Workflow and Metadata Contracts"
-lane: "planned"
-dependencies: ["WP02"]
-subtasks: ["T014", "T015", "T016", "T017"]
+work_package_id: WP04
+title: Workflow and Metadata Contracts
+lane: planned
+dependencies: [WP02]
+subtasks: [T014, T015, T016, T017]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-sonnet"
+- date: '2026-03-14'
+  action: created
+  agent: claude-sonnet
 ---
 
 # WP04: Workflow and Metadata Contracts

@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: Port One Pipeline to Inngest Functions
-lane: "done"
+lane: done
 dependencies: [WP01]
 base_branch: 010-inngest-evaluation-WP01
 base_commit: 24da977f19a333868beb140919ac67f6e5d97c46
@@ -9,10 +9,10 @@ created_at: '2026-03-19T02:25:10.000486+00:00'
 subtasks: [T006, T007, T008, T009, T010]
 phase: Phase B - Core Validation
 assignee: ''
-agent: "claude-sonnet"
-shell_pid: "81954"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+agent: claude-sonnet
+shell_pid: '81954'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-19T05:00:00Z'
   lane: planned

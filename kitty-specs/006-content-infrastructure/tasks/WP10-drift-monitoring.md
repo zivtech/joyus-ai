@@ -1,15 +1,15 @@
 ---
 work_package_id: WP10
 title: Voice Drift Monitoring
-lane: "done"
+lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:54:12.185611+00:00'
 subtasks: [T046, T047, T048, T049]
-shell_pid: "60396"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+shell_pid: '60396'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created

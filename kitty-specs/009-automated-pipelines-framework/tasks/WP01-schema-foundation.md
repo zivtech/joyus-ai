@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP01"
-title: "Schema & Foundation"
-lane: "doing"
+work_package_id: WP01
+title: Schema & Foundation
+lane: in_progress
 dependencies: []
-subtasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007"]
-phase: "Phase A - Foundation"
-assignee: ""
-agent: "claude-opus"
-shell_pid: "28669"
-review_status: ""
-reviewed_by: ""
+subtasks: [T001, T002, T003, T004, T005, T006, T007]
+phase: Phase A - Foundation
+assignee: ''
+agent: claude-opus
+shell_pid: '28669'
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP01: Schema & Foundation

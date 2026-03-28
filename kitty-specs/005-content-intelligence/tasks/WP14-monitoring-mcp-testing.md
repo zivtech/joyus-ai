@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP14"
-lane: "done"
+work_package_id: WP14
+lane: done
+dependencies: []
 ---
 # WP14-monitoring-mcp-testing: Completed
 

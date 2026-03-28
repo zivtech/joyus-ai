@@ -91,3 +91,13 @@ Layer 4: WP06 (decision — depends on all)
 - [x] T028: Write go/no-go recommendation with rationale
 - [x] T029: If "go": produce deletion inventory (009 files/LOC removable), migration sequence, Feature 011 scope estimate
 - [x] T030: If "no-go": document blockers and recommended fixes for custom implementation
+
+<!-- status-model:start -->
+## Canonical Status (Generated)
+- WP01: done
+- WP02: done
+- WP03: done
+- WP04: done
+- WP05: done
+- WP06: done
+<!-- status-model:end -->

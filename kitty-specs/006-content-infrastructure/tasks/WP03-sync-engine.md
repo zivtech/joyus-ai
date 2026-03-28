@@ -1,15 +1,15 @@
 ---
 work_package_id: WP03
 title: Sync Engine
-lane: "done"
+lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:41:55.567861+00:00'
 subtasks: [T011, T012, T013, T014, T015, T016, T017]
-shell_pid: "97271"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+shell_pid: '97271'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created

@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Built-in Step Handlers
-lane: "done"
+lane: done
 dependencies: []
 base_branch: main
 base_commit: 3fcac60575d816c1ee481fe80b0df29082a9082a
@@ -10,9 +10,9 @@ subtasks: [T024, T025, T026, T027, T028, T029]
 phase: Phase C - Execution Engine
 assignee: ''
 agent: ''
-shell_pid: "35212"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+shell_pid: '35212'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned

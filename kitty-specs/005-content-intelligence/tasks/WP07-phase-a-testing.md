@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP07"
-lane: "done"
+work_package_id: WP07
+lane: done
+dependencies: []
 ---
 # WP07-phase-a-testing: Completed
 

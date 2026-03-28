@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP05"
-title: "Self-Service Corpus Intake"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T022", "T023", "T024", "T025", "T026", "T027", "T028"]
-phase: "Phase 5 - Self-Service Corpus Intake"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+work_package_id: WP05
+title: Self-Service Corpus Intake
+lane: planned
+dependencies: [WP01]
+subtasks: [T022, T023, T024, T025, T026, T027, T028]
+phase: Phase 5 - Self-Service Corpus Intake
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP05: Self-Service Corpus Intake

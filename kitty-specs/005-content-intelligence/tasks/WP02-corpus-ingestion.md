@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP02"
-lane: "done"
+work_package_id: WP02
+lane: done
+dependencies: []
 ---
 # WP02-corpus-ingestion: Completed
 

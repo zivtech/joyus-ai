@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP11"
-lane: "done"
+work_package_id: WP11
+lane: done
+dependencies: []
 ---
 # WP11-voice-context-testing: Completed
 
