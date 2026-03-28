@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP01"
-title: "Schema & Foundation"
-lane: "planned"
+work_package_id: WP01
+title: Schema & Foundation
+lane: planned
 dependencies: []
-subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
-phase: "Phase 1 - Data Model & Interfaces"
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
+subtasks: [T001, T002, T003, T004, T005, T006]
+phase: Phase 1 - Data Model & Interfaces
+assignee: ''
+agent: ''
+shell_pid: ''
+review_status: ''
+reviewed_by: ''
 history:
-  - timestamp: "2026-03-10T00:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-10T00:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP01: Schema & Foundation

@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP02"
-title: "Profile Access Control"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T008", "T009", "T010", "T011", "T012"]
+work_package_id: WP02
+title: Profile Access Control
+lane: planned
+dependencies: [WP01]
+subtasks: [T008, T009, T010, T011, T012]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP02: Profile Access Control

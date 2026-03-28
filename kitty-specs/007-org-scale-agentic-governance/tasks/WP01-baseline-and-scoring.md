@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP01"
-title: "Baseline and Scoring"
-lane: "planned"
+work_package_id: WP01
+title: Baseline and Scoring
+lane: planned
 dependencies: []
-subtasks: ["T001", "T002", "T003", "T004"]
+subtasks: [T001, T002, T003, T004]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-sonnet"
+- date: '2026-03-14'
+  action: created
+  agent: claude-sonnet
 ---
 
 # WP01: Baseline and Scoring

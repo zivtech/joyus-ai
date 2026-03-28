@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP01"
-title: "Local Inngest Server Setup"
-lane: "done"
+work_package_id: WP01
+title: Local Inngest Server Setup
+lane: done
 dependencies: []
-subtasks: ["T001", "T002", "T003", "T004", "T005"]
-phase: "Phase A - Environment"
-assignee: ""
-agent: "claude-sonnet"
-shell_pid: "40083"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+subtasks: [T001, T002, T003, T004, T005]
+phase: Phase A - Environment
+assignee: ''
+agent: claude-sonnet
+shell_pid: '40083'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
-  - timestamp: "2026-03-19T05:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-19T05:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP01: Local Inngest Server Setup

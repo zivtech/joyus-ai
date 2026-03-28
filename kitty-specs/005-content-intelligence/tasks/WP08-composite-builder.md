@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP08"
-lane: "done"
+work_package_id: WP08
+lane: done
+dependencies: []
 ---
 # WP08-composite-builder: Completed
 

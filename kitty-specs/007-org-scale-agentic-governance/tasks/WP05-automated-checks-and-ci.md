@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP05"
-title: "Automated Checks and CI"
-lane: "planned"
-dependencies: ["WP03", "WP04"]
-subtasks: ["T018", "T019", "T020", "T021"]
+work_package_id: WP05
+title: Automated Checks and CI
+lane: planned
+dependencies: [WP03, WP04]
+subtasks: [T018, T019, T020, T021]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-sonnet"
+- date: '2026-03-14'
+  action: created
+  agent: claude-sonnet
 ---
 
 # WP05: Automated Checks and CI

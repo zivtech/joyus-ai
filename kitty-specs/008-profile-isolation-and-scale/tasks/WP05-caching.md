@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP05"
-title: "Profile Caching & Latency"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T023", "T024", "T025", "T026"]
+work_package_id: WP05
+title: Profile Caching & Latency
+lane: planned
+dependencies: [WP01]
+subtasks: [T023, T024, T025, T026]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-opus"
+- date: '2026-03-14'
+  action: created
+  agent: claude-opus
 ---
 
 # WP05: Profile Caching & Latency

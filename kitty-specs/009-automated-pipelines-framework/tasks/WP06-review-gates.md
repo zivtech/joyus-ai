@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: Review Gates
-lane: "done"
+lane: done
 dependencies: []
 base_branch: main
 base_commit: 2faf56cb1a73cd0f0bd607f652f2ad5ca78a6df0
@@ -10,9 +10,9 @@ subtasks: [T030, T031, T032, T033, T034, T035]
 phase: Phase D - Review Gates & Scheduling
 assignee: ''
 agent: ''
-shell_pid: "35709"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+shell_pid: '35709'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned

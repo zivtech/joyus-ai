@@ -1,15 +1,15 @@
 ---
 work_package_id: WP07
 title: MCP Content Tools
-lane: "done"
+lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:54:09.239744+00:00'
 subtasks: [T031, T032, T033, T034, T035, T036, T037]
-shell_pid: "58816"
-reviewed_by: "Alex Urevick-Ackelsberg"
-review_status: "approved"
+shell_pid: '58816'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created

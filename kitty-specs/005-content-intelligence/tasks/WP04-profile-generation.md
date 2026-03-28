@@ -1,6 +1,7 @@
 ---
-work_package_id: "WP04"
-lane: "done"
+work_package_id: WP04
+lane: done
+dependencies: []
 ---
 # WP04-profile-generation: Completed
 

@@ -1,13 +1,13 @@
 ---
-work_package_id: "WP03"
-title: "Governance Remediations"
-lane: "planned"
-dependencies: ["WP02"]
-subtasks: ["T009", "T010", "T011", "T012", "T013"]
+work_package_id: WP03
+title: Governance Remediations
+lane: planned
+dependencies: [WP02]
+subtasks: [T009, T010, T011, T012, T013]
 history:
-  - date: "2026-03-14"
-    action: "created"
-    agent: "claude-sonnet"
+- date: '2026-03-14'
+  action: created
+  agent: claude-sonnet
 ---
 
 # WP03: Governance Remediations

@@ -1,20 +1,20 @@
 ---
-work_package_id: "WP06"
-title: "Decision Document and Migration Plan"
-lane: "done"
-dependencies: ["WP01", "WP02", "WP03", "WP04", "WP05"]
-subtasks: ["T026", "T027", "T028", "T029", "T030"]
-phase: "Phase C - Assessment"
-assignee: ""
-agent: "claude-sonnet"
-shell_pid: "44125"
-review_status: "approved"
-reviewed_by: "Alex Urevick-Ackelsberg"
+work_package_id: WP06
+title: Decision Document and Migration Plan
+lane: done
+dependencies: [WP01, WP02, WP03, WP04, WP05]
+subtasks: [T026, T027, T028, T029, T030]
+phase: Phase C - Assessment
+assignee: ''
+agent: claude-sonnet
+shell_pid: '44125'
+review_status: approved
+reviewed_by: Alex Urevick-Ackelsberg
 history:
-  - timestamp: "2026-03-19T05:00:00Z"
-    lane: "planned"
-    agent: "system"
-    action: "Prompt generated via /spec-kitty.tasks"
+- timestamp: '2026-03-19T05:00:00Z'
+  lane: planned
+  agent: system
+  action: Prompt generated via /spec-kitty.tasks
 ---
 
 # WP06: Decision Document and Migration Plan
