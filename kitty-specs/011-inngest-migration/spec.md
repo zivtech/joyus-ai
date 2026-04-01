@@ -92,6 +92,44 @@ Clean cutover: no parallel operation period. All three pipeline templates are po
 - FR-06: On approval, execution resumes from the checkpoint immediately following the gate.
 - FR-07: On rejection or timeout, the pipeline records the outcome and terminates without re-running completed steps.
 
+### Review Notification Delivery (Claude Channels Amendment)
+
+*Source: [joyus-ai-internal Claude Channels Impact Analysis §4.3](https://github.com/zivtech/joyus-ai-internal/blob/main/planning/claude-channels-impact-analysis.md) — Issues: [#32](https://github.com/zivtech/joyus-ai-internal/issues/32), [#34](https://github.com/zivtech/joyus-ai-internal/issues/34)*
+
+- FR-RND-001: The pipeline framework MUST define an explicit `ReviewNotificationDelivery` interface for review gate notifications, replacing the implicit escalation cron:
+
+  ```typescript
+  interface ReviewNotificationDelivery {
+    /**
+     * Called when a pipeline step enters waiting_review status.
+     * Delivers the review request to the admin's configured delivery backends.
+     */
+    notifyReviewPending(params: {
+      executionId: string;
+      pipelineId: string;
+      stepIndex: number;
+      tenantId: string;
+      artifacts: ReviewArtifact[];
+      deadline: Date;
+    }): Promise<void>;
+
+    /**
+     * Called when escalation threshold is reached.
+     */
+    notifyReviewEscalated(params: {
+      executionId: string;
+      tenantId: string;
+      escalationLevel: number;
+    }): Promise<void>;
+  }
+  ```
+
+- FR-RND-002: The `ReviewNotificationDelivery` implementation MUST emit events to the Gateway Event Bus (Spec 014 FR-GEB-001): `review.pending` on review pending, `review.escalated` on escalation, `review.decided` on decision. The gateway handles multi-channel delivery; the pipeline framework does not own delivery logic.
+
+- FR-RND-003: Review decisions MUST be accepted via the Gateway Decision Ingestion endpoint (Spec 014 FR-GEB-004). The pipeline framework registers a decision handler with the gateway that: (1) validates the decision against the pending review, (2) records the decision in `review_decisions`, (3) sends `pipeline/review.decided` event via `inngest.send()` to resume the paused function. If a decision comes from a Claude Code Channel, the Channel Server calls the gateway decision endpoint — same path as any other decision source.
+
+- FR-RND-004: When the gateway is not yet deployed, the `ReviewNotificationDelivery` implementation MUST use a `NullDelivery` stub, consistent with the existing `NullServiceClient` pattern throughout the pipeline framework. This ensures the interface is wired at build time without requiring a running gateway.
+
 ### API Routes
 
 - FR-08: The manual pipeline trigger route dispatches execution by sending the appropriate typed event via `inngest.send()`.
@@ -197,3 +235,18 @@ This feature replaces internal infrastructure — no end-user-facing changes. Ad
 - MCP tools that dispatch pipeline execution continue to route through the API layer; no direct Inngest access from MCP tool handlers.
 - Approval required: platform team lead sign-off before the deletion step (FR-10) is merged.
 - Audit trail: deletion commit referenced in feature changelog.
+
+## Amendments
+
+### Claude Channels: Review Notification Delivery (2026-03-31)
+
+*Source: [joyus-ai-internal Claude Channels Impact Analysis §4.3](https://github.com/zivtech/joyus-ai-internal/blob/main/planning/claude-channels-impact-analysis.md)*
+
+The following scope additions apply to the Inngest migration WPs:
+
+1. Extract the escalation cron's notification logic into a `ReviewNotificationDelivery` implementation (FR-RND-001).
+2. Wire the implementation to the Gateway Event Bus, or a `NullDelivery` stub if the gateway isn't deployed yet (FR-RND-002, FR-RND-004).
+3. Add `review.pending` and `review.escalated` event types to the Inngest function's observable events.
+4. Ensure `inngest.send()` for `pipeline/review.decided` works when called from the gateway decision handler, not just the direct API route (FR-RND-003).
+
+**Tracking**: joyus-ai-internal issues [#32](https://github.com/zivtech/joyus-ai-internal/issues/32) (gateway event bus), [#34](https://github.com/zivtech/joyus-ai-internal/issues/34) (review gate delivery).
