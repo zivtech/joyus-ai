@@ -1,0 +1,12 @@
+{
+  "feature_number": "012",
+  "slug": "012-cms-enrichment-delivery",
+  "friendly_name": "CMS Enrichment Delivery",
+  "mission": "software-dev",
+  "source_description": "Public placeholder for CMS enrichment and delivery workflows layered on the Joyus AI content and pipeline core",
+  "created_at": "2026-04-05T00:00:00Z",
+  "measurement_owner": "platform team",
+  "review_cadence": "monthly",
+  "risk_class": "platform",
+  "lifecycle_state": "spec-only"
+}

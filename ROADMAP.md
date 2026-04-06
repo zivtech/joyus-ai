@@ -1,58 +1,51 @@
-# Joyus AI - Roadmap
+# Joyus AI Roadmap
 
-An open-source, multi-tenant AI agent platform that encodes organizational knowledge as testable, enforceable skills.
-
----
-
-## Shipped
-
-- **MCP Server Core** - OAuth authentication, tool executors for project management, chat, code hosting, and productivity integrations. Dockerized runtime available.
-- **Session Context Management** - Event-driven state snapshots, context handoff across session compaction, resume protocols.
-- **Workflow Enforcement** - Quality gates, permission escalation, and traceable workflow guardrails.
-- **Web Chat UI** - Browser-based chat interface with Claude Desktop configuration support.
-- **Content Intelligence** - Corpus analysis, stylometric extraction, structured writing profiles, fidelity verification, drift monitoring, and repair.
-
-## In Development
-
-- **Content Infrastructure** — Corpus connector interface, search abstraction layer, content state management, access level mapping, AI-optimized content API for bot mediation.
-- **Org-Scale Agentic Governance** — Maturity scoring, spec lifecycle enforcement, CI-integrated governance gates, remediation tracking.
-
-## Planned
-
-- **Platform Framework** — Multi-tenant web portal, skill-based mediation, thin orchestration layer, monitoring infrastructure.
-- **Multi-Location Operations Module** — Staffing planner with manager approval gates and server-side POS publish (dry-run + apply), tenant-isolated and fully audited.
-- **Compliance Modules** — HIPAA, FERPA, attorney-client privilege, assessment integrity, FDA/USDA — declared per tenant, enforced as hard failures.
-- **Automated Pipelines** — Event-driven workflows: regulatory change detection, scheduled reports, content update routing, quality gate automation.
-- **Self-Service Profile Building** — Upload writing samples, receive a usable writing skill. Automatic tier detection with progression guidance.
-- **AI-Assisted Generation** — Content generation using profiles as constraints for voice-consistent output (builds on Content Intelligence foundation).
-- **Multi-Tenant Profile Isolation** — Tenant-scoped profile storage, access control, and audit logging for the profile engine.
-- **Profile Engine at Scale** — Batch ingestion, caching, and latency optimization for large corpora and high-throughput verification.
-- **Asset Sharing Pipeline** — Secure delivery of AI-generated artifacts behind access control.
-
-## Roadmap
-
-- Presentation Toolkit (branded slides, deck rebranding)
-- Document Generator (reports, proposals, memos - DOCX, PDF)
-- Analysis Tools (financial modeling, gap analysis, research synthesis)
-- Regulatory Change Detection Pipeline
-- Expert Voice Routing
-- Visual Regression and Accessibility Testing Service
-- Content Staging and Deployment Pipeline
-- Knowledge Base Ingestion (XML, CMS, web, archives)
-- Attribution Service (standalone authorship analysis)
-- Code Execution Sandbox
-
-## Under Evaluation
-
-- Structured knowledge capture and artifact lifecycle management
-- AI-assisted research and decision documentation tooling
-- Industry-specific pipeline integrations
-- Compliance framework extensions
-- Enriched expert profiles (subject matter domains, citation networks)
-- Plugin compatibility layer (Cowork/Claude Code plugin format)
-- Managed hosting
+Joyus AI is an open-core, multi-tenant AI agent platform. This roadmap now distinguishes between public-core roadmap lanes and private companion lanes so the public repository does not blur platform capability with private implementation surfaces.
 
 ---
 
-*Platform core is open source. Constitution v1.6 published.*
-*github.com/joyus-ai/joyus-ai*
+## Public Core: Shipped
+
+- **MCP Server Core**: OAuth authentication, integration executors, Dockerized runtime, and Claude Desktop connectivity.
+- **Session Context Management**: Event-driven state snapshots, context restoration, canonical-document handling, and companion-service support.
+- **Workflow Enforcement**: Quality gates, skill enforcement, git guardrails, audit trail infrastructure, and MCP enforcement tools.
+- **Web Chat UI**: Thin browser chat surface for local development and demonstrations.
+- **Content Infrastructure**: Connector abstraction, sync engine, search layer, entitlements, mediation APIs, observability, and content MCP tools.
+- **Inngest Evaluation Spike**: Public validation of durable workflow execution against the custom pipeline runtime.
+
+## Public Core: Active
+
+- **Org-Scale Agentic Governance**: Governance baseline, remediation backlog, metadata contracts, CI checks, and autonomy policy work.
+- **Automated Pipelines Framework**: Public pipeline runtime remains in progress while the migration path is finalized.
+- **Inngest Migration**: Planned public cutover from the custom pipeline runtime to the Inngest-based execution path.
+- **Profile Isolation and Scale**: Public planning stream for tenant-safe profile infrastructure around the private profile engine.
+
+## Public Core: Roadmap Lanes
+
+- **Platform Framework**: Multi-tenant web portal, skill-mediated access, and shared monitoring surfaces.
+- **Regulatory Change Detection Pipeline**: Event-driven detection and routing for compliance-sensitive source changes.
+- **Knowledge Base Ingestion**: XML, CMS, web, and archive ingestion into the public knowledge infrastructure.
+- **Code Execution Sandbox**: Isolated execution surface for high-trust automation and tool use.
+- **Plugin Compatibility Layer**: Compatibility surface for external plugin ecosystems and agent formats.
+- **Compliance Modules**: Public framework support for tenant-declared compliance regimes.
+- **Compliance Framework Extensions**: Additional cross-industry compliance building blocks layered onto the public core.
+- **Visual Regression and Accessibility Testing Service**: Public testing service for UI quality and accessibility workflows.
+
+## Private Companion Lanes
+
+- **Content Intelligence Runtime**: The `joyus-profile-engine` implementation remains a private companion even though its specification is public.
+- **Asset Sharing Pipeline**: Secure artifact delivery and access-controlled sharing workflows.
+- **Managed Hosting**: Hosted deployment offering and environment-specific operational packaging.
+- **Multi-Location Operations Module**: Staffing, approvals, and operational publishing flows.
+- **Content Staging and Deployment Pipeline**: Tenant-specific publishing and release workflows.
+- **Structured Knowledge Capture and Artifact Lifecycle Management**: Internal capture, storage, and lifecycle tooling.
+- **AI-Assisted Research and Decision Documentation Tooling**: Private research support surfaces and decision-record tooling.
+- **Expert Voice Routing**: Proprietary routing over private voice/profile assets.
+- **Self-Service Profile Building**: Private user-facing profile-builder experience on top of the companion engine.
+- **AI-Assisted Generation**: Private generation products built on proprietary profiles and corpora.
+- **Profile Engine at Scale**: Scaling work for the private profile-engine runtime.
+- **Attribution Service**: Standalone authorship-analysis product surface.
+
+---
+
+Platform core remains open source. Private repos continue to hold proprietary skills, corpora, deployment hardening, and companion application surfaces.
