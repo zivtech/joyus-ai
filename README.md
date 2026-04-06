@@ -114,7 +114,7 @@ Status sources:
 | `005` Content Intelligence | Public spec, private implementation | Public spec / private companion runtime | Implemented in the private `joyus-profile-engine` companion repo, not counted in the public-core WP list below |
 | `006` Content Infrastructure | Public code in `joyus-ai-mcp-server/` | Complete | `12/12` WPs complete |
 | `007` Org-Scale Agentic Governance | Public governance/docs stream | Planned | `0/6` WPs complete |
-| `008` Profile Isolation and Scale | Public planning stream | Planned | Canonical public plan is the `8`-WP inventory in `tasks.md`; older duplicate prompt files still exist under `tasks/` |
+| `008` Profile Isolation and Scale | Public planning stream | Planned | Canonical public plan is the `8`-WP inventory in `tasks.md` |
 | `009` Automated Pipelines Framework | Public code in `joyus-ai-mcp-server/` | In progress | `8/10` WPs complete by lane file status |
 | `010` Inngest Evaluation Spike | Public spike | Complete | `6/6` WPs complete |
 | `011` Inngest Migration | Public migration plan | Planned | `4` WPs defined; implementation not started |
