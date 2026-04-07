@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add multi-tenant profile isolation, versioning, composite inheritance, self-service corpus intake, and resolved-profile caching to the Joyus AI platform. All new code extends the existing `joyus-ai-mcp-server` package (TypeScript/Express) as a new `src/profiles/` module, parallel to the existing `src/content/` module. Profile data lives in a schema-separated PostgreSQL `profiles` schema via Drizzle ORM. Profile generation delegates to Spec 005's stable Python stylometric engine via subprocess invocation. Tenant isolation follows the Leash pattern (ADR-0002): mandatory `tenant_id` filtering on every query, injected from authenticated session context, never from user input.
+Add multi-tenant profile isolation, versioning, composite inheritance, self-service corpus intake, and resolved-profile caching to the Joyus AI platform. All new code extends the existing `joyus-ai-mcp-server` package (TypeScript/Express) as a new `src/profiles/` module, parallel to the existing `src/content/` module. Profile data lives in a schema-separated PostgreSQL `profiles` schema via Drizzle ORM. Profile generation delegates to Spec 005's Python profile engine via subprocess invocation. Existing stylometric voice mode is stable; the persistence and cache model must remain extensible to additional profile families such as philosophy mode. Tenant isolation follows the Leash pattern (ADR-0002): mandatory `tenant_id` filtering on every query, injected from authenticated session context, never from user input.
 
 ## Technical Context
 
@@ -18,7 +18,7 @@ Add multi-tenant profile isolation, versioning, composite inheritance, self-serv
 **Target Platform**: Linux server (Docker), macOS development
 **Project Type**: Single package extension (`joyus-ai-mcp-server/`)
 **Performance Goals**: Profile generation <=10 min for 50-doc corpus, rollback <=30s, cached profile lookup <50ms p95
-**Constraints**: Batch pipeline only (no streaming profile updates), soft tenant isolation (application-scoped tenant_id per ADR-0002), Spec 005 engine is stable and unchanged
+**Constraints**: Batch pipeline only (no streaming profile updates), soft tenant isolation (application-scoped tenant_id per ADR-0002), current voice-mode engine is stable but profile-family-aware storage/caching is required
 **Scale/Scope**: <=500 documents and <=30 authors per tenant (initial cohort), profile versions retained >=90 days
 
 ## Constitution Check
@@ -28,7 +28,7 @@ Add multi-tenant profile isolation, versioning, composite inheritance, self-serv
 | Principle | Status | Notes |
 |-----------|--------|-------|
 | §2.1 Multi-Tenant from Day One | PASS | All profile tables carry `tenant_id`. Every query filters by tenant context from authenticated session. Leash pattern (ADR-0002) enforced at the service layer — tenant_id is never accepted from user input. |
-| §2.2 Skills as Encoded Knowledge | PASS | Profiles are the input to skill generation. Profile versioning ensures skill files are traceable to a specific corpus snapshot and profile version. |
+| §2.2 Skills as Encoded Knowledge | PASS | Profiles are the input to skill generation and lens/runtime artifacts. Profile versioning ensures exported assets are traceable to a specific corpus snapshot, family, and profile version. |
 | §2.3 Sandbox by Default | PASS | New tenants start with zero profiles. Profile data is inaccessible to other tenants at the data layer (tenant_id scoping on all queries). Default: no cross-tenant access. |
 | §2.4 Monitor Everything | PASS | Structured logging for all profile operations (generation, rollback, inheritance resolution, intake). Operation logs track duration, success/failure, and tenant context. |
 | §2.5 Feedback Loops | PASS | Profile versioning enables comparison between versions. Fidelity scores at generation time provide quantitative feedback. Rollback is the corrective action when fidelity degrades. |
@@ -41,7 +41,7 @@ Add multi-tenant profile isolation, versioning, composite inheritance, self-serv
 | §3.2 Compliance Framework Awareness | PASS | Profile generation respects tenant compliance framework declarations. Corpus retention follows tenant-configured retention policies. |
 | §3.3 Non-Negotiables | PASS | Audit trail for all profile operations (generation, rollback, version changes). Corpus data never used for model training. Profile versions are immutable — no silent mutations. |
 
-**Post-design re-check**: All principles remain satisfied. The `profiles` schema separation reinforces tenant isolation (§2.1, §2.3). The immutable version model ensures auditability (§3.3). The subprocess boundary with Spec 005 keeps the stylometric engine stable (§2.2).
+**Post-design re-check**: All principles remain satisfied. The `profiles` schema separation reinforces tenant isolation (§2.1, §2.3). The immutable version model ensures auditability (§3.3). The subprocess boundary with Spec 005 keeps the current voice-mode engine stable while leaving room for additional profile families (§2.2).
 
 ## Project Structure
 

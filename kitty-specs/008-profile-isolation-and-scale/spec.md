@@ -20,6 +20,7 @@ This spec defines how profiles are isolated between tenants, how profile lifecyc
 - Tenant-scoped profile generation with data isolation at the data layer (not just API layer)
 - Profile versioning with immutable version identifiers and rollback support
 - Composite profile inheritance (org, department, individual tiers)
+- Profile-family-aware persistence and lifecycle management (`voice`, `position`, `philosophy`)
 - Self-service corpus intake supporting PDF, DOCX, TXT, HTML, Markdown
 - Content-hash corpus deduplication within tenant scope
 - Resolved profile caching with inheritance-aware invalidation
@@ -28,7 +29,7 @@ This spec defines how profiles are isolated between tenants, how profile lifecyc
 
 ### Out of Scope
 
-- Changes to the stylometric engine itself (Spec 005 is stable)
+- Changes to the existing stylometric feature extraction pipeline for voice mode
 - Hard tenant isolation via separate schemas/databases (soft isolation via tenant_id scoping per ADR-0002 Leash pattern)
 - Real-time streaming profile updates (batch pipeline only)
 - Cross-tenant profile sharing or marketplace
@@ -139,6 +140,8 @@ For tenants with large corpora (500+ documents, 20+ authors), resolved profiles 
 | FR-008 | Resolved profile caching MUST invalidate on any upstream change in the inheritance chain. Stale cache entries MUST NOT be served after invalidation. | P3 |
 | FR-009 | Profile version history MUST be retained for at least 90 days or the tenant's configured retention period, whichever is longer. | P1 |
 | FR-010 | Concurrent profile generation pipelines for different tenants MUST NOT contend on shared resources in a way that causes correctness failures. Performance degradation under contention is acceptable; data corruption is not. | P1 |
+| FR-011 | Every stored profile, version, and cache entry MUST declare a `profile_family`. Lifecycle operations MUST be keyed by `(tenant_id, profile_family, profile_id, version)` rather than profile ID alone. | P1 |
+| FR-012 | Resolved profile caching MUST be family-aware. Voice caches invalidate on stylometric/marker/inheritance changes. Philosophy caches invalidate on lens config, topic taxonomy, evidence map, chronology, or inheritance changes. | P2 |
 
 ### Non-Functional Requirements
 
@@ -153,13 +156,15 @@ For tenants with large corpora (500+ documents, 20+ authors), resolved profiles 
 **TenantProfile**
 - `tenant_id`: Scoping key (foreign key to tenant)
 - `profile_id`: Unique within tenant
+- `profile_family`: `voice | position | philosophy`
 - `version`: Monotonically increasing integer
 - `author_id`: Reference to attributed author (nullable for org/dept profiles)
 - `tier`: `org | department | individual`
 - `parent_profile_id`: Reference to parent in inheritance chain (nullable for org-level)
 - `corpus_snapshot_id`: Reference to the corpus version used for generation
-- `stylometric_features`: 129-feature vector (Spec 005 schema)
-- `markers`: Marker set (Spec 005 markers.json schema)
+- `stylometric_features`: 129-feature vector (Spec 005 schema, voice mode)
+- `markers`: Marker set (Spec 005 markers.json schema, voice/position modes)
+- `philosophy_payload`: Lens set, tension axes, chronology, evidence map (philosophy mode)
 - `fidelity_score`: Attribution accuracy at time of generation
 - `status`: `generating | active | rolled_back | archived`
 - `created_at`, `archived_at`
@@ -185,10 +190,17 @@ For tenants with large corpora (500+ documents, 20+ authors), resolved profiles 
 
 ## Assumptions
 
-- Spec 005's stylometric engine is stable and does not require architectural changes to support multi-tenant execution — only scoping and lifecycle management.
+- Spec 005's existing stylometric engine is stable for voice-mode execution. The
+  multi-tenant persistence, versioning, and cache model must remain extensible
+  to non-stylometric profile families such as philosophy mode.
 - Tenant isolation at the data layer (FR-001) will be enforced by the platform's multi-tenancy infrastructure (ADR-0002, Leash pattern), not reimplemented per-feature.
 - Corpus sizes for the initial cohort of clients are <=500 documents and <=30 authors. Scaling beyond this is a future optimization, not a launch blocker.
 - The entitlement model from Spec 006 governs which tenants have access to profile features (generation, versioning, composite inheritance) based on their product tier.
+
+For philosophy mode specifically, composite resolution must preserve meaningful
+disagreement and counter-lenses rather than collapsing to a single dominant
+stance. The storage and cache model must not assume that every family resolves
+like a weighted stylometric composite.
 
 ## References
 

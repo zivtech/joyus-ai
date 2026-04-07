@@ -22,6 +22,11 @@ These systems encode organizational knowledge as testable, enforceable skills �
 
 While the legal advocacy org drives the high-fidelity (Tier 4) requirements, the same profile engine can serve anyone who wants to build a writing profile for their own content. A blogger, a marketing team, or a solo consultant should be able to provide a handful of writing samples and get a usable writing skill — even if it's lower fidelity than a full forensic-grade profile. The platform supports four fidelity tiers (see §5.6), each with different data requirements and capabilities, making the profile engine valuable from casual use through expert-level authorship preservation.
 
+This claim applies most directly to **voice/authorship** profiles. Position and
+philosophy profiles need stronger evidence. The platform should degrade those
+modes to "insufficient evidence" instead of pretending a handful of samples can
+support stable reasoning or debate profiles.
+
 ### First validated use case
 
 A nonprofit legal advocacy organization — the foremost experts on consumer law in the United States — that:
@@ -153,6 +158,53 @@ class DepartmentProfile(AuthorProfile):
     # AuthorProfile is the canonical entity name across data-model.md, contracts, and tasks.
 ```
 
+### 3.4 Profile Families
+
+The current spec treats "profile" as one thing. That is now too coarse.
+
+Joyus should explicitly support three profile families:
+
+| Family | Primary question | Core artifact | Verification focus |
+|---|---|---|---|
+| **Voice** | Does this sound like them? | SKILL.md + markers + stylometrics | Stylistic fidelity |
+| **Position** | What do they repeatedly believe? | Topic-keyed stance graph + chronology | Stance accuracy and contradiction detection |
+| **Philosophy** | How do they reason through tradeoffs? | Lens-first review/query/compare runtime | Correct objections, counter-lenses, approval conditions, uncertainty |
+
+These are related but not interchangeable:
+
+- voice without position can sound right while saying the wrong thing
+- position without philosophy can list beliefs without explaining tradeoff logic
+- philosophy without voice can still be useful for review and decision support
+
+The platform should stop assuming that better stylometrics automatically imply
+better philosophy capture.
+
+### 3.5 Philosophy Mode
+
+Philosophy mode is the new family inspired by the lens-first profiles recently
+built in the Drupal work. It is intended for review, query, and comparison
+surfaces where the user needs structured reasoning rather than contributor
+imitation.
+
+The output unit is a **lens**, not a persona:
+
+- selected lenses
+- likely objections
+- likely approval conditions
+- cross-lens tension
+- counter-lenses
+- blind spots / uncertainty
+- optional stewardship or arbiter layer for product, governance, or release
+  decisions
+
+Hard rules for philosophy mode:
+
+- no first-person contributor simulation
+- no signature-phrase imitation
+- named people are evidence/provenance, not the primary speaking unit
+- composite profiles must preserve meaningful disagreement rather than averaging
+  it away
+
 ---
 
 ## 4. System 1: Attribution & Validation Engine
@@ -223,6 +275,8 @@ The profile-engine-spec (`spec/profile-engine-spec.md`) covers the core library:
 - **Composite profile generation** (department and org levels)
 - **Profile diffing** (what changed between profile versions)
 - **Profile inheritance** (org-level prohibited framings cascade to all departments and people)
+- **Profile family resolution** (voice, position, philosophy) with family-aware
+  verification and inheritance semantics
 
 ### 5.3 Generation Workflow
 
@@ -343,6 +397,9 @@ Not every use case requires a 50,000-word corpus and 129-feature analysis. The p
 
 **Why this matters:** Frontier LLMs (Claude, GPT-4o, Gemini) plateau at Tier 1-2 fidelity regardless of prompting sophistication (EMNLP 2025, Wang et al.: 40,000+ generations across 400+ authors). The reason is the **explicit/implicit gap**: explicit style features (tone, vocabulary level) can be described in a prompt; implicit features (function-word fingerprints, syntactic patterns, rare-word preferences) can only be measured numerically. Tier 3-4 profiles capture what cannot be said, only measured.
 
+These tiers are for **voice/authorship fidelity**. They should not be reused as
+the quality ladder for philosophy mode.
+
 | | Tier 1: Surface Tone | Tier 2: Lexical Profile | Tier 3: Syntactic + Rhetorical | Tier 4: Full Stylometric |
 |---|---|---|---|---|
 | **Data required** | ~300-2,000 words | ~2,000-10,000 words | ~10,000-50,000 words | ~50,000+ words |
@@ -382,6 +439,28 @@ The full 129-feature treatment. Character n-grams, rare-word preference signatur
 
 Attribution accuracy (97.9%) and generation fidelity are related but distinct metrics. No reliable mapping between them exists in published literature. The strongest defensible claim is "generation with higher stylometric alignment than any prompting-based approach" — not "indistinguishable from the human author." Sophisticated readers familiar with the author can still detect AI-generated content in an estimated 15-30% of cases even at Tier 4 (per EMNLP 2025 findings).
 
+The same caveat applies more strongly to philosophy mode: attribution accuracy
+and stylometric closeness say almost nothing about whether the system surfaced
+the right objections, counter-lenses, or approval conditions.
+
+### 5.7 Philosophy Readiness Levels
+
+Philosophy mode needs its own readiness ladder:
+
+| Level | What is valid |
+|---|---|
+| **P1 Topical** | Topic tagging and coarse stance extraction |
+| **P2 Lens-Stable** | Lens selection with likely objections and approval conditions |
+| **P3 Debate-Ready** | Counter-lenses, tension axes, chronology |
+| **P4 Stewardship-Ready** | Arbiter/project-stewardship layer for governance, product direction, and release-risk questions |
+
+Fail closed rule:
+
+- If evidence only supports P1, do not emit a confident philosophy review.
+- If counter-lenses are required but unsupported, say so explicitly.
+- If stewardship evidence is missing, omit that layer rather than hallucinating
+  arbitration.
+
 #### What to build vs. leverage
 
 | Component | Build or leverage? | Rationale |
@@ -410,6 +489,13 @@ Every output from System 2 is analyzed:
 | **Tier 1: Inline** | Before delivery | Marker presence, basic stylometric distance, prohibited framing check. <500ms. |
 | **Tier 2: Deep** | After delivery (async) | Full 129-feature Burrows' Delta, cross-document consistency, position accuracy |
 | **Trend analysis** | Daily/weekly rollup | Fidelity score trends over time, per profile, per content type |
+
+For philosophy mode, "fidelity" means reasoning fidelity:
+
+- correct lens selection
+- correct tension preservation
+- explicit uncertainty where evidence is weak
+- no collapse into a single flattened consensus when real disagreement exists
 
 ### 6.3 Drift Detection
 
@@ -513,6 +599,11 @@ The organization's publications are their primary revenue source (subscriber-onl
 7. **Audit trail tracks source provenance.** Every output records which source documents influenced it, enabling access control verification and ensuring the organization can audit for accidental content leakage.
 
 8. **Voice profiles carry independent access levels.** Statistical patterns (markers, stylometrics) within any voice profile remain unrestricted — they are derived knowledge. However, positions, analytical frameworks, strategic approaches, and example outputs within restricted voice profiles inherit the voice's access level. This enables Layer 2 voices (e.g., a restricted composite voice containing privileged domain strategies) to be access-gated without restricting the underlying stylometric infrastructure. See `profile-engine-spec.md §3.1` for the `VoiceAccessLevel` model.
+
+9. **Philosophy profiles may be access-gated separately from voice profiles.**
+The reasoning layer may contain privileged analytical frameworks or governance
+logic even when the underlying stylometric patterns are unrestricted. Access
+control should be profile-family-aware, not voice-only.
 
 ### 7.3 Access Control Integration
 
