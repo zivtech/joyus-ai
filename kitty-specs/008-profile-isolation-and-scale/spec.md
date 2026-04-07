@@ -142,6 +142,7 @@ For tenants with large corpora (500+ documents, 20+ authors), resolved profiles 
 | FR-010 | Concurrent profile generation pipelines for different tenants MUST NOT contend on shared resources in a way that causes correctness failures. Performance degradation under contention is acceptable; data corruption is not. | P1 |
 | FR-011 | Every stored profile, version, and cache entry MUST declare a `profile_family`. Lifecycle operations MUST be keyed by `(tenant_id, profile_family, profile_id, version)` rather than profile ID alone. | P1 |
 | FR-012 | Resolved profile caching MUST be family-aware. Voice caches invalidate on stylometric/marker/inheritance changes. Philosophy caches invalidate on lens config, topic taxonomy, evidence map, chronology, or inheritance changes. | P2 |
+| FR-013 | Existing voice profiles MUST migrate with `profile_family=\"voice\"` by default. Introducing profile families MUST NOT require immediate regeneration of all tenant profiles before the platform can boot or serve existing voice consumers. | P1 |
 
 ### Non-Functional Requirements
 
@@ -201,6 +202,13 @@ For philosophy mode specifically, composite resolution must preserve meaningful
 disagreement and counter-lenses rather than collapsing to a single dominant
 stance. The storage and cache model must not assume that every family resolves
 like a weighted stylometric composite.
+
+Migration compatibility assumption:
+
+- Existing persisted profiles can be backfilled lazily to `profile_family=voice`.
+- Family-aware caches may be empty at rollout and warmed on demand.
+- Philosophy-mode rows may not exist at all during the initial platform rollout;
+  the architecture must tolerate that cleanly.
 
 ## References
 

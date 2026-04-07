@@ -24,6 +24,11 @@ system. It supports three distinct but composable profile families:
 | **Position** | "What do they consistently believe?" | Topic-keyed stance graph + chronology + evidence map | Not enough on its own to explain how they arbitrate conflicts |
 | **Philosophy** | "How do they reason through tradeoffs?" | Lens-first review/query/compare runtime with counter-lenses and approval conditions | Not first-person roleplay and not signature-phrase imitation |
 
+**Compatibility rule:** Existing profile-engine consumers remain on
+`profile_family="voice"` by default. Philosophy mode is additive. No existing
+voice emitter, CLI, or verification contract should be broken in order to
+introduce it.
+
 This is the platform's moat — domain knowledge that models can't generate on their own and that doesn't get subsumed by model upgrades (Decision #18).
 
 ---
@@ -365,6 +370,26 @@ The engine now has two different override systems with different purposes:
 Do not encode philosophy mode as more `voice_contexts`. That leads to the wrong
 merge semantics and the wrong verification model.
 
+### 3.4 Rollout Strategy
+
+Philosophy mode should land in three explicit stages:
+
+1. **Schema + storage readiness**
+   - `profile_family` added everywhere
+   - family-aware versioning and cache keys
+   - no philosophy generation required yet
+2. **Private engine readiness**
+   - philosophy extraction artifacts
+   - philosophy verification harness
+   - internal-only fixtures and regression tests
+3. **Consumer activation**
+   - review/query/compare runtimes consume philosophy artifacts
+   - public or tenant-facing surfaces enabled only after evaluation is stable
+
+This staging is intentional. Stage 1 is required for safe architecture. Stages
+2 and 3 should not be back-ported into current voice-mode WPs as “just one more
+feature”.
+
 ---
 
 ## 4. Skill File Output Format
@@ -500,6 +525,10 @@ set instead of a voice skill:
 The philosophy emitter is explicitly lens-first and evidence-backed. It should
 never emit "write as this person" instructions or signature-phrase imitation
 rules.
+
+**Compatibility rule:** The existing `SkillEmitter.emit()` contract remains the
+voice-mode emitter. Philosophy mode should use a separate emitter contract
+rather than overloading the voice skill schema.
 
 ---
 

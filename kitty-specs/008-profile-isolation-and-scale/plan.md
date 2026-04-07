@@ -140,7 +140,7 @@ Design the `profiles` schema and service interfaces.
 
 | ID | Deliverable | Depends on |
 |----|------------|------------|
-| 1.1 | `profiles` pgSchema with all tables (data-model.md → schema.ts) | R1, R2 |
+| 1.1 | `profiles` pgSchema with all tables (data-model.md → schema.ts) including `profile_family` and non-breaking defaulting to `voice` | R1, R2 |
 | 1.2 | Tenant-scoped query helpers (`tenant-scope.ts`) | R1 |
 | 1.3 | Zod validation schemas (`validation.ts`) | 1.1 |
 | 1.4 | Shared types and constants (`types.ts`) | 1.1 |
@@ -148,6 +148,9 @@ Design the `profiles` schema and service interfaces.
 | 1.6 | Extend `db/client.ts` to import profiles schema | 1.1 |
 
 **Exit criteria**: Schema compiles, migration runs against empty database, types are exported, tenant-scope helpers have unit tests.
+
+**Compatibility gate**: Existing voice consumers continue to resolve profiles
+without specifying `profile_family`; default behavior remains voice-mode.
 
 ### Phase 2 — Profile Generation Pipeline (3–4 days)
 

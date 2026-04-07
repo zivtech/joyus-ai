@@ -7,6 +7,9 @@
 
 Build a Python profile engine library that ingests author corpora, extracts 129 stylometric features, generates hierarchical writing profiles (person → department → organization), emits platform-consumable skill files, and provides two-tier fidelity verification — exposed via CLI and MCP tools. Phase C adds continuous monitoring with drift detection and repair.
 
+This plan remains **voice-first**. The newer `position` and `philosophy`
+families are architectural extensions, not hidden scope for Phases A-C.
+
 ## Technical Context
 
 **Language/Version**: Python >=3.11, <=3.12 (spaCy 3.x incompatible with Python 3.14)
@@ -18,6 +21,9 @@ Build a Python profile engine library that ingests author corpora, extracts 129 
 **Performance Goals**: Tier 1 verification <500ms, Tier 1 profile build <30s, Tier 2 build <5min
 **Constraints**: Python <=3.12, faststylometry Corpus not thread-safe (per-request instances), all MCP output to stderr
 **Scale/Scope**: 30+ authors, 4 fidelity tiers, 5 drift signals, 6 repair types
+
+**Compatibility goal**: Existing voice-mode contracts stay valid while the
+schema evolves toward profile families.
 
 ## Constitution Check
 
@@ -179,3 +185,14 @@ The following spec sections are intentionally **not covered** in Phases A-C:
 | §1 Self-Service Profile Building | Phase E | Web interface, automatic tier detection |
 | Constitution §2.5 User Correction Feedback | Phase D | No generated content = no user corrections to capture |
 | Constitution §2.7 Automated Pipelines | Phase D | Event-driven workflows need generation capability |
+| `profile_family=position` runtime artifacts | Later feature | Needs stance graph + chronology contract, not just voice files |
+| `profile_family=philosophy` extraction and runtime | Later feature | Needs lens schema, counter-lens logic, and separate verification harness |
+
+### Philosophy Mode Non-Goal for This Plan
+
+Philosophy mode should not be smuggled into current WPs by extending
+`VoiceContext`, `SkillEmitter`, or Burrows' Delta scoring. The safe path is:
+
+- keep Phases A-C voice-first
+- add family-aware schema and versioning in platform-facing specs
+- design philosophy mode as a separate runtime/evaluation track later
