@@ -11,9 +11,18 @@
 ## 1. Purpose
 
 A standalone Python library that:
-1. **Builds writing profiles** from a document corpus (any domain)
-2. **Emits skill files** consumable by the Joyus AI platform
-3. **Verifies content fidelity** via two-tier checking (inline + async)
+1. **Builds profile families** from a document corpus (any domain)
+2. **Emits runtime assets** consumable by the Joyus AI platform
+3. **Verifies mode-specific fidelity** via inline and async checks
+
+The engine should no longer be thought of as a single "writing profile"
+system. It supports three distinct but composable profile families:
+
+| Profile family | Primary question | Typical output | What it is not |
+|---|---|---|---|
+| **Voice** | "Does this sound like them?" | SKILL.md + markers.json + stylometrics.json | Not a reliable proxy for positions or tradeoff reasoning |
+| **Position** | "What do they consistently believe?" | Topic-keyed stance graph + chronology + evidence map | Not enough on its own to explain how they arbitrate conflicts |
+| **Philosophy** | "How do they reason through tradeoffs?" | Lens-first review/query/compare runtime with counter-lenses and approval conditions | Not first-person roleplay and not signature-phrase imitation |
 
 This is the platform's moat — domain knowledge that models can't generate on their own and that doesn't get subsumed by model upgrades (Decision #18).
 
@@ -108,6 +117,7 @@ class AuthorProfile(BaseModel):
     # Metadata
     profile_id: str                          # Unique identifier
     author_name: str                         # Display name
+    profile_family: Literal["voice", "position", "philosophy"] = "voice"
     domain: str                              # legal_advocacy | technical | marketing | general
     corpus_size: int                         # Number of documents analyzed
     created_at: datetime
@@ -184,11 +194,75 @@ class AuthorProfile(BaseModel):
     #   minimum_fidelity_score: float
 ```
 
-### 3.1 VoiceContext Architecture (Added Feb 19, 2026)
+### 3.1 Philosophy Mode (Added Apr 7, 2026)
+
+Philosophy mode captures **reasoning patterns**, not just tone or static
+positions. It exists for the kind of lens-first profiles now proven in the
+Drupal core work: profiles that answer "which lens applies, what objection
+does it raise, what would change the verdict, and which counter-lens must be
+surfaced?"
+
+A philosophy profile is **not** a voice profile with more `positions`. Voice
+profiles optimize for stylistic fidelity. Philosophy profiles optimize for:
+
+- lens selection from canonical topics
+- likely objections and approval conditions
+- normal debate edges and counter-lenses
+- chronology of position shifts
+- evidence hierarchy and arbiter/stewardship rules
+
+Philosophy profiles must preserve disagreement. Composite philosophy profiles
+must not collapse tension into "the most common stance" because that destroys
+the main value of the mode.
+
+```python
+class PhilosophyLens(BaseModel):
+    lens_id: str
+    label: str
+    trigger_topics: list[str]
+    likely_objections: list[str]
+    approval_conditions: list[str]
+    anti_patterns: list[str]
+    evidence_hierarchy: list[str]
+
+class TensionAxis(BaseModel):
+    axis_id: str
+    left_lens: str
+    right_lens: str
+    description: str
+
+class PhilosophyProfile(BaseModel):
+    profile_id: str
+    author_name: str
+    profile_family: Literal["philosophy"] = "philosophy"
+    canonical_topics: list[str]
+    lenses: list[PhilosophyLens]
+    counter_lenses: list[str]
+    tension_axes: list[TensionAxis]
+    chronology: list[Position]
+    evidence_map: dict[str, list[str]]
+    stewardship_rules: list[str]
+    confidence: float
+```
+
+**Readiness gates for philosophy mode:**
+
+| Readiness | What is valid |
+|---|---|
+| **Topical** | Topic tagging and stance extraction only |
+| **Lens-stable** | Lens selection + likely objections + approval conditions |
+| **Debate-ready** | Counter-lenses, tension axes, chronology |
+| **Stewardship-ready** | Arbiter/project-stewardship layer for product, governance, release, or access disputes |
+
+Unlike voice tiers, philosophy readiness should fail closed. If the corpus does
+not support stable lens extraction, the engine should emit "insufficient
+evidence" rather than pretending a low-tier philosophy profile exists.
+
+### 3.2 VoiceContext Architecture (Added Feb 19, 2026)
 
 The `RegisterShift` model (simple parameter deltas on voice/tone) is insufficient for organizations whose authors write in fundamentally different voices for different audiences. Legal advocacy attorneys, for example, write as Formal (courts), Accessible (public), Technical (practitioners), and Persuasive (legislators) — these differ across vocabulary, argumentation, citations, structure, and positions, not just tone.
 
-**Three-layer opt-in design:**
+**Three-layer opt-in design for voice mode:**
 
 | Layer | Who needs it | What it adds | Backwards impact |
 |-------|-------------|-------------|-----------------|
@@ -281,11 +355,23 @@ class CompositeVoiceConfig(BaseModel):
 | Edge cases | Optional | Optional | Optional | Optional |
 | Validation | Required | Required | Required | Required |
 
+### 3.3 Mode Boundaries
+
+The engine now has two different override systems with different purposes:
+
+- `voice_contexts` are for **audience-specific delivery** differences.
+- philosophy contexts are for **reasoning/lens** differences.
+
+Do not encode philosophy mode as more `voice_contexts`. That leads to the wrong
+merge semantics and the wrong verification model.
+
 ---
 
 ## 4. Skill File Output Format
 
-The emitter produces three files per author profile:
+The emitter produces family-specific runtime assets.
+
+For **voice** profiles, the emitter produces three files per author profile:
 
 ### SKILL.md
 Human-readable and Claude-readable instructions. Generated from profile sections.
@@ -402,6 +488,19 @@ Baseline feature distributions for Tier 2 deep analysis.
 }
 ```
 
+For **philosophy** profiles, the emitter should produce a lens-first artifact
+set instead of a voice skill:
+
+- `philosophy-lenses.json`
+- `positions.json`
+- `evidence-map.json`
+- optional `review-runtime.md` or runtime config describing required output
+  structure and disclosure rules
+
+The philosophy emitter is explicitly lens-first and evidence-backed. It should
+never emit "write as this person" instructions or signature-phrase imitation
+rules.
+
 ---
 
 ## 5. Two-Tier Verification
@@ -493,6 +592,34 @@ def deep_analyze(text: str, profile: AuthorProfile, history: list[str] = None) -
 
     return DeepResult(...)
 ```
+
+### 5.1 Mode-Specific Verification
+
+The existing Tier 1 / Tier 2 design is correct for **voice** mode and only
+partially correct for **position** mode. It is insufficient for philosophy
+mode.
+
+| Mode | Inline check | Deep check |
+|---|---|---|
+| **Voice** | Marker presence + quick stylometric distance | Full Burrows' Delta + drift analysis |
+| **Position** | Required stance markers present; prohibited framings absent | Topic/stance consistency, chronology drift, contradiction analysis |
+| **Philosophy** | Required lenses surfaced; mandatory counter-lens present when configured; explicit uncertainty when evidence is weak | Lens-selection accuracy, approval-condition coverage, tension-axis preservation, stewardship trigger correctness |
+
+Philosophy verification should not use Burrows' Delta as its primary success
+metric. A philosophy profile can be perfectly correct while sounding nothing
+like the original author. The core failure mode is wrong objections, collapsed
+tradeoffs, or false certainty.
+
+### 5.2 Composite Semantics by Profile Family
+
+Composite behavior must be family-aware:
+
+- **Voice composites** may use weighted aggregation and range merging.
+- **Position composites** may aggregate consensus positions, but should keep
+  minority or conflicting positions when they materially affect downstream
+  review.
+- **Philosophy composites** must preserve disagreement, counter-lenses, and
+  tension axes. They must not resolve to a single "dominant stance" by default.
 
 ### Feedback Loop: Tier 2 → Skill Updates
 
