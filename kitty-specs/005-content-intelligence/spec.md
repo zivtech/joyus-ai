@@ -186,6 +186,9 @@ built in the Drupal work. It is intended for review, query, and comparison
 surfaces where the user needs structured reasoning rather than contributor
 imitation.
 
+The first consumer contract for this family lives at
+[contracts/philosophy-runtime-contract.md](contracts/philosophy-runtime-contract.md).
+
 The output unit is a **lens**, not a persona:
 
 - selected lenses

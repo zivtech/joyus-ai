@@ -4,6 +4,10 @@
 **Language**: Python >=3.11
 **Interface**: Library (importable) + CLI + MCP tools
 
+**Current scope note:** This contract is primarily the **voice/authorship**
+family contract. Philosophy mode uses a separate runtime contract; see
+[philosophy-runtime-contract.md](philosophy-runtime-contract.md).
+
 ---
 
 ## Library API (`joyus_profile`)

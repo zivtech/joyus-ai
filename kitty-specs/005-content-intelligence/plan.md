@@ -51,7 +51,8 @@ kitty-specs/005-content-intelligence/
 ├── quickstart.md        # Setup and validation guide
 ├── contracts/
 │   ├── profile-engine-api.md   # Python library + CLI API
-│   └── mcp-tools-api.md       # MCP tool schemas
+│   ├── mcp-tools-api.md       # MCP tool schemas
+│   └── philosophy-runtime-contract.md  # Lens-first consumer contract (review/query/compare)
 └── tasks/
     └── WP01-WP14.md    # 14 work package prompt files
 ```
