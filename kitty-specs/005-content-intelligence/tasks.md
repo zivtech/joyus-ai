@@ -5,6 +5,11 @@
 **Scope**: Phase A (Profile Engine), Phase B (Hierarchical Profiles), Phase C (Fidelity Monitoring)
 **Work Packages**: 14 | **Subtasks**: 73
 
+**Boundary note:** These tasks are for the current voice-first engine. They do
+not implicitly include philosophy-mode extraction, lens runtimes, or
+family-aware review/query consumers unless a future feature explicitly adds
+them.
+
 ---
 
 ## Subtask Registry
