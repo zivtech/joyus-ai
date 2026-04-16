@@ -15,6 +15,13 @@
       "when": 1773676762716,
       "tag": "0001_fine_young_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776336378429,
+      "tag": "0002_sudden_green_goblin",
+      "breakpoints": true
     }
   ]
 }
