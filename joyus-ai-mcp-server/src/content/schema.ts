@@ -8,13 +8,15 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgSchema,
   text,
   timestamp,
   boolean,
   integer,
+  bigint,
+  numeric,
   real,
   jsonb,
   uniqueIndex,
@@ -80,6 +82,21 @@ export const syncTriggerEnum = contentSchema.enum('content_sync_trigger', [
 // ============================================================
 // TABLES
 // ============================================================
+
+// --- ContentTenant ---
+
+export const contentTenants = contentSchema.table(
+  'tenants',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  table => ({
+    slugUnique: uniqueIndex('content_tenants_slug_unique').on(table.slug),
+  })
+);
 
 // --- ContentSource ---
 
@@ -207,6 +224,13 @@ export const contentMediationSessions = contentSchema.table('mediation_sessions'
   startedAt: timestamp('started_at').defaultNow().notNull(),
   lastActivityAt: timestamp('last_activity_at').defaultNow().notNull(),
   endedAt: timestamp('ended_at'),
+  totalInputTokens: bigint('total_input_tokens', { mode: 'number' }).notNull().default(0),
+  totalOutputTokens: bigint('total_output_tokens', { mode: 'number' }).notNull().default(0),
+  totalCacheWriteTokens: bigint('total_cache_write_tokens', { mode: 'number' }).notNull().default(0),
+  totalCacheReadTokens: bigint('total_cache_read_tokens', { mode: 'number' }).notNull().default(0),
+  totalEstimatedCostUsd: numeric('total_estimated_cost_usd', { precision: 14, scale: 6 }).notNull().default('0'),
+  cacheMissCount: integer('cache_miss_count').notNull().default(0),
+  maxIdleGapSeconds: integer('max_idle_gap_seconds').notNull().default(0),
 }, (table) => ({
   tenantUserIdx: index('content_sessions_tenant_user_idx').on(table.tenantId, table.userId),
   apiKeyIdIdx: index('content_sessions_api_key_id_idx').on(table.apiKeyId),
@@ -279,6 +303,7 @@ export const contentOperationLogs = contentSchema.table('operation_logs', {
   operation: text('operation').notNull(), // sync, search, resolve, generate, mediate
   sourceId: text('source_id'),
   userId: text('user_id'),
+  sessionId: text('session_id'),
   durationMs: integer('duration_ms').notNull(),
   success: boolean('success').notNull(),
   metadata: jsonb('metadata').notNull().$defaultFn(() => ({})),
@@ -286,6 +311,9 @@ export const contentOperationLogs = contentSchema.table('operation_logs', {
 }, (table) => ({
   tenantOpCreatedIdx: index('content_op_logs_tenant_op_created_idx').on(table.tenantId, table.operation, table.createdAt),
   tenantCreatedIdx: index('content_op_logs_tenant_created_idx').on(table.tenantId, table.createdAt),
+  tenantSessionIdx: index('content_op_logs_tenant_session_idx')
+    .on(table.tenantId, table.sessionId)
+    .where(sql`session_id IS NOT NULL`),
 }));
 
 // ============================================================
@@ -357,6 +385,9 @@ export const contentSyncRunsRelations = relations(contentSyncRuns, ({ one }) => 
 // ============================================================
 // TYPE EXPORTS
 // ============================================================
+
+export type ContentTenant = typeof contentTenants.$inferSelect;
+export type NewContentTenant = typeof contentTenants.$inferInsert;
 
 export type ContentSource = typeof contentSources.$inferSelect;
 export type NewContentSource = typeof contentSources.$inferInsert;

@@ -8,20 +8,21 @@
  * Empty entitlements = zero content access, never full access.
  */
 
-import { eq, desc, and } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid2';
+import { and, desc, eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 import {
   contentEntitlements,
-  contentProductSources,
-  contentProductProfiles,
-  contentProducts,
   contentOperationLogs,
+  contentProductProfiles,
+  contentProductSources,
+  contentSources,
 } from '../schema.js';
+
 import type { ResolvedEntitlements } from '../types.js';
-import type { EntitlementResolver, ResolverContext } from './interface.js';
 import type { EntitlementCache } from './cache.js';
-import { createId } from '@paralleldrive/cuid2';
+import type { EntitlementResolver, ResolverContext } from './interface.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -52,6 +53,24 @@ export class EntitlementService {
     forceRefresh = false,
   ): Promise<ResolvedEntitlements> {
     const startMs = Date.now();
+
+    if (process.env.JOYUS_DEV_ENTITLEMENT_MODE === 'all-tenant-sources') {
+      console.warn(
+        'Dev entitlement bypass active - returns ALL sources for tenant. DO NOT run in production'
+      );
+      const rows = await this.db
+        .select({ id: contentSources.id })
+        .from(contentSources)
+        .where(eq(contentSources.tenantId, tenantId));
+
+      return {
+        productIds: [],
+        sourceIds: rows.map(row => row.id),
+        profileIds: [],
+        resolvedFrom: 'dev-all-tenant-sources',
+        resolvedAt: new Date(),
+      };
+    }
 
     // 1. Cache check
     if (!forceRefresh) {

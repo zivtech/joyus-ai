@@ -19,6 +19,11 @@ declare global {
   namespace Express {
     interface Request {
       apiKeyRecord?: typeof contentApiKeys.$inferSelect;
+      user?: {
+        sub: string;
+        aud: string;
+        iss: string;
+      };
       userId?: string;
       tenantId?: string;
     }
@@ -72,6 +77,19 @@ export function createAuthMiddleware(db: DrizzleClient) {
      * stored on the API key record. Must run after validateApiKey.
      */
     validateUserToken: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const devToken = process.env.JOYUS_DEV_JWT_TOKEN ?? '';
+      if (
+        process.env.JOYUS_DEV_SKIP_JWT === 'true' &&
+        devToken !== '' &&
+        req.headers.authorization === `Bearer ${devToken}`
+      ) {
+        console.warn('Dev JWT bypass used - DO NOT run this in production');
+        req.user = { sub: 'dev-user', aud: 'joyus-mediation-dev', iss: 'joyus-dev' };
+        req.userId = 'dev-user';
+        next();
+        return;
+      }
+
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith('Bearer ')) {
         res.status(401).json({

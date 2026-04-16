@@ -25,6 +25,7 @@ import { authRouter } from './auth/routes.js';
 import { requireBearerToken } from './auth/middleware.js';
 import { inngest, allFunctions } from './inngest/index.js';
 import { db, auditLogs } from './db/client.js';
+import { assertContentDevBypassesAreSafe } from './content/dev-guards.js';
 import { initializeContentModule } from './content/index.js';
 import { initializePipelineModule, type PipelineModule } from './pipelines/init.js';
 import { initializeScheduler } from './scheduler/index.js';
@@ -33,6 +34,7 @@ import { executeTool, setPipelineContext } from './tools/executor.js';
 import { getAllTools } from './tools/index.js';
 
 config();
+assertContentDevBypassesAreSafe();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

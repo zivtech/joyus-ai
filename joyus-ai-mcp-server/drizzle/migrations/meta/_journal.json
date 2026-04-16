@@ -15,6 +15,20 @@
       "when": 1773676762716,
       "tag": "0001_fine_young_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776300914711,
+      "tag": "0002_lying_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776301141761,
+      "tag": "0003_wild_sumo",
+      "breakpoints": true
     }
   ]
 }
