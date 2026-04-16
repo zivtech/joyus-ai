@@ -116,6 +116,7 @@ export {
 } from './retriever.js';
 export {
   ContentGenerator,
+  AnthropicGenerationProvider,
   PlaceholderGenerationProvider,
   type GenerationProvider,
   type GenerationOutput,
