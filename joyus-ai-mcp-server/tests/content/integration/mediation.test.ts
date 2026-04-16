@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { CACHE_TTL_SECONDS } from '../../../src/content/generation/cost.js';
 import { MediationSessionService } from '../../../src/content/mediation/session.js';
 import type { ResolvedEntitlements, GenerationResult } from '../../../src/content/types.js';
 
@@ -39,9 +40,34 @@ function makeGenerationResult(): GenerationResult {
   };
 }
 
+function makeIncrementDbMock(returningRows: Array<{
+  idleGapSeconds: number;
+  isCacheMiss: boolean;
+  tenantId: string;
+}>) {
+  const returning = vi.fn().mockResolvedValue(returningRows);
+  const where = vi.fn().mockReturnValue({ returning });
+  const from = vi.fn().mockReturnValue({ where });
+  const set = vi.fn().mockReturnValue({ from });
+  const update = vi.fn().mockReturnValue({ set });
+  const values = vi.fn().mockResolvedValue(undefined);
+  const insert = vi.fn().mockReturnValue({ values });
+
+  return {
+    db: { update, insert } as never,
+    insert,
+    returning,
+    values,
+  };
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('Mediation Flow', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('session lifecycle: createSession → message → closeSession', () => {
     it('creates a session with correct properties', async () => {
       const mockDb = {} as never;
@@ -95,6 +121,43 @@ describe('Mediation Flow', () => {
       await sessionService.closeSession('session-1');
 
       expect(closeSpy).toHaveBeenCalledWith('session-1');
+    });
+  });
+
+  describe('incrementMessageCount', () => {
+    it('returns idle-gap metrics without writing a cache-miss event when still within TTL', async () => {
+      const mockDb = makeIncrementDbMock([
+        { idleGapSeconds: 42, isCacheMiss: false, tenantId: 'tenant-1' },
+      ]);
+      const sessionService = new MediationSessionService(mockDb.db);
+
+      const result = await sessionService.incrementMessageCount('session-1');
+
+      expect(result).toEqual({ idleGapSeconds: 42, isCacheMiss: false });
+      expect(mockDb.insert).not.toHaveBeenCalled();
+    });
+
+    it('writes a cache-miss operation log when the idle gap exceeds the cache TTL', async () => {
+      const mockDb = makeIncrementDbMock([
+        { idleGapSeconds: CACHE_TTL_SECONDS + 5, isCacheMiss: true, tenantId: 'tenant-1' },
+      ]);
+      const sessionService = new MediationSessionService(mockDb.db);
+
+      const result = await sessionService.incrementMessageCount('session-1');
+
+      expect(result).toEqual({ idleGapSeconds: CACHE_TTL_SECONDS + 5, isCacheMiss: true });
+      expect(mockDb.insert).toHaveBeenCalledOnce();
+      expect(mockDb.values).toHaveBeenCalledWith(expect.objectContaining({
+        tenantId: 'tenant-1',
+        operation: 'cache_miss',
+        sessionId: 'session-1',
+        durationMs: 0,
+        success: true,
+        metadata: {
+          idleGapSeconds: CACHE_TTL_SECONDS + 5,
+          cacheTtlSeconds: CACHE_TTL_SECONDS,
+        },
+      }));
     });
   });
 
@@ -181,7 +244,10 @@ describe('Mediation Flow', () => {
         startedAt: new Date(),
       });
       const closeSpy = vi.spyOn(sessionService, 'closeSession').mockResolvedValue();
-      const incrementSpy = vi.spyOn(sessionService, 'incrementMessageCount').mockResolvedValue();
+      const incrementSpy = vi.spyOn(sessionService, 'incrementMessageCount').mockResolvedValue({
+        idleGapSeconds: 0,
+        isCacheMiss: false,
+      });
 
       const mockGenerationService = {
         generate: vi.fn().mockResolvedValue(makeGenerationResult()),
