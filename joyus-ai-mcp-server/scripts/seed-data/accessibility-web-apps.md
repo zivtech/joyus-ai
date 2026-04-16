@@ -1,0 +1,9 @@
+# Accessibility for Web Apps
+
+WCAG 2.2 AA work is easiest to sustain when teams treat accessibility as interaction design, not just as a checklist after the UI is finished. Start with keyboard navigation. Every interactive control must be reachable with Tab, usable without a mouse, and have a visible focus indicator that is strong enough to notice on real backgrounds. Avoid removing browser outlines unless you replace them with a clearly visible alternative. For complex widgets such as menus, accordions, tabs, and dialogs, use predictable arrow-key and escape-key behavior that matches established ARIA Authoring Practices.
+
+Focus management is where many modern web apps fail. When a modal opens, move focus into it. When it closes, return focus to the control that launched it. After route changes or large async updates, set focus to the page heading or another logical landmark so screen reader and keyboard users know the interface changed. Do not trap focus unless the component truly requires it, and always provide a way out.
+
+Use ARIA to clarify semantics, not to patch broken HTML. Native buttons, links, inputs, fieldsets, and table markup should be your default because assistive technologies already understand them. Add ARIA labels, descriptions, or live regions only when native semantics are not enough. Incorrect ARIA roles usually make an interface less accessible, not more.
+
+Color contrast remains a practical quality gate. Body text should meet a 4.5:1 contrast ratio, larger text should meet 3:1, and UI states such as hover, focus, error, and selected need enough contrast to be perceivable. Pair color with text or icon changes so meaning does not depend on color alone. Accessibility at AA level is mostly disciplined implementation: semantic HTML, reliable keyboard behavior, strong focus treatment, and clear state communication.

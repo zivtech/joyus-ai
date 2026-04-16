@@ -1,0 +1,9 @@
+# Drupal Development Workflow
+
+Zivtech's Drupal workflow starts with a written spec, not with ad hoc code changes. The spec defines the user problem, acceptance criteria, affected modules, configuration impact, and deployment risks before implementation begins. That discipline keeps work reviewable and reduces the common Drupal failure mode where code, config, and editorial assumptions drift apart over the life of a ticket.
+
+For local development, DDEV provides the default environment contract. Developers start containers, install dependencies with Composer, and use Drush for cache rebuilds, database updates, and configuration import or export. The point is consistency: if everyone can reproduce the same services, PHP version, database state, and command set, debugging gets faster and fewer issues survive to CI. Environment setup should be scripted and documented so a new developer can get to a working site without tribal knowledge.
+
+Implementation work should separate custom module logic, theme changes, and configuration updates cleanly. PHPUnit covers PHP behavior that can regress. PHPCS with Drupal sniffs enforces coding standards and catches issues early. Teams should also validate configuration changes, update hooks, and any content model assumptions that could break installs or deployments.
+
+Pull requests are the quality gate. A good Drupal PR includes the problem statement, summary of technical changes, explicit testing steps, and notes about config exports, database updates, or cache implications. Reviewers should look for more than style. They need to check cacheability metadata, permissions, schema correctness, and whether the change fits the site's architectural direction. The workflow is spec-driven because Drupal projects accumulate complexity quickly; disciplined review is what keeps that complexity from turning into operational drag.

@@ -1,0 +1,9 @@
+# Claude Code Integration
+
+Claude Code works best in development teams when it is treated as an execution surface with guardrails, not as an unsupervised replacement for engineering judgment. Teams get the most value by giving the agent a narrow lane, clear repository instructions, and an explicit definition of done. That usually means documenting local conventions in AGENTS.md, routing specialized work through reusable skills, and splitting larger tasks into bounded roles such as implementation, verification, review, or debugging.
+
+Skills make the system repeatable. Instead of re-explaining how to review React performance, audit accessibility, or run a Drupal update every time, teams can encode that workflow once and call it when needed. Agent roles then provide controlled specialization. An implement lane can focus on code changes, while a verifier lane checks tests and claims, and a critic lane surfaces regressions or missing coverage. That separation reduces the chance that one model both writes and blesses the same risky change without independent scrutiny.
+
+The integration point with CI/CD should be a review gate, not automatic deployment. Claude Code can prepare patches, generate migration notes, and summarize test evidence, but branch protection, human review, and CI remain the enforcement layer. Useful guardrails include required typechecks, tests, linting, and explicit review on security-sensitive or schema-changing work. Generated diffs should stay small and attributable so humans can reason about them quickly.
+
+In practice, the strongest pattern is collaborative: humans define intent and constraints, Claude accelerates the implementation and analysis work, and automated checks validate the result. That balance preserves speed without pretending that agent output is trustworthy by default. Good integration is less about raw autonomy and more about reliable handoffs, evidence, and operational discipline.

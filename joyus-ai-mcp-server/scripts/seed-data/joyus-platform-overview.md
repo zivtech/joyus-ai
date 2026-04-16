@@ -1,0 +1,9 @@
+# Joyus Platform Overview
+
+Joyus AI gives organizations a controlled way to expose internal knowledge to AI assistants without dumping sensitive systems directly into every model workflow. The platform sits between enterprise content sources and the assistant experience, handling retrieval, entitlement checks, and tenant isolation before any grounded context is returned. That mediation layer matters because the hard problem is rarely "connect an LLM." The hard problem is deciding which user can see which documents, under which product or customer boundary, and with what audit trail.
+
+The platform is designed as a multi-tenant system. Each tenant owns its own content sources, API credentials, product mappings, and entitlement resolution. That model lets one company run Joyus for multiple client environments or internal business units without commingling data. The system keeps tenant context explicit at each step so search, retrieval, and generation are scoped to the right slice of content from the beginning instead of relying on fragile filtering late in the request path.
+
+Joyus also supports mediated AI access instead of direct database or CMS exposure. Connectors can index metadata and content in ways that fit the source system, while the application enforces consistent controls for freshness, source status, and retrieval rules. This creates a stable contract for downstream assistant tools even when the upstream systems are inconsistent or change over time.
+
+For teams evaluating enterprise AI, the value proposition is practical: safer access patterns, clearer governance, and a reusable retrieval layer that can serve internal copilots, client-facing assistants, and workflow automation. Instead of rebuilding permissions and search rules for every new AI experiment, Joyus centralizes those decisions in one place and makes them testable.
