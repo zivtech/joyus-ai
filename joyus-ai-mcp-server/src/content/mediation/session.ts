@@ -6,10 +6,12 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { alias } from 'drizzle-orm/pg-core';
 
-import { contentMediationSessions } from '../schema.js';
+import { CACHE_TTL_SECONDS } from '../generation/cost.js';
+import { contentMediationSessions, contentOperationLogs } from '../schema.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -19,6 +21,11 @@ export interface MediationSessionResult {
   userId: string;
   activeProfileId: string | null;
   startedAt: Date;
+}
+
+export interface IncrementMessageCountResult {
+  idleGapSeconds: number;
+  isCacheMiss: boolean;
 }
 
 export class MediationSessionService {
@@ -81,15 +88,54 @@ export class MediationSessionService {
   }
 
   /**
-   * Atomically increment the message count and update lastActivityAt.
+   * Atomically increment message count and derive the idle-gap/cache-miss metrics.
    */
-  async incrementMessageCount(sessionId: string): Promise<void> {
-    await this.db
+  async incrementMessageCount(sessionId: string): Promise<IncrementMessageCountResult> {
+    const previousSession = alias(contentMediationSessions, 'previous_session');
+    const idleGapSecondsSql = sql<number>`coalesce(extract(epoch from (now() - ${previousSession.lastActivityAt}))::int, 0)`;
+    const isCacheMissSql = sql<boolean>`${previousSession.lastActivityAt} is not null and extract(epoch from (now() - ${previousSession.lastActivityAt})) > ${CACHE_TTL_SECONDS}`;
+
+    const [updatedSession] = await this.db
       .update(contentMediationSessions)
       .set({
         messageCount: sql`${contentMediationSessions.messageCount} + 1`,
-        lastActivityAt: new Date(),
+        lastActivityAt: sql`now()`,
+        maxIdleGapSeconds: sql`greatest(${contentMediationSessions.maxIdleGapSeconds}, ${idleGapSecondsSql})`,
+        cacheMissCount: sql`${contentMediationSessions.cacheMissCount} + case when ${isCacheMissSql} then 1 else 0 end`,
       })
-      .where(eq(contentMediationSessions.id, sessionId));
+      .from(previousSession)
+      .where(and(
+        eq(contentMediationSessions.id, sessionId),
+        eq(contentMediationSessions.id, previousSession.id),
+      ))
+      .returning({
+        idleGapSeconds: idleGapSecondsSql,
+        isCacheMiss: isCacheMissSql,
+        tenantId: previousSession.tenantId,
+      });
+
+    if (!updatedSession) {
+      throw new Error(`Mediation session not found: ${sessionId}`);
+    }
+
+    if (updatedSession.isCacheMiss) {
+      await this.db.insert(contentOperationLogs).values({
+        id: createId(),
+        tenantId: updatedSession.tenantId,
+        operation: 'cache_miss',
+        sessionId,
+        durationMs: 0,
+        success: true,
+        metadata: {
+          idleGapSeconds: updatedSession.idleGapSeconds,
+          cacheTtlSeconds: CACHE_TTL_SECONDS,
+        },
+      });
+    }
+
+    return {
+      idleGapSeconds: updatedSession.idleGapSeconds,
+      isCacheMiss: updatedSession.isCacheMiss,
+    };
   }
 }
