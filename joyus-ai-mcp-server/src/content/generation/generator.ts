@@ -5,6 +5,8 @@
  * system prompt from the retrieved context and optional voice profile.
  */
 
+import Anthropic from '@anthropic-ai/sdk';
+
 import type { RetrievalResult } from './retriever.js';
 
 export interface GenerationProvider {
@@ -65,5 +67,31 @@ export class PlaceholderGenerationProvider implements GenerationProvider {
       `[Generation not configured] Query received: "${prompt}". ` +
       `Configure a GenerationProvider to enable AI responses.`
     );
+  }
+}
+
+export class AnthropicGenerationProvider implements GenerationProvider {
+  private client: Anthropic;
+  private model: string;
+  private maxTokens: number;
+
+  constructor(options?: { model?: string; maxTokens?: number }) {
+    this.client = new Anthropic();
+    this.model = options?.model ?? process.env.JOYUS_ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+    this.maxTokens = options?.maxTokens ?? 4096;
+  }
+
+  async generate(prompt: string, systemPrompt: string): Promise<string> {
+    const response = await this.client.messages.create({
+      model: this.model,
+      max_tokens: this.maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    const textBlock = response.content.find(block => block.type === 'text');
+    if (!textBlock || textBlock.type !== 'text') {
+      throw new Error('Anthropic response contained no text block');
+    }
+    return textBlock.text;
   }
 }

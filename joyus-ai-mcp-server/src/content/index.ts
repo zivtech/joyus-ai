@@ -11,7 +11,12 @@ import type { DrizzleClient } from './types.js';
 import { connectorRegistry } from './connectors/index.js';
 import { PgFtsProvider, SearchService } from './search/index.js';
 import { EntitlementCache, EntitlementService, HttpEntitlementResolver } from './entitlements/index.js';
-import { GenerationService, PlaceholderGenerationProvider, type SearchService as GenSearchService } from './generation/index.js';
+import {
+  AnthropicGenerationProvider,
+  GenerationService,
+  PlaceholderGenerationProvider,
+  type SearchService as GenSearchService,
+} from './generation/index.js';
 import { SyncEngine, initializeSyncScheduler } from './sync/index.js';
 import { HealthChecker } from './monitoring/health.js';
 import { MetricsCollector } from './monitoring/metrics.js';
@@ -51,7 +56,9 @@ export async function initializeContentModule(
     const entitlementService = new EntitlementService(entitlementResolver, entitlementCache, db);
 
     // 3. Generation (bridge search service to generation's expected interface)
-    const generationProvider = new PlaceholderGenerationProvider();
+    const generationProvider = process.env.ANTHROPIC_API_KEY
+      ? new AnthropicGenerationProvider()
+      : new PlaceholderGenerationProvider();
     const generationService = new GenerationService(
       searchService as unknown as GenSearchService,
       generationProvider,

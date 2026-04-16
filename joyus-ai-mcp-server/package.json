@@ -25,6 +25,7 @@
     "ci": "npm run validate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.61.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@paralleldrive/cuid2": "^3.3.0",
     "axios": "^1.6.7",
