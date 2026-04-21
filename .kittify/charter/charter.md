@@ -1,4 +1,4 @@
-# Joyus AI — Constitution
+# Joyus AI — Charter
 
 > Project principles that guide all decisions. These are non-negotiable unless explicitly revised.
 
@@ -338,7 +338,7 @@ The Anthropic Agent SDK's `AgentDefinition` has no `mcp_servers` field — sub-a
 
 ## 9. Amendment Process
 
-This constitution can be amended by:
+This charter can be amended by:
 1. Identifying the principle to change
 2. Documenting the rationale
 3. Updating this document with version history
@@ -346,7 +346,7 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.7*
+*Charter Version: 1.7*
 *Established: January 29, 2026*
 *Last Updated: March 19, 2026*
 *Changes v1.7: Added §5.4 "MCP Architecture" — four-server domain boundary (Platform Core, Integrations, Profile Engine, Dev Enforcement); mandatory domain prefixing table; Tool Search-optimized description guidelines; rule against MCP loading for internal integrations; per-agent MCP isolation pattern for orchestration layers*
