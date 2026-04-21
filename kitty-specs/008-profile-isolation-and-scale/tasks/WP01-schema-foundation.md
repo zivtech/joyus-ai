@@ -1,20 +1,28 @@
 ---
 work_package_id: WP01
 title: Schema & Foundation
-lane: planned
 dependencies: []
 subtasks: [T001, T002, T003, T004, T005, T006]
 phase: Phase 1 - Data Model & Interfaces
-assignee: ''
-agent: ''
-shell_pid: ''
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X6
+owned_files:
+- kitty-specs/008-profile-isolation-and-scale/data-model.md
+- kitty-specs/008-profile-isolation-and-scale/plan.md
+- kitty-specs/008-profile-isolation-and-scale/research.md
+- kitty-specs/008-profile-isolation-and-scale/spec.md
+- src/content/**
+- src/db/client.ts
+- src/db/schema.ts
+- src/profiles/**
+- tests/profiles/**
+wp_code: WP01
 ---
 
 # WP01: Schema & Foundation

@@ -1,7 +1,12 @@
 ---
 work_package_id: WP11
-lane: done
 dependencies: []
+authoritative_surface: src/
+execution_mode: code_change
+mission_id: 01KPR4SQGT6STWYXVRVZWRHZF7
+owned_files:
+- src/**
+wp_code: WP11
 ---
 # WP11-voice-context-testing: Completed
 

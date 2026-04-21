@@ -1,20 +1,27 @@
 ---
 work_package_id: WP04
 title: Composite Profile Inheritance
-lane: planned
 dependencies: [WP01]
 subtasks: [T017, T018, T019, T020, T021]
 phase: Phase 4 - Composite Profile Inheritance
-assignee: ''
-agent: ''
-shell_pid: ''
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X6
+owned_files:
+- kitty-specs/008-profile-isolation-and-scale/data-model.md
+- kitty-specs/008-profile-isolation-and-scale/plan.md
+- kitty-specs/008-profile-isolation-and-scale/research.md
+- kitty-specs/008-profile-isolation-and-scale/spec.md
+- src/profiles/inheritance/hierarchy.ts
+- src/profiles/inheritance/merge.ts
+- src/profiles/inheritance/resolver.ts
+- tests/profiles/inheritance/**
+wp_code: WP04
 ---
 
 # WP04: Composite Profile Inheritance

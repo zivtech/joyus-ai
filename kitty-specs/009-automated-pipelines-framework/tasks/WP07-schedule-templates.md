@@ -1,23 +1,35 @@
 ---
 work_package_id: WP07
 title: Schedule Triggers & Templates
-lane: done
 dependencies: []
 base_branch: main
 base_commit: 7efaca018cd3063d2769cd4b6b6666a69277dc89
 created_at: '2026-03-16T18:39:55.213916+00:00'
 subtasks: [T036, T037, T038, T039, T040, T041]
 phase: Phase D - Review Gates & Scheduling
-assignee: ''
-agent: ''
-shell_pid: '58980'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- kitty-specs/009-automated-pipelines-framework/data-model.md
+- kitty-specs/009-automated-pipelines-framework/research.md
+- kitty-specs/009-automated-pipelines-framework/spec.md
+- src/pipelines/index.ts
+- src/pipelines/templates/definitions/content-audit.json
+- src/pipelines/templates/definitions/corpus-update-to-profiles.json
+- src/pipelines/templates/definitions/regulatory-change-monitor.json
+- src/pipelines/templates/index.ts
+- src/pipelines/templates/store.ts
+- src/pipelines/triggers/registry.ts
+- src/pipelines/triggers/schedule.ts
+- tests/pipelines/templates/store.test.ts
+- tests/pipelines/triggers/schedule.test.ts
+wp_code: WP07
 ---
 
 # WP07: Schedule Triggers & Templates

@@ -1,19 +1,26 @@
 ---
 work_package_id: WP12
 title: Integration Tests & Server Wiring
-lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T13:01:55.684417+00:00'
 subtasks: [T054, T055, T056, T057, T058]
-shell_pid: '27087'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created
   by: spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X4
+owned_files:
+- src/content/index.ts
+- src/index.ts
+- tests/content/integration/drift.test.ts
+- tests/content/integration/entitlements.test.ts
+- tests/content/integration/mediation.test.ts
+- tests/content/integration/pipeline.test.ts
+wp_code: WP12
 ---
 
 # WP12: Integration Tests & Server Wiring

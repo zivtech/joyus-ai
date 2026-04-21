@@ -1,13 +1,18 @@
 ---
 work_package_id: WP02
 title: Backlog and Ownership
-lane: planned
 dependencies: [WP01]
 subtasks: [T005, T006, T007, T008]
 history:
 - date: '2026-03-14'
   action: created
   agent: claude-sonnet
+authoritative_surface: kitty-specs/007-org-scale-agentic-governance/
+execution_mode: planning_artifact
+mission_id: 01KPR4SQGVMM0QRK337XAW84X5
+owned_files:
+- kitty-specs/007-org-scale-agentic-governance/**
+wp_code: WP02
 ---
 
 # WP02: Backlog and Ownership

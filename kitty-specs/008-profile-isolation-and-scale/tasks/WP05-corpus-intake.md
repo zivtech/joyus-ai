@@ -1,20 +1,31 @@
 ---
 work_package_id: WP05
 title: Self-Service Corpus Intake
-lane: planned
 dependencies: [WP01]
 subtasks: [T022, T023, T024, T025, T026, T027, T028]
 phase: Phase 5 - Self-Service Corpus Intake
-assignee: ''
-agent: ''
-shell_pid: ''
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X6
+owned_files:
+- kitty-specs/008-profile-isolation-and-scale/data-model.md
+- kitty-specs/008-profile-isolation-and-scale/plan.md
+- kitty-specs/008-profile-isolation-and-scale/research.md
+- kitty-specs/008-profile-isolation-and-scale/spec.md
+- src/profiles/intake/dedup.ts
+- src/profiles/intake/parsers/docx-parser.ts
+- src/profiles/intake/parsers/interface.ts
+- src/profiles/intake/parsers/pdf-parser.ts
+- src/profiles/intake/parsers/registry.ts
+- src/profiles/intake/parsers/text-parser.ts
+- src/profiles/intake/service.ts
+- tests/profiles/intake/**
+wp_code: WP05
 ---
 
 # WP05: Self-Service Corpus Intake

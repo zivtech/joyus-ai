@@ -1,23 +1,23 @@
 ---
 work_package_id: WP04
 title: Per-Tenant Concurrency and Cron Scheduling
-lane: done
 dependencies: [WP02]
 base_branch: 010-inngest-evaluation-WP02
 base_commit: 9f52f333b3830e35879a6decccc40e5d7702105d
 created_at: '2026-03-19T10:45:28.064951+00:00'
 subtasks: [T016, T017, T018, T019, T020]
 phase: Phase B - Core Validation
-assignee: ''
-agent: claude-sonnet
-shell_pid: '19309'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-19T05:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: src/
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X8
+owned_files:
+- src/**
+wp_code: WP04
 ---
 
 # WP04: Per-Tenant Concurrency and Cron Scheduling

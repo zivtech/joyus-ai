@@ -1,23 +1,33 @@
 ---
 work_package_id: WP09
 title: Analytics & Quality Signals
-lane: done
 dependencies: []
 base_branch: main
 base_commit: 1b04d3d8f7128e468b3c4dc7139f02bd4fe299e3
 created_at: '2026-03-16T19:15:58.800075+00:00'
 subtasks: [T049, T050, T051, T052, T053, T054]
 phase: Phase F - Analytics
-assignee: ''
-agent: ''
-shell_pid: '81465'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- kitty-specs/009-automated-pipelines-framework/data-model.md
+- kitty-specs/009-automated-pipelines-framework/plan.md
+- kitty-specs/009-automated-pipelines-framework/spec.md
+- src/pipelines/analytics/aggregator.ts
+- src/pipelines/analytics/index.ts
+- src/pipelines/analytics/quality-signals.ts
+- src/pipelines/index.ts
+- src/pipelines/routes.ts
+- src/tools/pipeline-tools.ts
+- tests/pipelines/analytics/aggregator.test.ts
+- tests/pipelines/analytics/quality-signals.test.ts
+wp_code: WP09
 ---
 
 # WP09: Analytics & Quality Signals

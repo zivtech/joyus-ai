@@ -1,20 +1,30 @@
 ---
 work_package_id: WP01
 title: Schema & Foundation
-lane: in_progress
 dependencies: []
 subtasks: [T001, T002, T003, T004, T005, T006, T007]
 phase: Phase A - Foundation
-assignee: ''
-agent: claude-opus
-shell_pid: '28669'
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- kitty-specs/009-automated-pipelines-framework/data-model.md
+- kitty-specs/009-automated-pipelines-framework/plan.md
+- kitty-specs/009-automated-pipelines-framework/research.md
+- kitty-specs/009-automated-pipelines-framework/spec.md
+- src/content/schema.ts
+- src/db/client.ts
+- src/db/schema.ts
+- src/pipelines/index.ts
+- src/pipelines/schema.ts
+- src/pipelines/types.ts
+- src/pipelines/validation.ts
+wp_code: WP01
 ---
 
 # WP01: Schema & Foundation

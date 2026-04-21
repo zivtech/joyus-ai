@@ -1,13 +1,18 @@
 ---
 work_package_id: WP04
 title: Workflow and Metadata Contracts
-lane: planned
 dependencies: [WP02]
 subtasks: [T014, T015, T016, T017]
 history:
 - date: '2026-03-14'
   action: created
   agent: claude-sonnet
+authoritative_surface: kitty-specs/NNN-*/meta.json/
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X5
+owned_files:
+- kitty-specs/NNN-*/meta.json
+wp_code: WP04
 ---
 
 # WP04: Workflow and Metadata Contracts

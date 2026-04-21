@@ -1,20 +1,26 @@
 ---
 work_package_id: WP06
 title: Resolved Profile Caching
-lane: planned
 dependencies: [WP04]
 subtasks: [T029, T030, T031]
 phase: Phase 6 - Resolved Profile Caching
-assignee: ''
-agent: ''
-shell_pid: ''
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X6
+owned_files:
+- kitty-specs/008-profile-isolation-and-scale/data-model.md
+- kitty-specs/008-profile-isolation-and-scale/plan.md
+- kitty-specs/008-profile-isolation-and-scale/research.md
+- kitty-specs/008-profile-isolation-and-scale/spec.md
+- src/profiles/cache/invalidation.ts
+- src/profiles/cache/service.ts
+- tests/profiles/cache/**
+wp_code: WP06
 ---
 
 # WP06: Resolved Profile Caching
