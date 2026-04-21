@@ -1,13 +1,19 @@
 ---
 work_package_id: WP05
 title: Automated Checks and CI
-lane: planned
 dependencies: [WP03, WP04]
 subtasks: [T018, T019, T020, T021]
 history:
 - date: '2026-03-14'
   action: created
   agent: claude-sonnet
+authoritative_surface: kitty-specs/
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X5
+owned_files:
+- kitty-specs/003-.../meta.json
+- kitty-specs/007-.../spec.md
+wp_code: WP05
 ---
 
 # WP05: Automated Checks and CI

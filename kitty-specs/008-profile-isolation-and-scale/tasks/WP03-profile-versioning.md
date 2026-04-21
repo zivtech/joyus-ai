@@ -1,20 +1,26 @@
 ---
 work_package_id: WP03
 title: Profile Versioning
-lane: planned
 dependencies: [WP01]
 subtasks: [T012, T013, T014, T015, T016]
 phase: Phase 3 - Profile Versioning
-assignee: ''
-agent: ''
-shell_pid: ''
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X6
+owned_files:
+- kitty-specs/008-profile-isolation-and-scale/data-model.md
+- kitty-specs/008-profile-isolation-and-scale/plan.md
+- kitty-specs/008-profile-isolation-and-scale/research.md
+- kitty-specs/008-profile-isolation-and-scale/spec.md
+- src/profiles/versioning/history.ts
+- src/profiles/versioning/service.ts
+- tests/profiles/versioning/**
+wp_code: WP03
 ---
 
 # WP03: Profile Versioning

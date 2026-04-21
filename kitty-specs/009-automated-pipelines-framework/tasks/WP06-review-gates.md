@@ -1,23 +1,32 @@
 ---
 work_package_id: WP06
 title: Review Gates
-lane: done
 dependencies: []
 base_branch: main
 base_commit: 2faf56cb1a73cd0f0bd607f652f2ad5ca78a6df0
 created_at: '2026-03-16T18:19:05.821929+00:00'
 subtasks: [T030, T031, T032, T033, T034, T035]
 phase: Phase D - Review Gates & Scheduling
-assignee: ''
-agent: ''
-shell_pid: '35709'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- kitty-specs/009-automated-pipelines-framework/data-model.md
+- kitty-specs/009-automated-pipelines-framework/research.md
+- kitty-specs/009-automated-pipelines-framework/spec.md
+- src/pipelines/index.ts
+- src/pipelines/review/decision.ts
+- src/pipelines/review/escalation.ts
+- src/pipelines/review/gate.ts
+- src/pipelines/review/index.ts
+- tests/pipelines/review/escalation.test.ts
+- tests/pipelines/review/gate.test.ts
+wp_code: WP06
 ---
 
 # WP06: Review Gates

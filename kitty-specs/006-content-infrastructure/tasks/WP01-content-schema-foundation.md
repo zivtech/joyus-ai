@@ -1,17 +1,26 @@
 ---
 work_package_id: WP01
 title: Content Schema & Foundation
-lane: done
 dependencies: []
 subtasks: [T001, T002, T003, T004, T005]
-agent: claude-opus
-shell_pid: '34619'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created
   by: spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X4
+owned_files:
+- kitty-specs/006-content-infrastructure/data-model.md
+- kitty-specs/006-content-infrastructure/plan.md
+- kitty-specs/006-content-infrastructure/research.md
+- kitty-specs/006-content-infrastructure/spec.md
+- src/content/schema.ts
+- src/content/types.ts
+- src/content/validation.ts
+- src/db/client.ts
+- src/db/schema.ts
+wp_code: WP01
 ---
 
 # WP01: Content Schema & Foundation

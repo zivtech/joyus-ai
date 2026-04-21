@@ -1,19 +1,28 @@
 ---
 work_package_id: WP11
 title: Observability
-lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:32:43.823203+00:00'
 subtasks: [T050, T051, T052, T053]
-shell_pid: '33746'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created
   by: spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X4
+owned_files:
+- kitty-specs/006-content-infrastructure/data-model.md
+- kitty-specs/006-content-infrastructure/spec.md
+- src/content/monitoring/health.ts
+- src/content/monitoring/index.ts
+- src/content/monitoring/logger.ts
+- src/content/monitoring/metrics.ts
+- src/content/monitoring/routes.ts
+- src/index.ts
+wp_code: WP11
 ---
 
 # WP11: Observability

@@ -1,23 +1,33 @@
 ---
 work_package_id: WP08
 title: Pipeline API & MCP Tools
-lane: done
 dependencies: []
 base_branch: main
 base_commit: 7ed6195c2aabbed155812edcf7d46fc58aefdf19
 created_at: '2026-03-16T18:39:57.768665+00:00'
 subtasks: [T042, T043, T044, T045, T046, T047, T048]
 phase: Phase E - API & Tools
-assignee: ''
-agent: ''
-shell_pid: '58980'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- kitty-specs/009-automated-pipelines-framework/plan.md
+- kitty-specs/009-automated-pipelines-framework/spec.md
+- src/content/routes.ts
+- src/index.ts
+- src/pipelines/index.ts
+- src/pipelines/routes.ts
+- src/tools/content-tools.ts
+- src/tools/executor.ts
+- src/tools/index.ts
+- src/tools/pipeline-tools.ts
+- tests/pipelines/routes.test.ts
+wp_code: WP08
 ---
 
 # WP08: Pipeline API & MCP Tools

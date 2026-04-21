@@ -1,19 +1,27 @@
 ---
 work_package_id: WP04
 title: Search Abstraction & PostgreSQL FTS
-lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:32:25.142825+00:00'
 subtasks: [T018, T019, T020, T021]
-shell_pid: '22633'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created
   by: spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X4
+owned_files:
+- kitty-specs/006-content-infrastructure/contracts/internal-services.yaml
+- kitty-specs/006-content-infrastructure/data-model.md
+- kitty-specs/006-content-infrastructure/research.md
+- kitty-specs/006-content-infrastructure/spec.md
+- src/content/search/index.ts
+- src/content/search/interface.ts
+- src/content/search/pg-fts-provider.ts
+wp_code: WP04
 ---
 
 # WP04: Search Abstraction & PostgreSQL FTS

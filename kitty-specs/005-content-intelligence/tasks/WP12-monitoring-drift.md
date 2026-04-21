@@ -1,7 +1,12 @@
 ---
 work_package_id: WP12
-lane: done
 dependencies: []
+authoritative_surface: src/
+execution_mode: code_change
+mission_id: 01KPR4SQGT6STWYXVRVZWRHZF7
+owned_files:
+- src/**
+wp_code: WP12
 ---
 # WP12-monitoring-drift: Completed
 

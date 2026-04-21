@@ -1,19 +1,23 @@
 ---
 work_package_id: WP09
 title: Mediation API Endpoints
-lane: done
 dependencies: []
 base_branch: 006-content-infrastructure-WP01
 base_commit: ad3ac9985edbc8dfbdeb1616fb5329168797f97f
 created_at: '2026-02-21T12:54:10.792964+00:00'
 subtasks: [T042, T043, T044, T045]
-shell_pid: '59609'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-02-21'
   action: created
   by: spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X4
+owned_files:
+- kitty-specs/006-content-infrastructure/contracts/mediation-api.yaml
+- kitty-specs/006-content-infrastructure/spec.md
+- src/content/mediation/router.ts
+wp_code: WP09
 ---
 
 # WP09: Mediation API Endpoints

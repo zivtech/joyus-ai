@@ -1,13 +1,18 @@
 ---
 work_package_id: WP06
 title: Autonomy Leveling and Scenario Policy
-lane: planned
 dependencies: [WP01]
 subtasks: [T022, T023, T024, T025, T026]
 history:
 - date: '2026-03-14'
   action: created
   agent: claude-sonnet
+authoritative_surface: tests/twins/{workflow-name}/
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X5
+owned_files:
+- tests/twins/{workflow-name}/**
+wp_code: WP06
 ---
 
 # WP06: Autonomy Leveling and Scenario Policy

@@ -1,20 +1,27 @@
 ---
 work_package_id: WP02
 title: Event Bus
-lane: in_progress
 dependencies: []
 subtasks: [T008, T009, T010, T011]
 phase: Phase B - Event & Trigger Layer
-assignee: ''
-agent: claude-opus
-shell_pid: '34769'
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- kitty-specs/009-automated-pipelines-framework/data-model.md
+- kitty-specs/009-automated-pipelines-framework/research.md
+- kitty-specs/009-automated-pipelines-framework/spec.md
+- src/pipelines/event-bus/index.ts
+- src/pipelines/event-bus/interface.ts
+- src/pipelines/event-bus/pg-notify-bus.ts
+- src/pipelines/index.ts
+- tests/pipelines/event-bus/pg-notify-bus.test.ts
+wp_code: WP02
 ---
 
 # WP02: Event Bus

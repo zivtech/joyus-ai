@@ -1,13 +1,18 @@
 ---
 work_package_id: WP01
 title: Baseline and Scoring
-lane: planned
 dependencies: []
 subtasks: [T001, T002, T003, T004]
 history:
 - date: '2026-03-14'
   action: created
   agent: claude-sonnet
+authoritative_surface: kitty-specs/007-org-scale-agentic-governance/
+execution_mode: planning_artifact
+mission_id: 01KPR4SQGVMM0QRK337XAW84X5
+owned_files:
+- kitty-specs/007-org-scale-agentic-governance/**
+wp_code: WP01
 ---
 
 # WP01: Baseline and Scoring

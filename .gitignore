@@ -97,7 +97,8 @@ deploy/.env
 
 # Added by Spec Kitty CLI (auto-managed)
 .kittify/runtime/
-.kittify/merge-state.json
 .kittify/events/
 .kittify/dossiers/
 kitty-specs/**/.kittify/dossiers/
+.kittify/derived/
+.kittify/.migration-backup/

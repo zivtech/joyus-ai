@@ -1,6 +1,6 @@
 vcs:
   type: git
-agents:
+tools:
   available:
   - claude
   selection:

@@ -1,20 +1,22 @@
 ---
 work_package_id: WP08
 title: Performance Validation
-lane: planned
 dependencies: [WP06, WP07]
 subtasks: [T037, T038, T039, T040, T041]
 phase: Phase 8 - Performance Validation & Hardening
-assignee: ''
-agent: ''
-shell_pid: ''
-review_status: ''
-reviewed_by: ''
 history:
 - timestamp: '2026-03-10T00:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X6
+owned_files:
+- kitty-specs/008-profile-isolation-and-scale/plan.md
+- kitty-specs/008-profile-isolation-and-scale/spec.md
+- tests/profiles/**
+wp_code: WP08
 ---
 
 # WP08: Performance Validation

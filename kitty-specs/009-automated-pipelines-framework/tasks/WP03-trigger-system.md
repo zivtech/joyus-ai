@@ -1,19 +1,27 @@
 ---
 work_package_id: WP03
 title: Trigger System
-lane: done
 dependencies: [WP01]
 base_branch: 009-automated-pipelines-framework-WP01
 base_commit: 5df73eb05e3ceb65f97fdc2b2dc81790126c74e3
 created_at: '2026-03-16T16:55:42.593780+00:00'
 subtasks: [T012, T013, T014, T015, T016, T017]
-shell_pid: '84658'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - date: '2026-03-14'
   action: created
   agent: claude-opus
+authoritative_surface: ''
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X7
+owned_files:
+- src/pipelines/graph/**
+- src/pipelines/triggers/corpus-change.ts
+- src/pipelines/triggers/interface.ts
+- src/pipelines/triggers/manual-request.ts
+- src/pipelines/triggers/registry.ts
+- src/pipelines/types/**
+- tests/pipelines/**
+wp_code: WP03
 ---
 
 # WP03: Trigger System

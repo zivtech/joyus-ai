@@ -1,20 +1,20 @@
 ---
 work_package_id: WP01
 title: Local Inngest Server Setup
-lane: done
 dependencies: []
 subtasks: [T001, T002, T003, T004, T005]
 phase: Phase A - Environment
-assignee: ''
-agent: claude-sonnet
-shell_pid: '40083'
-review_status: approved
-reviewed_by: Alex Urevick-Ackelsberg
 history:
 - timestamp: '2026-03-19T05:00:00Z'
   lane: planned
   agent: system
   action: Prompt generated via /spec-kitty.tasks
+authoritative_surface: src/inngest/client.ts/
+execution_mode: code_change
+mission_id: 01KPR4SQGVMM0QRK337XAW84X8
+owned_files:
+- src/inngest/client.ts
+wp_code: WP01
 ---
 
 # WP01: Local Inngest Server Setup
