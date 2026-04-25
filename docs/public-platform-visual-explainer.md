@@ -20,6 +20,7 @@ flowchart TB
 
     subgraph Private["Private Companions"]
         ENGINE["joyus-profile-engine<br/>Feature 005 implementation"]
+        ENRICH["Joyus Enrichment<br/>paid CMS enrichment service"]
         SKILLS["org/client skill repos"]
         OPS["ops / deployment repos"]
     end
@@ -31,6 +32,7 @@ flowchart TB
     GOV --> STATE
     GOV --> MCP
     MCP --> ENGINE
+    MCP --> ENRICH
     MCP --> SKILLS
     MCP --> OPS
 ```
@@ -53,6 +55,7 @@ flowchart LR
 - Public here means platform core, governance artifacts, and work-package definitions live in this repository.
 - Private here means proprietary skills, real corpora, deployment hardening, and the current profile-engine implementation stay outside this repository.
 - Feature `005` is public as a specification and private as an implementation surface.
+- Feature `012` can hold generic public CMS enrichment primitives, but Joyus Enrichment is a paid service implemented outside this repository.
 - Features `007`, `008`, and `011` are the next public planning/governance streams already visible in this repository.
 
 ## 4. Future Lanes
@@ -77,6 +80,7 @@ flowchart LR
 - Structured knowledge capture and artifact lifecycle management
 - AI-assisted research and decision documentation tooling
 - Expert Voice Routing
+- Joyus Enrichment paid CMS enrichment service
 - Self-Service Profile Building
 - AI-Assisted Generation
 - Profile Engine at Scale

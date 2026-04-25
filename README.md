@@ -19,6 +19,7 @@ As of April 5, 2026, the repo strategy is:
 | [`web-chat/`](web-chat/) | Public | Thin browser demo UI for local development and demonstrations |
 | [`kitty-specs/`](kitty-specs/) + [`spec/`](spec/) | Public | Constitution, feature specs, implementation plans, and public work-package definitions |
 | `joyus-profile-engine` | Private companion | Content-intelligence engine implementation stays outside the open-core repo today |
+| `Joyus Enrichment` | Paid service / private companion | Commercial CMS enrichment service offered outside this open-core repository; public specs may describe reusable primitives, but the service implementation is not included here |
 | org/client skill repos | Private companion | Proprietary skills, corpora, brand assets, and org-specific knowledge |
 | deployment / ops repos | Private companion | Environment-specific infrastructure, secrets, and hardening |
 | [`joyus-desktop`](https://github.com/zivtech/joyus-desktop) | Private companion | Desktop surface related to Joyus; requires repository access |
@@ -68,6 +69,7 @@ The public core is not trying to expose every companion system at once. The curr
 - Feature `007` is the current public governance hardening stream.
 - Feature `008` is the public planning stream for tenant-safe profile infrastructure around the private profile engine.
 - Feature `005` remains publicly specified but privately implemented. It is intentionally not counted as part of the public-core WP inventory below.
+- Feature `012` is a public placeholder for generic CMS enrichment and delivery primitives. The branded Joyus Enrichment product is a paid service and is not implemented in this open-core repository.
 
 ## Roadmap Boundary
 
@@ -93,6 +95,7 @@ These roadmap calls reflect the current public/private split for planning langua
 - Structured knowledge capture and artifact lifecycle management
 - AI-assisted research and decision documentation tooling
 - Expert Voice Routing
+- Joyus Enrichment paid CMS enrichment service
 - Self-Service Profile Building
 - AI-Assisted Generation
 - Profile Engine at Scale
@@ -118,7 +121,7 @@ Status sources:
 | `009` Automated Pipelines Framework | Public code in `joyus-ai-mcp-server/` | In progress | `8/10` WPs complete by lane file status |
 | `010` Inngest Evaluation Spike | Public spike | Complete | `6/6` WPs complete |
 | `011` Inngest Migration | Public migration plan | Planned | `4` WPs defined; implementation not started |
-| `012` CMS Enrichment Delivery | Public placeholder | Stub only | Directory exists but is missing spec/meta/checklist artifacts |
+| `012` CMS Enrichment Delivery | Public placeholder | Stub only | Public placeholder for generic CMS enrichment primitives; Joyus Enrichment itself is a paid service outside this repo |
 
 ## Public Work-Package Inventory
 
@@ -142,6 +145,7 @@ The list below includes the public-core work-package inventory and excludes priv
 ### Public Specs With Private Companion Implementations
 
 - `005 Content Intelligence` is intentionally omitted from the public-core WP inventory above because the implementation target is the private `joyus-profile-engine` companion repo even though the specification remains public.
+- `012 CMS Enrichment Delivery` may describe generic public-core CMS enrichment primitives over time, but the Joyus Enrichment product is a paid service with implementation outside this repository.
 
 ## Repository Map
 

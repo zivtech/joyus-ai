@@ -15,6 +15,7 @@
 
 - [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Placeholder scope is explicitly bounded
+- [x] Paid Joyus Enrichment service boundary is explicit
 - [x] Dependencies and open questions are identified
 - [x] The feature can safely remain in `spec-only` state
 
