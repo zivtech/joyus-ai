@@ -10,7 +10,7 @@
 
 ### 1. Personal User Paths ✅
 
-Remove all `/Users/AlexUA/` references that expose developer machine layout.
+Remove all `/Users/AlexUA_1/` references that expose developer machine layout.
 
 | File | Status |
 |------|--------|
