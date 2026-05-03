@@ -3,16 +3,9 @@
 # DO NOT EDIT MANUALLY
 
 spec_kitty:
-  version: 0.13.7
+  version: 3.1.1
   initialized_at: '2026-02-11T21:18:53.991526'
-  last_upgraded_at: '2026-04-21T13:48:41.510222+00:00'
-  project_uuid: 01KPR4SQG8R3E8A37T6YCBMC0E
-  schema_version: 3
-  schema_capabilities:
-  - canonical_context
-  - event_log_authority
-  - ownership_manifest
-  - thin_shims
+  last_upgraded_at: '2026-04-21T09:48:52.850099'
 environment:
   python_version: 3.14.0
   platform: darwin
@@ -26,7 +19,8 @@ migrations:
   - id: 0.5.0_encoding_hooks
     applied_at: '2026-02-11T21:18:54.010154'
     result: success
-    notes: Installed pre-commit hook; Installed pre-commit-encoding-check hook; Installed pre-commit-agent-check hook
+    notes: Installed pre-commit hook; Installed pre-commit-encoding-check hook; Installed
+      pre-commit-agent-check hook
   - id: 0.6.5_commands_rename
     applied_at: '2026-02-11T21:18:54.010185'
     result: skipped
@@ -34,7 +28,8 @@ migrations:
   - id: 0.6.7_ensure_missions
     applied_at: '2026-02-11T21:18:54.021856'
     result: success
-    notes: 'Created .kittify/missions/ directory; Copied missing mission: software-dev; Copied missing mission: research'
+    notes: 'Created .kittify/missions/ directory; Copied missing mission: software-dev;
+      Copied missing mission: research'
   - id: 0.7.2_worktree_commands_dedup
     applied_at: '2026-02-11T21:18:54.021871'
     result: skipped
@@ -70,7 +65,12 @@ migrations:
   - id: 0.10.1_populate_slash_commands
     applied_at: '2026-02-11T21:18:54.025482'
     result: success
-    notes: 'Created: .claude/commands; Created: spec-kitty.accept.md; Created: spec-kitty.analyze.md; Created: spec-kitty.checklist.md; Created: spec-kitty.clarify.md; Created: spec-kitty.constitution.md; Created: spec-kitty.dashboard.md; Created: spec-kitty.implement.md; Created: spec-kitty.merge.md; Created: spec-kitty.plan.md; Created: spec-kitty.review.md; Created: spec-kitty.specify.md; Created: spec-kitty.tasks.md; Created 12 slash commands for claude from software-dev'
+    notes: 'Created: .claude/commands; Created: spec-kitty.accept.md; Created: spec-kitty.analyze.md;
+      Created: spec-kitty.checklist.md; Created: spec-kitty.clarify.md; Created: spec-kitty.constitution.md;
+      Created: spec-kitty.dashboard.md; Created: spec-kitty.implement.md; Created:
+      spec-kitty.merge.md; Created: spec-kitty.plan.md; Created: spec-kitty.review.md;
+      Created: spec-kitty.specify.md; Created: spec-kitty.tasks.md; Created 12 slash
+      commands for claude from software-dev'
   - id: 0.10.2_update_slash_commands
     applied_at: '2026-02-11T21:18:54.026190'
     result: skipped
@@ -102,7 +102,11 @@ migrations:
   - id: 0.11.1_improved_workflow_templates
     applied_at: '2026-02-11T21:18:54.028281'
     result: success
-    notes: 'Updated mission template: software-dev/implement.md; Updated mission template: software-dev/review.md; Updated 2 templates for claude; Total: Updated 2 slash command templates across all agents; Templates now warn agents to scroll to bottom of long output; Templates emphasize automated file updates (no manual editing); Prevents state corruption from incomplete workflows'
+    notes: 'Updated mission template: software-dev/implement.md; Updated mission template:
+      software-dev/review.md; Updated 2 templates for claude; Total: Updated 2 slash
+      command templates across all agents; Templates now warn agents to scroll to
+      bottom of long output; Templates emphasize automated file updates (no manual
+      editing); Prevents state corruption from incomplete workflows'
   - id: 0.11.1_update_implement_slash_command
     applied_at: '2026-02-11T21:18:54.028510'
     result: success
@@ -110,7 +114,11 @@ migrations:
   - id: 0.11.2_improved_workflow_templates
     applied_at: '2026-02-11T21:18:54.029131'
     result: success
-    notes: 'Updated mission template: software-dev/implement.md; Updated mission template: software-dev/review.md; Updated 2 templates for claude; Total: Updated 2 slash command templates across all agents; Templates now warn agents to scroll to bottom of long output; Templates emphasize automated file updates (no manual editing); Prevents state corruption from incomplete workflows'
+    notes: 'Updated mission template: software-dev/implement.md; Updated mission template:
+      software-dev/review.md; Updated 2 templates for claude; Total: Updated 2 slash
+      command templates across all agents; Templates now warn agents to scroll to
+      bottom of long output; Templates emphasize automated file updates (no manual
+      editing); Prevents state corruption from incomplete workflows'
   - id: 0.11.3_workflow_agent_flag
     applied_at: '2026-02-11T21:18:54.029277'
     result: skipped
@@ -150,7 +158,14 @@ migrations:
   - id: 0.13.8_target_branch
     applied_at: '2026-04-21T09:42:40.402783'
     result: success
-    notes: Added target_branch=main to 004-workflow-enforcement; Added target_branch=main to 012-cms-enrichment-delivery; Added target_branch=main to 003-platform-architecture-overview; Added target_branch=main to 008-profile-isolation-and-scale; Added target_branch=main to 010-inngest-evaluation; Added target_branch=main to 006-content-infrastructure; Added target_branch=main to 011-inngest-migration; Added target_branch=main to 009-automated-pipelines-framework; Added target_branch=main to 005-content-intelligence; Added target_branch=main to 002-session-context-management; Added target_branch=main to 007-org-scale-agentic-governance
+    notes: Added target_branch=main to 004-workflow-enforcement; Added target_branch=main
+      to 012-cms-enrichment-delivery; Added target_branch=main to 003-platform-architecture-overview;
+      Added target_branch=main to 008-profile-isolation-and-scale; Added target_branch=main
+      to 010-inngest-evaluation; Added target_branch=main to 006-content-infrastructure;
+      Added target_branch=main to 011-inngest-migration; Added target_branch=main
+      to 009-automated-pipelines-framework; Added target_branch=main to 005-content-intelligence;
+      Added target_branch=main to 002-session-context-management; Added target_branch=main
+      to 007-org-scale-agentic-governance
   - id: 0.14.0_centralized_feature_detection
     applied_at: '2026-04-21T09:42:40.407262'
     result: skipped
@@ -158,7 +173,10 @@ migrations:
   - id: 2.0.0a5_remove_wp_status_gitignore_rule
     applied_at: '2026-04-21T09:42:40.412500'
     result: success
-    notes: 'Removed 3 stale WP status ignore entries from .gitignore; Line 26: Removed ''# Block WP status files (managed in main repo, prevents merge conflicts)''; Line 27: Removed ''# Research artifacts in kitty-specs/**/research/ are allowed''; Line 28: Removed ''kitty-specs/**/tasks/*.md'''
+    notes: 'Removed 3 stale WP status ignore entries from .gitignore; Line 26: Removed
+      ''# Block WP status files (managed in main repo, prevents merge conflicts)'';
+      Line 27: Removed ''# Research artifacts in kitty-specs/**/research/ are allowed'';
+      Line 28: Removed ''kitty-specs/**/tasks/*.md'''
   - id: 2.0.0_charter_directory
     applied_at: '2026-04-21T09:42:40.416875'
     result: skipped
@@ -186,7 +204,19 @@ migrations:
   - id: 2.0.6_consistency_sweep
     applied_at: '2026-04-21T09:42:40.776923'
     result: success
-    notes: 'migrated 0 identical and 55 customized legacy runtime asset(s); 002-session-context-management: wrote baseline meta.json; 003-platform-architecture-overview: wrote baseline meta.json; 004-workflow-enforcement: wrote baseline meta.json; 005-content-intelligence: wrote baseline meta.json; 005-content-intelligence: normalized 14 work package files; 006-content-infrastructure: wrote baseline meta.json; 006-content-infrastructure: normalized 12 work package files; 007-org-scale-agentic-governance: wrote baseline meta.json; 007-org-scale-agentic-governance: normalized 6 work package files; 008-profile-isolation-and-scale: wrote baseline meta.json; 008-profile-isolation-and-scale: normalized 8 work package files; 009-automated-pipelines-framework: wrote baseline meta.json; 009-automated-pipelines-framework: normalized 10 work package files; 010-inngest-evaluation: wrote baseline meta.json; 010-inngest-evaluation: normalized 6 work package files; 011-inngest-migration: wrote baseline meta.json; 012-cms-enrichment-delivery: wrote baseline meta.json'
+    notes: 'migrated 0 identical and 55 customized legacy runtime asset(s); 002-session-context-management:
+      wrote baseline meta.json; 003-platform-architecture-overview: wrote baseline
+      meta.json; 004-workflow-enforcement: wrote baseline meta.json; 005-content-intelligence:
+      wrote baseline meta.json; 005-content-intelligence: normalized 14 work package
+      files; 006-content-infrastructure: wrote baseline meta.json; 006-content-infrastructure:
+      normalized 12 work package files; 007-org-scale-agentic-governance: wrote baseline
+      meta.json; 007-org-scale-agentic-governance: normalized 6 work package files;
+      008-profile-isolation-and-scale: wrote baseline meta.json; 008-profile-isolation-and-scale:
+      normalized 8 work package files; 009-automated-pipelines-framework: wrote baseline
+      meta.json; 009-automated-pipelines-framework: normalized 10 work package files;
+      010-inngest-evaluation: wrote baseline meta.json; 010-inngest-evaluation: normalized
+      6 work package files; 011-inngest-migration: wrote baseline meta.json; 012-cms-enrichment-delivery:
+      wrote baseline meta.json'
   - id: 2.0.7_fix_stale_overrides
     applied_at: '2026-04-21T09:42:40.785769'
     result: skipped
@@ -194,7 +224,8 @@ migrations:
   - id: 2.0.9_state_gitignore
     applied_at: '2026-04-21T09:42:40.791432'
     result: success
-    notes: 'Added runtime state entries to .gitignore: .kittify/runtime/, .kittify/merge-state.json, .kittify/events/, .kittify/dossiers/, kitty-specs/**/.kittify/dossiers/'
+    notes: 'Added runtime state entries to .gitignore: .kittify/runtime/, .kittify/merge-state.json,
+      .kittify/events/, .kittify/dossiers/, kitty-specs/**/.kittify/dossiers/'
   - id: 2.0.11_install_skills
     applied_at: '2026-04-21T09:42:40.821674'
     result: success
@@ -214,7 +245,7 @@ migrations:
   - id: 2.1.2_fix_glossary_context_skill
     applied_at: '2026-04-21T09:42:40.851737'
     result: failed
-    notes:
+    notes: null
   - id: 0.14.0_centralized_feature_detection
     applied_at: '2026-04-21T09:47:03.105361'
     result: skipped
@@ -258,7 +289,7 @@ migrations:
   - id: 2.1.2_fix_glossary_context_skill
     applied_at: '2026-04-21T09:47:03.182470'
     result: failed
-    notes:
+    notes: null
   - id: 0.14.0_centralized_feature_detection
     applied_at: '2026-04-21T09:48:40.470542'
     result: skipped
@@ -334,8 +365,44 @@ migrations:
   - id: 2.1.4_enforce_command_file_state
     applied_at: '2026-04-21T09:48:40.687037'
     result: success
-    notes: 'Wrote prompt: .claude/commands/spec-kitty.analyze.md; Wrote prompt: .claude/commands/spec-kitty.charter.md; Wrote prompt: .claude/commands/spec-kitty.checklist.md; Wrote prompt: .claude/commands/spec-kitty.plan.md; Wrote prompt: .claude/commands/spec-kitty.research.md; Wrote prompt: .claude/commands/spec-kitty.specify.md; Wrote prompt: .claude/commands/spec-kitty.tasks.md; Wrote prompt: .claude/commands/spec-kitty.tasks-outline.md; Wrote prompt: .claude/commands/spec-kitty.tasks-packages.md; Wrote shim: .claude/commands/spec-kitty.accept.md; Wrote shim: .claude/commands/spec-kitty.dashboard.md; Wrote shim: .claude/commands/spec-kitty.implement.md; Wrote shim: .claude/commands/spec-kitty.merge.md; Wrote shim: .claude/commands/spec-kitty.review.md; Wrote shim: .claude/commands/spec-kitty.status.md; Wrote shim: .claude/commands/spec-kitty.tasks-finalize.md'
+    notes: 'Wrote prompt: .claude/commands/spec-kitty.analyze.md; Wrote prompt: .claude/commands/spec-kitty.charter.md;
+      Wrote prompt: .claude/commands/spec-kitty.checklist.md; Wrote prompt: .claude/commands/spec-kitty.plan.md;
+      Wrote prompt: .claude/commands/spec-kitty.research.md; Wrote prompt: .claude/commands/spec-kitty.specify.md;
+      Wrote prompt: .claude/commands/spec-kitty.tasks.md; Wrote prompt: .claude/commands/spec-kitty.tasks-outline.md;
+      Wrote prompt: .claude/commands/spec-kitty.tasks-packages.md; Wrote shim: .claude/commands/spec-kitty.accept.md;
+      Wrote shim: .claude/commands/spec-kitty.dashboard.md; Wrote shim: .claude/commands/spec-kitty.implement.md;
+      Wrote shim: .claude/commands/spec-kitty.merge.md; Wrote shim: .claude/commands/spec-kitty.review.md;
+      Wrote shim: .claude/commands/spec-kitty.status.md; Wrote shim: .claude/commands/spec-kitty.tasks-finalize.md'
   - id: 2.2.0_profile_context_deployment
     applied_at: '2026-04-21T09:48:40.701731'
     result: success
     notes: Deployed .claude/commands/spec-kitty.profile-context.md
+  - id: 3.0.0_canonical_context
+    applied_at: '2026-04-21T09:48:52.694094'
+    result: success
+    notes: Migrated 11 feature(s), 56 WPs backfilled, 164 events generated
+  - id: 3.0.2_restore_prompt_commands
+    applied_at: '2026-04-21T09:48:52.705210'
+    result: skipped
+    notes: Not applicable
+  - id: 3.0.3_globalize_skill_pack
+    applied_at: '2026-04-21T09:48:52.718171'
+    result: skipped
+    notes: Not applicable
+  - id: 3.1.1_charter_rename
+    applied_at: '2026-04-21T09:48:52.744146'
+    result: success
+    notes: Moved .kittify/memory/constitution.md -> .kittify/charter/charter.md; Rewrote
+      content in .kittify/charter/charter.md
+  - id: 3.1.1_direct_canonical_commands
+    applied_at: '2026-04-21T09:48:52.756594'
+    result: skipped
+    notes: Not applicable
+  - id: 3.1.1_event_log_merge_driver
+    applied_at: '2026-04-21T09:48:52.830368'
+    result: success
+    notes: 'Added .gitattributes entry: kitty-specs/**/status.events.jsonl merge=spec-kitty-event-log'
+  - id: 3.1.1_normalize_status_json
+    applied_at: '2026-04-21T09:48:52.839902'
+    result: skipped
+    notes: Not applicable
