@@ -104,32 +104,3 @@ describe('Scheduler Utilities', () => {
   });
 });
 
-describe('Markdown Formatters', () => {
-  // These tests verify the output format of task results
-
-  it('should format standup summary correctly', () => {
-    const summary = {
-      date: '2024-01-15',
-      project: 'PROJ',
-      totalUpdated: 5,
-      byStatus: { 'In Progress': 2, 'Done': 3 },
-      highlights: [
-        { key: 'PROJ-123', summary: 'Test issue', status: 'Done', assignee: 'User' },
-      ],
-    };
-
-    // Test the structure (actual formatter is in task-executor.ts)
-    expect(summary.highlights).toHaveLength(1);
-    expect(summary.byStatus['Done']).toBe(3);
-  });
-
-  it('should handle empty results gracefully', () => {
-    const emptyResult = {
-      total: 0,
-      issues: [],
-    };
-
-    expect(emptyResult.issues).toHaveLength(0);
-    expect(Array.isArray(emptyResult.issues)).toBe(true);
-  });
-});
