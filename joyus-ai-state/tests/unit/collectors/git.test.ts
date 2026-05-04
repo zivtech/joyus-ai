@@ -7,7 +7,7 @@ import fs from 'node:fs';
 describe('collectGitState', () => {
   it('returns valid GitState from the current repo', async () => {
     // Use the repo root (joyus-ai) which is definitely a git repo
-    const repoRoot = path.resolve(import.meta.dirname, '../../../../..');
+    const repoRoot = path.resolve(import.meta.dirname, '../../../..');
     const state = await collectGitState(repoRoot);
 
     expect(state.branch).toBeTruthy();
@@ -43,7 +43,7 @@ describe('collectGitState', () => {
   });
 
   it('detects uncommitted changes', async () => {
-    const repoRoot = path.resolve(import.meta.dirname, '../../../../..');
+    const repoRoot = path.resolve(import.meta.dirname, '../../../..');
     const state = await collectGitState(repoRoot);
     // We have uncommitted files in the worktree, so this should be true
     expect(typeof state.hasUncommittedChanges).toBe('boolean');

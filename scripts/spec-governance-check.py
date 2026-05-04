@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -242,6 +243,18 @@ def _iter_markdown_files(root: Path) -> Iterable[Path]:
             yield file_path
 
 
+def _is_git_ignored(root: Path, path: Path) -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "check-ignore", "--quiet", str(path)],
+            capture_output=True,
+            cwd=str(root),
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
 def check_markdown_links(root: Path) -> list[Finding]:
     findings: list[Finding] = []
 
@@ -260,6 +273,8 @@ def check_markdown_links(root: Path) -> list[Finding]:
                     candidates.append((root / target).resolve())
 
             if not any(c.exists() for c in candidates):
+                if any(_is_git_ignored(root, c) for c in candidates):
+                    continue
                 findings.append(
                     Finding(
                         "REF-001",

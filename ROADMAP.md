@@ -4,6 +4,26 @@ Joyus AI is an open-core, multi-tenant AI agent platform. This roadmap now disti
 
 ---
 
+## Canonical Status Snapshot
+
+Status source of truth:
+- `status/feature-readiness.json`
+- `status/generated/feature-table.md`
+- `status/generated/phase-summary.md`
+
+<!-- GENERATED: status/feature-readiness.json -->
+Updated: 2026-03-05T19:20:00Z
+
+Lifecycle counts:
+- done: 4
+- execution: 1
+- planning: 1
+- spec-only: 1
+
+Production-readiness counts:
+- not_ready: 4
+- production_ready: 3
+
 ## Public Core: Shipped
 
 - **MCP Server Core**: OAuth authentication, integration executors, Dockerized runtime, and Claude Desktop connectivity.
