@@ -17,12 +17,20 @@ export const jiraTools: ToolDefinition[] = [
         },
         maxResults: {
           type: 'number',
-          description: 'Maximum results to return (default: 20, max: 50)'
+          description: 'Maximum results to return (default: 20, max: 100)'
+        },
+        startAt: {
+          type: 'number',
+          description: 'Zero-based result offset for pagination'
         },
         fields: {
           type: 'array',
           items: { type: 'string' },
           description: 'Fields to include (default: summary, status, assignee, priority)'
+        },
+        includeRawFields: {
+          type: 'boolean',
+          description: 'Return raw Jira issue fields for importer clients such as Docket'
         }
       },
       required: ['jql']
@@ -102,6 +110,14 @@ export const jiraTools: ToolDefinition[] = [
         }
       },
       required: ['issueKey', 'transitionName']
+    }
+  },
+  {
+    name: 'jira_get_fields',
+    description: 'List Jira field metadata available to the current OAuth connection',
+    inputSchema: {
+      type: 'object',
+      properties: {}
     }
   },
   {

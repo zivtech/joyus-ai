@@ -50,6 +50,9 @@ export async function executeJiraTool(
     case 'jira_transition_issue':
       return transitionIssue(baseUrl, headers, input);
 
+    case 'jira_get_fields':
+      return getFields(baseUrl, headers);
+
     case 'jira_list_projects':
       return listProjects(baseUrl, headers, input);
 
@@ -59,17 +62,20 @@ export async function executeJiraTool(
 }
 
 async function searchIssues(baseUrl: string, headers: any, input: any): Promise<any> {
-  const { jql, maxResults = 20, fields } = input;
+  const { jql, maxResults = 20, startAt = 0, fields, includeRawFields = false } = input;
 
   const response = await axios.post(`${baseUrl}/search`, {
     jql,
-    maxResults: Math.min(maxResults, 50),
+    maxResults: Math.min(maxResults, 100),
+    startAt,
     fields: fields || ['summary', 'status', 'assignee', 'priority', 'created', 'updated']
   }, { headers });
 
   return {
     total: response.data.total,
-    issues: response.data.issues.map(formatIssue)
+    startAt: response.data.startAt,
+    maxResults: response.data.maxResults,
+    issues: includeRawFields ? response.data.issues : response.data.issues.map(formatIssue)
   };
 }
 
@@ -162,6 +168,14 @@ async function listProjects(baseUrl: string, headers: any, input: any): Promise<
       projectType: p.projectTypeKey,
       lead: p.lead?.displayName
     }))
+  };
+}
+
+async function getFields(baseUrl: string, headers: any): Promise<any> {
+  const response = await axios.get(`${baseUrl}/field`, { headers });
+
+  return {
+    fields: response.data
   };
 }
 

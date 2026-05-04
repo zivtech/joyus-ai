@@ -1,5 +1,7 @@
 /**
- * Unit tests for tool definitions
+ * Tool definition shape tests — validates MCP tool metadata (name, description,
+ * inputSchema) is well-formed. Does NOT test executor logic; see
+ * tests/content/integration/ and future executor-specific test files.
  */
 
 import { describe, it, expect } from 'vitest';

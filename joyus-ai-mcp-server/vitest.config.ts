@@ -10,6 +10,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       exclude: ['node_modules', 'dist', '**/*.test.ts', 'vitest.config.ts'],
+      thresholds: {
+        statements: 55,
+        branches: 73,
+        functions: 66,
+        lines: 55,
+      },
     },
     testTimeout: 10000,
   },
