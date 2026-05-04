@@ -2,27 +2,6 @@
   "$schema": "./feature-readiness.schema.json",
   "updated_at": "2026-03-05T19:20:00Z",
   "features": {
-    "001": {
-      "friendly_name": "MCP Server AWS Deployment",
-      "lifecycle_state": "execution",
-      "implementation_state": "integrated",
-      "production_readiness": "not_ready",
-      "provider_readiness": {
-        "generation_provider": "configured",
-        "voice_analyzer": "configured"
-      },
-      "evidence": {
-        "spec_meta": "kitty-specs/001-mcp-server-aws-deployment/meta.json",
-        "runtime_wiring": [
-          "deploy/docker-compose.yml",
-          "deploy/scripts/setup-ec2.sh",
-          ".github/workflows/deploy-mcp.yml"
-        ],
-        "tests": [
-          "joyus-ai-mcp-server/tests/integration.test.ts"
-        ]
-      }
-    },
     "002": {
       "friendly_name": "Session & Context Management",
       "lifecycle_state": "done",
