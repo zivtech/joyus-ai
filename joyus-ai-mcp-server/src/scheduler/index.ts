@@ -17,6 +17,8 @@ import { db, scheduledTasks, taskRuns, users, connections } from '../db/client.j
 import { sendNotification } from './notifications.js';
 import { executeScheduledTask } from './task-executor.js';
 
+const { parseExpression } = cronParser;
+
 // Map of active cron jobs by task ID
 const activeJobs = new Map<string, cron.ScheduledTask>();
 
@@ -208,7 +210,7 @@ export async function runTask(taskId: string): Promise<void> {
  */
 async function updateTaskNextRun(taskId: string, schedule: string, timezone: string): Promise<void> {
   try {
-    const interval = cronParser.parseExpression(schedule, {
+    const interval = parseExpression(schedule, {
       tz: timezone || 'America/New_York'
     });
     const nextRun = interval.next().toDate();

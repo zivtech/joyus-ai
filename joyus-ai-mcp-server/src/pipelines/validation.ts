@@ -11,6 +11,8 @@
 import cronParser from 'cron-parser';
 import { z } from 'zod';
 
+const { parseExpression } = cronParser;
+
 // ============================================================
 // HELPERS
 // ============================================================
