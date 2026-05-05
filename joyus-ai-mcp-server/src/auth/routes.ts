@@ -141,7 +141,42 @@ authRouter.get('/', async (req: Request, res: Response) => {
         .connected-status { color: #28a745; }
         .info { background: #fff3cd; padding: 16px; border-radius: 8px; margin: 20px 0; }
         .copy-btn { background: #6c757d; padding: 6px 12px; border: none; color: white; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        .copy-btn.copied { background: #28a745; }
+        .copy-feedback { color: #28a745; font-family: system-ui, sans-serif; font-size: 13px; margin-left: 8px; }
+        .copy-feedback.error { color: #dc3545; }
       </style>
+      <script>
+        async function copyToClipboard(button, value) {
+          const originalText = button.textContent;
+          const feedback = button.nextElementSibling;
+
+          try {
+            await navigator.clipboard.writeText(value);
+            button.textContent = 'Copied ✓';
+            button.classList.add('copied');
+            if (feedback) {
+              feedback.textContent = 'Copied';
+              feedback.classList.remove('error');
+            }
+          } catch (error) {
+            button.textContent = 'Copy failed';
+            button.classList.remove('copied');
+            if (feedback) {
+              feedback.textContent = 'Copy failed';
+              feedback.classList.add('error');
+            }
+          }
+
+          window.setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('copied');
+            if (feedback) {
+              feedback.textContent = '';
+              feedback.classList.remove('error');
+            }
+          }, 2000);
+        }
+      </script>
     </head>
     <body>
       <h1>🔌 Joyus AI</h1>
@@ -150,12 +185,14 @@ authRouter.get('/', async (req: Request, res: Response) => {
       <h2>Your MCP Connection URL</h2>
       <div class="mcp-url">
         ${escapeHtml(baseUrl)}/mcp
-        <button class="copy-btn" onclick='navigator.clipboard.writeText(${baseUrlJsLiteral} + "/mcp")'>Copy</button>
+        <button class="copy-btn" onclick='copyToClipboard(this, ${baseUrlJsLiteral} + "/mcp")'>Copy</button>
+        <span class="copy-feedback" aria-live="polite"></span>
       </div>
 
       <div class="mcp-url">
         Token: ${safeToken}
-        <button class="copy-btn" onclick='navigator.clipboard.writeText(${tokenJsLiteral})'>Copy</button>
+        <button class="copy-btn" onclick='copyToClipboard(this, ${tokenJsLiteral})'>Copy</button>
+        <span class="copy-feedback" aria-live="polite"></span>
       </div>
 
       <div class="info">
