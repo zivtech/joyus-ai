@@ -25,7 +25,7 @@ Google OAuth locally:
 ```env
 ENABLE_DEV_AUTH_BYPASS=true
 DEV_AUTH_EMAIL=local-dev@example.test
-DEV_AUTH_NAME=Local Developer
+DEV_AUTH_NAME="Local Developer"
 ```
 
 With the bypass enabled, open `http://localhost:3000/auth` and click
