@@ -186,11 +186,14 @@ Expected result: a real Anthropic response, for example `2 + 2 = 4.`
 
 ## 6. Optional fallback check
 
-Unset the API key and restart the server:
+Stop any currently running server first (`Ctrl-C` in the terminal running
+`npm run dev`, or `docker compose down` if Compose is using port 3000).
+
+Restart the local server with an empty API key. This intentionally overrides the
+`ANTHROPIC_API_KEY` value in `.env` for this one command:
 
 ```bash
-unset ANTHROPIC_API_KEY
-npm run dev
+ANTHROPIC_API_KEY= npm run dev
 ```
 
 Expected startup evidence:
@@ -200,6 +203,13 @@ Expected startup evidence:
 ```
 
 Restore `ANTHROPIC_API_KEY` before continuing provider validation.
+
+If startup fails with `EADDRINUSE`, another server is still listening on port
+3000. Stop it or use another port:
+
+```bash
+PORT=3001 ANTHROPIC_API_KEY= npm run dev
+```
 
 ## PR test-plan note
 

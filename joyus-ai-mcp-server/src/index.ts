@@ -288,7 +288,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start server
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   console.log(`🚀 Joyus AI MCP Server running on port ${PORT}`);
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   MCP:    http://localhost:${PORT}/mcp`);
@@ -342,6 +342,17 @@ app.listen(PORT, async () => {
   };
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
+});
+
+server.on('error', (error: NodeJS.ErrnoException) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use.`);
+    console.error('Stop the existing local server, run `docker compose down`, or start this server with a different PORT.');
+    console.error(`Example: PORT=3001 npm run dev`);
+    process.exit(1);
+  }
+
+  throw error;
 });
 
 export { app };
