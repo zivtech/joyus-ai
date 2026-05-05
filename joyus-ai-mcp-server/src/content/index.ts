@@ -56,9 +56,11 @@ export async function initializeContentModule(
     const entitlementService = new EntitlementService(entitlementResolver, entitlementCache, db);
 
     // 3. Generation (bridge search service to generation's expected interface)
-    const generationProvider = process.env.ANTHROPIC_API_KEY
+    const hasAnthropicKey = (process.env.ANTHROPIC_API_KEY ?? '').trim().length > 0;
+    const generationProvider = hasAnthropicKey
       ? new AnthropicGenerationProvider()
       : new PlaceholderGenerationProvider();
+    console.log(`[content] Generation provider: ${hasAnthropicKey ? 'Anthropic' : 'Placeholder'}`);
     const generationService = new GenerationService(
       searchService as unknown as GenSearchService,
       generationProvider,
