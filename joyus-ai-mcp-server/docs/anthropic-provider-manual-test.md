@@ -19,6 +19,18 @@ ANTHROPIC_API_KEY=<your Anthropic API key>
 JOYUS_ANTHROPIC_MODEL=claude-sonnet-4-6
 ```
 
+If you are only testing the local portal and MCP token flow, you can bypass
+Google OAuth locally:
+
+```env
+ENABLE_DEV_AUTH_BYPASS=true
+DEV_AUTH_EMAIL=local-dev@example.test
+DEV_AUTH_NAME=Local Developer
+```
+
+With the bypass enabled, open `http://localhost:3000/auth` and click
+**Use local dev login**. Do not enable this in deployed environments.
+
 ## 2. Start dependencies and server
 
 Use one of the following startup paths. If you see `ERR_MODULE_NOT_FOUND` for a package such as `inngest`, rebuild or reinstall dependencies because the running environment has stale `node_modules`.
@@ -68,6 +80,18 @@ docker compose up --build
 Use `npm run db:migrate` for repeatable local startup. Reserve `npm run db:push`
 for intentional schema prototyping where interactive prompts and partial changes
 are acceptable.
+
+### Google OAuth `Error 401: invalid_client`
+
+For local provider smoke testing, use `ENABLE_DEV_AUTH_BYPASS=true` instead of
+configuring Google OAuth. If you do want to test Google OAuth itself, configure
+an OAuth web client in Google Cloud Console with this authorized redirect URI:
+
+```text
+http://localhost:3000/auth/google/callback
+```
+
+Then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`.
 
 ## 3. Verify health endpoint
 
