@@ -6,12 +6,14 @@
  * sends NOTIFY with only the event ID to stay within the 8 000-byte limit.
  */
 
-import pg from 'pg';
 import { createId } from '@paralleldrive/cuid2';
 import { and, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import pg from 'pg';
+
 import { triggerEvents } from '../schema.js';
 import type { TriggerEventType } from '../types.js';
+
 import type { EventBus, EventEnvelope, EventHandler } from './interface.js';
 
 const CHANNEL = 'pipelines_events';

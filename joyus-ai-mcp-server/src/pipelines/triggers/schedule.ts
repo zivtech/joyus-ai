@@ -6,14 +6,16 @@
  * schedule_tick events to the event bus, and handles overlap detection.
  */
 
-import cron, { type ScheduledTask } from 'node-cron';
 import { parseExpression } from 'cron-parser';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { TriggerEventType, ScheduleTriggerConfig } from '../types.js';
-import type { Pipeline } from '../schema.js';
-import { pipelines, pipelineExecutions } from '../schema.js';
+import cron, { type ScheduledTask } from 'node-cron';
+
 import type { EventBus } from '../event-bus/interface.js';
+import { pipelines, pipelineExecutions } from '../schema.js';
+import type { Pipeline } from '../schema.js';
+import type { TriggerEventType, ScheduleTriggerConfig } from '../types.js';
+
 import type { TriggerHandler, TriggerContext, TriggerResult } from './interface.js';
 
 // ============================================================

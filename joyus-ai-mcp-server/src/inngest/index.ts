@@ -17,12 +17,14 @@ export { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-ch
 export { createInngestAdapter } from './adapter.js';
 export type { InngestStep, InngestStepHandlerAdapter } from './adapter.js';
 
-import { stubFunction } from './functions/stub.js';
-import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.js';
-import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
-import { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
-import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
 import type { StepHandlerRegistry } from '../pipelines/engine/step-runner.js';
+
+import { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
+import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.js';
+import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
+import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
+import { stubFunction } from './functions/stub.js';
+
 
 // Empty registry — functions run in stub mode until a real registry is provided.
 // WP03 (deletion cleanup) will restructure how the registry is wired.

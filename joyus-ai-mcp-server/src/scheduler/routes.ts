@@ -8,8 +8,8 @@ import { eq, and, desc } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 import cron from 'node-cron';
 
-import { db, scheduledTasks, taskRuns, type TaskType } from '../db/client.js';
 import { requireSession, requireSessionOrRedirect } from '../auth/middleware.js';
+import { db, scheduledTasks, taskRuns, type TaskType } from '../db/client.js';
 
 import { sendTestNotification } from './notifications.js';
 

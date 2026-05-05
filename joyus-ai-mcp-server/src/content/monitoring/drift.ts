@@ -3,10 +3,12 @@
  * voice drift and persists aggregate drift reports per profile.
  */
 
+import { createId } from '@paralleldrive/cuid2';
 import { eq, and, isNull, gte, isNotNull, desc } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { createId } from '@paralleldrive/cuid2';
+
 import { contentGenerationLogs, contentDriftReports } from '../schema.js';
+
 import type { VoiceAnalyzer, DriftAnalysis } from './voice-analyzer.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;

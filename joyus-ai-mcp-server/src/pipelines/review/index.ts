@@ -8,6 +8,7 @@
 
 import cron from 'node-cron';
 import type { ScheduledTask } from 'node-cron';
+
 import type { EscalationChecker } from './escalation.js';
 
 // ============================================================

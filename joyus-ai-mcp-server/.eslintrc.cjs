@@ -20,8 +20,9 @@ module.exports = {
   },
   settings: {
     'import/resolver': {
-      typescript: true,
-      node: true,
+      node: {
+        extensions: ['.js', '.ts', '.d.ts'],
+      },
     },
   },
   rules: {
@@ -30,6 +31,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
 
     // Import rules
     'import/order': [

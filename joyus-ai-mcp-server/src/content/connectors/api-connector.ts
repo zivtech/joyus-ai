@@ -7,8 +7,10 @@
  */
 
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+
 import { decryptToken } from '../../db/encryption.js';
 import type { ConnectorConfig, ApiConnectorConfig } from '../types.js';
+
 import {
   type ContentConnector,
   type ContentPayload,
@@ -85,7 +87,7 @@ function mapItem(
 
   const sourceRef = String(raw[refField] ?? '');
   const title = String(raw[titleField] ?? '');
-  const body = raw[bodyField] != null ? String(raw[bodyField]) : null;
+  const body = raw[bodyField] !== null && raw[bodyField] !== undefined ? String(raw[bodyField]) : null;
 
   // Everything else goes into metadata
   const knownFields = new Set([refField, titleField, bodyField]);
@@ -187,7 +189,7 @@ export class ApiConnector implements ContentConnector {
         const params: Record<string, unknown> = {
           [pagination.limitParam ?? 'limit']: batchSize,
         };
-        if (cursor != null) {
+        if (cursor !== null && cursor !== undefined) {
           params[pagination.paramName] = cursor;
         }
 
@@ -201,11 +203,11 @@ export class ApiConnector implements ContentConnector {
         } else if (res.data && typeof res.data === 'object') {
           const obj = res.data as Record<string, unknown>;
           const next = obj['next_cursor'] ?? obj['nextCursor'] ?? obj['cursor'];
-          nextCursor = next != null ? String(next) : null;
+          nextCursor = next !== null && next !== undefined ? String(next) : null;
         }
       } else if (pagination?.type === 'offset') {
         // Offset / page-based pagination
-        const offset = cursor != null ? parseInt(cursor, 10) : 0;
+        const offset = cursor !== null && cursor !== undefined ? parseInt(cursor, 10) : 0;
         const params: Record<string, unknown> = {
           [pagination.limitParam ?? 'limit']: batchSize,
           [pagination.paramName]: offset,

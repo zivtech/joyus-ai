@@ -9,6 +9,9 @@ import { createId } from '@paralleldrive/cuid2';
 import { eq, and, desc, or, isNull, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
+import type { EventBus } from '../../pipelines/event-bus/interface.js';
+import { validateNoCycle } from '../../pipelines/graph/cycle-detector.js';
+import type { DecisionRecorder } from '../../pipelines/review/decision.js';
 import {
   pipelines,
   pipelineSteps,
@@ -16,13 +19,10 @@ import {
   reviewDecisions,
   pipelineTemplates,
 } from '../../pipelines/schema.js';
+import type { StepRegistry } from '../../pipelines/steps/registry.js';
 import type { StepType } from '../../pipelines/types.js';
 import { MAX_PIPELINES_PER_TENANT } from '../../pipelines/types.js';
 import { CreatePipelineInput, PipelineQueryInput, ExecutionQueryInput } from '../../pipelines/validation.js';
-import { validateNoCycle } from '../../pipelines/graph/cycle-detector.js';
-import type { StepRegistry } from '../../pipelines/steps/registry.js';
-import type { DecisionRecorder } from '../../pipelines/review/decision.js';
-import type { EventBus } from '../../pipelines/event-bus/interface.js';
 
 // ============================================================
 // CONTEXT

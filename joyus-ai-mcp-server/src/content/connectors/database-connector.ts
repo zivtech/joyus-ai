@@ -7,8 +7,10 @@
  */
 
 import { Pool } from 'pg';
+
 import { decryptToken } from '../../db/encryption.js';
 import type { ConnectorConfig, DatabaseConnectorConfig } from '../types.js';
+
 import {
   type ContentConnector,
   type ContentPayload,
@@ -61,7 +63,7 @@ function rowToPayload(
 
   const sourceRef = String(row[idCol] ?? '');
   const title = String(row[titleCol] ?? '');
-  const body = bodyCol != null && row[bodyCol] != null ? String(row[bodyCol]) : null;
+  const body = bodyCol !== null && bodyCol !== undefined && row[bodyCol] !== null && row[bodyCol] !== undefined ? String(row[bodyCol]) : null;
 
   const metadata: Record<string, unknown> = {};
   if (metaCols) {
@@ -156,7 +158,7 @@ export class DatabaseConnector implements ContentConnector {
       // Keyset pagination: cursor is the last seen id value (as string)
       let rows: Record<string, unknown>[];
 
-      if (cursor != null) {
+      if (cursor !== null && cursor !== undefined) {
         const res = await pool.query(
           `SELECT * FROM ${table}
            WHERE "${idCol}" > $1

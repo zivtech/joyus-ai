@@ -15,6 +15,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { contentItems, contentProductSources, contentSources } from '../schema.js';
 import type { ContentItem, ContentSource } from '../schema.js';
 import type { ResolvedEntitlements, SearchResult } from '../types.js';
+
 import type { SearchOptions, SearchProvider } from './interface.js';
 import { PgFtsProvider } from './pg-fts-provider.js';
 

@@ -5,8 +5,9 @@
  * Used when a user explicitly triggers a pipeline by name/id.
  */
 
-import type { TriggerEventType } from '../types.js';
 import type { Pipeline } from '../schema.js';
+import type { TriggerEventType } from '../types.js';
+
 import type { TriggerHandler, TriggerContext, TriggerResult } from './interface.js';
 
 export class ManualRequestTriggerHandler implements TriggerHandler {

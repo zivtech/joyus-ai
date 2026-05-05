@@ -7,9 +7,10 @@ export { InMemoryEventBus } from './interface.js';
 export { PgNotifyBus } from './pg-notify-bus.js';
 
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
 import { InMemoryEventBus } from './interface.js';
-import { PgNotifyBus } from './pg-notify-bus.js';
 import type { EventBus } from './interface.js';
+import { PgNotifyBus } from './pg-notify-bus.js';
 
 export interface CreateEventBusOptions {
   useInMemory?: boolean;

@@ -6,6 +6,7 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
+
 import type { TriggerEventType } from '../types.js';
 
 // ============================================================

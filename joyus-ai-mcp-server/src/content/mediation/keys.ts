@@ -6,10 +6,13 @@
  */
 
 import crypto from 'node:crypto';
+
+import { createId } from '@paralleldrive/cuid2';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { createId } from '@paralleldrive/cuid2';
+
 import { contentApiKeys } from '../schema.js';
+
 import { hashApiKey } from './auth.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;

@@ -13,17 +13,19 @@
  * See research/performance-comparison.md for methodology and interpretation.
  */
 
-import { StepRunner } from '../pipelines/engine/step-runner.js';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
 import { createInngestAdapter } from '../inngest/adapter.js';
+import type { InngestStep } from '../inngest/adapter.js';
+import { StepRunner } from '../pipelines/engine/step-runner.js';
 import type {
   PipelineStepHandler,
   StepHandlerRegistry,
   ExecutionContext,
 } from '../pipelines/engine/step-runner.js';
-import type { StepResult } from '../pipelines/types.js';
 import type { PipelineStep } from '../pipelines/schema.js';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { InngestStep } from '../inngest/adapter.js';
+import type { StepResult } from '../pipelines/types.js';
+
 
 // ============================================================
 // BENCHMARK CONFIGURATION

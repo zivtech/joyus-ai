@@ -5,11 +5,13 @@
  * Layer 2: User JWT validation (Authorization: Bearer) — identifies the end user
  */
 
-import { Request, Response, NextFunction } from 'express';
+import crypto from 'node:crypto';
+
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import crypto from 'node:crypto';
+import { Request, Response, NextFunction } from 'express';
 import * as jose from 'jose';
+
 import { contentApiKeys } from '../schema.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;

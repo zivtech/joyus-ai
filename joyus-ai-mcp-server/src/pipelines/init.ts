@@ -11,20 +11,22 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Router } from 'express';
 
-import { createEventBus } from './event-bus/index.js';
-import type { EventBus } from './event-bus/interface.js';
-import { PipelineExecutor } from './engine/executor.js';
-import { StepRunner } from './engine/step-runner.js';
-import { createStepRegistry, StepRegistry } from './steps/registry.js';
-import type { StepHandlerDependencies } from './steps/interface.js';
-import { TriggerRegistry, defaultTriggerRegistry } from './triggers/registry.js';
-import { ReviewGate } from './review/gate.js';
-import { DecisionRecorder } from './review/decision.js';
-import { EscalationChecker } from './review/escalation.js';
-import { startEscalationJob, stopEscalationJob } from './review/index.js';
-import { createPipelineRouter, type PipelineRouterDeps } from './routes.js';
 import type { ToolDefinition } from '../tools/index.js';
 import { pipelineTools } from '../tools/pipeline-tools.js';
+
+import { PipelineExecutor } from './engine/executor.js';
+import { StepRunner } from './engine/step-runner.js';
+import { createEventBus } from './event-bus/index.js';
+import type { EventBus } from './event-bus/interface.js';
+import { DecisionRecorder } from './review/decision.js';
+import { EscalationChecker } from './review/escalation.js';
+import { ReviewGate } from './review/gate.js';
+import { startEscalationJob, stopEscalationJob } from './review/index.js';
+import { createPipelineRouter, type PipelineRouterDeps } from './routes.js';
+import type { StepHandlerDependencies } from './steps/interface.js';
+import { createStepRegistry, StepRegistry } from './steps/registry.js';
+import { TriggerRegistry, defaultTriggerRegistry } from './triggers/registry.js';
+
 
 // ============================================================
 // CONFIG & MODULE INTERFACE

@@ -5,8 +5,8 @@
  * registry with `relational-database` and `rest-api` connectors registered.
  */
 
-import { DatabaseConnector } from './database-connector.js';
 import { ApiConnector } from './api-connector.js';
+import { DatabaseConnector } from './database-connector.js';
 import { connectorRegistry } from './registry.js';
 
 // Register built-in connectors

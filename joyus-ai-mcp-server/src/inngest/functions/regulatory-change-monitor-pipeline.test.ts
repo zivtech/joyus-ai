@@ -6,10 +6,12 @@
  * SDK detail used here for unit testing only).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createRegulatoryChangeMonitorPipeline } from './regulatory-change-monitor-pipeline.js';
-import type { InngestStep } from '../adapter.js';
+
 import type { PipelineStepHandler, ExecutionContext, StepHandlerRegistry } from '../../pipelines/engine/step-runner.js';
 import type { StepResult } from '../../pipelines/types.js';
+import type { InngestStep } from '../adapter.js';
+
+import { createRegulatoryChangeMonitorPipeline } from './regulatory-change-monitor-pipeline.js';
 
 // ---------------------------------------------------------------------------
 // Helpers (mirrors adapter.test.ts pattern)
