@@ -5,14 +5,14 @@
  * directly by the pipeline executor.
  */
 
-import type { StepType } from '../types.js';
-import type { StepHandlerRegistry } from '../types.js';
-import type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
-import { ProfileGenerationHandler } from './profile-generation.js';
-import { FidelityCheckHandler } from './fidelity-check.js';
+import type { StepType , StepHandlerRegistry } from '../types.js';
+
 import { ContentGenerationHandler } from './content-generation.js';
-import { SourceQueryHandler } from './source-query.js';
+import { FidelityCheckHandler } from './fidelity-check.js';
+import type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
 import { NotificationHandler } from './notification.js';
+import { ProfileGenerationHandler } from './profile-generation.js';
+import { SourceQueryHandler } from './source-query.js';
 
 export class StepRegistry implements StepHandlerRegistry {
   private readonly handlers = new Map<StepType, PipelineStepHandler>();
