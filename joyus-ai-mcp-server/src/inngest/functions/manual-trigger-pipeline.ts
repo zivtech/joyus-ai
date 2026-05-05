@@ -47,6 +47,22 @@ export interface ManualTriggerPipelineDeps {
   db?: NodePgDatabase;
 }
 
+interface ManualExecutionStepRecord {
+  id: string;
+  executionId: string;
+  stepId: string;
+  position: number;
+  status: 'pending';
+  attempts: number;
+  idempotencyKey: string;
+}
+
+interface ManualExecutionRecords {
+  executionId: string;
+  triggerEventId: string;
+  execStepRecords: ManualExecutionStepRecord[];
+}
+
 // ---------------------------------------------------------------------------
 // Stub result — returned when a handler is not available in the registry
 // ---------------------------------------------------------------------------
@@ -92,20 +108,10 @@ export function createManualTriggerPipeline(
     async ({ event, step }) => {
       const { tenantId, pipelineId, payload } = event.data;
 
-      const executionId = createId();
-      const triggerEventId = createId();
-
-      const baseContext: Omit<ExecutionContext, 'previousStepOutputs'> = {
-        tenantId,
-        executionId,
-        pipelineId,
-        triggerPayload: payload,
-      };
-
       if (!deps.db) {
         return {
           status: 'completed' as const,
-          executionId,
+          executionId: createId(),
           tenantId,
           pipelineId,
           steps: [],
@@ -145,7 +151,7 @@ export function createManualTriggerPipeline(
       if (!pipeline) {
         return {
           status: 'failed' as const,
-          executionId,
+          executionId: createId(),
           tenantId,
           pipelineId,
           error: { message: `Pipeline not found: ${pipelineId}` },
@@ -155,24 +161,26 @@ export function createManualTriggerPipeline(
       if (pipeline.status !== 'active') {
         return {
           status: 'failed' as const,
-          executionId,
+          executionId: createId(),
           tenantId,
           pipelineId,
           error: { message: `Pipeline is ${pipeline.status}, must be active to trigger` },
         };
       }
 
-      const execStepRecords = pipelineStepRows.map((pipelineStep) => ({
-        id: createId(),
-        executionId,
-        stepId: pipelineStep.id,
-        position: pipelineStep.position,
-        status: 'pending' as const,
-        attempts: 0,
-        idempotencyKey: `${executionId}:${pipelineStep.id}:0`,
-      }));
+      const records = await step.run('create-execution-records', async () => {
+        const executionId = createId();
+        const triggerEventId = createId();
+        const execStepRecords = pipelineStepRows.map((pipelineStep) => ({
+          id: createId(),
+          executionId,
+          stepId: pipelineStep.id,
+          position: pipelineStep.position,
+          status: 'pending' as const,
+          attempts: 0,
+          idempotencyKey: `${executionId}:${pipelineStep.id}:0`,
+        }));
 
-      await step.run('create-execution-records', async () => {
         await db.insert(triggerEvents).values({
           id: triggerEventId,
           tenantId,
@@ -198,7 +206,17 @@ export function createManualTriggerPipeline(
         if (execStepRecords.length > 0) {
           await db.insert(executionSteps).values(execStepRecords);
         }
-      });
+
+        return { executionId, triggerEventId, execStepRecords };
+      }) as unknown as ManualExecutionRecords;
+
+      const { executionId, triggerEventId, execStepRecords } = records;
+      const baseContext: Omit<ExecutionContext, 'previousStepOutputs'> = {
+        tenantId,
+        executionId,
+        pipelineId,
+        triggerPayload: payload,
+      };
 
       const previousStepOutputs = new Map<number, Record<string, unknown>>();
       const stepResults: Array<{
