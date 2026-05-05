@@ -2,6 +2,8 @@
 
 These steps validate the Inngest migration changes for PR #33, especially manual pipeline triggering through `pipelineId`.
 
+> Note: the Compose-managed Inngest service uses `inngest dev` and is for local/manual testing only. Production should use Inngest Cloud or a separately deployed self-hosted Inngest server with real event/signing keys.
+
 ## 1. Enter the server directory
 
 ```bash
@@ -30,11 +32,25 @@ Expected results:
 
 ## 4. Start local services
 
-If testing against local PostgreSQL and self-hosted Inngest:
+Start PostgreSQL, the MCP server, and the local Inngest Dev Server:
 
 ```bash
-docker compose up -d postgres
-docker compose -f docker-compose.inngest.yml up -d
+docker compose up -d --build
+```
+
+The standard Compose stack:
+
+- Starts the `inngest/inngest` Dev Server container.
+- Exposes the Inngest UI on `http://localhost:8288`.
+- Exposes port `8289` for Inngest Connect/dev-server internals.
+- Points the app container at `INNGEST_BASE_URL=http://inngest:8288`.
+- Syncs functions from `http://server:3000/api/inngest` inside the Compose network.
+
+If you only need PostgreSQL and want to run Inngest on the host with `npx`, you can still use:
+
+```bash
+docker compose up -d postgres server
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 
 ## 5. Apply database migrations
@@ -73,7 +89,7 @@ Expected result:
 
 ## 9. Open the Inngest dev UI
 
-If using the local Inngest dev server, open:
+If using Docker Compose or the local Inngest dev server, open:
 
 ```text
 http://localhost:8288
