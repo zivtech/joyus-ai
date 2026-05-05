@@ -72,7 +72,7 @@ function makeDb(selectResults: unknown[][]) {
 }
 
 describe('createManualTriggerPipeline', () => {
-  it('loads the requested pipeline by pipelineId and executes its stored steps/config', async () => {
+  it('loads the requested pipeline and applies safe manual payload overrides', async () => {
     const calls: Array<{ stepType: string; config: Record<string, unknown> }> = [];
     const makeHandler = (stepType: string, result: StepResult): PipelineStepHandler => ({
       stepType: stepType as PipelineStepHandler['stepType'],
@@ -138,7 +138,15 @@ describe('createManualTriggerPipeline', () => {
         data: {
           tenantId: 'tenant-1',
           pipelineId: 'pipe-1',
-          payload: { query: 'payload query should not replace stored config' },
+          payload: {
+            query: 'manual smoke test override',
+            sourceIds: ['source-override'],
+            maxResults: 5,
+            type: 'notification',
+            channel: 'slack',
+            recipients: ['unsafe@example.com'],
+            message: 'runtime notification',
+          },
         },
       },
       step: makeStep(),
@@ -150,10 +158,22 @@ describe('createManualTriggerPipeline', () => {
       'notification',
     ]);
     expect(calls).toEqual([
-      { stepType: 'source_query', config: { query: 'stored query', type: 'source_query' } },
+      {
+        stepType: 'source_query',
+        config: {
+          query: 'manual smoke test override',
+          sourceIds: ['source-override'],
+          maxResults: 5,
+          type: 'source_query',
+        },
+      },
       {
         stepType: 'notification',
-        config: { channel: 'email', message: 'stored message', type: 'notification' },
+        config: {
+          channel: 'email',
+          message: 'runtime notification',
+          type: 'notification',
+        },
       },
     ]);
     expect(registry.getHandler).toHaveBeenCalledWith('source_query');

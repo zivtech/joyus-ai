@@ -119,6 +119,7 @@ Expected result:
 - `manual-trigger-pipeline` runs.
 - The function loads the pipeline by `pipelineId`.
 - The function executes the stored ordered pipeline steps/config, not a hardcoded step sequence.
+- Manual trigger payload values are applied as safe runtime overrides for supported step fields, e.g. `source_query.query`.
 
 ## 11. Check execution history
 
