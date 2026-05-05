@@ -147,7 +147,12 @@ Create a temporary smoke-test script outside the repo:
 
 ```bash
 cat > /tmp/test-anthropic-provider.mjs <<'SCRIPT'
+import 'dotenv/config';
 import { pathToFileURL } from 'node:url';
+
+if (!process.env.ANTHROPIC_API_KEY) {
+  throw new Error('ANTHROPIC_API_KEY is not set. Confirm joyus-ai-mcp-server/.env contains a real key.');
+}
 
 const providerUrl = new URL(
   'dist/content/generation/anthropic-provider.js',
@@ -171,7 +176,7 @@ SCRIPT
 ```
 
 Run it from the same `joyus-ai-mcp-server/` directory so the relative
-`./dist/...` import resolves:
+`./dist/...` import resolves and `dotenv/config` can load `./.env`:
 
 ```bash
 node /tmp/test-anthropic-provider.mjs
