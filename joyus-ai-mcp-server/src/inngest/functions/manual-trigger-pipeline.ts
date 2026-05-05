@@ -39,6 +39,7 @@ import type {
   ExecutionContext,
   StepHandlerRegistry,
   StepResult,
+  StepType,
 } from '../../pipelines/types.js';
 import { createInngestAdapter } from '../adapter.js';
 import { inngest } from '../client.js';
@@ -61,6 +62,35 @@ interface ManualExecutionRecords {
   executionId: string;
   triggerEventId: string;
   execStepRecords: ManualExecutionStepRecord[];
+}
+
+const MANUAL_TRIGGER_OVERRIDE_FIELDS: Partial<Record<StepType, readonly string[]>> = {
+  content_generation: ['prompt', 'profileId', 'sourceIds'],
+  fidelity_check: ['profileId', 'contentIds', 'useUpstreamOutputs'],
+  notification: ['message'],
+  profile_generation: ['profileIds', 'forceRegenerate'],
+  source_query: ['query', 'sourceIds', 'maxResults'],
+};
+
+function applyManualPayloadOverrides(
+  stepType: StepType,
+  storedConfig: Record<string, unknown>,
+  payload: Record<string, unknown>,
+): Record<string, unknown> {
+  const overrides: Record<string, unknown> = {};
+  const allowedFields = MANUAL_TRIGGER_OVERRIDE_FIELDS[stepType] ?? [];
+
+  for (const field of allowedFields) {
+    if (Object.prototype.hasOwnProperty.call(payload, field)) {
+      overrides[field] = payload[field];
+    }
+  }
+
+  return {
+    ...storedConfig,
+    ...overrides,
+    type: stepType,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -256,10 +286,11 @@ export function createManualTriggerPipeline(
           ? await createInngestAdapter(handler).run(
               step,
               pipelineStep.name,
-              {
-                ...(pipelineStep.config as Record<string, unknown>),
-                type: pipelineStep.stepType,
-              },
+              applyManualPayloadOverrides(
+                pipelineStep.stepType,
+                pipelineStep.config as Record<string, unknown>,
+                payload,
+              ),
               { ...baseContext, previousStepOutputs },
             )
           : await step.run(pipelineStep.name, async () =>
