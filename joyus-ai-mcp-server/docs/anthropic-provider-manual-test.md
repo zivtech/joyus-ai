@@ -136,9 +136,10 @@ Expected result: request is not rejected as missing/invalid authorization.
 
 ## 5. Run a direct Anthropic provider smoke test
 
-Build the package:
+From the repository root, enter the server package before running npm commands:
 
 ```bash
+cd joyus-ai-mcp-server
 npm run build
 ```
 
@@ -169,7 +170,8 @@ console.log(result);
 SCRIPT
 ```
 
-Run it from `joyus-ai-mcp-server/` so the relative `./dist/...` import resolves:
+Run it from the same `joyus-ai-mcp-server/` directory so the relative
+`./dist/...` import resolves:
 
 ```bash
 node /tmp/test-anthropic-provider.mjs
