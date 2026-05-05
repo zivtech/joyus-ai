@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import cron from 'node-cron';
-import { parseExpression } from 'cron-parser';
+import cronParser from 'cron-parser';
 
 describe('Scheduler Utilities', () => {
   describe('Cron Expression Validation', () => {
@@ -24,7 +24,7 @@ describe('Scheduler Utilities', () => {
 
     it('should parse cron expressions to get next run time', () => {
       const expression = '0 9 * * 1-5'; // 9am weekdays
-      const interval = parseExpression(expression, { tz: 'America/New_York' });
+      const interval = cronParser.parseExpression(expression, { tz: 'America/New_York' });
       const nextRun = interval.next().toDate();
 
       expect(nextRun).toBeInstanceOf(Date);
@@ -34,8 +34,8 @@ describe('Scheduler Utilities', () => {
     it('should handle timezone-aware scheduling', () => {
       const expression = '0 9 * * *'; // 9am daily
 
-      const nyInterval = parseExpression(expression, { tz: 'America/New_York' });
-      const laInterval = parseExpression(expression, { tz: 'America/Los_Angeles' });
+      const nyInterval = cronParser.parseExpression(expression, { tz: 'America/New_York' });
+      const laInterval = cronParser.parseExpression(expression, { tz: 'America/Los_Angeles' });
 
       const nyNext = nyInterval.next().toDate();
       const laNext = laInterval.next().toDate();
@@ -94,7 +94,7 @@ describe('Scheduler Utilities', () => {
 
     it('should parse all example expressions', () => {
       for (const { expr, description } of examples) {
-        const interval = parseExpression(expr);
+        const interval = cronParser.parseExpression(expr);
         const nextRun = interval.next();
 
         expect(nextRun).toBeDefined();

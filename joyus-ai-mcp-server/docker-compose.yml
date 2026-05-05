@@ -43,6 +43,8 @@ services:
       - SLACK_CLIENT_SECRET=${SLACK_CLIENT_SECRET}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - JOYUS_ANTHROPIC_MODEL=${JOYUS_ANTHROPIC_MODEL:-claude-sonnet-4-6}
     volumes:
       - ./src:/app/src
       - ./drizzle:/app/drizzle
@@ -50,7 +52,7 @@ services:
       db:
         condition: service_healthy
     command: >
-      sh -c "npm run db:push && npm run dev"
+      sh -c "npm run db:migrate && npm run dev"
 
 volumes:
   postgres_data:

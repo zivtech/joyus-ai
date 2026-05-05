@@ -6,7 +6,7 @@
  * schedule_tick events to the event bus, and handles overlap detection.
  */
 
-import { parseExpression } from 'cron-parser';
+import cronParser from 'cron-parser';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import cron, { type ScheduledTask } from 'node-cron';
@@ -97,7 +97,7 @@ export class ScheduleTriggerHandler implements TriggerHandler {
 
     // Validate cron expression
     try {
-      parseExpression(cronExpression);
+      cronParser.parseExpression(cronExpression);
     } catch {
       console.error(
         `[ScheduleTrigger] Invalid cron expression for pipeline ${pipeline.id}: "${cronExpression}"`,
@@ -162,7 +162,7 @@ export class ScheduleTriggerHandler implements TriggerHandler {
   getNextRunTime(cronExpression: string, timezone?: string): Date | null {
     try {
       const options = timezone ? { tz: timezone } : {};
-      const interval = parseExpression(cronExpression, options);
+      const interval = cronParser.parseExpression(cronExpression, options);
       return interval.next().toDate();
     } catch {
       return null;

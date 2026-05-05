@@ -8,7 +8,7 @@
  * user-supplied input. This prevents tenant spoofing.
  */
 
-import { parseExpression } from 'cron-parser';
+import cronParser from 'cron-parser';
 import { z } from 'zod';
 
 // ============================================================
@@ -19,7 +19,7 @@ import { z } from 'zod';
 const cronExpression = z.string().refine(
   (val) => {
     try {
-      parseExpression(val);
+      cronParser.parseExpression(val);
       return true;
     } catch {
       return false;
