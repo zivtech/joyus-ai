@@ -12,6 +12,7 @@ services:
     environment:
       INNGEST_EVENT_KEY: "local-dev-key"
       INNGEST_SIGNING_KEY: "local-signing-key"
+      INNGEST_POLL_INTERVAL: "${INNGEST_POLL_INTERVAL:-10}"
       # Connect to existing Postgres for state storage
       DATABASE_URL: "postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-jawn_ai}?sslmode=disable"
       REDIS_URL: "redis://redis:6379"
