@@ -23,6 +23,10 @@ _private/
 .github/copilot/
 .omc/
 .omx/
+
+# Local Spec Kitty dashboard runtime state
+.kittify/.dashboard
+
 # Block WP status files (managed in main repo, prevents merge conflicts)
 # Research artifacts in kitty-specs/**/research/ are allowed
 kitty-specs/**/tasks/*.md

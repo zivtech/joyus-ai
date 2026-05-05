@@ -1,18 +1,29 @@
-import { vi, describe, expect, it, beforeEach, afterEach } from 'vitest';
 import Anthropic from '@anthropic-ai/sdk';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AnthropicGenerationProvider } from '../generator.js';
+import { AnthropicGenerationProvider } from '../anthropic-provider.js';
+
+type MockAnthropicStatic = typeof Anthropic & {
+  RateLimitError: new (message: string) => Error;
+  AuthenticationError: new (message: string) => Error;
+};
 
 const mockMessagesCreate = vi.hoisted(() => vi.fn());
 
 vi.mock('@anthropic-ai/sdk', () => {
   class RateLimitError extends Error {
     status = 429;
-    constructor(message: string) { super(message); this.name = 'RateLimitError'; }
+    constructor(message: string) {
+      super(message);
+      this.name = 'RateLimitError';
+    }
   }
   class AuthenticationError extends Error {
     status = 401;
-    constructor(message: string) { super(message); this.name = 'AuthenticationError'; }
+    constructor(message: string) {
+      super(message);
+      this.name = 'AuthenticationError';
+    }
   }
 
   const MockAnthropic = vi.fn().mockImplementation(() => ({
@@ -63,7 +74,9 @@ describe('AnthropicGenerationProvider', () => {
   });
 
   it('wraps RateLimitError with retryable: true', async () => {
-    mockMessagesCreate.mockRejectedValue(new (Anthropic as any).RateLimitError('Rate limited'));
+    mockMessagesCreate.mockRejectedValue(
+      new (Anthropic as MockAnthropicStatic).RateLimitError('Rate limited'),
+    );
     const provider = new AnthropicGenerationProvider();
     await expect(provider.generate('query', 'system')).rejects.toMatchObject({
       message: expect.stringContaining('rate limit'),
@@ -73,7 +86,7 @@ describe('AnthropicGenerationProvider', () => {
 
   it('wraps AuthenticationError with retryable: false', async () => {
     mockMessagesCreate.mockRejectedValue(
-      new (Anthropic as any).AuthenticationError('Unauthorized'),
+      new (Anthropic as MockAnthropicStatic).AuthenticationError('Unauthorized'),
     );
     const provider = new AnthropicGenerationProvider();
     await expect(provider.generate('query', 'system')).rejects.toMatchObject({
