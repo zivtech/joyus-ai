@@ -1,28 +1,141 @@
-import { describe, expect, it } from 'vitest';
+import { vi, describe, expect, it, beforeEach, afterEach } from 'vitest';
+import Anthropic from '@anthropic-ai/sdk';
 
 import { AnthropicGenerationProvider } from '../generator.js';
 
-describe('AnthropicGenerationProvider integration', () => {
-  it('skips clearly when ANTHROPIC_API_KEY is not set', ({ skip }) => {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      skip();
-    }
+const mockMessagesCreate = vi.hoisted(() => vi.fn());
 
-    expect(process.env.ANTHROPIC_API_KEY).toBeTruthy();
+vi.mock('@anthropic-ai/sdk', () => {
+  class RateLimitError extends Error {
+    status = 429;
+    constructor(message: string) { super(message); this.name = 'RateLimitError'; }
+  }
+  class AuthenticationError extends Error {
+    status = 401;
+    constructor(message: string) { super(message); this.name = 'AuthenticationError'; }
+  }
+
+  const MockAnthropic = vi.fn().mockImplementation(() => ({
+    messages: { create: mockMessagesCreate },
+  }));
+  Object.assign(MockAnthropic, { RateLimitError, AuthenticationError });
+
+  return { default: MockAnthropic };
+});
+
+const makeTextResponse = (text: string, stop_reason = 'end_turn') => ({
+  id: 'msg_test',
+  type: 'message',
+  role: 'assistant',
+  content: [{ type: 'text', text }],
+  model: 'claude-sonnet-4-6',
+  stop_reason,
+  usage: { input_tokens: 10, output_tokens: 5 },
+});
+
+describe('AnthropicGenerationProvider', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(Anthropic).mockImplementation(() => ({
+      messages: { create: mockMessagesCreate },
+    }) as unknown as Anthropic);
   });
 
-  it('returns a non-empty string containing 4 when ANTHROPIC_API_KEY is set', async ({ skip }) => {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      skip();
-    }
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
 
+  it('returns text from the first text block', async () => {
+    mockMessagesCreate.mockResolvedValue(makeTextResponse('The answer is 42.'));
     const provider = new AnthropicGenerationProvider();
-    const response = await provider.generate(
-      'What is 2+2?',
-      'You are a math tutor. Be concise.',
-    );
+    expect(await provider.generate('What is the answer?', 'Be helpful.')).toBe('The answer is 42.');
+  });
 
-    expect(response.trim().length).toBeGreaterThan(0);
-    expect(response).toContain('4');
+  it('throws when response contains no text block', async () => {
+    mockMessagesCreate.mockResolvedValue({
+      content: [{ type: 'tool_use', id: 'tu_1', name: 'search', input: {} }],
+      stop_reason: 'tool_use',
+    });
+    const provider = new AnthropicGenerationProvider();
+    await expect(provider.generate('query', 'system')).rejects.toThrow(
+      'Anthropic response contained no text block',
+    );
+  });
+
+  it('wraps RateLimitError with retryable: true', async () => {
+    mockMessagesCreate.mockRejectedValue(new (Anthropic as any).RateLimitError('Rate limited'));
+    const provider = new AnthropicGenerationProvider();
+    await expect(provider.generate('query', 'system')).rejects.toMatchObject({
+      message: expect.stringContaining('rate limit'),
+      retryable: true,
+    });
+  });
+
+  it('wraps AuthenticationError with retryable: false', async () => {
+    mockMessagesCreate.mockRejectedValue(
+      new (Anthropic as any).AuthenticationError('Unauthorized'),
+    );
+    const provider = new AnthropicGenerationProvider();
+    await expect(provider.generate('query', 'system')).rejects.toMatchObject({
+      message: expect.stringContaining('authentication failed'),
+      retryable: false,
+    });
+  });
+
+  it('rethrows unknown errors unchanged', async () => {
+    const cause = new Error('Network failure');
+    mockMessagesCreate.mockRejectedValue(cause);
+    const provider = new AnthropicGenerationProvider();
+    await expect(provider.generate('query', 'system')).rejects.toBe(cause);
+  });
+
+  it('logs a warning when stop_reason is max_tokens', async () => {
+    mockMessagesCreate.mockResolvedValue(makeTextResponse('Partial response...', 'max_tokens'));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const provider = new AnthropicGenerationProvider();
+    await provider.generate('query', 'system');
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('truncated'));
+  });
+
+  it('uses JOYUS_ANTHROPIC_MODEL env var as model', async () => {
+    vi.stubEnv('JOYUS_ANTHROPIC_MODEL', 'claude-opus-4-7');
+    mockMessagesCreate.mockResolvedValue(makeTextResponse('ok'));
+    const provider = new AnthropicGenerationProvider();
+    await provider.generate('q', 's');
+    expect(mockMessagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'claude-opus-4-7' }),
+    );
+  });
+
+  it('options.model takes precedence over JOYUS_ANTHROPIC_MODEL', async () => {
+    vi.stubEnv('JOYUS_ANTHROPIC_MODEL', 'claude-opus-4-7');
+    mockMessagesCreate.mockResolvedValue(makeTextResponse('ok'));
+    const provider = new AnthropicGenerationProvider({ model: 'claude-haiku-4-5-20251001' });
+    await provider.generate('q', 's');
+    expect(mockMessagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'claude-haiku-4-5-20251001' }),
+    );
+  });
+
+  it('passes options.maxTokens to the API call', async () => {
+    mockMessagesCreate.mockResolvedValue(makeTextResponse('ok'));
+    const provider = new AnthropicGenerationProvider({ maxTokens: 512 });
+    await provider.generate('q', 's');
+    expect(mockMessagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ max_tokens: 512 }),
+    );
+  });
+
+  it('sends system prompt with ephemeral cache_control', async () => {
+    mockMessagesCreate.mockResolvedValue(makeTextResponse('ok'));
+    const provider = new AnthropicGenerationProvider();
+    await provider.generate('q', 'You are helpful.');
+    expect(mockMessagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: [
+          { type: 'text', text: 'You are helpful.', cache_control: { type: 'ephemeral' } },
+        ],
+      }),
+    );
   });
 });
