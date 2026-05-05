@@ -50,6 +50,25 @@ Expected startup evidence:
 
 If startup logs show `Placeholder`, confirm `ANTHROPIC_API_KEY` is present in the environment used by the server process.
 
+
+## Troubleshooting local database setup
+
+### `type "content_source_status" already exists`
+
+This usually means a previous `drizzle-kit push` partially applied schema objects,
+but the database is not in a clean migration state. For local manual testing, the
+simplest fix is to reset the Docker database volume and let committed migrations
+run from a clean database:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+Use `npm run db:migrate` for repeatable local startup. Reserve `npm run db:push`
+for intentional schema prototyping where interactive prompts and partial changes
+are acceptable.
+
 ## 3. Verify health endpoint
 
 In a second terminal:
