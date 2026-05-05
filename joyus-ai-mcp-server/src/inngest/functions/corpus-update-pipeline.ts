@@ -14,10 +14,11 @@
  * - executionId is generated with cuid2 for URL-safe, collision-resistant IDs.
  */
 import { createId } from '@paralleldrive/cuid2';
-import { inngest } from '../client.js';
-import { createInngestAdapter } from '../adapter.js';
+
 import type { StepHandlerRegistry, ExecutionContext } from '../../pipelines/engine/step-runner.js';
 import type { StepResult } from '../../pipelines/types.js';
+import { createInngestAdapter } from '../adapter.js';
+import { inngest } from '../client.js';
 
 // ---------------------------------------------------------------------------
 // Stub result — returned when a handler is not available in the registry

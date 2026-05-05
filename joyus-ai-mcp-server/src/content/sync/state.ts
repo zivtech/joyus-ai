@@ -6,9 +6,9 @@
  * shared singleton or a transaction handle.
  */
 
+import { createId } from '@paralleldrive/cuid2';
 import { eq, desc, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { createId } from '@paralleldrive/cuid2';
 
 import { contentSyncRuns, contentItems, contentSources } from '../schema.js';
 import type { SyncTrigger, SyncRunStatus } from '../types.js';

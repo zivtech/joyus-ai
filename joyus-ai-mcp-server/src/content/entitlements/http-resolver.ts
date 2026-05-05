@@ -11,6 +11,7 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 
 import type { ResolvedEntitlements } from '../types.js';
+
 import type {
   EntitlementResolver,
   EntitlementResolverConfig,

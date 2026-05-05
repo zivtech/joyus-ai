@@ -5,8 +5,8 @@
  * plus the context/result types used throughout the trigger system.
  */
 
-import type { TriggerEventType, EventEnvelope } from '../types.js';
 import type { Pipeline } from '../schema.js';
+import type { TriggerEventType, EventEnvelope } from '../types.js';
 
 // ============================================================
 // CONTEXT & RESULT

@@ -7,8 +7,9 @@
  */
 
 import type { TriggerEventType } from '../types.js';
-import type { TriggerHandler } from './interface.js';
+
 import { CorpusChangeTriggerHandler } from './corpus-change.js';
+import type { TriggerHandler } from './interface.js';
 import { ManualRequestTriggerHandler } from './manual-request.js';
 
 export class TriggerRegistry {

@@ -9,6 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import { TemplateStore } from './store.js';
 import type { CreateTemplateInput } from './store.js';
 

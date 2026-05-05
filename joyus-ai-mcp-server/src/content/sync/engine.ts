@@ -6,15 +6,16 @@
  * and upserts results into content.items.
  */
 
+import { createId } from '@paralleldrive/cuid2';
 import { eq, and, sql, notInArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { createId } from '@paralleldrive/cuid2';
 
-import { contentSources, contentItems, contentSyncRuns } from '../schema.js';
-import type { ConnectorRegistry } from '../connectors/registry.js';
 import type { ContentConnector, ContentPayload } from '../connectors/interface.js';
+import type { ConnectorRegistry } from '../connectors/registry.js';
+import { contentSources, contentItems, contentSyncRuns } from '../schema.js';
 import type { SyncStrategy, SyncTrigger } from '../types.js';
 import { DEFAULT_BATCH_SIZE } from '../types.js';
+
 import {
   createSyncRun,
   completeSyncRun,

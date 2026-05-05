@@ -4,6 +4,7 @@
  */
 
 import type { Citation } from '../types.js';
+
 import type { RetrievedItem } from './retriever.js';
 
 export interface CitationResult {

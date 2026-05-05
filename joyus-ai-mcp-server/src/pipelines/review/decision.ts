@@ -5,6 +5,8 @@
 
 import { eq, and } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
+import { inngest } from '../../inngest/client.js';
 import {
   reviewDecisions,
   executionSteps,
@@ -12,7 +14,6 @@ import {
 } from '../schema.js';
 import type { ReviewDecision } from '../schema.js';
 import type { ArtifactRef, ReviewFeedback } from '../types.js';
-import { inngest } from '../../inngest/client.js';
 
 // ============================================================
 // REVIEW GATE RESULT (appended to outputArtifacts on resume)

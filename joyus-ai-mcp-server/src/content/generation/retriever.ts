@@ -5,8 +5,9 @@
  * full item bodies from the database for context assembly.
  */
 
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/node-postgres';
+
 import { contentItems } from '../schema.js';
 import type { ResolvedEntitlements, SearchResult } from '../types.js';
 

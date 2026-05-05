@@ -13,14 +13,16 @@
  *   POST   /sessions/:sessionId/messages    — send message, get response
  */
 
-import { Router, type Request, type Response } from 'express';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
+
+import type { EntitlementCache } from '../entitlements/cache.js';
+import type { EntitlementService } from '../entitlements/index.js';
+import type { GenerationService } from '../generation/index.js';
+
 import { createAuthMiddleware } from './auth.js';
 import { MediationSessionService } from './session.js';
-import type { GenerationService } from '../generation/index.js';
-import type { EntitlementService } from '../entitlements/index.js';
-import type { EntitlementCache } from '../entitlements/cache.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 

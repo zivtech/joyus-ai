@@ -5,9 +5,9 @@
  * Products define what content a subscription grants access to.
  */
 
+import { createId } from '@paralleldrive/cuid2';
 import { eq, and } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { createId } from '@paralleldrive/cuid2';
 
 import {
   contentProducts,

@@ -9,6 +9,7 @@ import { Router, Request, Response } from 'express';
 
 import { db, users, connections, oauthStates, type Service } from '../db/client.js';
 import { encryptToken, generateMcpToken, generateOAuthState } from '../db/encryption.js';
+
 import { requireSessionOrRedirect } from './middleware.js';
 
 export const authRouter = Router();

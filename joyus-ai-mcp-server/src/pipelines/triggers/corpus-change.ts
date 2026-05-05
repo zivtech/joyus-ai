@@ -5,9 +5,10 @@
  * Applies optional corpus filter and enforces max pipeline depth.
  */
 
+import type { Pipeline } from '../schema.js';
 import type { TriggerEventType, CorpusChangeTriggerConfig } from '../types.js';
 import { DEFAULT_MAX_PIPELINE_DEPTH } from '../types.js';
-import type { Pipeline } from '../schema.js';
+
 import type { TriggerHandler, TriggerContext, TriggerResult } from './interface.js';
 
 export class CorpusChangeTriggerHandler implements TriggerHandler {

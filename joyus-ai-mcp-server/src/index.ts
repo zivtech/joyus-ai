@@ -13,19 +13,17 @@
 
 import cors from 'cors';
 import { config } from 'dotenv';
+import { sql } from 'drizzle-orm';
 import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
-
-import { sql } from 'drizzle-orm';
-
 import { serve } from 'inngest/express';
 
-import { authRouter } from './auth/routes.js';
 import { requireBearerToken } from './auth/middleware.js';
-import { inngest, allFunctions } from './inngest/index.js';
-import { db, auditLogs } from './db/client.js';
+import { authRouter } from './auth/routes.js';
 import { initializeContentModule } from './content/index.js';
+import { db, auditLogs } from './db/client.js';
+import { inngest, allFunctions } from './inngest/index.js';
 import { initializePipelineModule, type PipelineModule } from './pipelines/init.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';

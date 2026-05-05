@@ -10,8 +10,8 @@
 import { createId } from '@paralleldrive/cuid2';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { RetryPolicy } from '../types.js';
-import { DEFAULT_RETRY_POLICY } from '../types.js';
+
+import type { EventBus, EventEnvelope } from '../event-bus/interface.js';
 import {
   pipelines,
   pipelineSteps,
@@ -20,11 +20,13 @@ import {
   triggerEvents,
 } from '../schema.js';
 import type { Pipeline, PipelineStep } from '../schema.js';
-import type { EventBus, EventEnvelope } from '../event-bus/interface.js';
-import type { TriggerRegistry } from '../triggers/registry.js';
 import type { TriggerContext, TriggerResult } from '../triggers/interface.js';
-import type { StepRunner, ExecutionContext } from './step-runner.js';
+import type { TriggerRegistry } from '../triggers/registry.js';
+import type { RetryPolicy } from '../types.js';
+import { DEFAULT_RETRY_POLICY } from '../types.js';
+
 import { computeIdempotencyKey } from './idempotency.js';
+import type { StepRunner, ExecutionContext } from './step-runner.js';
 
 // ============================================================
 // EXECUTOR

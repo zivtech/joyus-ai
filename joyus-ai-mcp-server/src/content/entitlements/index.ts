@@ -8,6 +8,7 @@
  * Empty entitlements = zero content access, never full access.
  */
 
+import { createId } from '@paralleldrive/cuid2';
 import { eq, desc, and } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
@@ -19,9 +20,9 @@ import {
   contentOperationLogs,
 } from '../schema.js';
 import type { ResolvedEntitlements } from '../types.js';
-import type { EntitlementResolver, ResolverContext } from './interface.js';
+
 import type { EntitlementCache } from './cache.js';
-import { createId } from '@paralleldrive/cuid2';
+import type { EntitlementResolver, ResolverContext } from './interface.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 

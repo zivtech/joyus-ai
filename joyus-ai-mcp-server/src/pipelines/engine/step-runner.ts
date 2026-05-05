@@ -8,10 +8,12 @@
 
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { StepType, RetryPolicy, StepResult, StepError } from '../types.js';
-import { DEFAULT_RETRY_POLICY } from '../types.js';
+
 import type { PipelineStep } from '../schema.js';
 import { executionSteps } from '../schema.js';
+import type { StepType, RetryPolicy, StepResult, StepError } from '../types.js';
+import { DEFAULT_RETRY_POLICY } from '../types.js';
+
 import { computeIdempotencyKey, checkIdempotency } from './idempotency.js';
 import { shouldRetry, waitForRetry } from './retry.js';
 
