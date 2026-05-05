@@ -35,6 +35,9 @@ services:
       - BASE_URL=http://localhost:3000
       - SESSION_SECRET=${SESSION_SECRET:-dev-secret-change-me}
       - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY:-dev-key-change-me-in-prod}
+      - ENABLE_DEV_AUTH_BYPASS=${ENABLE_DEV_AUTH_BYPASS:-false}
+      - DEV_AUTH_EMAIL=${DEV_AUTH_EMAIL:-local-dev@example.test}
+      - DEV_AUTH_NAME=${DEV_AUTH_NAME:-Local Developer}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - ATLASSIAN_CLIENT_ID=${ATLASSIAN_CLIENT_ID}

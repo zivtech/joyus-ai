@@ -10,6 +10,7 @@ import { Router, Request, Response } from 'express';
 import { db, users, connections, oauthStates, type Service } from '../db/client.js';
 import { encryptToken, generateMcpToken, generateOAuthState } from '../db/encryption.js';
 
+import { isDevAuthBypassEnabled } from './dev-bypass.js';
 import { requireSessionOrRedirect } from './middleware.js';
 
 export const authRouter = Router();
@@ -60,6 +61,7 @@ const OAUTH_CONFIG = {
 
 authRouter.get('/', async (req: Request, res: Response) => {
   const userId = req.session?.userId;
+  const devAuthBypassEnabled = isDevAuthBypassEnabled();
 
   if (!userId) {
     // Show login page
@@ -85,6 +87,13 @@ authRouter.get('/', async (req: Request, res: Response) => {
         </div>
 
         <a href="/auth/google/start" class="btn">Sign in with Google</a>
+        ${devAuthBypassEnabled
+          ? `
+        <div class="info">
+          <strong>Local development:</strong> OAuth bypass is enabled for this non-production server.
+        </div>
+        <a href="/auth/dev-login" class="btn">Use local dev login</a>`
+          : ''}
       </body>
       </html>
     `);
@@ -210,6 +219,36 @@ authRouter.get('/', async (req: Request, res: Response) => {
     </body>
     </html>
   `);
+});
+
+authRouter.get('/dev-login', async (req: Request, res: Response) => {
+  if (!isDevAuthBypassEnabled()) {
+    return res.status(404).send('Not found');
+  }
+
+  const email = process.env.DEV_AUTH_EMAIL || 'local-dev@example.test';
+  const name = process.env.DEV_AUTH_NAME || 'Local Developer';
+
+  let [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (!user) {
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        email,
+        name,
+        mcpToken: generateMcpToken()
+      })
+      .returning();
+    user = newUser;
+  }
+
+  req.session.userId = user.id;
+  res.redirect('/auth');
 });
 
 // ============================================================
