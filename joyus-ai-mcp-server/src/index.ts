@@ -14,6 +14,7 @@
 import cors from 'cors';
 import { config } from 'dotenv';
 import { sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
@@ -23,7 +24,7 @@ import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
-import { inngest, allFunctions } from './inngest/index.js';
+import { createAllFunctions, inngest } from './inngest/index.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
 import { createStepRegistry } from './pipelines/steps/registry.js';
@@ -36,6 +37,16 @@ config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const pipelineDb = db as unknown as NodePgDatabase;
+const stepRegistry = createStepRegistry({});
+const decisionRecorder = new DecisionRecorder(pipelineDb);
+const pipelineRouter = createPipelineRouter({
+  db: pipelineDb,
+  stepRegistry,
+  decisionRecorder,
+});
+
+setPipelineContext({ stepRegistry, decisionRecorder });
 
 // Security middleware
 app.use(helmet({
@@ -167,7 +178,13 @@ app.use('/tasks', taskRouter);
 
 // Inngest event handler — Feature 010 evaluation spike
 // No auth middleware: Inngest server signs requests via INNGEST_SIGNING_KEY
-app.use('/api/inngest', serve({ client: inngest, functions: allFunctions }));
+app.use('/api/inngest', serve({
+  client: inngest,
+  functions: createAllFunctions(stepRegistry, { db: pipelineDb }),
+}));
+
+// Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
+app.use('/api', requireBearerToken, pipelineRouter);
 
 // MCP endpoint with Bearer token auth
 app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
@@ -311,25 +328,8 @@ const server = app.listen(PORT, async () => {
     console.error('Failed to initialize content module:', error);
   }
 
-  // Initialize pipeline module (failure is isolated — won't crash the server)
-  try {
-    const stepRegistry = createStepRegistry({});
-    const decisionRecorder = new DecisionRecorder(
-      db as unknown as import('drizzle-orm/node-postgres').NodePgDatabase,
-    );
-    const pipelineRouter = createPipelineRouter({ db: db as unknown as import('drizzle-orm/node-postgres').NodePgDatabase, stepRegistry, decisionRecorder });
-
-    // Mount pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
-    app.use('/api', requireBearerToken, pipelineRouter);
-
-    // Inject pipeline deps into tool executor
-    setPipelineContext({ stepRegistry, decisionRecorder });
-
-    console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
-    console.log(`   Inngest:   http://localhost:${PORT}/api/inngest`);
-  } catch (error) {
-    console.error('Failed to initialize pipeline module:', error);
-  }
+  console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
+  console.log(`   Inngest:   http://localhost:${PORT}/api/inngest`);
 
   // Graceful shutdown
   const shutdown = async () => {

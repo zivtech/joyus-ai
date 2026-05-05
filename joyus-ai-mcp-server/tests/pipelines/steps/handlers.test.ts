@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import type { ExecutionContext } from '../../../src/pipelines/engine/step-runner.js';
+import type { ExecutionContext } from '../../../src/pipelines/types.js';
 import type {
   StepHandlerDependencies,
   ProfileEngineClient,

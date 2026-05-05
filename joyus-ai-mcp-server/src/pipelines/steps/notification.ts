@@ -4,8 +4,8 @@
  * Supports template variables: {pipelineName}, {executionId}.
  */
 
-import type { StepType, StepResult } from '../types.js';
-import type { ExecutionContext } from '../types.js';
+import type { StepType, StepResult , ExecutionContext } from '../types.js';
+
 import type { PipelineStepHandler, StepHandlerDependencies } from './interface.js';
 
 function resolveTemplate(template: string, context: ExecutionContext): string {
