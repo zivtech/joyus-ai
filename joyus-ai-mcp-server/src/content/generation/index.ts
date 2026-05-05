@@ -3,18 +3,15 @@
  *   retrieve → generate → extract citations → audit log
  */
 
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { createId } from '@paralleldrive/cuid2';
+import { drizzle } from 'drizzle-orm/node-postgres';
+
 import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
-import { ContentRetriever, type SearchService, type RetrievalResult, type RetrievedItem } from './retriever.js';
-import {
-  ContentGenerator,
-  PlaceholderGenerationProvider,
-  type GenerationProvider,
-  type GenerationOutput,
-} from './generator.js';
-import { CitationManager, type CitationResult } from './citations.js';
+
+import { CitationManager } from './citations.js';
+import { ContentGenerator, type GenerationProvider } from './generator.js';
+import { ContentRetriever, type SearchService } from './retriever.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 
@@ -108,6 +105,7 @@ export class GenerationService {
 }
 
 // Re-exports so callers can import everything from this module
+export { AnthropicGenerationProvider } from './anthropic-provider.js';
 export {
   ContentRetriever,
   type SearchService,
@@ -115,7 +113,6 @@ export {
   type RetrievedItem,
 } from './retriever.js';
 export {
-  AnthropicGenerationProvider,
   ContentGenerator,
   PlaceholderGenerationProvider,
   type GenerationProvider,

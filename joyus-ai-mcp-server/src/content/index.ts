@@ -6,10 +6,8 @@
  */
 
 import type { Express } from 'express';
-import type { DrizzleClient } from './types.js';
 
 import { connectorRegistry } from './connectors/index.js';
-import { PgFtsProvider, SearchService } from './search/index.js';
 import { EntitlementCache, EntitlementService, HttpEntitlementResolver } from './entitlements/index.js';
 import {
   AnthropicGenerationProvider,
@@ -17,13 +15,15 @@ import {
   PlaceholderGenerationProvider,
   type SearchService as GenSearchService,
 } from './generation/index.js';
-import { SyncEngine, initializeSyncScheduler } from './sync/index.js';
+import { createMediationRouter } from './mediation/router.js';
+import { DriftMonitor } from './monitoring/drift.js';
 import { HealthChecker } from './monitoring/health.js';
 import { MetricsCollector } from './monitoring/metrics.js';
-import { DriftMonitor } from './monitoring/drift.js';
-import { StubVoiceAnalyzer } from './monitoring/voice-analyzer.js';
 import { createMonitoringRouter } from './monitoring/routes.js';
-import { createMediationRouter } from './mediation/router.js';
+import { StubVoiceAnalyzer } from './monitoring/voice-analyzer.js';
+import { PgFtsProvider, SearchService } from './search/index.js';
+import { SyncEngine, initializeSyncScheduler } from './sync/index.js';
+import type { DrizzleClient } from './types.js';
 
 export interface ContentModuleConfig {
   db: DrizzleClient;

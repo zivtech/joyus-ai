@@ -90,11 +90,13 @@
         "spec_meta": "kitty-specs/006-content-infrastructure/meta.json",
         "runtime_wiring": [
           "joyus-ai-mcp-server/src/content/runtime-config.ts",
+          "joyus-ai-mcp-server/src/content/index.ts",
+          "joyus-ai-mcp-server/src/content/generation/anthropic-provider.ts",
           "joyus-ai-mcp-server/src/content/mediation/router.ts",
           "joyus-ai-mcp-server/src/content/mediation/auth.ts"
         ],
         "tests": [
-          "joyus-ai-mcp-server/tests/content/integration/production-provider.test.ts",
+          "joyus-ai-mcp-server/src/content/generation/__tests__/anthropic-provider.test.ts",
           "joyus-ai-mcp-server/tests/content/integration/mediation-auth.test.ts"
         ]
       }
