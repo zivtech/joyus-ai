@@ -53,6 +53,8 @@ export class PgFtsProvider implements SearchProvider {
       return [];
     }
 
+    const sourceIdList = sql.join(sourceIds.map((id) => sql`${id}`), sql`, `);
+
     const rows = await this.db.execute<FtsRow>(sql`
       SELECT
         id,
@@ -68,7 +70,7 @@ export class PgFtsProvider implements SearchProvider {
         metadata,
         is_stale
       FROM content.items
-      WHERE source_id = ANY(${sourceIds})
+      WHERE source_id IN (${sourceIdList})
         AND search_vector @@ plainto_tsquery('english', ${query})
       ORDER BY score DESC
       LIMIT ${options.limit}
