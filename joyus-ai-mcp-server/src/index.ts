@@ -183,6 +183,14 @@ app.use('/api/inngest', serve({
   functions: createAllFunctions(stepRegistry, { db: pipelineDb }),
 }));
 
+// Content routes must be mounted before the generic /api bearer-token router.
+// /api/mediation has its own two-layer API key + JWT auth.
+try {
+  await initializeContentModule(app, { db });
+} catch (error) {
+  console.error('Failed to initialize content module:', error);
+}
+
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
 
@@ -321,13 +329,7 @@ const server = app.listen(PORT, async () => {
     console.error('Failed to initialize scheduler:', error);
   }
 
-  // Initialize content module (failure is isolated — won't crash the server)
-  try {
-    await initializeContentModule(app, { db });
-  } catch (error) {
-    console.error('Failed to initialize content module:', error);
-  }
-
+  console.log(`   Mediation: http://localhost:${PORT}/api/mediation`);
   console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
   console.log(`   Inngest:   http://localhost:${PORT}/api/inngest`);
 

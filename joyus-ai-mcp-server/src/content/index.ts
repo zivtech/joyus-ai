@@ -39,6 +39,13 @@ export async function initializeContentModule(
     // 1. Search
     const searchProvider = new PgFtsProvider(db);
     const searchService = new SearchService(searchProvider, db);
+    const generationSearchService: GenSearchService = {
+      search: (query, accessibleSourceIds, options) =>
+        searchProvider.search(query, accessibleSourceIds, {
+          limit: options?.limit ?? 5,
+          offset: 0,
+        }),
+    };
 
     // 2. Entitlements
     const entitlementCache = new EntitlementCache();
@@ -62,7 +69,7 @@ export async function initializeContentModule(
       : new PlaceholderGenerationProvider();
     console.log(`[content] Generation provider: ${hasAnthropicKey ? 'Anthropic' : 'Placeholder'}`);
     const generationService = new GenerationService(
-      searchService as unknown as GenSearchService,
+      generationSearchService,
       generationProvider,
       db,
     );
