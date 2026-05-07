@@ -53,11 +53,17 @@ describe('needsRefresh', () => {
     expect(needsRefresh(inSixMinutes)).toBe(false);
   });
 
-  it('returns true when expiry is exactly at the 5-minute boundary (edge case)', () => {
-    // Exactly 5 minutes: 5*60*1000 ms. The condition is `< fiveMinutes`,
-    // so at exactly 5 minutes the difference equals fiveMinutes — returns false.
-    const exactlyFiveMinutes = new Date(Date.now() + 5 * 60 * 1000);
-    expect(needsRefresh(exactlyFiveMinutes)).toBe(false);
+  it('returns false when expiry is exactly at the 5-minute boundary (edge case)', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    try {
+      // Exactly 5 minutes: 5*60*1000 ms. The condition is `< fiveMinutes`,
+      // so at exactly 5 minutes the difference equals fiveMinutes — returns false.
+      const exactlyFiveMinutes = new Date(Date.now() + 5 * 60 * 1000);
+      expect(needsRefresh(exactlyFiveMinutes)).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('returns true when token is already expired (past date)', () => {

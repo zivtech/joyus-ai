@@ -22,3 +22,10 @@ Alex will discuss specific client needs during planning. Your job is to **abstra
 | **Teams (Claude Code)** | Technical execution, coding |
 | **Personal (Cowork)** | Business planning, strategy, Milk Jawn, proposals |
 
+## Git Conventions
+
+- Follow `CONTRIBUTING.md` commit message conventions.
+- Use standard Conventional Commits: `<type>(<scope>): <short summary>`.
+- Use the body to explain why the change was made when helpful.
+- Reference GitHub issues in the body or footer when relevant.
+- Do not add Lore-style decision trailers such as `Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, or `Directive:` unless a human explicitly asks for them.
