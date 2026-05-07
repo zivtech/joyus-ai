@@ -7,7 +7,7 @@ FROM node:20-bookworm AS builder
 WORKDIR /app
 
 COPY joyus-ai-mcp-server/package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 COPY joyus-ai-mcp-server/ ./
 RUN npm run build
