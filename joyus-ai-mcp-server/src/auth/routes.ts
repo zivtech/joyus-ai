@@ -7,6 +7,7 @@ import axios from 'axios';
 import { eq, and } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 
+import { config } from '../config.js';
 import { db, users, connections, oauthStates, type Service } from '../db/client.js';
 import { encryptToken, generateMcpToken, generateOAuthState } from '../db/encryption.js';
 
@@ -21,6 +22,34 @@ function escapeHtml(str: string): string {
 
 function toJsStringLiteral(str: string): string {
   return JSON.stringify(str);
+}
+
+type AuthSession = Request['session'] & {
+  userId?: string;
+  mcpTokenFlash?: string;
+};
+
+function flashMcpToken(req: Request, token: string): void {
+  (req.session as AuthSession).mcpTokenFlash = token;
+}
+
+function consumeMcpTokenFlash(req: Request): string | undefined {
+  const session = req.session as AuthSession;
+  const token = session.mcpTokenFlash;
+  session.mcpTokenFlash = undefined;
+  return token;
+}
+
+function maskMcpToken(token: string): string {
+  return `${token.slice(0, 8)}...`;
+}
+
+function redirectAfterSessionSave(req: Request, res: Response, path: string): void {
+  if (typeof req.session?.save === 'function') {
+    req.session.save(() => res.redirect(path));
+    return;
+  }
+  res.redirect(path);
 }
 
 // OAuth configuration
@@ -119,9 +148,11 @@ authRouter.get('/', async (req: Request, res: Response) => {
   const connectedServices = new Set(userConnections.map((c) => c.service));
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const safeDisplayName = escapeHtml(user.name || user.email);
-  const safeToken = escapeHtml(user.mcpToken);
+  const flashedToken = consumeMcpTokenFlash(req);
+  const displayedToken = flashedToken ?? maskMcpToken(user.mcpToken);
+  const safeToken = escapeHtml(displayedToken);
   const baseUrlJsLiteral = toJsStringLiteral(baseUrl);
-  const tokenJsLiteral = toJsStringLiteral(user.mcpToken);
+  const tokenJsLiteral = flashedToken ? toJsStringLiteral(flashedToken) : null;
 
   res.send(`
     <!DOCTYPE html>
@@ -191,9 +222,18 @@ authRouter.get('/', async (req: Request, res: Response) => {
 
       <div class="mcp-url">
         Token: ${safeToken}
-        <button class="copy-btn" onclick='copyToClipboard(this, ${tokenJsLiteral})'>Copy</button>
+        ${tokenJsLiteral
+          ? `<button class="copy-btn" onclick='copyToClipboard(this, ${tokenJsLiteral})'>Copy</button>`
+          : ''}
         <span class="copy-feedback" aria-live="polite"></span>
       </div>
+      ${tokenJsLiteral
+        ? ''
+        : `<p class="status">For security, existing tokens are only shown when newly created. Reconnecting Google does not change this token; use Regenerate to create and copy a new one.</p>`}
+
+      <form method="POST" action="/auth/regenerate-token" onsubmit="return window.confirm('Regenerate your MCP bearer token? Existing Claude Desktop connections using the old token will stop working.');">
+        <button class="btn disconnect" type="submit">Regenerate MCP Token</button>
+      </form>
 
       <div class="info">
         <strong>Claude Desktop Setup:</strong><br>
@@ -312,7 +352,7 @@ authRouter.get('/google/start', async (req: Request, res: Response) => {
     state,
     access_type: 'offline',
     prompt: 'consent',
-    hd: 'example.com' // Restrict to organization domain — change to your domain
+    hd: config.GOOGLE_HOSTED_DOMAIN
   });
 
   res.redirect(`${OAUTH_CONFIG.google.authUrl}?${params}`);
@@ -358,12 +398,12 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
 
     const { email, name } = userInfoResponse.data;
 
-    // Verify organization domain — change to your domain
-    if (!email.endsWith('@example.com')) {
+    if (!email.endsWith(`@${config.GOOGLE_HOSTED_DOMAIN}`)) {
       return res.status(403).send('Only organization accounts are allowed');
     }
 
     // Find or create user
+    let newlyCreatedToken: string | undefined;
     let [user] = await db
       .select()
       .from(users)
@@ -380,6 +420,7 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
         })
         .returning();
       user = newUser;
+      newlyCreatedToken = user.mcpToken;
     }
 
     // Upsert Google connection
@@ -416,8 +457,11 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
 
     // Set session
     req.session.userId = user.id;
+    if (newlyCreatedToken) {
+      flashMcpToken(req, newlyCreatedToken);
+    }
 
-    res.redirect('/auth');
+    redirectAfterSessionSave(req, res, '/auth');
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Google OAuth error:', message);
@@ -728,6 +772,22 @@ authRouter.get('/github/callback', async (req: Request, res: Response) => {
 // ============================================================
 // Disconnect & Logout
 // ============================================================
+
+authRouter.post('/regenerate-token', requireSessionOrRedirect, async (req: Request, res: Response) => {
+  const userId = req.session!.userId!;
+  const newToken = generateMcpToken();
+
+  await db
+    .update(users)
+    .set({
+      mcpToken: newToken,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+
+  flashMcpToken(req, newToken);
+  redirectAfterSessionSave(req, res, '/auth');
+});
 
 authRouter.post('/:service/disconnect', requireSessionOrRedirect, async (req: Request, res: Response) => {
   const userId = req.session!.userId!;
