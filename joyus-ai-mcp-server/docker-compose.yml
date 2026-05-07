@@ -1,7 +1,5 @@
 # Joyus AI MCP Server - Docker Compose for Local Development
 
-version: '3.8'
-
 services:
   # PostgreSQL Database
   db:
@@ -49,6 +47,7 @@ services:
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - JOYUS_ANTHROPIC_MODEL=${JOYUS_ANTHROPIC_MODEL:-claude-sonnet-4-6}
+      - PLAYWRIGHT_MCP_BASE_URL=http://playwright:3002
       - INNGEST_DEV=1
       - INNGEST_BASE_URL=http://inngest:8288
       - INNGEST_EVENT_KEY=${INNGEST_EVENT_KEY:-local-dev-key}
@@ -59,8 +58,23 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      playwright:
+        condition: service_healthy
     command: >
       sh -c "npm run db:migrate && npm run dev"
+
+  # Playwright MCP dependency
+  playwright:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.playwright
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD", "node", "-e", "const c=new AbortController(); const t=setTimeout(() => c.abort(), 2000); fetch('http://127.0.0.1:3002/sse', { signal: c.signal }).then((r) => { clearTimeout(t); process.exit(r.ok ? 0 : 1); }).catch(() => process.exit(1));"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Inngest Dev Server (LOCAL DEVELOPMENT ONLY)
   # Production should use Inngest Cloud or a separately deployed self-hosted

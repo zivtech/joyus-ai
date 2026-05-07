@@ -72,49 +72,84 @@ app.use(session({
 // --- Health check endpoints ---
 
 const startTime = Date.now();
+const PLAYWRIGHT_MCP_BASE_URL = process.env.PLAYWRIGHT_MCP_BASE_URL ?? 'http://playwright:3002';
+const PLAYWRIGHT_MCP_PROBE_TIMEOUT_MS = 2000;
 
-interface PlaywrightHealth {
+interface PlaywrightMcpHealth {
   ok: boolean;
   status: number;
   endpoint: string;
+  baseUrl: string;
+  check: string;
   payload: Record<string, unknown>;
 }
 
-async function checkPlaywrightContainer(): Promise<PlaywrightHealth> {
-  for (const endpoint of ['/health', '/sse']) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    try {
-      const response = await fetch(`http://playwright:3002${endpoint}`, {
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        continue;
-      }
+function describeFetchError(err: unknown): Record<string, unknown> {
+  if (!(err instanceof Error)) {
+    return {
+      error: 'Playwright service is not reachable',
+    };
+  }
 
-      let payload: Record<string, unknown> = {};
-      if (endpoint === '/health') {
-        const data = await response.json();
-        payload = typeof data === 'object' && data !== null ? data : {};
-      }
-
-      return {
-        ok: true,
-        status: response.status,
-        endpoint,
-        payload,
-      };
-    } finally {
-      clearTimeout(timeout);
-    }
+  const cause = err.cause as { code?: string; message?: string } | undefined;
+  const causeCode = cause?.code;
+  if (causeCode === 'ENOTFOUND') {
+    return {
+      error: 'Playwright service is not running or not resolvable',
+      cause: causeCode,
+    };
+  }
+  if (causeCode === 'ECONNREFUSED') {
+    return {
+      error: 'Playwright service is not accepting connections',
+      cause: causeCode,
+    };
+  }
+  if (err.name === 'AbortError') {
+    return {
+      error: 'Playwright service is not responding',
+      cause: 'TIMEOUT',
+    };
   }
 
   return {
-    ok: false,
-    status: 503,
-    endpoint: '/health,/sse',
-    payload: {},
+    error: 'Playwright service is not reachable',
+    cause: causeCode ?? err.message,
   };
+}
+
+async function checkPlaywrightMcp(): Promise<PlaywrightMcpHealth> {
+  const endpoint = '/sse';
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), PLAYWRIGHT_MCP_PROBE_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${PLAYWRIGHT_MCP_BASE_URL}${endpoint}`, {
+      signal: controller.signal,
+    });
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      endpoint,
+      baseUrl: PLAYWRIGHT_MCP_BASE_URL,
+      check: 'mcp_sse_transport',
+      payload: response.ok ? {} : { error: `${endpoint} returned HTTP ${response.status}` },
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      status: 503,
+      endpoint,
+      baseUrl: PLAYWRIGHT_MCP_BASE_URL,
+      check: 'mcp_sse_transport',
+      payload: {
+        ...describeFetchError(err),
+      },
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 // Platform self-check
@@ -145,14 +180,16 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
-// Playwright container check
+// Downstream Playwright MCP dependency check
 app.get('/health/playwright', async (req, res) => {
   try {
-    const health = await checkPlaywrightContainer();
+    const health = await checkPlaywrightMcp();
     if (health.ok) {
       res.json({
         status: 'ok',
         service: 'playwright',
+        check: health.check,
+        baseUrl: health.baseUrl,
         endpoint: health.endpoint,
         ...health.payload,
       });
@@ -160,7 +197,10 @@ app.get('/health/playwright', async (req, res) => {
       res.status(503).json({
         status: 'degraded',
         service: 'playwright',
-        error: 'No supported health endpoint responded successfully',
+        check: health.check,
+        baseUrl: health.baseUrl,
+        endpoint: health.endpoint,
+        ...health.payload,
       });
     }
   } catch (err) {
@@ -194,10 +234,13 @@ app.get('/health', async (req, res) => {
 
   // Playwright
   try {
-    const health = await checkPlaywrightContainer();
+    const health = await checkPlaywrightMcp();
     services.playwright = {
       status: health.ok ? 'ok' : 'degraded',
+      check: health.check,
+      baseUrl: health.baseUrl,
       endpoint: health.endpoint,
+      ...health.payload,
     };
     if (!health.ok) allHealthy = false;
   } catch {

@@ -94,10 +94,33 @@ async function handleToolCall(toolName, args) {
   }
 }
 
+function sendSseReady(req, res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+  });
+  res.write(`event: endpoint\ndata: /sse\n\n`);
+
+  const keepAlive = setInterval(() => {
+    res.write(': keepalive\n\n');
+  }, 15000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+  });
+}
+
 /**
  * HTTP server for MCP tool calls and health checks
  */
 const server = http.createServer(async (req, res) => {
+  // SSE transport compatibility endpoint used by platform health checks.
+  if (req.method === 'GET' && req.url === '/sse') {
+    sendSseReady(req, res);
+    return;
+  }
+
   // Health endpoint
   if (req.method === 'GET' && req.url === '/health') {
     const connected = browser?.isConnected() ?? false;

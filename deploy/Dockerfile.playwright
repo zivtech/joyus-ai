@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/playwright:v1.50.0-noble
 WORKDIR /app
 
 # Install MCP SDK, Playwright tools, and Backstop.js
-RUN npm init -y && npm install --no-save \
+RUN npm init -y && npm pkg set type=module && npm install --no-save \
     @modelcontextprotocol/sdk \
     playwright \
     backstopjs
@@ -20,6 +20,6 @@ ENV PORT=3002
 EXPOSE 3002
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3002/health || exit 1
+    CMD node -e "const c=new AbortController(); const t=setTimeout(() => c.abort(), 2000); fetch('http://127.0.0.1:3002/sse', { signal: c.signal }).then((r) => { clearTimeout(t); process.exit(r.ok ? 0 : 1); }).catch(() => process.exit(1));"
 
 CMD ["node", "server.js"]

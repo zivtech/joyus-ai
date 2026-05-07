@@ -16,6 +16,7 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-jawn_ai}
+      - PLAYWRIGHT_MCP_BASE_URL=${PLAYWRIGHT_MCP_BASE_URL:-http://playwright:3002}
     depends_on:
       postgres:
         condition: service_healthy
