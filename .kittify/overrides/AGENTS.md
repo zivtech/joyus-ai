@@ -142,7 +142,8 @@ Agent directories like `.claude/`, `.codex/`, `.gemini/` contain:
 ✅ **DO commit:**
 - `.kittify/templates/` - Command templates (source)
 - `.kittify/missions/` - Mission definitions
-- `.kittify/memory/constitution.md` - Project constitution
+- `spec/constitution.md` - Public project constitution
+- `.kittify/charter/` - Spec Kitty runtime charter and generated doctrine
 - `.gitignore` - With all agent directories excluded
 
 ❌ **DO NOT commit:**
@@ -170,18 +171,19 @@ git status | grep -E '\.(claude|codex|gemini|cursor)/'
 git reset HEAD .claude/
 ```
 
-### Worktree Constitution Sharing
+### Constitution and Charter Layout
 
-In worktrees, `.kittify/memory/` is a symlink to the main repo's memory,
-ensuring all feature branches share the same constitution.
+`spec/constitution.md` is the canonical public project constitution. `.kittify/charter/`
+is the Spec Kitty runtime doctrine surface generated from the project charter.
+Do not recreate legacy `.kittify/memory/constitution.md` or `.kittify/constitution/`
+copies.
 
 ```bash
-# In a worktree, this should show a symlink:
-ls -la .kittify/memory
-# lrwxr-xr-x ... .kittify/memory -> ../../../.kittify/memory
+# Verify the current Spec Kitty charter layout:
+ls -la .kittify/charter
 ```
 
-This is intentional and correct - it ensures a single source of truth for project principles.
+This is intentional and correct - it keeps public project governance and Spec Kitty runtime doctrine in their current locations.
 
 ---
 

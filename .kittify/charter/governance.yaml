@@ -1,5 +1,5 @@
-# Auto-generated from constitution.md — do not edit directly.
-# Run 'spec-kitty constitution sync' to regenerate.
+# Auto-generated from charter.md — do not edit directly.
+# Run 'spec-kitty charter sync' to regenerate.
 
 testing:
   min_coverage: 0
@@ -22,6 +22,10 @@ branch_strategy:
 doctrine:
   selected_paradigms: []
   selected_directives: []
-  available_tools: []
+  available_tools:
+  - '`get_context`'
+  - '`run_gates`'
+  - '`verify_branch`'
+  - etc.
   template_set:
 enforcement: {}

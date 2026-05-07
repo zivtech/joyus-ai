@@ -127,34 +127,40 @@ def _load_registry(path: Path) -> dict[str, Path]:
     return repos
 
 
-def _normalize_constitution(text: str) -> str:
-    lines = [ln.rstrip() for ln in text.splitlines()]
-    normalized: list[str] = []
-    for idx, line in enumerate(lines):
-        if idx == 0 and line.startswith("#") and "Constitution" in line:
-            normalized.append("# Constitution")
-            continue
-        normalized.append(line)
-    return "\n".join(normalized).strip()
-
-
-def _constitution_sync(repo_path: Path) -> dict:
+def _constitution_layout(repo_path: Path) -> dict:
     public_path = repo_path / "spec" / "constitution.md"
-    memory_path = repo_path / ".kittify" / "memory" / "constitution.md"
+    charter_dir = repo_path / ".kittify" / "charter"
+    charter_path = charter_dir / "charter.md"
+    derived_paths = [
+        charter_dir / "governance.yaml",
+        charter_dir / "directives.yaml",
+        charter_dir / "metadata.yaml",
+    ]
+    legacy_paths = [
+        repo_path / ".kittify" / "memory" / "constitution.md",
+        repo_path / ".kittify" / "constitution" / "constitution.md",
+        repo_path / ".kittify" / "constitution" / "governance.yaml",
+        repo_path / ".kittify" / "constitution" / "directives.yaml",
+        repo_path / ".kittify" / "constitution" / "metadata.yaml",
+    ]
 
-    if not public_path.exists() or not memory_path.exists():
-        return {
-            "status": "n/a",
-            "message": "constitution files not both present",
-        }
+    if not public_path.exists():
+        return {"status": "missing", "message": "spec/constitution.md missing"}
 
-    public_text = _normalize_constitution(public_path.read_text())
-    memory_text = _normalize_constitution(memory_path.read_text())
+    if not charter_path.exists():
+        return {"status": "missing", "message": ".kittify/charter/charter.md missing"}
 
-    if public_text == memory_text:
-        return {"status": "ok", "message": "in sync"}
+    missing_derived = [path for path in derived_paths if not path.exists()]
+    if missing_derived:
+        rels = ", ".join(str(path.relative_to(repo_path)) for path in missing_derived)
+        return {"status": "drift", "message": f"missing charter derived files: {rels}"}
 
-    return {"status": "drift", "message": "content mismatch"}
+    present_legacy = [path for path in legacy_paths if path.exists()]
+    if present_legacy:
+        rels = ", ".join(str(path.relative_to(repo_path)) for path in present_legacy)
+        return {"status": "drift", "message": f"legacy constitution files present: {rels}"}
+
+    return {"status": "ok", "message": "constitution and charter layout current"}
 
 
 def _auto_lifecycle(status: str) -> str:
@@ -294,7 +300,7 @@ def main() -> None:
     for repo_id, repo_path in repos.items():
         meta = _read_pride_yaml(repo_path)
         visibility = meta.get("visibility", "unknown")
-        constitution = _constitution_sync(repo_path)
+        constitution_layout = _constitution_layout(repo_path)
         features = _scan_features(repo_path)
 
         for f in features:
@@ -306,7 +312,7 @@ def main() -> None:
                 "repo_id": repo_id,
                 "path": str(repo_path),
                 "visibility": visibility,
-                "constitution_sync": constitution,
+                "constitution_layout": constitution_layout,
                 "features": features,
             }
         )
@@ -322,7 +328,8 @@ def main() -> None:
 
     for repo in output["repos"]:
         print(f"\n{repo['repo_id']} ({repo['visibility']})")
-        print(f"  constitution_sync: {repo['constitution_sync']['status']} ({repo['constitution_sync']['message']})")
+        layout = repo["constitution_layout"]
+        print(f"  constitution_layout: {layout['status']} ({layout['message']})")
 
         features = repo["features"]
         if not features:

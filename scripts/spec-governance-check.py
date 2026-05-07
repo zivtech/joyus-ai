@@ -4,7 +4,7 @@
 Checks:
 1. Required artifact presence by lifecycle state.
 2. Broken local markdown references.
-3. Constitution drift between spec and .kittify memory.
+3. Constitution and Spec Kitty charter layout.
 4. Checklist/spec consistency for "no implementation details" claims.
 5. Platform-level required sections for new platform/critical features.
 6. Metadata contract completeness.
@@ -110,20 +110,6 @@ class Finding:
     status: str  # fail/warn
     target: str
     message: str
-
-
-def _normalize_constitution(text: str) -> str:
-    lines = [ln.rstrip() for ln in text.splitlines()]
-    normalized = []
-    for idx, line in enumerate(lines):
-        if idx == 0 and line.startswith("#") and ("Constitution" in line or "Charter" in line):
-            normalized.append("# Constitution")
-            continue
-        normalized.append(
-            line.replace("This charter can be amended by:", "This constitution can be amended by:")
-            .replace("*Charter Version:", "*Constitution Version:")
-        )
-    return "\n".join(normalized).strip()
 
 
 def _iter_feature_dirs(root: Path) -> Iterable[Path]:
@@ -330,39 +316,67 @@ def check_markdown_links(root: Path) -> list[Finding]:
 
 def check_constitution_sync(root: Path) -> list[Finding]:
     findings: list[Finding] = []
-    source = root / "spec" / "constitution.md"
-    memory_candidates = [
+    constitution = root / "spec" / "constitution.md"
+    charter_dir = root / ".kittify" / "charter"
+    charter = charter_dir / "charter.md"
+    derived_files = [
+        charter_dir / "governance.yaml",
+        charter_dir / "directives.yaml",
+        charter_dir / "metadata.yaml",
+    ]
+    legacy_files = [
         root / ".kittify" / "memory" / "constitution.md",
         root / ".kittify" / "constitution" / "constitution.md",
+        root / ".kittify" / "constitution" / "governance.yaml",
+        root / ".kittify" / "constitution" / "directives.yaml",
+        root / ".kittify" / "constitution" / "metadata.yaml",
     ]
-    memory = next((candidate for candidate in memory_candidates if candidate.exists()), None)
 
-    if not source.exists():
+    if not constitution.exists():
         findings.append(
             Finding(
                 "CONST-001",
                 "P0",
                 "fail",
                 "spec/constitution.md",
-                "Constitution source is missing",
+                "Project constitution is missing",
             )
         )
-        return findings
 
-    if memory is None:
-        return findings
-
-    source_norm = _normalize_constitution(source.read_text())
-    memory_norm = _normalize_constitution(memory.read_text())
-
-    if source_norm != memory_norm:
+    if not charter.exists():
         findings.append(
             Finding(
                 "CONST-002",
                 "P0",
                 "fail",
-                f"spec/constitution.md vs {memory.relative_to(root)}",
-                "Constitution drift detected beyond allowed title normalization",
+                ".kittify/charter/charter.md",
+                "Spec Kitty runtime charter is missing",
+            )
+        )
+
+    missing_derived = [path for path in derived_files if not path.exists()]
+    if missing_derived:
+        findings.append(
+            Finding(
+                "CONST-003",
+                "P0",
+                "fail",
+                ".kittify/charter",
+                "Missing Spec Kitty derived charter files: "
+                + ", ".join(str(path.relative_to(root)) for path in missing_derived),
+            )
+        )
+
+    present_legacy = [path for path in legacy_files if path.exists()]
+    if present_legacy:
+        findings.append(
+            Finding(
+                "CONST-004",
+                "P0",
+                "fail",
+                ".kittify",
+                "Legacy Spec Kitty constitution files should be removed or migrated: "
+                + ", ".join(str(path.relative_to(root)) for path in present_legacy),
             )
         )
 

@@ -75,7 +75,7 @@ The script reports:
 - work package progress
 - artifact integrity signals
 - metadata completeness signals
-- constitution sync flag
+- constitution/charter layout flag
 
 ---
 
@@ -142,7 +142,7 @@ Governance checks run through `scripts/spec-governance-check.py` and should run 
 Required checks:
 1. Artifact completeness by lifecycle state.
 2. Broken local markdown references.
-3. Constitution drift between `spec/constitution.md` and `.kittify/memory/constitution.md`.
+3. Constitution/charter layout: `spec/constitution.md` exists as the public project constitution, `.kittify/charter/charter.md` exists as the Spec Kitty runtime charter surface, derived charter YAML exists under `.kittify/charter/`, and legacy `.kittify/memory` or `.kittify/constitution` files are absent. This check does not decide whether the two markdown files should be duplicates; that source-of-truth decision is tracked separately.
 4. Checklist/spec consistency for "no implementation details" claims.
 5. Platform-level section contract for new platform/critical features.
 6. Metadata contract completeness.
@@ -184,6 +184,7 @@ This freeze introduces:
 - metadata contract (`measurement_owner`, `review_cadence`, `risk_class`, `lifecycle_state`)
 - platform-level section contract
 - automated governance checks and CI gating
+- current Spec Kitty charter layout, with public project governance kept in `spec/constitution.md`
 
 ---
 
