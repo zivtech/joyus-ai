@@ -43,6 +43,12 @@ vi.mock('../../src/db/encryption.js', () => ({
 
 vi.mock('axios');
 
+vi.mock('../../src/config.js', () => ({
+  config: {
+    GOOGLE_HOSTED_DOMAIN: 'example.com',
+  },
+}));
+
 // requireSessionOrRedirect used by start/disconnect routes
 vi.mock('../../src/auth/middleware.js', () => ({
   requireSessionOrRedirect: vi.fn(
@@ -60,6 +66,7 @@ vi.mock('../../src/auth/middleware.js', () => ({
 
 import axios from 'axios';
 import { db } from '../../src/db/client.js';
+import { generateMcpToken } from '../../src/db/encryption.js';
 import { authRouter } from '../../src/auth/routes.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -246,7 +253,7 @@ describe('escapeHtml (via dashboard route)', () => {
 
     const html = res._body as string;
     expect(html).toContain('&lt;script&gt;');
-    expect(html).not.toContain('<script>');
+    expect(html).not.toContain('<script>alert("xss")</script>');
   });
 
   it('escapes ampersands and quotes in display name', async () => {
@@ -288,12 +295,17 @@ describe('toJsStringLiteral (via dashboard route)', () => {
     vi.clearAllMocks();
   });
 
-  it('produces valid JSON string literals for the copy button', async () => {
+  it('produces valid JSON string literals for the token copy button only when flashed', async () => {
     const user = { ...EXISTING_USER, mcpToken: 'tok\\en"with"special' };
     selectReturning([user]);
     selectResolvingOnWhere([]);
 
-    const req = createMockReq({ session: { userId: 'user-1' } });
+    const req = createMockReq({
+      session: {
+        userId: 'user-1',
+        mcpTokenFlash: 'tok\\en"with"special',
+      },
+    });
     const res = createMockRes();
     const handler = findHandler(authRouter, 'get', '/');
 
@@ -337,7 +349,7 @@ describe('GET / (portal home)', () => {
     expect(res._redirect).toBe('/auth');
   });
 
-  it('shows dashboard with connected services for authenticated user', async () => {
+  it('shows dashboard with connected services and a masked MCP token by default', async () => {
     selectReturning([EXISTING_USER]);
     selectResolvingOnWhere([{ service: 'GOOGLE' }, { service: 'JIRA' }]);
 
@@ -348,7 +360,116 @@ describe('GET / (portal home)', () => {
 
     const html = res._body as string;
     expect(html).toContain('Connected Services');
-    expect(html).toContain('existing-mcp-token');
+    expect(html).toContain('Token: existing...');
+    expect(html).not.toContain('existing-mcp-token');
+    expect(html).not.toContain('copyToClipboard(this, "existing-mcp-token")');
+    expect(html).toContain('use Regenerate to create and copy a new one.');
+  });
+
+  it('shows a flashed MCP token once with a copy button, then clears the flash', async () => {
+    selectReturning([EXISTING_USER]);
+    selectResolvingOnWhere([]);
+
+    const session = { userId: 'user-1', mcpTokenFlash: 'new-full-token' };
+    const req = createMockReq({ session });
+    const res = createMockRes();
+
+    await handler!(req, res, vi.fn());
+
+    const html = res._body as string;
+    expect(html).toContain('Token: new-full-token');
+    expect(html).toContain('copyToClipboard(this, "new-full-token")');
+    expect(html).not.toContain('use Regenerate to create and copy a new one.');
+    expect(session.mcpTokenFlash).toBeUndefined();
+  });
+
+  it('renders a regenerate token confirmation form', async () => {
+    selectReturning([EXISTING_USER]);
+    selectResolvingOnWhere([]);
+
+    const req = createMockReq({ session: { userId: 'user-1' } });
+    const res = createMockRes();
+
+    await handler!(req, res, vi.fn());
+
+    const html = res._body as string;
+    expect(html).toContain('action="/auth/regenerate-token"');
+    expect(html).toContain('window.confirm');
+  });
+});
+
+// ─── Google hosted domain config ─────────────────────────────────────────────
+
+describe('GET /google/start', () => {
+  let handler: ReturnType<typeof findHandler>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    handler = findHandler(authRouter, 'get', '/google/start');
+  });
+
+  it('uses the configured hosted domain in the Google authorization URL', async () => {
+    insertResolving();
+
+    const req = createMockReq({ session: { userId: 'user-1' } });
+    const res = createMockRes();
+
+    await handler!(req, res, vi.fn());
+
+    expect(res._redirect).toContain('hd=example.com');
+  });
+});
+
+// ─── MCP token regeneration ──────────────────────────────────────────────────
+
+describe('POST /regenerate-token', () => {
+  let handler: ReturnType<typeof findHandler>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    handler = findHandler(authRouter, 'post', '/regenerate-token');
+  });
+
+  it('replaces the user MCP token, flashes it, and redirects to /auth', async () => {
+    vi.mocked(generateMcpToken).mockReturnValueOnce('replacement-mcp-token');
+    const updateChain = updateResolving();
+    const session = { userId: 'user-1' };
+    const req = createMockReq({ session });
+    const res = createMockRes();
+
+    await handler!(req, res, vi.fn());
+
+    expect(db.update).toHaveBeenCalledWith('users_table');
+    expect(updateChain.set).toHaveBeenCalledWith({
+      mcpToken: 'replacement-mcp-token',
+      updatedAt: expect.any(Date),
+    });
+    expect(session).toEqual({
+      userId: 'user-1',
+      mcpTokenFlash: 'replacement-mcp-token',
+    });
+    expect(res._redirect).toBe('/auth');
+  });
+
+  it('replaces the old token value so exact-match bearer auth invalidates it', async () => {
+    vi.mocked(generateMcpToken).mockReturnValueOnce('new-token');
+    const updateChain = updateResolving();
+    const req = createMockReq({
+      session: {
+        userId: 'user-1',
+        mcpTokenFlash: 'old-token',
+      },
+    });
+    const res = createMockRes();
+
+    await handler!(req, res, vi.fn());
+
+    expect(updateChain.set).toHaveBeenCalledWith({
+      mcpToken: 'new-token',
+      updatedAt: expect.any(Date),
+    });
+    expect((req.session as { mcpTokenFlash?: string }).mcpTokenFlash).toBe('new-token');
+    expect((req.session as { mcpTokenFlash?: string }).mcpTokenFlash).not.toBe('old-token');
   });
 });
 
@@ -454,7 +575,46 @@ describe('GET /google/callback', () => {
     await handler!(req, res, vi.fn());
 
     expect(res._redirect).toBe('/auth');
-    expect((req as unknown as { session: { userId?: string } }).session.userId).toBe('new-user-id');
+    expect((req as unknown as { session: { userId?: string; mcpTokenFlash?: string } }).session.userId).toBe('new-user-id');
+    expect((req as unknown as { session: { userId?: string; mcpTokenFlash?: string } }).session.mcpTokenFlash).toBe('generated-mcp-token');
+  });
+
+  it('shows the generated MCP token on the first dashboard visit after user creation', async () => {
+    selectReturning([VALID_STATE_ROW]);
+    deleteResolving();
+
+    vi.mocked(axios.post).mockResolvedValueOnce({
+      data: { access_token: 'at', refresh_token: 'rt', expires_in: 3600 },
+    });
+    vi.mocked(axios.get).mockResolvedValueOnce({
+      data: { email: 'newuser@example.com', name: 'New User' },
+    });
+
+    selectReturning([]);
+    insertReturning([{ id: 'new-user-id', email: 'newuser@example.com', name: 'New User', mcpToken: 'generated-mcp-token' }]);
+    selectReturning([]);
+    insertResolving();
+
+    const session = {};
+    const callbackReq = createMockReq({ query: { code: 'code', state: 'valid-state' }, session });
+    const callbackRes = createMockRes();
+
+    await handler!(callbackReq, callbackRes, vi.fn());
+
+    selectReturning([{ id: 'new-user-id', email: 'newuser@example.com', name: 'New User', mcpToken: 'generated-mcp-token' }]);
+    selectResolvingOnWhere([]);
+
+    const dashboardReq = createMockReq({ session });
+    const dashboardRes = createMockRes();
+    const dashboardHandler = findHandler(authRouter, 'get', '/');
+
+    await dashboardHandler!(dashboardReq, dashboardRes, vi.fn());
+
+    const html = dashboardRes._body as string;
+    expect(html).toContain('Token: generated-mcp-token');
+    expect(html).toContain('copyToClipboard(this, "generated-mcp-token")');
+    expect(html).not.toContain('use Regenerate to create and copy a new one.');
+    expect((session as { mcpTokenFlash?: string }).mcpTokenFlash).toBeUndefined();
   });
 
   it('updates existing user connection on re-authentication', async () => {

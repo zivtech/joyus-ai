@@ -14,6 +14,8 @@ if (!ENCRYPTION_KEY) {
     throw new Error('FATAL: TOKEN_ENCRYPTION_KEY is required in production');
   }
   console.warn('[joyus] TOKEN_ENCRYPTION_KEY not set - using development fallback');
+} else if (!/^[a-fA-F0-9]{64}$/.test(ENCRYPTION_KEY)) {
+  throw new Error('FATAL: TOKEN_ENCRYPTION_KEY must be 64 hex characters');
 }
 
 /**
