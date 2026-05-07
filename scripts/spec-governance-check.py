@@ -87,6 +87,8 @@ PLATFORM_REQUIRED_SECTIONS = [
     "security + mcp governance",
 ]
 
+MAX_LOCAL_LINK_TARGET_LENGTH = 240
+
 SCOPE_MARKDOWN_DIRS = [
     "spec",
     "kitty-specs",
@@ -114,10 +116,13 @@ def _normalize_constitution(text: str) -> str:
     lines = [ln.rstrip() for ln in text.splitlines()]
     normalized = []
     for idx, line in enumerate(lines):
-        if idx == 0 and line.startswith("#") and "Constitution" in line:
+        if idx == 0 and line.startswith("#") and ("Constitution" in line or "Charter" in line):
             normalized.append("# Constitution")
             continue
-        normalized.append(line)
+        normalized.append(
+            line.replace("This charter can be amended by:", "This constitution can be amended by:")
+            .replace("*Charter Version:", "*Constitution Version:")
+        )
     return "\n".join(normalized).strip()
 
 
@@ -230,6 +235,14 @@ def _is_placeholder_target(target: str) -> bool:
     return False
 
 
+def _invalid_local_link_target_reason(target: str) -> str:
+    if any(ch in target for ch in "\r\n"):
+        return "target contains a newline"
+    if len(target) > MAX_LOCAL_LINK_TARGET_LENGTH:
+        return f"target exceeds {MAX_LOCAL_LINK_TARGET_LENGTH} characters"
+    return ""
+
+
 def _iter_markdown_files(root: Path) -> Iterable[Path]:
     for rel_dir in SCOPE_MARKDOWN_DIRS:
         dir_path = root / rel_dir
@@ -264,6 +277,19 @@ def check_markdown_links(root: Path) -> list[Finding]:
             if _is_placeholder_target(target):
                 continue
 
+            invalid_reason = _invalid_local_link_target_reason(target)
+            if invalid_reason:
+                findings.append(
+                    Finding(
+                        "REF-002",
+                        "P0",
+                        "fail",
+                        str(md_file.relative_to(root)),
+                        f"Invalid local markdown reference ({invalid_reason}): {target}",
+                    )
+                )
+                continue
+
             candidates: list[Path] = []
             if target.startswith("/"):
                 candidates.append(Path(target))
@@ -272,7 +298,21 @@ def check_markdown_links(root: Path) -> list[Finding]:
                 if target.startswith(("spec/", "kitty-specs/", ".claude/", ".kittify/", "scripts/", "deploy/")):
                     candidates.append((root / target).resolve())
 
-            if not any(c.exists() for c in candidates):
+            try:
+                target_exists = any(c.exists() for c in candidates)
+            except OSError as exc:
+                findings.append(
+                    Finding(
+                        "REF-002",
+                        "P0",
+                        "fail",
+                        str(md_file.relative_to(root)),
+                        f"Invalid local markdown reference ({exc.strerror}): {target}",
+                    )
+                )
+                continue
+
+            if not target_exists:
                 if any(_is_git_ignored(root, c) for c in candidates):
                     continue
                 findings.append(
@@ -291,16 +331,21 @@ def check_markdown_links(root: Path) -> list[Finding]:
 def check_constitution_sync(root: Path) -> list[Finding]:
     findings: list[Finding] = []
     source = root / "spec" / "constitution.md"
-    memory = root / ".kittify" / "memory" / "constitution.md"
+    memory_candidates = [
+        root / ".kittify" / "memory" / "constitution.md",
+        root / ".kittify" / "constitution" / "constitution.md",
+        root / ".kittify" / "charter" / "charter.md",
+    ]
+    memory = next((candidate for candidate in memory_candidates if candidate.exists()), None)
 
-    if not source.exists() or not memory.exists():
+    if not source.exists() or memory is None:
         findings.append(
             Finding(
                 "CONST-001",
                 "P0",
                 "fail",
                 "spec/constitution.md",
-                "Constitution source or .kittify memory copy is missing",
+                "Constitution source or .kittify constitution copy is missing",
             )
         )
         return findings
