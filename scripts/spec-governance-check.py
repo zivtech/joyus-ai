@@ -334,20 +334,22 @@ def check_constitution_sync(root: Path) -> list[Finding]:
     memory_candidates = [
         root / ".kittify" / "memory" / "constitution.md",
         root / ".kittify" / "constitution" / "constitution.md",
-        root / ".kittify" / "charter" / "charter.md",
     ]
     memory = next((candidate for candidate in memory_candidates if candidate.exists()), None)
 
-    if not source.exists() or memory is None:
+    if not source.exists():
         findings.append(
             Finding(
                 "CONST-001",
                 "P0",
                 "fail",
                 "spec/constitution.md",
-                "Constitution source or .kittify constitution copy is missing",
+                "Constitution source is missing",
             )
         )
+        return findings
+
+    if memory is None:
         return findings
 
     source_norm = _normalize_constitution(source.read_text())
@@ -359,7 +361,7 @@ def check_constitution_sync(root: Path) -> list[Finding]:
                 "CONST-002",
                 "P0",
                 "fail",
-                "spec/constitution.md vs .kittify/memory/constitution.md",
+                f"spec/constitution.md vs {memory.relative_to(root)}",
                 "Constitution drift detected beyond allowed title normalization",
             )
         )
