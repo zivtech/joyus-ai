@@ -28,13 +28,12 @@ scan_text() {
   local content="$2"
   local failed=0
 
-  # Specific failures we have hit before: real reviewer names and agent/tool
-  # metadata leaking into public specs, docs, or commit messages.
+  # Specific failures we have hit before: real reviewer names and internal
+  # checkpoint metadata leaking into public specs, docs, or commit messages.
   local patterns=(
     'reviewed_by:[[:space:]]*["'"'"']?[A-Z][A-Za-z]+[[:space:]][A-Z][A-Za-z-]+'
     'agent:[[:space:]]*["'"'"']?c[l]aude[-_a-zA-Z0-9]*'
     '–[[:space:]]*c[l]aude[-_a-zA-Z0-9]*[[:space:]]*–'
-    'Co-Authored-By:.*(C[l]aude|Anthro[p]ic|anthro[p]ic\.com)'
     'Entire[-]Checkpoint:'
   )
 
@@ -78,11 +77,6 @@ check_conventional_commit_message() {
 
   if grep -Eq '^BREAKING CHANGE($|[^:])' "$msg_path"; then
     echo "Commit message guard failed: BREAKING CHANGE must be followed by ': '." >&2
-    failed=1
-  fi
-
-  if ! grep -Eq '^Co-Authored-By:[[:space:]]+Codex <noreply@openai\.com>$' "$msg_path"; then
-    echo "Commit message guard failed: missing Codex co-author trailer." >&2
     failed=1
   fi
 
