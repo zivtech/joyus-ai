@@ -18,7 +18,7 @@ Identify inconsistencies, duplications, ambiguities, and underspecified items ac
 
 **STRICTLY READ-ONLY**: Do **not** modify any files. Output a structured analysis report. Offer an optional remediation plan (user must explicitly approve before any follow-up editing commands would be invoked manually).
 
-**Constitution Authority**: The project constitution (`/memory/constitution.md`) is **non-negotiable** within this analysis scope. Constitution conflicts are automatically CRITICAL and require adjustment of the spec, plan, or tasks—not dilution, reinterpretation, or silent ignoring of the principle. If a principle itself needs to change, that must occur in a separate, explicit constitution update outside `/analyze`.
+**Constitution Authority**: The project constitution (`spec/constitution.md`) and Spec Kitty charter (`.kittify/charter/charter.md`) are **non-negotiable** within this analysis scope. Constitution or charter conflicts are automatically CRITICAL and require adjustment of the spec, plan, or tasks—not dilution, reinterpretation, or silent ignoring of the principle. If a principle itself needs to change, that must occur in a separate, explicit constitution or charter update outside `/analyze`.
 
 ## Execution Steps
 
@@ -59,9 +59,9 @@ Load only the minimal necessary context from each artifact:
 - Parallel markers [P]
 - Referenced file paths
 
-**From constitution:**
+**From constitution and charter:**
 
-- Load `/memory/constitution.md` for principle validation
+- Load `spec/constitution.md` and `.kittify/charter/charter.md` for principle validation
 
 ### 3. Build Semantic Models
 
