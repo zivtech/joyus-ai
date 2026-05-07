@@ -78,6 +78,7 @@ Copy `.env.example` to `.env` in any package directory that provides one, and fi
 
 - No client names, real person names, or client-specific terminology anywhere in this repository. See `spec/constitution.md §2.10` for the client abstraction rule.
 - Use generic examples in docs, tests, and fixtures: "Author A", "Example Corp", "Formal (Courts)", "Technical (Practitioners)".
+- Run `scripts/install-git-hooks.sh` once per clone to enable pre-commit checks, including staged markdown link linting.
 
 ## Commit Message Conventions
 

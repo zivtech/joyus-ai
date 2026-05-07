@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 scripts/check-client-abstraction.sh --staged
+python3 scripts/check-markdown-links.py --staged
