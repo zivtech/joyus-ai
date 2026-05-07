@@ -73,6 +73,50 @@ app.use(session({
 
 const startTime = Date.now();
 
+interface PlaywrightHealth {
+  ok: boolean;
+  status: number;
+  endpoint: string;
+  payload: Record<string, unknown>;
+}
+
+async function checkPlaywrightContainer(): Promise<PlaywrightHealth> {
+  for (const endpoint of ['/health', '/sse']) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(`http://playwright:3002${endpoint}`, {
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        continue;
+      }
+
+      let payload: Record<string, unknown> = {};
+      if (endpoint === '/health') {
+        const data = await response.json();
+        payload = typeof data === 'object' && data !== null ? data : {};
+      }
+
+      return {
+        ok: true,
+        status: response.status,
+        endpoint,
+        payload,
+      };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  return {
+    ok: false,
+    status: 503,
+    endpoint: '/health,/sse',
+    payload: {},
+  };
+}
+
 // Platform self-check
 app.get('/health/platform', (req, res) => {
   res.json({
@@ -104,18 +148,20 @@ app.get('/health/db', async (req, res) => {
 // Playwright container check
 app.get('/health/playwright', async (req, res) => {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch('http://playwright:3002/mcp', {
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (response.ok) {
-      const data = await response.json();
-      const payload = typeof data === 'object' && data !== null ? data : {};
-      res.json({ status: 'ok', service: 'playwright', ...payload });
+    const health = await checkPlaywrightContainer();
+    if (health.ok) {
+      res.json({
+        status: 'ok',
+        service: 'playwright',
+        endpoint: health.endpoint,
+        ...health.payload,
+      });
     } else {
-      res.status(503).json({ status: 'degraded', service: 'playwright', error: `HTTP ${response.status}` });
+      res.status(503).json({
+        status: 'degraded',
+        service: 'playwright',
+        error: 'No supported health endpoint responded successfully',
+      });
     }
   } catch (err) {
     res.status(503).json({
@@ -148,14 +194,12 @@ app.get('/health', async (req, res) => {
 
   // Playwright
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch('http://playwright:3002/mcp', {
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    services.playwright = { status: response.ok ? 'ok' : 'degraded' };
-    if (!response.ok) allHealthy = false;
+    const health = await checkPlaywrightContainer();
+    services.playwright = {
+      status: health.ok ? 'ok' : 'degraded',
+      endpoint: health.endpoint,
+    };
+    if (!health.ok) allHealthy = false;
   } catch {
     services.playwright = { status: 'degraded' };
     allHealthy = false;
