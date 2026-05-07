@@ -9,8 +9,8 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 import { contentItems } from '../schema.js';
-import type { ResolvedEntitlements } from '../types.js';
 import type { SearchService } from '../search/index.js';
+import type { ResolvedEntitlements } from '../types.js';
 
 type DrizzleClient = ReturnType<typeof drizzle>;
 

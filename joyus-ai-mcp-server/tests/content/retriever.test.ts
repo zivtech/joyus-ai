@@ -36,7 +36,7 @@ const entitlements: ResolvedEntitlements = {
 };
 
 describe('ContentRetriever', () => {
-  it('filters sourceIds by entitlements', async () => {
+  it('delegates entitlements and maxSources to search service', async () => {
     const search = createMockSearchService([]);
     const db = createMockDb();
     const retriever = new ContentRetriever(search, db);
@@ -45,12 +45,12 @@ describe('ContentRetriever', () => {
 
     expect(search.search).toHaveBeenCalledWith(
       'query',
-      ['src-1'],
-      expect.any(Object),
+      entitlements,
+      { limit: 5 },
     );
   });
 
-  it('uses all entitled sourceIds when no filter provided', async () => {
+  it('uses default maxSources when no options are provided', async () => {
     const search = createMockSearchService([]);
     const db = createMockDb();
     const retriever = new ContentRetriever(search, db);
@@ -59,8 +59,8 @@ describe('ContentRetriever', () => {
 
     expect(search.search).toHaveBeenCalledWith(
       'query',
-      ['src-1', 'src-2'],
-      expect.any(Object),
+      entitlements,
+      { limit: 5 },
     );
   });
 

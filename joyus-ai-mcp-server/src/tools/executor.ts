@@ -5,6 +5,7 @@
 
 import { eq, and } from 'drizzle-orm';
 
+import type { SearchService } from '../content/search/index.js';
 import { db, connections, type Service } from '../db/client.js';
 import { decryptToken, encryptToken } from '../db/encryption.js';
 
@@ -45,8 +46,6 @@ export function setPipelineContext(deps: PipelineContextDeps): void {
 // ============================================================
 // CONTENT CONTEXT (injected during content module startup)
 // ============================================================
-
-import type { SearchService } from '../content/search/index.js';
 
 interface ContentContextDeps {
   searchService: SearchService;
