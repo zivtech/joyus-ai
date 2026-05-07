@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
 scripts/check-client-abstraction.sh --staged
 python3 scripts/check-markdown-links.py --staged

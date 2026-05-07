@@ -1,0 +1,27 @@
+name: Conventional Commits
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check head commit message
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+
+          msg_file="$(mktemp)"
+          git log -1 --format=%B "${HEAD_SHA}" > "${msg_file}"
+          scripts/check-client-abstraction.sh --commit-msg "${msg_file}"
+          rm -f "${msg_file}"
