@@ -9,7 +9,7 @@
  * see the real registry once it has been set.
  */
 
-import type { StepHandlerRegistry } from '../pipelines/engine/step-runner.js';
+import type { StepHandlerRegistry } from '../pipelines/types.js';
 
 // Mutable singleton — populated during pipeline module initialization
 let _registry: StepHandlerRegistry = {
