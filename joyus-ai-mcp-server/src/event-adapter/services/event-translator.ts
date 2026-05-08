@@ -86,11 +86,20 @@ function translateGitHub(
   }
 
   const payload = event.payload as Record<string, unknown>;
-  const metadata = typeof payload === 'object' && payload !== null ? payload : {};
+  const baseMetadata = typeof payload === 'object' && payload !== null ? payload : {};
 
   // Push events → corpus-change, everything else → manual-request
-  const eventType = metadata.eventType ?? (metadata as Record<string, unknown>).event_type;
+  const eventType = baseMetadata.eventType ?? (baseMetadata as Record<string, unknown>).event_type;
   const triggerType = eventType === 'push' ? 'corpus-change' : 'manual-request';
+
+  // Propagate the source's corpusId so the forwarder can route push events
+  // to pipeline/corpus.changed when the operator has linked a corpus.
+  const metadata: Record<string, unknown> = {
+    ...baseMetadata,
+    ...(eventType === 'push' && source.corpusId
+      ? { corpusId: source.corpusId, changeType: 'updated' }
+      : {}),
+  };
 
   return {
     tenantId: event.tenantId,
@@ -147,6 +156,8 @@ function translateSchedule(
     throw new TranslationError('Scheduled task missing target_pipeline_id', event.id);
   }
 
+  const firedAt = event.createdAt.toISOString();
+
   return {
     tenantId: event.tenantId,
     pipelineId,
@@ -154,7 +165,8 @@ function translateSchedule(
     metadata: {
       scheduleId: schedule.id,
       scheduleName: schedule.name,
-      firedAt: event.createdAt.toISOString(),
+      firedAt,
+      scheduledAt: firedAt,
       ...(schedule.triggerMetadata as Record<string, unknown> ?? {}),
     },
     sourceEventId: event.id,
@@ -233,15 +245,18 @@ export async function fanOutPlatformEvent(
   for (let i = 0; i < subscriptions.length; i += CONCURRENCY) {
     const chunk = subscriptions.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(
-      chunk.map((sub) =>
-        bufferEvent(db, {
+      chunk.map((sub) => {
+        const basePayload = (event.payload && typeof event.payload === 'object')
+          ? (event.payload as Record<string, unknown>)
+          : {};
+        return bufferEvent(db, {
           tenantId: sub.tenantId,
           sourceType: event.sourceType,
           sourceId: event.sourceId ?? undefined,
-          payload: event.payload,
+          payload: { ...basePayload, targetPipelineId: sub.targetPipelineId },
           signatureValid: true,
-        }),
-      ),
+        });
+      }),
     );
     for (const r of results) {
       if (r.status === 'fulfilled') {

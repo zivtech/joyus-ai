@@ -1,18 +1,22 @@
 /**
- * Event Adapter — Trigger Callback Route (WP10)
+ * Event Adapter — Trigger Callback Route
  *
  * Receives inbound trigger callbacks from external automation tools (Tier 2):
- *   POST /trigger  — queue a trigger callback as a webhook event (T054)
+ *   POST /trigger  — queue a trigger callback as a webhook event
  *
- * Auth: Bearer token in Authorization header. Falls back to x-tenant-id header
- * when bearer token is absent (platform auth not yet fully implemented).
+ * Auth: Bearer token validated against the tenant's automationDestinations.authSecretRef.
+ * Tenant is resolved from the matched destination record — no MCP user session required.
  */
 
-import { Router, type Request, type Response } from 'express';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
-import { TriggerCallbackInput } from '../validation.js';
+import { pipelines } from '../../pipelines/schema.js';
+import { automationDestinations } from '../schema.js';
 import { bufferEvent } from '../services/event-buffer.js';
+import { decryptSecret } from '../services/secret-store.js';
+import { TriggerCallbackInput } from '../validation.js';
 
 // ============================================================
 // TYPES
@@ -20,30 +24,6 @@ import { bufferEvent } from '../services/event-buffer.js';
 
 export interface TriggerRouterDeps {
   db: NodePgDatabase<Record<string, unknown>>;
-}
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-/**
- * Extract tenant ID from the request.
- *
- * Resolution order:
- *   1. Bearer token in Authorization header (token IS the tenant_id for now)
- *
- * Returns null if no bearer token is present.
- *
- * TODO(WP10): Replace with platform API token validation — current implementation is a placeholder
- */
-function resolveTenantFromAuth(req: Request): string | null {
-  const authHeader = req.headers['authorization'];
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7).trim();
-    if (token) return token;
-  }
-
-  return null;
 }
 
 // ============================================================
@@ -59,17 +39,37 @@ export function createTriggerRouter(deps: TriggerRouterDeps): Router {
 }
 
 // ============================================================
-// T054: POST /trigger — inbound trigger callback
+// POST /trigger — inbound trigger callback
 // ============================================================
 
 function triggerCallbackHandler(deps: TriggerRouterDeps) {
   return async (req: Request, res: Response): Promise<void> => {
-    const tenantId = resolveTenantFromAuth(req);
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
 
-    if (!tenantId) {
+    if (!token) {
       res.status(401).json({ error: 'unauthorized' });
       return;
     }
+
+    // Resolve tenant by matching the bearer token against each destination's decrypted secret.
+    // The automation tool uses the same shared secret for outbound auth and inbound callbacks.
+    const destinations = await deps.db
+      .select()
+      .from(automationDestinations)
+      .where(and(eq(automationDestinations.isActive, true), isNotNull(automationDestinations.authSecretRef)));
+
+    const destination = destinations.find((d) => {
+      if (!d.authSecretRef) return false;
+      return decryptSecret(d.authSecretRef) === token;
+    });
+
+    if (!destination) {
+      res.status(401).json({ error: 'unauthorized' });
+      return;
+    }
+
+    const tenantId = destination.tenantId;
 
     const parsed = TriggerCallbackInput.safeParse(req.body);
     if (!parsed.success) {
@@ -80,15 +80,21 @@ function triggerCallbackHandler(deps: TriggerRouterDeps) {
     const { triggerType, pipelineId, metadata } = parsed.data;
 
     try {
-      // TODO(WP10): Verify pipeline_id belongs to tenant — requires pipelines table access
+      const [pipeline] = await deps.db
+        .select({ id: pipelines.id })
+        .from(pipelines)
+        .where(and(eq(pipelines.id, pipelineId), eq(pipelines.tenantId, tenantId)))
+        .limit(1);
+
+      if (!pipeline) {
+        res.status(404).json({ error: 'pipeline_not_found' });
+        return;
+      }
+
       const event = await bufferEvent(deps.db, {
         tenantId,
         sourceType: 'automation_callback',
-        payload: {
-          triggerType,
-          pipelineId,
-          metadata,
-        },
+        payload: { triggerType, pipelineId, metadata },
         signatureValid: true,
       });
 

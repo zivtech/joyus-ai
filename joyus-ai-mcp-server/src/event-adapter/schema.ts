@@ -114,6 +114,7 @@ export const eventSources = eventAdapterSchema.table('event_sources', {
   payloadMapping: jsonb('payload_mapping'),
   targetPipelineId: text('target_pipeline_id'),
   targetTriggerType: varchar('target_trigger_type', { length: 50 }),
+  corpusId: text('corpus_id'),
   lifecycleState: lifecycleStateEnum('lifecycle_state').notNull().default('active'),
   isPlatformWide: boolean('is_platform_wide').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
