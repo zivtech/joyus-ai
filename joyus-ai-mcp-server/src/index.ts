@@ -24,7 +24,15 @@ import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
-import { createEventAdapterRouter } from './event-adapter/index.js';
+import {
+  createEventAdapterRouter,
+  createEventAdapterWebhookRouter,
+  AutomationForwarder,
+  BufferDrainWorker,
+  SchedulerService,
+  SecretStoreResolver,
+  TriggerForwarder,
+} from './event-adapter/index.js';
 import { createAllFunctions, inngest } from './inngest/index.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
@@ -57,6 +65,26 @@ app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
   credentials: true
 }));
+
+// Event adapter webhook ingestion: must run before express.json() so the
+// route's own raw-body collector can read the request stream for HMAC
+// signature verification.
+const eventAdapterSecretResolver = new SecretStoreResolver();
+const eventAdapterForwarder = new TriggerForwarder();
+const eventAdapterAutomationForwarder = new AutomationForwarder(pipelineDb);
+const eventAdapterScheduler = new SchedulerService(pipelineDb);
+const eventAdapterBufferDrainWorker = new BufferDrainWorker(
+  pipelineDb,
+  eventAdapterForwarder,
+  {},
+  eventAdapterAutomationForwarder,
+);
+
+app.use('/v1/events', createEventAdapterWebhookRouter({
+  db: pipelineDb,
+  secretResolver: eventAdapterSecretResolver,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For form submissions
 app.use(session({
@@ -282,8 +310,19 @@ try {
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
 
-// Event adapter routes (webhooks, schedules, automation)
-app.use('/v1/events', createEventAdapterRouter());
+// Event adapter management routes (sources, schedules, events, health,
+// automation, trigger, subscriptions, admin). Webhook ingestion is mounted
+// earlier (before express.json) so HMAC verification gets raw bytes.
+// requireBearerToken protects management routes; the public webhook router
+// has its own per-source HMAC / api-key / IP allowlist auth.
+app.use('/v1/events', requireBearerToken, createEventAdapterRouter({
+  db: pipelineDb,
+  secretResolver: eventAdapterSecretResolver,
+  forwarder: eventAdapterForwarder,
+  scheduler: eventAdapterScheduler,
+  bufferDrainWorker: eventAdapterBufferDrainWorker,
+  automationForwarder: eventAdapterAutomationForwarder,
+}));
 
 // MCP endpoint with Bearer token auth
 app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
@@ -420,12 +459,27 @@ const server = app.listen(PORT, async () => {
     console.error('Failed to initialize scheduler:', error);
   }
 
+  // Event adapter background workers
+  try {
+    eventAdapterScheduler.start();
+    await eventAdapterBufferDrainWorker.start();
+  } catch (error) {
+    console.error('Failed to initialize event adapter workers:', error);
+  }
+
   console.log(`   Mediation: http://localhost:${PORT}/api/mediation`);
   console.log(`   Pipelines: http://localhost:${PORT}/api/pipelines`);
   console.log(`   Inngest:   http://localhost:${PORT}/api/inngest`);
+  console.log(`   Events:    http://localhost:${PORT}/v1/events`);
 
   // Graceful shutdown
   const shutdown = async () => {
+    try {
+      eventAdapterScheduler.stop();
+      eventAdapterBufferDrainWorker.stop();
+    } catch (error) {
+      console.error('Error during event adapter shutdown:', error);
+    }
     process.exit(0);
   };
   process.on('SIGTERM', shutdown);

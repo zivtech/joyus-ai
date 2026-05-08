@@ -677,7 +677,7 @@ describe('fanOutPlatformEvent', () => {
       metadata: {},
       sourceEventId: event.id,
     };
-    const forwarder = new TriggerForwarder({ eventBusUrl: undefined });
+    const forwarder = new TriggerForwarder({ inngest: { send: vi.fn().mockResolvedValue({}) } });
 
     const result = await fanOutPlatformEvent(db as never, event, triggerCall, forwarder);
 
@@ -712,7 +712,7 @@ describe('fanOutPlatformEvent', () => {
       metadata: {},
       sourceEventId: event.id,
     };
-    const forwarder = new TriggerForwarder({ eventBusUrl: undefined });
+    const forwarder = new TriggerForwarder({ inngest: { send: vi.fn().mockResolvedValue({}) } });
 
     const result = await fanOutPlatformEvent(db as never, event, triggerCall, forwarder);
 
@@ -758,7 +758,7 @@ describe('fanOutPlatformEvent', () => {
       metadata: {},
       sourceEventId: event.id,
     };
-    const forwarder = new TriggerForwarder({ eventBusUrl: undefined });
+    const forwarder = new TriggerForwarder({ inngest: { send: vi.fn().mockResolvedValue({}) } });
 
     const result = await fanOutPlatformEvent(db as never, event, triggerCall, forwarder);
 
@@ -798,7 +798,7 @@ describe('fanOutPlatformEvent', () => {
       metadata: {},
       sourceEventId: event.id,
     };
-    const forwarder = new TriggerForwarder({ eventBusUrl: undefined });
+    const forwarder = new TriggerForwarder({ inngest: { send: vi.fn().mockResolvedValue({}) } });
 
     const result = await fanOutPlatformEvent(db as never, event, triggerCall, forwarder);
 

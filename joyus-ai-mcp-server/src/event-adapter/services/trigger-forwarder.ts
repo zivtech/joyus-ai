@@ -1,12 +1,13 @@
 /**
  * Event Adapter — Trigger Forwarder
  *
- * Makes outbound HTTP calls to Spec 009's event bus to fire pipeline triggers.
- * Abstracts the call behind an interface so the API can change independently.
- *
- * If SPEC009_EVENT_BUS_URL is not configured, returns a graceful failure
- * for every call (allows the module to start without Spec 009).
+ * Publishes trigger calls to Inngest as pipeline/* events.
+ * Mapping rules (corpus-change with corpusId metadata) → pipeline/corpus.changed,
+ * schedule events (scheduleId / scheduledAt metadata) → pipeline/schedule.tick,
+ * everything else → pipeline/manual.triggered.
  */
+
+import { inngest as defaultInngest } from '../../inngest/client.js';
 
 // ============================================================
 // TYPES
@@ -26,89 +27,103 @@ export interface TriggerResult {
   error?: string;
 }
 
+// Inngest send() signature — typed loosely so callers can pass either the real
+// Inngest client or a vitest mock without coupling to the internal generic.
+type InngestLike = {
+  send: (event: { name: string; data: Record<string, unknown> }) => Promise<unknown>;
+};
+
 export interface TriggerForwarderConfig {
-  /** Spec 009 event bus URL (default: process.env.SPEC009_EVENT_BUS_URL) */
-  eventBusUrl?: string;
-  /** Service-to-service auth token (default: process.env.SPEC009_SERVICE_TOKEN) */
-  serviceToken?: string;
-  /** Request timeout in ms (default: 5000) */
-  timeoutMs?: number;
+  /** Inngest client used for publishing — defaults to the shared singleton. */
+  inngest?: InngestLike;
 }
 
 // ============================================================
 // FORWARDER
 // ============================================================
 
-const DEFAULT_TIMEOUT_MS = 5000;
-
 export class TriggerForwarder {
-  private readonly eventBusUrl: string | undefined;
-  private readonly serviceToken: string | undefined;
-  private readonly timeoutMs: number;
+  private readonly inngest: InngestLike;
 
   constructor(config: TriggerForwarderConfig = {}) {
-    this.eventBusUrl = config.eventBusUrl ?? process.env.SPEC009_EVENT_BUS_URL;
-    this.serviceToken = config.serviceToken ?? process.env.SPEC009_SERVICE_TOKEN;
-    this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-
-    if (!this.eventBusUrl) {
-      console.warn('[event-adapter] SPEC009_EVENT_BUS_URL not set — trigger forwarding will return errors');
-    }
+    this.inngest = config.inngest ?? (defaultInngest as unknown as InngestLike);
   }
 
   /**
-   * Forward a trigger call to Spec 009's event bus.
+   * Forward a trigger call by publishing the appropriate pipeline/* event to Inngest.
    * Never throws — returns { success: false, error } on any failure.
    */
   async forwardTrigger(call: TriggerCall): Promise<TriggerResult> {
-    if (!this.eventBusUrl) {
-      return { success: false, error: 'Spec 009 event bus not configured' };
-    }
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
-
     try {
-      const response = await fetch(this.eventBusUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(this.serviceToken ? { 'Authorization': `Bearer ${this.serviceToken}` } : {}),
-          'X-Source-Event-Id': call.sourceEventId,
-        },
-        body: JSON.stringify({
-          tenant_id: call.tenantId,
-          pipeline_id: call.pipelineId,
-          trigger_type: call.triggerType,
-          metadata: call.metadata,
-          source_event_id: call.sourceEventId,
-        }),
-        signal: controller.signal,
-      });
+      const event = mapToInngestEvent(call);
+      const response = (await this.inngest.send(event)) as
+        | { ids?: string[] }
+        | { ids?: string[] }[]
+        | undefined;
 
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => 'Unable to read response body');
-        return {
-          success: false,
-          error: `HTTP ${response.status}: ${errorBody.slice(0, 500)}`,
-        };
-      }
-
-      const body = await response.json().catch(() => ({})) as Record<string, unknown>;
-      return {
-        success: true,
-        runId: typeof body.run_id === 'string' ? body.run_id
-          : typeof body.pipeline_run_id === 'string' ? body.pipeline_run_id
-          : undefined,
-      };
+      const runId = extractRunId(response);
+      return runId ? { success: true, runId } : { success: true };
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return { success: false, error: `Timeout after ${this.timeoutMs}ms` };
-      }
       const message = err instanceof Error ? err.message : String(err);
       return { success: false, error: message };
-    } finally {
-      clearTimeout(timeout);
     }
   }
+}
+
+// ============================================================
+// EVENT MAPPING
+// ============================================================
+
+function mapToInngestEvent(call: TriggerCall): { name: string; data: Record<string, unknown> } {
+  const { tenantId, pipelineId, triggerType, metadata } = call;
+
+  // Corpus change with explicit corpusId → pipeline/corpus.changed.
+  if (triggerType === 'corpus-change' && typeof metadata['corpusId'] === 'string') {
+    const changeType = typeof metadata['changeType'] === 'string'
+      ? (metadata['changeType'] as string)
+      : 'updated';
+    return {
+      name: 'pipeline/corpus.changed',
+      data: {
+        tenantId,
+        corpusId: metadata['corpusId'] as string,
+        changeType,
+      },
+    };
+  }
+
+  // Schedule events → pipeline/schedule.tick.
+  if (metadata['scheduleId'] !== undefined || metadata['scheduledAt'] !== undefined) {
+    const scheduledAt = (metadata['scheduledAt'] as string | undefined)
+      ?? (metadata['firedAt'] as string | undefined)
+      ?? new Date().toISOString();
+    return {
+      name: 'pipeline/schedule.tick',
+      data: {
+        tenantId,
+        pipelineId,
+        scheduledAt,
+      },
+    };
+  }
+
+  // Default: manual trigger.
+  return {
+    name: 'pipeline/manual.triggered',
+    data: {
+      tenantId,
+      pipelineId,
+      payload: metadata,
+    },
+  };
+}
+
+function extractRunId(response: unknown): string | undefined {
+  if (!response) return undefined;
+  if (Array.isArray(response)) {
+    const first = response[0] as { ids?: string[] } | undefined;
+    return first?.ids?.[0];
+  }
+  const single = response as { ids?: string[] };
+  return single.ids?.[0];
 }

@@ -248,6 +248,7 @@ function createSourceHandler(deps: SourcesRouterDeps) {
           payloadMapping: input.payloadMapping ?? null,
           targetPipelineId: input.targetPipelineId ?? null,
           targetTriggerType: input.targetTriggerType ?? null,
+          corpusId: input.corpusId ?? null,
           lifecycleState: 'active',
           isPlatformWide: tenantId === null,
         })
@@ -314,6 +315,7 @@ function updateSourceHandler(deps: SourcesRouterDeps) {
       if (input.name !== undefined) updates.name = input.name;
       if (input.targetPipelineId !== undefined) updates.targetPipelineId = input.targetPipelineId;
       if (input.targetTriggerType !== undefined) updates.targetTriggerType = input.targetTriggerType;
+      if (input.corpusId !== undefined) updates.corpusId = input.corpusId;
       if (input.payloadMapping !== undefined) updates.payloadMapping = input.payloadMapping;
       if (input.lifecycleState !== undefined) updates.lifecycleState = input.lifecycleState;
 

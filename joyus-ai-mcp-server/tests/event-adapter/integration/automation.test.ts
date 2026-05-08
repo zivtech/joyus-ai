@@ -11,6 +11,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response } from 'express';
 
+vi.mock('../../../src/event-adapter/services/secret-store.js', () => ({
+  decryptSecret: vi.fn((ref: string) => ref === 'encrypted-secret-abc' ? 'valid-token-123' : null),
+  encryptSecret: vi.fn((s: string) => `encrypted-${s}`),
+  SecretStoreResolver: vi.fn(),
+}));
+
 import { createAutomationRouter } from '../../../src/event-adapter/routes/automation.js';
 import { createTriggerRouter } from '../../../src/event-adapter/routes/trigger.js';
 import { AutomationForwarder } from '../../../src/event-adapter/services/automation-forwarder.js';
@@ -473,23 +479,79 @@ describe('POST /trigger', () => {
   function getTriggerHandler(db: unknown) {
     const router = createTriggerRouter({ db: db as never });
     const routes = (router as unknown as { stack: Array<{ route: { path: string; stack: Array<{ method: string; handle: Function }> } }> }).stack;
-    const postRoute = routes.find(r => r.route.path === '/trigger' && r.route.stack[0]?.method === 'post');
+    const postRoute = routes.find(r => r.route.path === '/trigger');
     return postRoute?.route.stack[0]?.handle;
   }
 
-  it('returns 202 and event_id with valid bearer token', async () => {
-    const insertedEvent = makeWebhookEvent({ id: 'evt-999' });
+  /**
+   * Build a mock DB that handles two sequential selects:
+   *   1. automationDestinations lookup (returns destinations array)
+   *   2. pipelines ownership check (returns { limit } chain)
+   * Plus an insert for the buffered event.
+   */
+  function makeTriggerDb(
+    pipelineRow: { id: string } | null,
+    insertedEvent: WebhookEvent,
+    destinationOverrides: Partial<AutomationDestination> = {},
+  ) {
+    const valuesMock = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([insertedEvent]),
+    });
+
+    let callCount = 0;
     const db = {
-      insert: vi.fn().mockReturnValue({
-        values: vi.fn().mockReturnValue({
-          returning: vi.fn().mockResolvedValue([insertedEvent]),
-        }),
-      }),
+      select: vi.fn().mockImplementation(() => ({
+        from: vi.fn().mockImplementation(() => ({
+          where: vi.fn().mockImplementation(() => {
+            callCount++;
+            if (callCount === 1) {
+              // destinations lookup — resolved directly
+              return Promise.resolve([
+                makeDestinationRow({ authSecretRef: 'encrypted-secret-abc', ...destinationOverrides }),
+              ]);
+            }
+            // pipeline ownership lookup — needs .limit()
+            return { limit: vi.fn().mockResolvedValue(pipelineRow ? [pipelineRow] : []) };
+          }),
+        })),
+      })),
+      insert: vi.fn().mockReturnValue({ values: valuesMock }),
     };
+    return { db, valuesMock };
+  }
+
+  it('returns 401 when Authorization header is absent', async () => {
+    const { db } = makeTriggerDb({ id: 'pipe-001' }, makeWebhookEvent());
+    const handler = getTriggerHandler(db);
+    const req = mockReq({ headers: {}, body: {} });
+    const res = mockRes();
+
+    await handler?.(req, res, () => {});
+
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('returns 401 when token does not match any destination secret', async () => {
+    const { db } = makeTriggerDb({ id: 'pipe-001' }, makeWebhookEvent(), { authSecretRef: 'wrong-ref' });
+    const handler = getTriggerHandler(db);
+    const req = mockReq({
+      headers: { authorization: 'Bearer bad-token' },
+      body: { triggerType: 'corpus-change', pipelineId: 'pipe-001', metadata: {} },
+    });
+    const res = mockRes();
+
+    await handler?.(req, res, () => {});
+
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('returns 202 and event_id when token matches destination secret', async () => {
+    const insertedEvent = makeWebhookEvent({ id: 'evt-999' });
+    const { db } = makeTriggerDb({ id: 'pipe-001' }, insertedEvent);
 
     const handler = getTriggerHandler(db);
     const req = mockReq({
-      headers: { authorization: 'Bearer tenant-abc' },
+      headers: { authorization: 'Bearer valid-token-123' },
       body: { triggerType: 'corpus-change', pipelineId: 'pipe-001', metadata: {} },
     });
     const res = mockRes();
@@ -502,23 +564,12 @@ describe('POST /trigger', () => {
     expect(body.message).toBe('Trigger queued');
   });
 
-  it('returns 401 when no authorization header and no x-tenant-id', async () => {
-    const db = { insert: vi.fn() };
-    const handler = getTriggerHandler(db);
-    const req = mockReq({ headers: {}, body: { triggerType: 'corpus-change', pipelineId: 'pipe-001', metadata: {} } });
-    const res = mockRes();
-
-    await handler?.(req, res, () => {});
-
-    expect(res.status).toHaveBeenCalledWith(401);
-  });
-
   it('returns 422 when pipelineId is missing', async () => {
-    const db = { insert: vi.fn() };
+    const { db } = makeTriggerDb({ id: 'pipe-001' }, makeWebhookEvent());
     const handler = getTriggerHandler(db);
     const req = mockReq({
-      headers: { authorization: 'Bearer tenant-abc' },
-      body: { triggerType: 'corpus-change', metadata: {} }, // missing pipelineId
+      headers: { authorization: 'Bearer valid-token-123' },
+      body: { triggerType: 'corpus-change', metadata: {} },
     });
     const res = mockRes();
 
@@ -527,18 +578,27 @@ describe('POST /trigger', () => {
     expect(res.status).toHaveBeenCalledWith(422);
   });
 
-  it('creates webhook_event with sourceType automation_callback', async () => {
-    const insertedEvent = makeWebhookEvent();
-    const valuesMock = vi.fn().mockReturnValue({
-      returning: vi.fn().mockResolvedValue([insertedEvent]),
+  it('returns 404 when pipelineId does not belong to the resolved tenant', async () => {
+    const { db } = makeTriggerDb(null, makeWebhookEvent());
+    const handler = getTriggerHandler(db);
+    const req = mockReq({
+      headers: { authorization: 'Bearer valid-token-123' },
+      body: { triggerType: 'corpus-change', pipelineId: 'pipe-other-tenant', metadata: {} },
     });
-    const db = {
-      insert: vi.fn().mockReturnValue({ values: valuesMock }),
-    };
+    const res = mockRes();
+
+    await handler?.(req, res, () => {});
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it('creates webhook_event with sourceType automation_callback and resolved tenantId', async () => {
+    const insertedEvent = makeWebhookEvent();
+    const { db, valuesMock } = makeTriggerDb({ id: 'pipe-002' }, insertedEvent);
 
     const handler = getTriggerHandler(db);
     const req = mockReq({
-      headers: { authorization: 'Bearer tenant-abc' },
+      headers: { authorization: 'Bearer valid-token-123' },
       body: { triggerType: 'manual-request', pipelineId: 'pipe-002', metadata: { source: 'test' } },
     });
     const res = mockRes();

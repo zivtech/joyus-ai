@@ -28,7 +28,7 @@ describe('BufferDrainWorker', () => {
 
   beforeEach(() => {
     const db = makeMockDb();
-    const forwarder = new TriggerForwarder({ eventBusUrl: undefined });
+    const forwarder = new TriggerForwarder({ inngest: { send: vi.fn().mockResolvedValue({}) } });
     worker = new BufferDrainWorker(db, forwarder, {
       intervalMs: 50,
       batchSize: 5,
@@ -64,7 +64,7 @@ describe('BufferDrainWorker', () => {
       throw new Error('DB connection lost');
     });
 
-    const forwarder = new TriggerForwarder({ eventBusUrl: undefined });
+    const forwarder = new TriggerForwarder({ inngest: { send: vi.fn().mockResolvedValue({}) } });
     const errorWorker = new BufferDrainWorker(db, forwarder, { intervalMs: 10 });
 
     // Should not throw

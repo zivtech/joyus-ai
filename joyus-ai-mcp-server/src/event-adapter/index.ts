@@ -19,6 +19,10 @@ import { createSubscriptionsRouter } from './routes/subscriptions.js';
 import { createAdminRouter } from './routes/admin.js';
 import { RateLimiter } from './services/rate-limiter.js';
 import type { SecretResolver } from './services/auth-validator.js';
+import type { TriggerForwarder } from './services/trigger-forwarder.js';
+import type { SchedulerService } from './services/scheduler.js';
+import type { BufferDrainWorker } from './workers/buffer-drain.js';
+import type { AutomationForwarder } from './services/automation-forwarder.js';
 
 // Schema exports
 export {
@@ -109,27 +113,28 @@ export type { GenericParsedEvent } from './parsers/generic.js';
 export type { TriggerCall, TriggerResult } from './services/trigger-forwarder.js';
 export type { BufferDrainConfig } from './workers/buffer-drain.js';
 
-/**
- * Create the Express router for event adapter endpoints.
- *
- * @param deps - Dependencies including db, secretResolver, and rateLimiter.
- *               If not provided, returns a bare router (for backward compat / future WPs).
- */
-export function createEventAdapterRouter(deps?: {
+export interface EventAdapterRouterDeps {
   db: NodePgDatabase<Record<string, unknown>>;
   secretResolver: SecretResolver;
-}): Router {
+  /** Optional — only required when buffer drain wires up at startup. */
+  forwarder?: TriggerForwarder;
+  scheduler?: SchedulerService;
+  bufferDrainWorker?: BufferDrainWorker;
+  automationForwarder?: AutomationForwarder;
+}
+
+/**
+ * Create the Express router for management endpoints (sources, schedules,
+ * events, health, automation, trigger, subscriptions, admin).
+ *
+ * The public webhook route is intentionally NOT mounted here — it must be
+ * mounted before global JSON body parsing so HMAC verification can read
+ * raw bytes. Use `createWebhookRouter` directly with `express.raw` upstream.
+ */
+export function createEventAdapterRouter(deps?: EventAdapterRouterDeps): Router {
   const router = Router();
 
   if (deps) {
-    const rateLimiter = new RateLimiter();
-    const webhookRouter = createWebhookRouter({
-      db: deps.db,
-      secretResolver: deps.secretResolver,
-      rateLimiter,
-    });
-    router.use(webhookRouter);
-
     const sourcesRouter = createSourcesRouter({ db: deps.db });
     router.use(sourcesRouter);
 
@@ -137,9 +142,12 @@ export function createEventAdapterRouter(deps?: {
     router.use(schedulesRouter);
     const eventsRouter = createEventsRouter({ db: deps.db });
     router.use(eventsRouter);
-    const healthRouter = createHealthRouter({ db: deps.db });
+    const healthRouter = createHealthRouter({ db: deps.db, scheduler: deps.scheduler });
     router.use(healthRouter);
-    const automationRouter = createAutomationRouter({ db: deps.db });
+    const automationRouter = createAutomationRouter({
+      db: deps.db,
+      automationForwarder: deps.automationForwarder,
+    });
     router.use(automationRouter);
     const triggerRouter = createTriggerRouter({ db: deps.db });
     router.use(triggerRouter);
@@ -150,4 +158,20 @@ export function createEventAdapterRouter(deps?: {
   }
 
   return router;
+}
+
+/**
+ * Create the public webhook router. Must be mounted with raw-body middleware
+ * (HMAC verification reads `req.rawBody` directly).
+ */
+export function createEventAdapterWebhookRouter(deps: {
+  db: NodePgDatabase<Record<string, unknown>>;
+  secretResolver: SecretResolver;
+  rateLimiter?: RateLimiter;
+}): Router {
+  return createWebhookRouter({
+    db: deps.db,
+    secretResolver: deps.secretResolver,
+    rateLimiter: deps.rateLimiter ?? new RateLimiter(),
+  });
 }

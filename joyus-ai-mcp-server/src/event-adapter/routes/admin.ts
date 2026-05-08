@@ -219,11 +219,16 @@ function sourcesPageHandler(deps: AdminRouterDeps) {
         const toggleState = isPaused ? 'active' : 'paused';
         const toggleLabel = isPaused ? 'Resume' : 'Pause';
 
+        const corpusCell = row.corpusId
+          ? `<span class="mono">${escapeHtml(row.corpusId)}</span>`
+          : '<span class="text-muted">—</span>';
+
         return `<tr>
           <td><strong>${escapeHtml(row.name)}</strong><br><span class="text-muted mono">${escapeHtml(row.id)}</span></td>
           <td><span class="badge badge-gray">${escapeHtml(row.sourceType)}</span></td>
           <td><code class="mono">${webhookUrl}</code></td>
           <td><span class="badge badge-gray">${escapeHtml(row.authMethod)}</span></td>
+          <td>${corpusCell}</td>
           <td>${lifecycleBadge(row.lifecycleState)}</td>
           <td>
             ${!isArchived ? `
@@ -259,6 +264,7 @@ function sourcesPageHandler(deps: AdminRouterDeps) {
                 <th>Type</th>
                 <th>Webhook URL</th>
                 <th>Auth</th>
+                <th title="Optional. Used to map GitHub push events to corpus-change pipelines.">Corpus ID</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>

@@ -190,7 +190,17 @@ export class BufferDrainWorker {
       throw err;
     }
 
-    // Forward to Spec 009
+    // Forward to automation destination as soon as we have a translated trigger,
+    // independent of the internal Inngest delivery outcome (Tier 2 destinations
+    // should observe the event regardless of internal pipeline success).
+    if (this.automationForwarder) {
+      setImmediate(() =>
+        this.automationForwarder!.forwardToAutomation(claimed, triggerCall).catch((err) =>
+          console.error('[event-adapter] automation forward error', err)
+        )
+      );
+    }
+
     const result = await this.forwarder.forwardTrigger(triggerCall);
     const processingDurationMs = Date.now() - startTime;
 
@@ -214,15 +224,6 @@ export class BufferDrainWorker {
           console.error('[event-adapter] Platform fan-out error', err);
           // Don't fail the primary event
         }
-      }
-
-      // Forward to automation destination (fire-and-forget)
-      if (this.automationForwarder) {
-        setImmediate(() =>
-          this.automationForwarder!.forwardToAutomation(claimed, triggerCall).catch((err) =>
-            console.error('[event-adapter] automation forward error', err)
-          )
-        );
       }
     } else {
       await markFailed(this.db, claimed.id, result.error ?? 'Unknown forwarding error');

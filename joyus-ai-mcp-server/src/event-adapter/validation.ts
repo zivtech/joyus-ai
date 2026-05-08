@@ -50,6 +50,7 @@ export const CreateEventSourceInput = z.object({
   authConfig: z.record(z.string(), z.unknown()).optional(),
   targetPipelineId: z.string().optional(),
   targetTriggerType: z.string().max(50).optional(),
+  corpusId: z.string().min(1).max(255).optional(),
   payloadMapping: z.record(z.string(), z.unknown()).optional(),
 });
 export type CreateEventSourceInput = z.infer<typeof CreateEventSourceInput>;
@@ -61,6 +62,7 @@ export const UpdateEventSourceInput = z.object({
   authConfig: z.record(z.string(), z.unknown()).optional(),
   targetPipelineId: z.string().optional(),
   targetTriggerType: z.string().max(50).optional(),
+  corpusId: z.string().max(255).nullable().optional(),
   payloadMapping: z.record(z.string(), z.unknown()).optional(),
   lifecycleState: z.enum(['active', 'paused', 'disabled', 'archived']).optional(),
 });
