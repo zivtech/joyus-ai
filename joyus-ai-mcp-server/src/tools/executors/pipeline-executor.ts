@@ -272,7 +272,7 @@ export async function executePipelineTool(
 
     // ── Review ───────────────────────────────────────────────────────────────
 
-    case 'review_decide': {
+    case 'pipeline_review_decide': {
       const decisionId = input.decisionId as string;
       const status = input.status as 'approved' | 'rejected';
       const feedback = input.feedback as
@@ -296,7 +296,7 @@ export async function executePipelineTool(
 
     // ── Templates ────────────────────────────────────────────────────────────
 
-    case 'template_list': {
+    case 'pipeline_template_list': {
       const category = input.category as string | undefined;
 
       // Templates visible to this tenant: built-in (null tenantId) or own tenant
@@ -338,7 +338,7 @@ export async function executePipelineTool(
       };
     }
 
-    case 'template_instantiate': {
+    case 'pipeline_template_instantiate': {
       const templateId = input.templateId as string;
       const name = input.name as string;
       const paramOverrides =

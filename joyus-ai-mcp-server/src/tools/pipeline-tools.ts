@@ -168,9 +168,9 @@ export const pipelineTools: ToolDefinition[] = [
   // ── Review ─────────────────────────────────────────────────────────────────
 
   {
-    name: 'review_decide',
+    name: 'pipeline_review_decide',
     description:
-      'Approve or reject AI-generated content paused at a human review gate in a pipeline. Use when a pipeline execution is in paused_at_gate status and requires a reviewer decision to continue or cancel. NOTE: this tool will be renamed pipeline_review_decide in a future release.',
+      'Approve or reject AI-generated content paused at a human review gate in a pipeline. Use when a pipeline execution is in paused_at_gate status and requires a reviewer decision to continue or cancel.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -208,9 +208,9 @@ export const pipelineTools: ToolDefinition[] = [
   // ── Templates ──────────────────────────────────────────────────────────────
 
   {
-    name: 'template_list',
+    name: 'pipeline_template_list',
     description:
-      'Browse available pipeline templates to use as starting points for new automated workflows. Use when creating a pipeline and you want to start from a pre-built template rather than configuring from scratch. NOTE: this tool will be renamed pipeline_template_list in a future release.',
+      'Browse available pipeline templates to use as starting points for new automated workflows. Use when creating a pipeline and you want to start from a pre-built template rather than configuring from scratch.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -223,9 +223,9 @@ export const pipelineTools: ToolDefinition[] = [
   },
 
   {
-    name: 'template_instantiate',
+    name: 'pipeline_template_instantiate',
     description:
-      'Create a new pipeline by instantiating a template. Use when setting up a standard workflow (weekly content brief, profile refresh, reviewed outreach) using a pre-built starting point rather than configuring from scratch. NOTE: this tool will be renamed pipeline_template_instantiate in a future release.',
+      'Create a new pipeline by instantiating a template. Use when setting up a standard workflow using a pre-built starting point rather than configuring from scratch.',
     inputSchema: {
       type: 'object',
       properties: {

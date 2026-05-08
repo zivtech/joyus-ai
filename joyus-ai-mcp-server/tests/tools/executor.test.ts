@@ -137,7 +137,7 @@ describe('executeTool — content_ prefix', () => {
 // pipeline_ / template_ / review_ prefix
 // ============================================================
 
-describe('executeTool — pipeline/template/review prefix', () => {
+describe('executeTool — pipeline prefix', () => {
   it('throws when pipeline context is not initialized', async () => {
     // Reset pipeline context by re-importing (context starts null in fresh module)
     // We can call setPipelineContext with null via a workaround, or just test the error path
@@ -149,14 +149,6 @@ describe('executeTool — pipeline/template/review prefix', () => {
 
     await expect(
       executeTool('user-1', 'pipeline_run', { pipeline_id: 'p1' }),
-    ).rejects.toThrow('Pipeline module not initialized');
-
-    await expect(
-      executeTool('user-1', 'template_apply', {}),
-    ).rejects.toThrow('Pipeline module not initialized');
-
-    await expect(
-      executeTool('user-1', 'review_create', {}),
     ).rejects.toThrow('Pipeline module not initialized');
   });
 
@@ -177,7 +169,7 @@ describe('executeTool — pipeline/template/review prefix', () => {
     expect(result).toEqual({ pipeline: 'result' });
   });
 
-  it('routes template_* to executePipelineTool when context is set', async () => {
+  it('routes pipeline template tools to executePipelineTool when context is set', async () => {
     const pipelineContext = {
       stepRegistry: {} as any,
       decisionRecorder: {} as any,
@@ -185,11 +177,11 @@ describe('executeTool — pipeline/template/review prefix', () => {
     };
     setPipelineContext(pipelineContext);
 
-    await executeTool('user-1', 'template_list', {});
-    expect(vi.mocked(executePipelineTool)).toHaveBeenCalledWith('template_list', {}, expect.anything());
+    await executeTool('user-1', 'pipeline_template_list', {});
+    expect(vi.mocked(executePipelineTool)).toHaveBeenCalledWith('pipeline_template_list', {}, expect.anything());
   });
 
-  it('routes review_* to executePipelineTool when context is set', async () => {
+  it('routes pipeline review tools to executePipelineTool when context is set', async () => {
     const pipelineContext = {
       stepRegistry: {} as any,
       decisionRecorder: {} as any,
@@ -197,8 +189,24 @@ describe('executeTool — pipeline/template/review prefix', () => {
     };
     setPipelineContext(pipelineContext);
 
-    await executeTool('user-1', 'review_submit', {});
-    expect(vi.mocked(executePipelineTool)).toHaveBeenCalledWith('review_submit', {}, expect.anything());
+    await executeTool('user-1', 'pipeline_review_decide', {});
+    expect(vi.mocked(executePipelineTool)).toHaveBeenCalledWith('pipeline_review_decide', {}, expect.anything());
+  });
+
+  it('does not route old unprefixed template or review tools', async () => {
+    const pipelineContext = {
+      stepRegistry: {} as any,
+      decisionRecorder: {} as any,
+      eventBus: {} as any,
+    };
+    setPipelineContext(pipelineContext);
+
+    await expect(executeTool('user-1', 'template_list', {})).rejects.toThrow(
+      'Unknown tool: template_list',
+    );
+    await expect(executeTool('user-1', 'review_decide', {})).rejects.toThrow(
+      'Unknown tool: review_decide',
+    );
   });
 });
 
