@@ -115,7 +115,7 @@ export async function executeTool(userId: string, toolName: string, input: Recor
     return executeProfileTool(toolName, input, { userId, tenantId, db });
   }
 
-  if (toolName.startsWith('pipeline_') || toolName.startsWith('template_') || toolName.startsWith('review_')) {
+  if (toolName.startsWith('pipeline_')) {
     const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
     // Pipeline executor context requires additional deps — these are injected via setPipelineContext()
     if (!_pipelineContext) {

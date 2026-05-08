@@ -114,9 +114,9 @@ describe('Pipeline Tool Definitions', () => {
     expect(names).toContain('pipeline_trigger');
     expect(names).toContain('pipeline_status');
     expect(names).toContain('pipeline_history');
-    expect(names).toContain('review_decide');
-    expect(names).toContain('template_list');
-    expect(names).toContain('template_instantiate');
+    expect(names).toContain('pipeline_review_decide');
+    expect(names).toContain('pipeline_template_list');
+    expect(names).toContain('pipeline_template_instantiate');
   });
 });
 
@@ -238,7 +238,7 @@ describe('Pipeline Tool Executor', () => {
     });
   });
 
-  describe('template_list', () => {
+  describe('pipeline_template_list', () => {
     it('returns active templates', async () => {
       const templates = [
         {
@@ -255,7 +255,7 @@ describe('Pipeline Tool Executor', () => {
       ];
       db._setSelectResults([templates]);
 
-      const result = await executePipelineTool('template_list', {}, context);
+      const result = await executePipelineTool('pipeline_template_list', {}, context);
 
       const data = result as { templates: Array<{ isBuiltIn: boolean }> };
       expect(data.templates).toHaveLength(1);
@@ -263,10 +263,10 @@ describe('Pipeline Tool Executor', () => {
     });
   });
 
-  describe('review_decide', () => {
+  describe('pipeline_review_decide', () => {
     it('delegates to DecisionRecorder', async () => {
       const result = await executePipelineTool(
-        'review_decide',
+        'pipeline_review_decide',
         { decisionId: 'dec-1', status: 'approved' },
         context,
       );
