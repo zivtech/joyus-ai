@@ -10,18 +10,23 @@
 
 import { z } from 'zod';
 
+import { validateCronExpression } from './services/scheduler.js';
+
 // ============================================================
 // SHARED REFINEMENTS
 // ============================================================
 
 /**
- * Basic cron expression validation (5-field standard cron).
- * Full semantic validation happens at scheduling time.
+ * Cron expression validation (5-field standard cron).
+ * Field count is enforced via regex; semantic validity (range/step values)
+ * is checked via cron-parser inside validateCronExpression.
  */
-const cronExpression = z.string().regex(
-  /^(\S+\s+){4}\S+$/,
-  'Must be a valid 5-field cron expression (e.g., "0 9 * * 1-5")',
-);
+const cronExpression = z.string()
+  .regex(
+    /^(\S+\s+){4}\S+$/,
+    'Must be a valid 5-field cron expression (e.g., "0 9 * * 1-5")',
+  )
+  .refine(validateCronExpression, { message: 'Invalid cron expression' });
 
 /**
  * IANA timezone validation via Intl API.
@@ -114,7 +119,7 @@ export const AutomationDestinationInput = z.object({
     { message: 'Automation destination URL must use HTTPS' },
   ),
   authHeader: z.string().max(255).optional(),
-  authSecret: z.string().max(500).optional(),
+  authSecret: z.string().min(1).max(500).optional(),
 });
 export type AutomationDestinationInput = z.infer<typeof AutomationDestinationInput>;
 

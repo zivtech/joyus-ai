@@ -36,11 +36,18 @@ function mockRes() {
 }
 
 function mockReq(overrides: Partial<Request> = {}): Request {
+  // Translate x-tenant-id header → req.mcpUser.id to match the real auth flow.
+  // requireBearerToken populates req.mcpUser before our routes run.
+  const headers = (overrides.headers ?? {}) as Record<string, string | string[] | undefined>;
+  const tenantHeader = headers['x-tenant-id'];
+  const tenantId = Array.isArray(tenantHeader) ? tenantHeader[0] : tenantHeader;
+  const mcpUser = tenantId ? { id: tenantId } : undefined;
   return {
     headers: {},
     body: {},
     params: {},
     query: {},
+    mcpUser,
     ...overrides,
   } as unknown as Request;
 }

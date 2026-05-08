@@ -8,6 +8,8 @@
  * Tenant is resolved from the matched destination record — no MCP user session required.
  */
 
+import { timingSafeEqual } from 'node:crypto';
+
 import { and, eq, isNotNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
@@ -61,7 +63,12 @@ function triggerCallbackHandler(deps: TriggerRouterDeps) {
 
     const destination = destinations.find((d) => {
       if (!d.authSecretRef) return false;
-      return decryptSecret(d.authSecretRef) === token;
+      const secret = decryptSecret(d.authSecretRef);
+      if (!secret) return false;
+      const secretBuf = Buffer.from(secret);
+      const tokenBuf = Buffer.from(token);
+      if (secretBuf.length !== tokenBuf.length) return false;
+      return timingSafeEqual(secretBuf, tokenBuf);
     });
 
     if (!destination) {

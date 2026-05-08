@@ -26,13 +26,12 @@ export interface SubscriptionsRouterDeps {
 // ============================================================
 
 /**
- * Resolve tenant id from request. Reads x-tenant-id header.
- * Returns null if the header is missing (platform admin callers omit it).
+ * Resolve tenant id from the authenticated MCP user.
+ * userId === tenantId until formal tenant resolution exists (see #37).
+ * Returns null when no authenticated user is present (platform-admin context).
  */
 function resolveTenantId(req: Request): string | null {
-  const header = req.headers['x-tenant-id'];
-  if (Array.isArray(header)) return header[0] ?? null;
-  return header ?? null;
+  return req.mcpUser?.id ?? null;
 }
 
 // ============================================================
