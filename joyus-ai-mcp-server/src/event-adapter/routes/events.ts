@@ -10,12 +10,12 @@
  * Cross-tenant access returns 404, not 403.
  */
 
-import { Router, type Request, type Response } from 'express';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
-import { EventQueryInput } from '../validation.js';
-import { queryEvents, getEventById, replayEvent } from '../services/event-buffer.js';
 import type { WebhookEvent } from '../schema.js';
+import { queryEvents, getEventById, replayEvent } from '../services/event-buffer.js';
+import { EventQueryInput } from '../validation.js';
 
 // ============================================================
 // TYPES

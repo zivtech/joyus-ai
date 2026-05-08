@@ -11,17 +11,17 @@
  * Never await downstream processing.
  */
 
-import { Router, type Request, type Response } from 'express';
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
+import { parseGenericWebhook, PayloadParseError } from '../parsers/generic.js';
+import { parseGitHubEvent, UnsupportedEventTypeError } from '../parsers/github.js';
 import { eventSources, type EventSource } from '../schema.js';
-import type { AuthMethod, AuthConfig } from '../types.js';
 import { validateWebhookAuth, extractClientIp, type SecretResolver } from '../services/auth-validator.js';
 import { bufferEvent } from '../services/event-buffer.js';
 import { RateLimiter, type RateLimitResult } from '../services/rate-limiter.js';
-import { parseGitHubEvent, UnsupportedEventTypeError } from '../parsers/github.js';
-import { parseGenericWebhook, PayloadParseError } from '../parsers/generic.js';
+import type { AuthMethod, AuthConfig } from '../types.js';
 
 // ============================================================
 // TYPES

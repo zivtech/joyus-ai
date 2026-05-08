@@ -7,8 +7,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 import * as contentSchema from '../content/schema.js';
-import * as pipelinesSchema from '../pipelines/schema.js';
 import * as eventAdapterSchema from '../event-adapter/schema.js';
+import * as pipelinesSchema from '../pipelines/schema.js';
 
 import * as schema from './schema.js';
 

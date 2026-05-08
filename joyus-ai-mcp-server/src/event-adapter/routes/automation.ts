@@ -10,14 +10,14 @@
  * returned in API responses — only a `hasAuth` boolean is exposed.
  */
 
-import { Router, type Request, type Response } from 'express';
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
 import { automationDestinations } from '../schema.js';
-import { AutomationDestinationInput } from '../validation.js';
-import { encryptSecret } from '../services/secret-store.js';
 import type { AutomationForwarder } from '../services/automation-forwarder.js';
+import { encryptSecret } from '../services/secret-store.js';
+import { AutomationDestinationInput } from '../validation.js';
 
 // ============================================================
 // TYPES

@@ -7,9 +7,9 @@
  *   GET    /sources/:id/subscriptions — list all subscriptions for a source (T058, admin only)
  */
 
-import { Router, type Request, type Response } from 'express';
 import { eq, and } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
 import { eventSources, platformSubscriptions } from '../schema.js';
 

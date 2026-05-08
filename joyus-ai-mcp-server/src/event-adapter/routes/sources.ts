@@ -13,13 +13,14 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import { Router, type Request, type Response } from 'express';
+
 import { eq, and, count, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
 import { eventSources, platformSubscriptions } from '../schema.js';
-import { CreateEventSourceInput, UpdateEventSourceInput } from '../validation.js';
 import { encryptSecret } from '../services/secret-store.js';
+import { CreateEventSourceInput, UpdateEventSourceInput } from '../validation.js';
 
 // ============================================================
 // TYPES
