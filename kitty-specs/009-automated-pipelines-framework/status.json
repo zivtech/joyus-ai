@@ -1,8 +1,10 @@
 {
-  "event_count": 10,
-  "feature_slug": "009-automated-pipelines-framework",
-  "last_event_id": "01KMTCTX4C6BNAYQ4NKZ2GASF4",
-  "materialized_at": "2026-03-28T14:16:13.722166+00:00",
+  "event_count": 36,
+  "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDSA9",
+  "materialized_at": "2026-04-21T13:48:41.271611+00:00",
+  "mission_number": "009",
+  "mission_slug": "009-automated-pipelines-framework",
+  "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 0,
@@ -11,78 +13,79 @@
     "done": 8,
     "for_review": 0,
     "in_progress": 2,
+    "in_review": 0,
     "planned": 0
   },
   "work_packages": {
     "WP01": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 2,
       "lane": "in_progress",
-      "last_event_id": "01KMTCTX4AGTZJB0S0EG792T0J",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS97",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP02": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 2,
       "lane": "in_progress",
-      "last_event_id": "01KMTCTX4BPV7P26KA2TW5E13K",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS99",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP03": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4C6BNAYQ4NKZ2GASF4",
-      "last_transition_at": "2026-03-28T14:16:13.196535+00:00"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS9D",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP04": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4DR5VR6DFWW6XHJKWT",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS9H",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP05": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4FDF1N5PJRC3WE4YQ0",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS9N",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP06": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4GD397CAS9ATDTKQ43",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS9S",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP07": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4HKTW4H85T9SK4NKH2",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDS9X",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP08": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4JZBH5RN7MK6BWN9QX",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDSA1",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP09": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4K458TKJNZ4FG5NNZZ",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDSA5",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     },
     "WP10": {
       "actor": "migration",
-      "force_count": 1,
+      "force_count": 4,
       "lane": "done",
-      "last_event_id": "01KMTCTX4NJHP9R3RWR14C25MF",
-      "last_transition_at": "2026-03-10T00:00:00Z"
+      "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDSA9",
+      "last_transition_at": "2026-04-21T13:48:41.271611+00:00"
     }
   }
 }
