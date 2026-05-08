@@ -16,8 +16,9 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import { automationDestinations } from '../schema.js';
 import type { AutomationDestination, WebhookEvent } from '../schema.js';
-import type { TriggerCall } from './trigger-forwarder.js';
+
 import { decryptSecret } from './secret-store.js';
+import type { TriggerCall } from './trigger-forwarder.js';
 
 // ============================================================
 // CONSTANTS

@@ -18,9 +18,9 @@
  * Could be refactored to call internal REST handlers in a future iteration.
  */
 
-import { Router, type Request, type Response } from 'express';
 import { eq, and, or, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
 import {
   eventSources,
