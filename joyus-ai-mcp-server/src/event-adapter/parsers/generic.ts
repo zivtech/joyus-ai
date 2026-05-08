@@ -6,8 +6,8 @@
  * the entire payload is passed through as metadata.
  */
 
-import { mapPayload, type PayloadMappingConfig } from '../services/payload-mapper.js';
 import type { EventSource } from '../schema.js';
+import { mapPayload, type PayloadMappingConfig } from '../services/payload-mapper.js';
 
 // ============================================================
 // TYPES
