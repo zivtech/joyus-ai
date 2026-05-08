@@ -48,6 +48,12 @@ export function createWebhookRouter(deps: WebhookRouterDeps): Router {
   router.post(
     '/webhook/:slug',
     (req: Request, res: Response, next) => {
+      // Slow-loris guard: abort if the client takes longer than 10s to send the body.
+      req.setTimeout(10_000, () => {
+        res.status(408).json({ error: 'request_timeout' });
+        req.destroy();
+      });
+
       // Collect raw body chunks
       const chunks: Buffer[] = [];
       let size = 0;

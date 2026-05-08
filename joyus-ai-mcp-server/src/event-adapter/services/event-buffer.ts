@@ -289,6 +289,20 @@ export async function escalateToDeadLetter(
 }
 
 /**
+ * Mark an event as having been forwarded to its tenant's automation destination.
+ * Used by the buffer drain worker to prevent duplicate forwarding on retries.
+ */
+export async function markForwardedToAutomation(
+  db: NodePgDatabase<Record<string, unknown>>,
+  eventId: string,
+): Promise<void> {
+  await db
+    .update(webhookEvents)
+    .set({ forwardedToAutomation: true, updatedAt: new Date() })
+    .where(eq(webhookEvents.id, eventId));
+}
+
+/**
  * Replay a failed or dead-lettered event by resetting it to pending.
  * Throws if the event is in a non-replayable state.
  */

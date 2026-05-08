@@ -130,7 +130,7 @@ export class AutomationForwarder {
       source_type: event.sourceType,
       trigger_type: triggerCall?.triggerType ?? event.triggerType ?? null,
       pipeline_id: triggerCall?.pipelineId ?? event.pipelineId ?? null,
-      metadata: (event.payload as Record<string, unknown>)?.['metadata'] ?? {},
+      metadata: triggerCall?.metadata ?? (event.payload as Record<string, unknown>) ?? {},
       received_at: event.createdAt.toISOString(),
     };
 

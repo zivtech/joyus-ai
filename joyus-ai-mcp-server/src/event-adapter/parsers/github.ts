@@ -10,6 +10,8 @@
  * (caller should return 200 to avoid GitHub retry storms).
  */
 
+import { PayloadParseError } from './generic.js';
+
 // ============================================================
 // TYPES
 // ============================================================
@@ -49,7 +51,13 @@ export function parseGitHubEvent(
     throw new UnsupportedEventTypeError('unknown');
   }
 
-  const payload = JSON.parse(body.toString('utf-8'));
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.toString('utf-8'));
+  } catch {
+    throw new PayloadParseError('Invalid JSON in GitHub webhook body');
+  }
+  const payload = parsed as Record<string, unknown>;
 
   switch (eventType) {
     case 'push':

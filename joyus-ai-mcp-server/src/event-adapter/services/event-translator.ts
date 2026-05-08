@@ -254,7 +254,7 @@ export async function fanOutPlatformEvent(
           sourceType: event.sourceType,
           sourceId: event.sourceId ?? undefined,
           payload: { ...basePayload, targetPipelineId: sub.targetPipelineId },
-          signatureValid: true,
+          signatureValid: event.signatureValid ?? false,
         });
       }),
     );

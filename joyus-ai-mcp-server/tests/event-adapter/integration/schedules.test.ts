@@ -49,11 +49,16 @@ function makeReq(opts: {
   query?: Record<string, string>;
   headers?: Record<string, string>;
 }): Request {
+  // Translate x-tenant-id header → req.mcpUser.id to match the real auth flow.
+  // requireBearerToken populates req.mcpUser before our routes run.
+  const tenantHeader = opts.headers?.['x-tenant-id'];
+  const mcpUser = tenantHeader ? { id: tenantHeader } : undefined;
   return {
     body: opts.body ?? {},
     params: opts.params ?? {},
     query: opts.query ?? {},
     headers: opts.headers ?? {},
+    mcpUser,
   } as unknown as Request;
 }
 

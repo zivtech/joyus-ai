@@ -18,6 +18,7 @@ import {
   claimEvent,
   markDelivered,
   markFailed,
+  markForwardedToAutomation,
   escalateToDeadLetter,
   getRetryableEvents,
   requeueForRetry,
@@ -193,12 +194,11 @@ export class BufferDrainWorker {
     // Forward to automation destination as soon as we have a translated trigger,
     // independent of the internal Inngest delivery outcome (Tier 2 destinations
     // should observe the event regardless of internal pipeline success).
-    if (this.automationForwarder) {
-      setImmediate(() =>
-        this.automationForwarder!.forwardToAutomation(claimed, triggerCall).catch((err) =>
-          console.error('[event-adapter] automation forward error', err)
-        )
-      );
+    // Skip when the event was already forwarded on a previous attempt to avoid duplicates.
+    if (this.automationForwarder && !claimed.forwardedToAutomation) {
+      this.automationForwarder.forwardToAutomation(claimed, triggerCall)
+        .then(() => markForwardedToAutomation(this.db, claimed.id))
+        .catch((err) => console.error('[event-adapter] automation forward error', err));
     }
 
     const result = await this.forwarder.forwardTrigger(triggerCall);

@@ -38,6 +38,9 @@ function resolveKey(): Buffer {
       '[secret-store] EVENT_ADAPTER_SECRET_KEY is not set. ' +
       'Using insecure dev fallback key. DO NOT use in production.',
     );
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('EVENT_ADAPTER_SECRET_KEY must be set in production');
+    }
     return Buffer.from(DEV_FALLBACK_KEY, 'hex');
   }
 
