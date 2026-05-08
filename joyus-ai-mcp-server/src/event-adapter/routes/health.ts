@@ -8,9 +8,9 @@
  * Status field reflects operational state: healthy | degraded | unhealthy.
  */
 
-import { Router, type Request, type Response } from 'express';
 import { eq, and, count, sql, gte, lt } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router, type Request, type Response } from 'express';
 
 import { webhookEvents, eventScheduledTasks } from '../schema.js';
 import type { SchedulerService } from '../services/scheduler.js';
@@ -187,7 +187,7 @@ function healthHandler(deps: HealthRouterDeps) {
       const activeSchedules = Number(activeSchedulesResult[0]?.count ?? 0);
       const overdueSchedules = Number(overdueSchedulesResult[0]?.count ?? 0);
       const rawAvg = avgLatencyResult[0]?.avg;
-      const avgMs = rawAvg != null ? Math.round(Number(rawAvg) * 10) / 10 : null;
+      const avgMs = rawAvg !== null && rawAvg !== undefined ? Math.round(Number(rawAvg) * 10) / 10 : null;
 
       // success_rate_pct: (delivered / (delivered + failed)) * 100
       const totalFinished = delivered + failed;
@@ -199,7 +199,7 @@ function healthHandler(deps: HealthRouterDeps) {
       // Scheduler status
       const lastTickAt = deps.scheduler?.lastTickAt ?? null;
       const schedulerHealthy =
-        lastTickAt != null ? lastTickAt >= twoMinutesAgo : deps.scheduler == null;
+        lastTickAt !== null ? lastTickAt >= twoMinutesAgo : deps.scheduler === undefined;
 
       // Overall status computation
       let status: 'healthy' | 'degraded' | 'unhealthy';

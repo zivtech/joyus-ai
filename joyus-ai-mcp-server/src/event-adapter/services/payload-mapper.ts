@@ -44,7 +44,7 @@ export function evaluatePath(obj: unknown, path: string): unknown {
 
   const parts = pathStr.split('.');
   return parts.reduce((cur: unknown, part: string) => {
-    if (cur == null || typeof cur !== 'object') return undefined;
+    if (cur === null || cur === undefined || typeof cur !== 'object') return undefined;
 
     const arrayMatch = part.match(/^(\w+)\[(\d+)\]$/);
     if (arrayMatch) {

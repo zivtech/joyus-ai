@@ -13,7 +13,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import { eventSources, eventScheduledTasks } from '../schema.js';
 import type { WebhookEvent } from '../schema.js';
-import { BUFFER_DRAIN_INTERVAL_MS } from '../types.js';
+import { AutomationForwarder } from '../services/automation-forwarder.js';
 import {
   claimEvent,
   markDelivered,
@@ -26,7 +26,7 @@ import {
 } from '../services/event-buffer.js';
 import { translateEvent, TranslationError, fanOutPlatformEvent } from '../services/event-translator.js';
 import { TriggerForwarder, type TriggerCall } from '../services/trigger-forwarder.js';
-import { AutomationForwarder } from '../services/automation-forwarder.js';
+import { BUFFER_DRAIN_INTERVAL_MS } from '../types.js';
 
 // ============================================================
 // TYPES

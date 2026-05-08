@@ -5,24 +5,24 @@
  * Routes will be added by subsequent work packages.
  */
 
-import { Router } from 'express';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Router } from 'express';
 
-import { createWebhookRouter, type WebhookRouterDeps } from './routes/webhook.js';
-import { createSourcesRouter, type SourcesRouterDeps } from './routes/sources.js';
-import { createSchedulesRouter } from './routes/schedules.js';
+import { createAdminRouter } from './routes/admin.js';
+import { createAutomationRouter } from './routes/automation.js';
 import { createEventsRouter } from './routes/events.js';
 import { createHealthRouter } from './routes/health.js';
-import { createAutomationRouter } from './routes/automation.js';
-import { createTriggerRouter } from './routes/trigger.js';
+import { createSchedulesRouter } from './routes/schedules.js';
+import { createSourcesRouter, type SourcesRouterDeps } from './routes/sources.js';
 import { createSubscriptionsRouter } from './routes/subscriptions.js';
-import { createAdminRouter } from './routes/admin.js';
-import { RateLimiter } from './services/rate-limiter.js';
+import { createTriggerRouter } from './routes/trigger.js';
+import { createWebhookRouter, type WebhookRouterDeps } from './routes/webhook.js';
 import type { SecretResolver } from './services/auth-validator.js';
-import type { TriggerForwarder } from './services/trigger-forwarder.js';
-import type { SchedulerService } from './services/scheduler.js';
-import type { BufferDrainWorker } from './workers/buffer-drain.js';
 import type { AutomationForwarder } from './services/automation-forwarder.js';
+import { RateLimiter } from './services/rate-limiter.js';
+import type { SchedulerService } from './services/scheduler.js';
+import type { TriggerForwarder } from './services/trigger-forwarder.js';
+import type { BufferDrainWorker } from './workers/buffer-drain.js';
 
 // Schema exports
 export {

@@ -16,6 +16,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import type { WebhookEvent, EventSource, EventScheduledTask } from '../schema.js';
 import { platformSubscriptions } from '../schema.js';
+
 import { bufferEvent } from './event-buffer.js';
 import type { TriggerCall } from './trigger-forwarder.js';
 import type { TriggerForwarder } from './trigger-forwarder.js';
