@@ -57,7 +57,10 @@ export const CreateEventSourceInput = z.object({
   targetTriggerType: z.string().max(50).optional(),
   corpusId: z.string().min(1).max(255).optional(),
   payloadMapping: z.record(z.string(), z.unknown()).optional(),
-});
+}).refine(
+  (data) => data.authMethod === 'ip_allowlist' || !!data.authSecret,
+  { message: 'authSecret is required for hmac_sha256 and api_key_header auth methods', path: ['authSecret'] },
+);
 export type CreateEventSourceInput = z.infer<typeof CreateEventSourceInput>;
 
 export const UpdateEventSourceInput = z.object({
