@@ -3,8 +3,35 @@
 **Prerequisites**
 
 - Docker stack running: `docker compose up`
-- Bearer token from `/auth/login` (or existing session token)
-- `BASE=http://localhost:3000` and `TOKEN=<your bearer token>` set in shell
+- MCP bearer token — get it from `http://localhost:3000/auth` after signing in with Google. The token is shown once on login; use the **Regenerate** button if you need to retrieve it again. This is the same token used to connect Claude Desktop to the server.
+- Set in your shell:
+  ```bash
+  BASE=http://localhost:3000
+  TOKEN=<your MCP bearer token>
+  ```
+- Get or create a pipeline ID:
+  ```bash
+  # List existing pipelines
+  curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" $BASE/api/pipelines \
+    -H "Authorization: Bearer $TOKEN" && jq '.pipelines[].id' /tmp/ea.json
+
+  # Or create one (triggerType, triggerConfig, and steps are all required)
+  curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/api/pipelines \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "Event Adapter Test Pipeline",
+      "triggerType": "manual_request",
+      "triggerConfig": { "type": "manual_request" },
+      "steps": [
+        { "stepType": "notification", "name": "Placeholder Step", "config": { "type": "notification", "channel": "webhook", "message": "test" } }
+      ]
+    }' && jq '.pipeline | {id, name}' /tmp/ea.json
+
+  PIPELINE_ID=<paste id here>
+  ```
+
+> **Note on curl pattern:** `-o /tmp/ea.json` writes the response body to a file and `-w "HTTP %{http_code}\n"` prints the status code to your terminal. `jq` then reads from the file. This avoids `jq` parse errors on the status code line.
 
 ---
 
@@ -12,82 +39,127 @@
 
 **Create a generic webhook source**
 ```bash
-curl -s -X POST $BASE/v1/events/sources \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/sources \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"Test Webhook\",
+    \"sourceType\": \"generic_webhook\",
+    \"authMethod\": \"hmac_sha256\",
+    \"authSecret\": \"supersecret123\",
+    \"targetPipelineId\": \"$PIPELINE_ID\"
+  }" && jq . /tmp/ea.json
+```
+- [ ] `HTTP 201` with `id`, `endpointSlug`, `hasSecret: true`
+- [ ] `authSecret` is NOT in the response
+
+```bash
+SOURCE_SLUG=<paste endpointSlug here>
+SOURCE_ID=<paste id here>
+```
+
+**Missing authSecret → 400**
+```bash
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/sources \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"No Secret Source\",
+    \"sourceType\": \"generic_webhook\",
+    \"authMethod\": \"hmac_sha256\",
+    \"targetPipelineId\": \"$PIPELINE_ID\"
+  }" && jq . /tmp/ea.json
+```
+- [ ] `HTTP 400` with `authSecret` validation error
+
+**Invalid pipeline ID → 422**
+```bash
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/sources \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Test Webhook",
+    "name": "Bad Source",
     "sourceType": "generic_webhook",
     "authMethod": "hmac_sha256",
-    "authSecret": "supersecret123",
-    "targetPipelineId": "<any pipeline id>"
-  }' | jq .
+    "authSecret": "some-secret",
+    "targetPipelineId": "nonexistent-pipeline-id"
+  }' && jq . /tmp/ea.json
 ```
-- [ ] Returns 201 with `id`, `slug`, `hasSecret: true`
-- [ ] `authSecret` is NOT in the response
+- [ ] `HTTP 422` with `error: "invalid_pipeline"`
 
 **Create a GitHub source with corpus mapping**
 ```bash
-curl -s -X POST $BASE/v1/events/sources \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/sources \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "GitHub Push",
-    "sourceType": "github",
-    "authMethod": "hmac_sha256",
-    "authSecret": "gh-webhook-secret",
-    "corpusId": "corpus-abc-123",
-    "targetPipelineId": "<any pipeline id>"
-  }' | jq .
+  -d "{
+    \"name\": \"GitHub Push\",
+    \"sourceType\": \"github\",
+    \"authMethod\": \"hmac_sha256\",
+    \"authSecret\": \"gh-webhook-secret\",
+    \"corpusId\": \"corpus-abc-123\",
+    \"targetPipelineId\": \"$PIPELINE_ID\"
+  }" && jq . /tmp/ea.json
 ```
-- [ ] Returns 201 with `corpusId: "corpus-abc-123"` in response
+- [ ] `HTTP 201` with `corpusId: "corpus-abc-123"` in response
 
 **List sources**
 ```bash
-curl -s $BASE/v1/events/sources -H "Authorization: Bearer $TOKEN" | jq .
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" $BASE/v1/events/sources \
+  -H "Authorization: Bearer $TOKEN" && jq . /tmp/ea.json
 ```
-- [ ] Returns array with both sources created above
+- [ ] `HTTP 200` with both sources in `data` array
 
 **Update a source (patch lifecycle state)**
 ```bash
-curl -s -X PATCH $BASE/v1/events/sources/<source-id> \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X PATCH $BASE/v1/events/sources/$SOURCE_ID \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"lifecycleState": "paused"}' | jq .
+  -d '{"lifecycleState": "paused"}' && jq '.lifecycleState' /tmp/ea.json
 ```
-- [ ] Returns updated record with `lifecycleState: "paused"`
+- [ ] `HTTP 200`, value is `"paused"`
+
+**Restore it before continuing**
+```bash
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X PATCH $BASE/v1/events/sources/$SOURCE_ID \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"lifecycleState": "active"}' && jq '.lifecycleState' /tmp/ea.json
+```
+- [ ] `HTTP 200`, value is `"active"`
 
 ---
 
-## 2. Webhook Ingestion (no auth required on this endpoint)
+## 2. Webhook Ingestion (no bearer token required)
 
-**Send a generic webhook**
+**Send a valid signed webhook**
 ```bash
-SLUG=<slug from source created above>
-curl -s -X POST $BASE/v1/events/webhook/$SLUG \
+BODY='{"event":"test","data":"hello"}'
+SIG=$(echo -n "$BODY" | openssl dgst -sha256 -hmac 'supersecret123' | awk '{print "sha256="$2}')
+
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/webhook/$SOURCE_SLUG \
   -H "Content-Type: application/json" \
-  -H "X-Hub-Signature-256: $(echo -n '{"event":"test","data":"hello"}' | openssl dgst -sha256 -hmac 'supersecret123' -hex | sed 's/SHA2-256(stdin)= /sha256=/')" \
-  -d '{"event":"test","data":"hello"}' | jq .
+  -H "X-Hub-Signature-256: $SIG" \
+  -d "$BODY" && jq . /tmp/ea.json
 ```
-- [ ] Returns `202` with `event_id`
-- [ ] Check event was buffered: `curl -s $BASE/v1/events/events -H "Authorization: Bearer $TOKEN" | jq .`
+- [ ] `HTTP 202` with `event_id`
 
 **Bad HMAC → 401**
 ```bash
-curl -s -X POST $BASE/v1/events/webhook/$SLUG \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/webhook/$SOURCE_SLUG \
   -H "Content-Type: application/json" \
   -H "X-Hub-Signature-256: sha256=badhash" \
-  -d '{"event":"test"}' | jq .
+  -d '{"event":"test"}' && jq . /tmp/ea.json
 ```
-- [ ] Returns `401`
+- [ ] `HTTP 401`
 
 **Unknown slug → 404**
 ```bash
-curl -s -X POST $BASE/v1/events/webhook/no-such-slug \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/webhook/no-such-slug \
   -H "Content-Type: application/json" \
-  -d '{"event":"test"}' | jq .
+  -d '{"event":"test"}' && jq . /tmp/ea.json
 ```
-- [ ] Returns `404`
+- [ ] `HTTP 404`
 
 ---
 
@@ -95,28 +167,28 @@ curl -s -X POST $BASE/v1/events/webhook/no-such-slug \
 
 **Create a schedule**
 ```bash
-curl -s -X POST $BASE/v1/events/schedules \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/schedules \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "Daily at 9am",
-    "cronExpression": "0 9 * * 1-5",
-    "timezone": "America/New_York",
-    "targetPipelineId": "<any pipeline id>",
-    "triggerType": "manual-request"
-  }' | jq .
+  -d "{
+    \"name\": \"Daily at 9am\",
+    \"cronExpression\": \"0 9 * * 1-5\",
+    \"timezone\": \"America/New_York\",
+    \"targetPipelineId\": \"$PIPELINE_ID\",
+    \"triggerType\": \"manual-request\"
+  }" && jq . /tmp/ea.json
 ```
-- [ ] Returns 201 with `nextFireAt` populated
-- [ ] `nextFireAt` should be in the future
+- [ ] `HTTP 201` with `nextFireAt` populated and in the future
 
 **Invalid cron → 422**
 ```bash
-curl -s -X POST $BASE/v1/events/schedules \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/schedules \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Bad","cronExpression":"not a cron","timezone":"UTC","targetPipelineId":"x"}' | jq .
+  -d "{\"name\":\"Bad\",\"cronExpression\":\"not a cron\",\"timezone\":\"UTC\",\"targetPipelineId\":\"$PIPELINE_ID\"}" \
+  && jq . /tmp/ea.json
 ```
-- [ ] Returns `422` with validation error
+- [ ] `HTTP 422` with validation error
 
 ---
 
@@ -124,37 +196,38 @@ curl -s -X POST $BASE/v1/events/schedules \
 
 **Register an automation destination**
 ```bash
-curl -s -X PUT $BASE/v1/events/automation \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X PUT $BASE/v1/events/automation \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com/webhook",
     "authSecret": "shared-secret-token"
-  }' | jq .
+  }' && jq . /tmp/ea.json
 ```
-- [ ] Returns destination with `hasAuth: true`; secret NOT in response
+- [ ] `HTTP 200` with `hasAuth: true`; secret NOT in response
 
 **Trigger callback (simulating automation tool calling back)**
 ```bash
-curl -s -X POST $BASE/v1/events/trigger \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/trigger \
   -H "Authorization: Bearer shared-secret-token" \
   -H "Content-Type: application/json" \
-  -d '{
-    "triggerType": "manual-request",
-    "pipelineId": "<valid pipeline id for this tenant>",
-    "metadata": {"source": "n8n"}
-  }' | jq .
+  -d "{
+    \"triggerType\": \"manual-request\",
+    \"pipelineId\": \"$PIPELINE_ID\",
+    \"metadata\": {\"source\": \"n8n\"}
+  }" && jq . /tmp/ea.json
 ```
-- [ ] Returns `202` with `event_id`
+- [ ] `HTTP 202` with `event_id`
 
 **Wrong bearer token → 401**
 ```bash
-curl -s -X POST $BASE/v1/events/trigger \
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" -X POST $BASE/v1/events/trigger \
   -H "Authorization: Bearer wrong-token" \
   -H "Content-Type: application/json" \
-  -d '{"triggerType":"manual-request","pipelineId":"x","metadata":{}}' | jq .
+  -d "{\"triggerType\":\"manual-request\",\"pipelineId\":\"$PIPELINE_ID\",\"metadata\":{}}" \
+  && jq . /tmp/ea.json
 ```
-- [ ] Returns `401`
+- [ ] `HTTP 401`
 
 ---
 
@@ -162,26 +235,29 @@ curl -s -X POST $BASE/v1/events/trigger \
 
 **Query events**
 ```bash
-curl -s "$BASE/v1/events/events?limit=10" -H "Authorization: Bearer $TOKEN" | jq .
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" "$BASE/v1/events/events?limit=10" \
+  -H "Authorization: Bearer $TOKEN" && jq . /tmp/ea.json
 ```
-- [ ] Returns paginated list of events from tests above
+- [ ] `HTTP 200` with paginated list of events from tests above
 
 **Filter by status**
 ```bash
-curl -s "$BASE/v1/events/events?status=pending" -H "Authorization: Bearer $TOKEN" | jq .
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" "$BASE/v1/events/events?status=pending" \
+  -H "Authorization: Bearer $TOKEN" && jq . /tmp/ea.json
 ```
-- [ ] Returns only pending events (or empty array)
+- [ ] `HTTP 200` — only pending events (or empty array)
 
 ---
 
 ## 6. Health Endpoint
 
 ```bash
-curl -s $BASE/v1/events/health -H "Authorization: Bearer $TOKEN" | jq .
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" $BASE/v1/events/health \
+  -H "Authorization: Bearer $TOKEN" && jq . /tmp/ea.json
 ```
-- [ ] Returns `200` with `status` field (`healthy`, `degraded`, or `unhealthy`)
+- [ ] `HTTP 200` with `status` field (`healthy`, `degraded`, or `unhealthy`)
 - [ ] `events`, `delivery`, `queue`, `schedules`, `latency`, `scheduler` sections all present
-- [ ] `scheduler.healthy: true` (scheduler running)
+- [ ] `scheduler.healthy: true`
 
 ---
 
@@ -189,9 +265,10 @@ curl -s $BASE/v1/events/health -H "Authorization: Bearer $TOKEN" | jq .
 
 After sending a webhook event, wait ~5 seconds for the buffer drain to process it, then:
 ```bash
-curl -s "$BASE/v1/events/events?status=delivered&limit=5" -H "Authorization: Bearer $TOKEN" | jq '.[].status'
+curl -s -o /tmp/ea.json -w "HTTP %{http_code}\n" "$BASE/v1/events/events?status=delivered&limit=5" \
+  -H "Authorization: Bearer $TOKEN" && jq '.data[].status' /tmp/ea.json
 ```
-- [ ] Events move from `pending` → `delivered`
+- [ ] `HTTP 200` — events show `"delivered"` status
 - [ ] Check Inngest dev server (if running locally) for `pipeline/manual.triggered` events
 
 For a GitHub push event with `corpusId` set on the source:
@@ -201,9 +278,9 @@ For a GitHub push event with `corpusId` set on the source:
 
 ## 8. Admin UI (platform-level)
 
-Open in browser:
+Open in browser (append your MCP token as a query param since browsers can't send auth headers):
 ```
-http://localhost:3000/event-adapter/admin
+http://localhost:3000/event-adapter/admin?token=<your MCP bearer token>
 ```
 - [ ] Source table shows both sources including `corpus_id` column
 - [ ] Corpus ID field visible in the create/edit form

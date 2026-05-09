@@ -28,6 +28,7 @@ import {
   createEventAdapterRouter,
   createEventAdapterWebhookRouter,
   createTriggerRouter,
+  createAdminRouter,
   AutomationForwarder,
   BufferDrainWorker,
   SchedulerService,
@@ -314,6 +315,9 @@ app.use('/api', requireBearerToken, pipelineRouter);
 // Trigger callback — no MCP bearer token; auth is via shared secret validated
 // against automationDestinations.authSecretRef inside the route handler.
 app.use('/v1/events', createTriggerRouter({ db: pipelineDb }));
+
+// Admin UI — mounted at its own path so hardcoded HTML links resolve correctly.
+app.use('/event-adapter/admin', requireBearerToken, createAdminRouter({ db: pipelineDb }));
 
 // Event adapter management routes (sources, schedules, events, health,
 // automation, subscriptions, admin). Webhook ingestion is mounted
