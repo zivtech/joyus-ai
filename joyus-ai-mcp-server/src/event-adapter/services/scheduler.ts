@@ -7,7 +7,7 @@
  * Subtasks: T029, T030, T031, T032, T033
  */
 
-import { parseExpression } from 'cron-parser';
+import cronParser from 'cron-parser';
 import { and, eq, lte } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
@@ -17,6 +17,8 @@ import type { LifecycleState, ScheduleMetadata } from '../types.js';
 import { SCHEDULER_POLL_INTERVAL_MS } from '../types.js';
 
 import { bufferEvent } from './event-buffer.js';
+
+const { parseExpression } = cronParser;
 
 // ============================================================
 // T029 — CRON EXPRESSION UTILITIES
