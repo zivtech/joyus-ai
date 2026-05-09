@@ -13,7 +13,7 @@
 
 import cors from 'cors';
 import { config } from 'dotenv';
-import { sql } from 'drizzle-orm';
+import { eq as eqOp, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
@@ -22,8 +22,10 @@ import { serve } from 'inngest/express';
 
 import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
+import { getUserFromToken } from './auth/verify.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
+import { users } from './db/schema.js';
 import {
   createEventAdapterRouter,
   createEventAdapterWebhookRouter,
@@ -316,8 +318,32 @@ app.use('/api', requireBearerToken, pipelineRouter);
 // against automationDestinations.authSecretRef inside the route handler.
 app.use('/v1/events', createTriggerRouter({ db: pipelineDb }));
 
-// Admin UI — mounted at its own path so hardcoded HTML links resolve correctly.
-app.use('/event-adapter/admin', requireBearerToken, createAdminRouter({ db: pipelineDb }));
+// Admin UI — session-based auth so nav links work without repeating ?token=.
+// On first visit with ?token=, validates and stores user in session.
+// Subsequent requests use the session cookie.
+app.use('/event-adapter/admin', async (req: Request, res: Response, next: NextFunction) => {
+  const session = req.session as { adminUserId?: string };
+
+  if (req.query['token']) {
+    const user = await getUserFromToken(String(req.query['token']));
+    if (!user) { res.status(401).json({ error: 'Invalid token' }); return; }
+    session.adminUserId = user.id;
+    req.mcpUser = user;
+    const url = new URL(req.originalUrl, 'http://localhost');
+    url.searchParams.delete('token');
+    res.redirect(url.pathname + (url.search || ''));
+    return;
+  }
+
+  if (session.adminUserId) {
+    const [user] = await db.select().from(users).where(eqOp(users.id, session.adminUserId)).limit(1);
+    if (!user) { res.status(401).send('Session expired. <a href="/event-adapter/admin">Log in again</a>.'); return; }
+    req.mcpUser = { ...user, connections: [] };
+    return next();
+  }
+
+  res.status(401).send('Append <code>?token=&lt;your MCP token&gt;</code> to authenticate.');
+}, createAdminRouter({ db: pipelineDb }));
 
 // Event adapter management routes (sources, schedules, events, health,
 // automation, subscriptions, admin). Webhook ingestion is mounted
