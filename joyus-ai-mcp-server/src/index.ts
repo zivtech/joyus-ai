@@ -27,6 +27,7 @@ import { db, auditLogs } from './db/client.js';
 import {
   createEventAdapterRouter,
   createEventAdapterWebhookRouter,
+  createTriggerRouter,
   AutomationForwarder,
   BufferDrainWorker,
   SchedulerService,
@@ -310,11 +311,14 @@ try {
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
 
+// Trigger callback — no MCP bearer token; auth is via shared secret validated
+// against automationDestinations.authSecretRef inside the route handler.
+app.use('/v1/events', createTriggerRouter({ db: pipelineDb }));
+
 // Event adapter management routes (sources, schedules, events, health,
-// automation, trigger, subscriptions, admin). Webhook ingestion is mounted
+// automation, subscriptions, admin). Webhook ingestion is mounted
 // earlier (before express.json) so HMAC verification gets raw bytes.
-// requireBearerToken protects management routes; the public webhook router
-// has its own per-source HMAC / api-key / IP allowlist auth.
+// requireBearerToken protects all management routes.
 app.use('/v1/events', requireBearerToken, createEventAdapterRouter({
   db: pipelineDb,
   secretResolver: eventAdapterSecretResolver,

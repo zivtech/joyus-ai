@@ -149,8 +149,6 @@ export function createEventAdapterRouter(deps?: EventAdapterRouterDeps): Router 
       automationForwarder: deps.automationForwarder,
     });
     router.use(automationRouter);
-    const triggerRouter = createTriggerRouter({ db: deps.db });
-    router.use(triggerRouter);
     const subscriptionsRouter = createSubscriptionsRouter({ db: deps.db });
     router.use(subscriptionsRouter);
     const adminRouter = createAdminRouter({ db: deps.db });
