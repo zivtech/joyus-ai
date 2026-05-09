@@ -151,8 +151,6 @@ export function createEventAdapterRouter(deps?: EventAdapterRouterDeps): Router 
     router.use(automationRouter);
     const subscriptionsRouter = createSubscriptionsRouter({ db: deps.db });
     router.use(subscriptionsRouter);
-    const adminRouter = createAdminRouter({ db: deps.db });
-    router.use('/event-adapter/admin', adminRouter);
   }
 
   return router;
