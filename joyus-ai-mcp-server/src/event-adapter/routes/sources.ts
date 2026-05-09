@@ -18,6 +18,7 @@ import { eq, and, count, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { pipelines } from '../../pipelines/schema.js';
 import { eventSources, platformSubscriptions } from '../schema.js';
 import { encryptSecret } from '../services/secret-store.js';
 import { CreateEventSourceInput, UpdateEventSourceInput } from '../validation.js';
@@ -110,6 +111,23 @@ function toPublicSource(row: typeof eventSources.$inferSelect) {
  */
 function resolveTenantId(req: Request): string | null {
   return req.mcpUser?.id ?? null;
+}
+
+async function pipelineExists(
+  db: NodePgDatabase<Record<string, unknown>>,
+  pipelineId: string,
+  tenantId: string | null,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: pipelines.id })
+    .from(pipelines)
+    .where(
+      tenantId
+        ? and(eq(pipelines.id, pipelineId), eq(pipelines.tenantId, tenantId))
+        : eq(pipelines.id, pipelineId),
+    )
+    .limit(1);
+  return row !== undefined;
 }
 
 // ============================================================
@@ -236,6 +254,14 @@ function createSourceHandler(deps: SourcesRouterDeps) {
     );
 
     try {
+      if (input.targetPipelineId) {
+        const exists = await pipelineExists(deps.db, input.targetPipelineId, tenantId);
+        if (!exists) {
+          res.status(422).json({ error: 'invalid_pipeline', detail: 'Pipeline not found' });
+          return;
+        }
+      }
+
       const [created] = await deps.db
         .insert(eventSources)
         .values({
@@ -305,6 +331,14 @@ function updateSourceHandler(deps: SourcesRouterDeps) {
       if (!existing) {
         res.status(404).json({ error: 'not_found' });
         return;
+      }
+
+      if (input.targetPipelineId) {
+        const exists = await pipelineExists(deps.db, input.targetPipelineId, tenantId);
+        if (!exists) {
+          res.status(422).json({ error: 'invalid_pipeline', detail: 'Pipeline not found' });
+          return;
+        }
       }
 
       // Build partial update
