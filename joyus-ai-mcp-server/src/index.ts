@@ -318,12 +318,22 @@ app.use('/api', requireBearerToken, pipelineRouter);
 // against automationDestinations.authSecretRef inside the route handler.
 app.use('/v1/events', createTriggerRouter({ db: pipelineDb }));
 
-// Admin UI — session-based auth so nav links work without repeating ?token=.
-// On first visit with ?token=, validates and stores user in session.
-// Subsequent requests use the session cookie.
+// Admin UI — accepts any authenticated org user (Google OAuth session) or
+// a one-time ?token= exchange for CLI/API access.
+// TODO(#37): tighten to tenant-scoped view once multi-tenant identity is unified.
 app.use('/event-adapter/admin', async (req: Request, res: Response, next: NextFunction) => {
-  const session = req.session as { adminUserId?: string };
+  const session = req.session as { userId?: string; adminUserId?: string };
 
+  // Primary: Google OAuth session (set by /auth after login)
+  if (session.userId) {
+    const [user] = await db.select().from(users).where(eqOp(users.id, session.userId)).limit(1);
+    if (user) {
+      req.mcpUser = { ...user, connections: [] };
+      return next();
+    }
+  }
+
+  // Fallback: one-time ?token= exchange → stored in session cookie
   if (req.query['token']) {
     const user = await getUserFromToken(String(req.query['token']));
     if (!user) { res.status(401).json({ error: 'Invalid token' }); return; }
@@ -342,7 +352,7 @@ app.use('/event-adapter/admin', async (req: Request, res: Response, next: NextFu
     return next();
   }
 
-  res.status(401).send('Append <code>?token=&lt;your MCP token&gt;</code> to authenticate.');
+  res.status(401).send('Please <a href="/auth">sign in</a> first, or append <code>?token=&lt;your MCP token&gt;</code>.');
 }, createAdminRouter({ db: pipelineDb }));
 
 // Event adapter management routes (sources, schedules, events, health,
