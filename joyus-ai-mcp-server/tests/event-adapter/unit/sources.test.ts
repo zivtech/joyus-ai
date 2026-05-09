@@ -40,6 +40,7 @@ function makeSource(overrides: Partial<EventSource> = {}): EventSource {
     payloadMapping: null,
     targetPipelineId: 'pipe-1',
     targetTriggerType: 'corpus-change',
+    corpusId: null,
     lifecycleState: 'active',
     isPlatformWide: false,
     createdAt: new Date('2026-01-01T00:00:00Z'),
@@ -347,6 +348,21 @@ describe('GET /sources', () => {
     expect((result.body as Record<string, unknown>)['limit']).toBe(10);
     expect((result.body as Record<string, unknown>)['offset']).toBe(20);
   });
+
+  it('includes total count from database in response', async () => {
+    const db = buildMockDb();
+    // Shape _selectResults so the count query sees { count: 3 }.
+    // Both the count query (direct await on .where()) and data query (.where().limit().offset())
+    // resolve to _selectResults; toPublicSource handles non-source rows gracefully.
+    db._selectResults = [{ count: 3 }] as unknown[];
+
+    const result = await invokeRoute(db, 'get', '/sources', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+    });
+
+    expect(result.status).toBe(200);
+    expect((result.body as Record<string, unknown>)['total']).toBe(3);
+  });
 });
 
 // ============================================================
@@ -459,6 +475,105 @@ describe('POST /sources', () => {
 
     expect(slugs[0]).not.toBe(slugs[1]);
   });
+
+  it('returns 400 when authSecret is missing for hmac_sha256', async () => {
+    const db = buildMockDb();
+
+    const result = await invokeRoute(db, 'post', '/sources', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: {
+        name: 'No Secret',
+        sourceType: 'generic_webhook',
+        authMethod: 'hmac_sha256',
+        // authSecret intentionally omitted
+      },
+    });
+
+    expect(result.status).toBe(400);
+    expect((result.body as Record<string, unknown>)['error']).toBe('validation_error');
+  });
+
+  it('returns 400 when authSecret is missing for api_key_header', async () => {
+    const db = buildMockDb();
+
+    const result = await invokeRoute(db, 'post', '/sources', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: {
+        name: 'No Secret',
+        sourceType: 'generic_webhook',
+        authMethod: 'api_key_header',
+        // authSecret intentionally omitted
+      },
+    });
+
+    expect(result.status).toBe(400);
+    expect((result.body as Record<string, unknown>)['error']).toBe('validation_error');
+  });
+
+  it('accepts ip_allowlist without authSecret', async () => {
+    const db = buildMockDb();
+    db._insertResults = [makeSource({ authMethod: 'ip_allowlist', authConfig: { allowedIps: [] } })];
+
+    const result = await invokeRoute(db, 'post', '/sources', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: {
+        name: 'IP Source',
+        sourceType: 'generic_webhook',
+        authMethod: 'ip_allowlist',
+      },
+    });
+
+    expect(result.status).toBe(201);
+  });
+
+  it('returns 422 when targetPipelineId does not exist', async () => {
+    const db = buildMockDb();
+    // The pipeline lookup uses .where().limit(1); override to return empty
+    db.select.mockImplementation(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => ({
+          limit: vi.fn(() => Promise.resolve([])),
+          offset: vi.fn(() => Promise.resolve([])),
+          then: (resolve: (v: unknown) => void) => Promise.resolve([]).then(resolve),
+          catch: (cb: (e: unknown) => void) => Promise.resolve([]).catch(cb),
+          [Symbol.toStringTag]: 'Promise',
+        })),
+      })),
+    }));
+
+    const result = await invokeRoute(db, 'post', '/sources', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: {
+        name: 'Source with Pipeline',
+        sourceType: 'generic_webhook',
+        authMethod: 'hmac_sha256',
+        authSecret: 'my-secret',
+        targetPipelineId: 'nonexistent-pipeline',
+      },
+    });
+
+    expect(result.status).toBe(422);
+    expect((result.body as Record<string, unknown>)['error']).toBe('invalid_pipeline');
+  });
+
+  it('stores corpusId on created source', async () => {
+    const db = buildMockDb();
+    db._insertResults = [makeSource({ corpusId: 'corpus-abc-123' })];
+
+    await invokeRoute(db, 'post', '/sources', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: {
+        name: 'GitHub Source',
+        sourceType: 'github',
+        authMethod: 'hmac_sha256',
+        authSecret: 'gh-secret',
+        corpusId: 'corpus-abc-123',
+      },
+    });
+
+    const vals = db._insertedValues as Record<string, unknown>;
+    expect(vals['corpusId']).toBe('corpus-abc-123');
+  });
 });
 
 // ============================================================
@@ -550,6 +665,66 @@ describe('PATCH /sources/:id', () => {
 
     expect(result.status).toBe(400);
     expect((result.body as Record<string, unknown>)['error']).toBe('validation_error');
+  });
+
+  it('returns 422 when updated targetPipelineId does not exist', async () => {
+    const db = buildMockDb();
+    const existing = makeSource();
+    let selectCallCount = 0;
+
+    // First where() = source lookup (direct await); second where().limit(1) = pipeline check
+    db.select.mockImplementation(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => {
+          selectCallCount++;
+          const result = selectCallCount === 1 ? [existing] : [];
+          return {
+            limit: vi.fn(() => Promise.resolve(result)),
+            offset: vi.fn(() => Promise.resolve(result)),
+            then: (resolve: (v: unknown) => void) => Promise.resolve(result).then(resolve),
+            catch: (cb: (e: unknown) => void) => Promise.resolve(result).catch(cb),
+            [Symbol.toStringTag]: 'Promise',
+          };
+        }),
+      })),
+    }));
+
+    const result = await invokeRoute(db, 'patch', '/sources/src-001', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: { targetPipelineId: 'nonexistent-pipeline' },
+    });
+
+    expect(result.status).toBe(422);
+    expect((result.body as Record<string, unknown>)['error']).toBe('invalid_pipeline');
+  });
+
+  it('updates corpusId', async () => {
+    const db = buildMockDb();
+    db._selectResults = [makeSource()];
+    db._updateResults = [makeSource({ corpusId: 'corpus-new-456' })];
+
+    const result = await invokeRoute(db, 'patch', '/sources/src-001', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: { corpusId: 'corpus-new-456' },
+    });
+
+    expect(result.status).toBe(200);
+    const vals = db._updatedValues as Record<string, unknown>;
+    expect(vals['corpusId']).toBe('corpus-new-456');
+  });
+
+  it('clears corpusId when patched to null', async () => {
+    const db = buildMockDb();
+    db._selectResults = [makeSource({ corpusId: 'existing-corpus' })];
+    db._updateResults = [makeSource({ corpusId: null })];
+
+    await invokeRoute(db, 'patch', '/sources/src-001', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: { corpusId: null },
+    });
+
+    const vals = db._updatedValues as Record<string, unknown>;
+    expect(vals['corpusId']).toBeNull();
   });
 });
 
