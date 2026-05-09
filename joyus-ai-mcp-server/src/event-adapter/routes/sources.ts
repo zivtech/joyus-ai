@@ -169,27 +169,18 @@ function listSourcesHandler(deps: SourcesRouterDeps) {
     const offset = Math.max(isNaN(rawOffset) ? 0 : rawOffset, 0);
 
     try {
-      const rows = tenantId
-        ? await deps.db
-            .select()
-            .from(eventSources)
-            .where(
-              or(
-                eq(eventSources.tenantId, tenantId),
-                eq(eventSources.isPlatformWide, true),
-              ),
-            )
-            .limit(limit)
-            .offset(offset)
-        : await deps.db
-            .select()
-            .from(eventSources)
-            .where(eq(eventSources.isPlatformWide, true))
-            .limit(limit)
-            .offset(offset);
+      const whereClause = tenantId
+        ? or(eq(eventSources.tenantId, tenantId), eq(eventSources.isPlatformWide, true))
+        : eq(eventSources.isPlatformWide, true);
+
+      const [totalResult, rows] = await Promise.all([
+        deps.db.select({ count: count() }).from(eventSources).where(whereClause),
+        deps.db.select().from(eventSources).where(whereClause).limit(limit).offset(offset),
+      ]);
 
       res.status(200).json({
         data: rows.map(toPublicSource),
+        total: Number(totalResult[0]?.count ?? 0),
         limit,
         offset,
       });
@@ -212,15 +203,16 @@ function listPlatformSourcesHandler(deps: SourcesRouterDeps) {
     const offset = Math.max(isNaN(rawOffset) ? 0 : rawOffset, 0);
 
     try {
-      const rows = await deps.db
-        .select()
-        .from(eventSources)
-        .where(eq(eventSources.isPlatformWide, true))
-        .limit(limit)
-        .offset(offset);
+      const whereClause = eq(eventSources.isPlatformWide, true);
+
+      const [totalResult, rows] = await Promise.all([
+        deps.db.select({ count: count() }).from(eventSources).where(whereClause),
+        deps.db.select().from(eventSources).where(whereClause).limit(limit).offset(offset),
+      ]);
 
       res.status(200).json({
         data: rows.map(toPublicSource),
+        total: Number(totalResult[0]?.count ?? 0),
         limit,
         offset,
       });
