@@ -29,20 +29,6 @@
       "message": "Artifact present: spec.md"
     },
     {
-      "check_id": "ARTIFACT-003-plan.md",
-      "severity": "P0",
-      "status": "pass",
-      "target": "kitty-specs/003-platform-architecture-overview/plan.md",
-      "message": "Artifact present: plan.md"
-    },
-    {
-      "check_id": "ARTIFACT-003-tasks.md",
-      "severity": "P0",
-      "status": "pass",
-      "target": "kitty-specs/003-platform-architecture-overview/tasks.md",
-      "message": "Artifact present: tasks.md"
-    },
-    {
       "check_id": "ARTIFACT-004-spec.md",
       "severity": "P0",
       "status": "pass",
@@ -197,18 +183,11 @@
       "message": "Artifact present: spec.md"
     },
     {
-      "check_id": "ARTIFACT-011-plan.md",
+      "check_id": "ARTIFACT-012-spec.md",
       "severity": "P0",
       "status": "pass",
-      "target": "kitty-specs/011-inngest-migration/plan.md",
-      "message": "Artifact present: plan.md"
-    },
-    {
-      "check_id": "ARTIFACT-011-tasks.md",
-      "severity": "P0",
-      "status": "pass",
-      "target": "kitty-specs/011-inngest-migration/tasks.md",
-      "message": "Artifact present: tasks.md"
+      "target": "kitty-specs/012-cms-enrichment-delivery/spec.md",
+      "message": "Artifact present: spec.md"
     },
     {
       "check_id": "META-002-measurement_owner",
@@ -491,53 +470,116 @@
       "message": "Field present: lifecycle_state='spec-only'"
     },
     {
+      "check_id": "META-012-measurement_owner",
+      "severity": "P1",
+      "status": "pass",
+      "target": "kitty-specs/012-cms-enrichment-delivery/meta.json",
+      "message": "Field present: measurement_owner='platform team'"
+    },
+    {
+      "check_id": "META-012-review_cadence",
+      "severity": "P1",
+      "status": "pass",
+      "target": "kitty-specs/012-cms-enrichment-delivery/meta.json",
+      "message": "Field present: review_cadence='monthly'"
+    },
+    {
+      "check_id": "META-012-risk_class",
+      "severity": "P1",
+      "status": "pass",
+      "target": "kitty-specs/012-cms-enrichment-delivery/meta.json",
+      "message": "Field present: risk_class='platform'"
+    },
+    {
+      "check_id": "META-012-lifecycle_state",
+      "severity": "P1",
+      "status": "pass",
+      "target": "kitty-specs/012-cms-enrichment-delivery/meta.json",
+      "message": "Field present: lifecycle_state='spec-only'"
+    },
+    {
       "check_id": "REF-governance-baseline-matrix-md",
       "severity": "P1",
       "status": "pass",
       "target": "governance/baseline-matrix.md",
-      "message": "Governance document present: governance/baseline-matrix.md"
+      "message": "Reference artifact present: governance/baseline-matrix.md"
     },
     {
       "check_id": "REF-governance-gap-register-md",
       "severity": "P1",
       "status": "pass",
       "target": "governance/gap-register.md",
-      "message": "Governance document present: governance/gap-register.md"
+      "message": "Reference artifact present: governance/gap-register.md"
     },
     {
       "check_id": "REF-governance-remediation-backlog-md",
       "severity": "P1",
       "status": "pass",
       "target": "governance/remediation-backlog.md",
-      "message": "Governance document present: governance/remediation-backlog.md"
+      "message": "Reference artifact present: governance/remediation-backlog.md"
     },
     {
       "check_id": "REF-governance-policy-v1-0-md",
       "severity": "P1",
       "status": "pass",
       "target": "governance/policy-v1.0.md",
-      "message": "Governance document present: governance/policy-v1.0.md"
+      "message": "Reference artifact present: governance/policy-v1.0.md"
     },
     {
       "check_id": "REF-governance-roi-metrics-contract-md",
       "severity": "P1",
       "status": "pass",
       "target": "governance/roi-metrics-contract.md",
-      "message": "Governance document present: governance/roi-metrics-contract.md"
+      "message": "Reference artifact present: governance/roi-metrics-contract.md"
     },
     {
-      "check_id": "REF-governance-mcp-integration-rubric-md",
+      "check_id": "REF-governance-mcp-approval-rubric-md",
       "severity": "P1",
       "status": "pass",
-      "target": "governance/mcp-integration-rubric.md",
-      "message": "Governance document present: governance/mcp-integration-rubric.md"
+      "target": "governance/mcp-approval-rubric.md",
+      "message": "Reference artifact present: governance/mcp-approval-rubric.md"
     },
     {
       "check_id": "REF-governance-autonomy-levels-md",
       "severity": "P1",
       "status": "pass",
       "target": "governance/autonomy-levels.md",
-      "message": "Governance document present: governance/autonomy-levels.md"
+      "message": "Reference artifact present: governance/autonomy-levels.md"
+    },
+    {
+      "check_id": "REF-checklists-requirements-template-md",
+      "severity": "P1",
+      "status": "pass",
+      "target": "checklists/requirements-template.md",
+      "message": "Reference artifact present: checklists/requirements-template.md"
+    },
+    {
+      "check_id": "GOVDIM-ROLLOUT",
+      "severity": "P0",
+      "status": "pass",
+      "target": "governance/policy-v1.0.md",
+      "message": "rollout enforcement coverage is enforced by content check"
+    },
+    {
+      "check_id": "GOVDIM-ROI",
+      "severity": "P0",
+      "status": "pass",
+      "target": "governance/roi-metrics-contract.md",
+      "message": "ROI contract enforcement coverage is enforced by content check"
+    },
+    {
+      "check_id": "GOVDIM-MCP-APPROVAL",
+      "severity": "P0",
+      "status": "pass",
+      "target": "governance/mcp-approval-rubric.md",
+      "message": "MCP approval status enforcement coverage is enforced by content check"
+    },
+    {
+      "check_id": "GOVDIM-AUTONOMY",
+      "severity": "P0",
+      "status": "pass",
+      "target": "governance/autonomy-levels.md",
+      "message": "autonomy classification enforcement coverage is enforced by content check"
     },
     {
       "check_id": "CONST-VERSION",

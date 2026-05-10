@@ -118,7 +118,7 @@ spec-kitty validate-encoding --all --fix
 - Use standard Conventional Commits: `<type>(<scope>): <short summary>`.
 - Use the body to explain why the change was made when helpful.
 - Reference GitHub issues in the body or footer when relevant.
-- Do not add Lore-style decision trailers such as `Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, or `Directive:` unless a human explicitly asks for them.
+- Do not add decision-record trailers to commit messages.
 - Do not rewrite history of shared branches.
 - Keep feature branches up to date with main via merge or rebase as appropriate.
 - Never commit secrets, tokens, or credentials.

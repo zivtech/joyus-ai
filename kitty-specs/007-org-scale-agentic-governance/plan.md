@@ -85,7 +85,7 @@ packages/governance/
 └── tsconfig.json
 
 .github/workflows/
-└── governance.yml                # WP05: CI enforcement workflow
+└── governance-check.yml                # WP05: CI enforcement workflow
 ```
 
 ## Work Breakdown

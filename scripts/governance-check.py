@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Feature 007 governance checks for joyus-ai.
+"""Org-scale agentic governance checks for joyus-ai.
 
 Checks:
-1. Artifact completeness: each feature has spec.md, plan.md, tasks.md.
+1. Artifact completeness: required files are present for each lifecycle state.
 2. Metadata fields: each meta.json has measurement_owner, review_cadence,
    risk_class, lifecycle_state.
-3. Reference integrity: governance docs exist.
-4. Constitution sync: constitution.md has version header and §Governance section.
+3. Reference integrity: governance docs and checklist template exist.
+4. Governance dimensions: rollout, ROI, MCP approval, and autonomy coverage.
+5. Constitution sync: constitution.md has version header and §Governance section.
 """
 
 from __future__ import annotations
@@ -25,6 +26,16 @@ from typing import Iterable
 
 REQUIRED_ARTIFACTS = ["spec.md", "plan.md", "tasks.md"]
 
+REQUIRED_ARTIFACTS_BY_LIFECYCLE = {
+    "spec-only": ["spec.md"],
+    "planning": REQUIRED_ARTIFACTS,
+    "in-progress": REQUIRED_ARTIFACTS,
+    "execution": REQUIRED_ARTIFACTS,
+    "done": REQUIRED_ARTIFACTS,
+}
+
+P0_ARTIFACT_LIFECYCLES = {"execution", "done"}
+
 REQUIRED_META_FIELDS = [
     "measurement_owner",
     "review_cadence",
@@ -32,19 +43,85 @@ REQUIRED_META_FIELDS = [
     "lifecycle_state",
 ]
 
-REQUIRED_GOVERNANCE_DOCS = [
+REQUIRED_REFERENCE_ARTIFACTS = [
     "governance/baseline-matrix.md",
     "governance/gap-register.md",
     "governance/remediation-backlog.md",
     "governance/policy-v1.0.md",
     "governance/roi-metrics-contract.md",
-    "governance/mcp-integration-rubric.md",
+    "governance/mcp-approval-rubric.md",
     "governance/autonomy-levels.md",
+    "checklists/requirements-template.md",
 ]
 
 STUB_PATTERNS = [
     "[STUB]",
     "<!-- STUB",
+]
+
+GOVERNANCE_DIMENSION_CHECKS = [
+    {
+        "check_id": "GOVDIM-ROLLOUT",
+        "target": "governance/policy-v1.0.md",
+        "label": "rollout enforcement",
+        "required_terms": [
+            "Rollout Model",
+            "pilot",
+            "launch",
+            "scale",
+            "sustain",
+            "Champion model",
+            "Pilot Criteria",
+            "Baseline availability",
+        ],
+    },
+    {
+        "check_id": "GOVDIM-ROI",
+        "target": "governance/roi-metrics-contract.md",
+        "label": "ROI contract enforcement",
+        "required_terms": [
+            "Collection Owner",
+            "Review Owner",
+            "Baseline Period",
+            "Measurement method",
+            "Data source",
+            "Weekly",
+            "M06",
+            "remediation",
+        ],
+    },
+    {
+        "check_id": "GOVDIM-MCP-APPROVAL",
+        "target": "governance/mcp-approval-rubric.md",
+        "label": "MCP approval status enforcement",
+        "required_terms": [
+            "Data Access Scope",
+            "Credential and Auth Model",
+            "Logging and Auditability",
+            "External Dependency Risk",
+            "Sandbox and Execution Constraints",
+            "Automatic Block Rule",
+            "Integration Catalog",
+            "Completed Example Assessment Record",
+        ],
+    },
+    {
+        "check_id": "GOVDIM-AUTONOMY",
+        "target": "governance/autonomy-levels.md",
+        "label": "autonomy classification enforcement",
+        "required_terms": [
+            "Level 0",
+            "Level 1",
+            "Level 2",
+            "Level 3",
+            "Level 4",
+            "Level 5",
+            "monthly",
+            "Team Classification Register",
+            "evidence",
+            "Next Review",
+        ],
+    },
 ]
 
 
@@ -88,6 +165,14 @@ def _feature_number(feature_dir: Path) -> str:
     return parts[0] if parts else name
 
 
+def _feature_lifecycle(feature_dir: Path) -> str:
+    meta_path = feature_dir / "meta.json"
+    if not meta_path.exists():
+        return "in-progress"
+    meta = _parse_meta(meta_path)
+    return str(meta.get("lifecycle_state") or "in-progress")
+
+
 def _is_stub(path: Path) -> bool:
     """Return True if the file contains a stub marker."""
     try:
@@ -107,7 +192,13 @@ def check_artifact_completeness(root: Path) -> list[GovernanceCheckResult]:
 
     for feature_dir in _iter_feature_dirs(root):
         num = _feature_number(feature_dir)
-        for filename in REQUIRED_ARTIFACTS:
+        lifecycle = _feature_lifecycle(feature_dir)
+        required_artifacts = REQUIRED_ARTIFACTS_BY_LIFECYCLE.get(
+            lifecycle,
+            REQUIRED_ARTIFACTS,
+        )
+
+        for filename in required_artifacts:
             artifact_path = feature_dir / filename
             check_id = f"ARTIFACT-{num}-{filename.replace('/', '-')}"
 
@@ -122,10 +213,15 @@ def check_artifact_completeness(root: Path) -> list[GovernanceCheckResult]:
                     )
                 )
             else:
-                # Downgrade to P2 when the feature directory itself is a stub
+                # Stub placeholders may be non-blocking only before planning starts.
                 meta_path = feature_dir / "meta.json"
                 is_stub_feature = _is_stub(meta_path) if meta_path.exists() else False
-                severity = "P2" if is_stub_feature else "P0"
+                if is_stub_feature and lifecycle == "spec-only":
+                    severity = "P2"
+                elif lifecycle in P0_ARTIFACT_LIFECYCLES:
+                    severity = "P0"
+                else:
+                    severity = "P1"
                 results.append(
                     GovernanceCheckResult(
                         check_id=check_id,
@@ -133,7 +229,12 @@ def check_artifact_completeness(root: Path) -> list[GovernanceCheckResult]:
                         status="fail",
                         target=str(feature_dir.relative_to(root)),
                         message=f"Missing required artifact: {filename}"
-                        + (" (stub feature — downgraded to P2)" if is_stub_feature else ""),
+                        + f" for lifecycle {lifecycle!r}"
+                        + (
+                            " (spec-only stub — downgraded to P2)"
+                            if is_stub_feature and lifecycle == "spec-only"
+                            else ""
+                        ),
                     )
                 )
 
@@ -215,7 +316,7 @@ def check_metadata_fields(root: Path) -> list[GovernanceCheckResult]:
 def check_reference_integrity(root: Path) -> list[GovernanceCheckResult]:
     results: list[GovernanceCheckResult] = []
 
-    for doc_rel in REQUIRED_GOVERNANCE_DOCS:
+    for doc_rel in REQUIRED_REFERENCE_ARTIFACTS:
         doc_path = root / doc_rel
         check_id = f"REF-{doc_rel.replace('/', '-').replace('.', '-')}"
 
@@ -226,7 +327,7 @@ def check_reference_integrity(root: Path) -> list[GovernanceCheckResult]:
                     severity="P1",
                     status="fail",
                     target=doc_rel,
-                    message=f"Required governance document missing: {doc_rel}",
+                    message=f"Required reference artifact missing: {doc_rel}",
                 )
             )
             continue
@@ -239,7 +340,7 @@ def check_reference_integrity(root: Path) -> list[GovernanceCheckResult]:
                     severity="P2",
                     status="warn",
                     target=doc_rel,
-                    message=f"Governance document is a stub: {doc_rel}",
+                    message=f"Reference artifact is a stub: {doc_rel}",
                 )
             )
         else:
@@ -249,7 +350,7 @@ def check_reference_integrity(root: Path) -> list[GovernanceCheckResult]:
                     severity="P1",
                     status="pass",
                     target=doc_rel,
-                    message=f"Governance document present: {doc_rel}",
+                    message=f"Reference artifact present: {doc_rel}",
                 )
             )
 
@@ -257,7 +358,64 @@ def check_reference_integrity(root: Path) -> list[GovernanceCheckResult]:
 
 
 # ---------------------------------------------------------------------------
-# Check 4: Constitution sync  (P1)
+# Check 4: Governance dimension enforcement  (P0)
+# ---------------------------------------------------------------------------
+
+
+def _missing_terms(text: str, required_terms: list[str]) -> list[str]:
+    lowered = text.lower()
+    return [term for term in required_terms if term.lower() not in lowered]
+
+
+def check_governance_dimensions(root: Path) -> list[GovernanceCheckResult]:
+    results: list[GovernanceCheckResult] = []
+
+    for check in GOVERNANCE_DIMENSION_CHECKS:
+        target = check["target"]
+        doc_path = root / target
+
+        if not doc_path.exists():
+            results.append(
+                GovernanceCheckResult(
+                    check_id=check["check_id"],
+                    severity="P0",
+                    status="fail",
+                    target=target,
+                    message=f"Missing document for {check['label']}: {target}",
+                )
+            )
+            continue
+
+        missing = _missing_terms(doc_path.read_text(), check["required_terms"])
+        if missing:
+            results.append(
+                GovernanceCheckResult(
+                    check_id=check["check_id"],
+                    severity="P0",
+                    status="fail",
+                    target=target,
+                    message=(
+                        f"{check['label']} is missing required terms: "
+                        + ", ".join(missing)
+                    ),
+                )
+            )
+        else:
+            results.append(
+                GovernanceCheckResult(
+                    check_id=check["check_id"],
+                    severity="P0",
+                    status="pass",
+                    target=target,
+                    message=f"{check['label']} coverage is enforced by content check",
+                )
+            )
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Check 5: Constitution sync  (P1)
 # ---------------------------------------------------------------------------
 
 _VERSION_HEADER_RE = re.compile(
@@ -406,12 +564,12 @@ def _run_checks(root: Path, severity_filter: str | None) -> list[GovernanceCheck
     all_results.extend(check_metadata_fields(root))
 
     if severity_filter != "P0":
-        # P0-only mode skips P1 checks
         all_results.extend(check_reference_integrity(root))
+        all_results.extend(check_governance_dimensions(root))
         all_results.extend(check_constitution_sync(root))
     else:
-        # Still run all checks but only return P0 ones
         all_results.extend(check_reference_integrity(root))
+        all_results.extend(check_governance_dimensions(root))
         all_results.extend(check_constitution_sync(root))
         all_results = [r for r in all_results if r.severity == "P0"]
 
@@ -420,7 +578,7 @@ def _run_checks(root: Path, severity_filter: str | None) -> list[GovernanceCheck
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Run Feature 007 governance checks for joyus-ai",
+        description="Run org-scale agentic governance checks for joyus-ai",
     )
     parser.add_argument(
         "--root",

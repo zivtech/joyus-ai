@@ -37,7 +37,7 @@ Measured-vs-perceived productivity divergence (M06) is a first-class health sign
 
 ## 3. MCP Integration Governance
 
-See: [mcp-integration-rubric.md](./mcp-integration-rubric.md)
+See: [mcp-approval-rubric.md](./mcp-approval-rubric.md)
 
 No new MCP integration reaches production without completing the four-stage approval lifecycle: request → assessment → pilot allowlist → full approval/deprecation. The Security Team owns assessment and quarterly audit. Any integration scoring 0 on any approval dimension is automatically blocked regardless of aggregate score.
 

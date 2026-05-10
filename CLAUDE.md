@@ -28,4 +28,4 @@ Alex will discuss specific client needs during planning. Your job is to **abstra
 - Use standard Conventional Commits: `<type>(<scope>): <short summary>`.
 - Use the body to explain why the change was made when helpful.
 - Reference GitHub issues in the body or footer when relevant.
-- Do not add Lore-style decision trailers such as `Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, or `Directive:` unless a human explicitly asks for them.
+- Do not add custom commit trailers beyond standard GitHub issue references.
