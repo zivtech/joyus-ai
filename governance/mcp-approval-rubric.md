@@ -1,8 +1,8 @@
-# MCP Integration Rubric
+# MCP Approval Rubric
 
 **Owner:** Security Team
 **Review cadence:** Quarterly
-**Last updated:** 2026-03-21
+**Last updated:** 2026-05-09
 **Status:** Active
 
 ---
@@ -163,7 +163,30 @@ The Security Team runs this checklist every quarter for every integration in the
 
 | Integration | Version | Stage | Score | Approved Date | Next Audit | Owner |
 |-------------|---------|-------|-------|---------------|------------|-------|
-| *(none yet)* | — | — | — | — | — | — |
+| Example: Read-only GitHub Issues MCP | 1.2.0 | Assessment example (not production-approved) | 8/10 | N/A | N/A | Security Team |
+
+The catalog above includes a completed example record so reviewers can see the required evidence shape. Real production approvals replace the example row when Security Team approves an integration for tenant use.
+
+### Completed Example Assessment Record
+
+**Integration:** Example: Read-only GitHub Issues MCP
+**Source:** `https://github.com/example/read-only-github-issues-mcp`
+**Assessment date:** 2026-03-21
+**Assessor:** Security Team
+**Intended use:** Read-only retrieval of issue titles, labels, and status for sandbox workflow analysis.
+**Decision:** Pilot with review (example record only)
+
+| Dimension | Score | Rationale |
+|-----------|-------|-----------|
+| Data Access Scope | 2 | Read-only issue metadata is declared, scoped to configured repositories, and auditable by repository slug. |
+| Credential and Auth Model | 1 | Uses a repository-scoped token stored in the tenant secret manager; rotation is documented but manual. |
+| Logging and Auditability | 2 | Logs tenant ID, repository slug, tool name, input summary, timestamp, and outcome for each request. |
+| External Dependency Risk | 2 | Depends on the GitHub REST API and a pinned, actively maintained MCP SDK release. |
+| Sandbox and Execution Constraints | 1 | Runs in the standard MCP container without host filesystem access; outbound requests are limited by configuration but not enforced by network policy. |
+
+**Aggregate score:** 8/10
+**Automatic block:** None
+**Required conditions:** Enable enhanced monitoring during the pilot, complete token rotation before production approval, and add network egress policy before full approval.
 
 ---
 
@@ -175,4 +198,5 @@ Changes to this rubric require Security Team approval and a constitution amendme
 
 | Date | Change | Author |
 |------|--------|--------|
+| 2026-05-09 | Renamed canonical rubric path and added a completed example assessment record | Code review remediation |
 | 2026-03-21 | Initial version created (WP03, Feature 007) | WP03 |

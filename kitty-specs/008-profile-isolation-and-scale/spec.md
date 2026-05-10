@@ -189,6 +189,33 @@ For tenants with large corpora (500+ documents, 20+ authors), resolved profiles 
 | SC-005 | Self-service corpus intake processes a 100-document mixed-format upload with minimal manual intervention | <= 2 manual steps |
 | SC-006 | Profile fidelity after inheritance resolution degrades by no more than threshold vs standalone | <= 5% degradation |
 
+## Adoption Plan
+
+Profile isolation rolls out first to an internal tenant and one pilot client before
+general availability. Engineering Operations owns the pilot checklist and must
+confirm tenant-scoped corpus storage, profile generation, rollback, and cache
+invalidation before a second external tenant is onboarded. Scale-up requires
+zero cross-tenant access findings in the pilot run and signed Platform Lead
+approval.
+
+## ROI Metrics
+
+The measurement owner is Engineering Operations. The pilot tracks profile
+generation duration, rollback duration, resolved-profile cache latency,
+self-service intake interventions, and fidelity degradation against standalone
+profiles. Baseline measurements come from the single-tenant Spec 005 profile
+engine before tenant isolation is enabled. Metrics are reviewed monthly during
+execution and before each additional tenant cohort is onboarded.
+
+## Security + MCP Governance
+
+Tenant isolation is the primary security gate. Every profile, corpus snapshot,
+cache entry, and lifecycle operation must be scoped by tenant and profile family.
+No MCP integration may access profile or corpus data in production unless it has
+a completed approval score in `governance/mcp-approval-rubric.md`. Any MCP tool
+used for corpus intake, profile inspection, or lifecycle automation must log
+tenant ID, profile family, action, input summary, and outcome for audit.
+
 ## Assumptions
 
 - Spec 005's existing stylometric engine is stable for voice-mode execution. The

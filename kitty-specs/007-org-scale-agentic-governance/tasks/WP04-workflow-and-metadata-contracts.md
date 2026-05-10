@@ -6,7 +6,7 @@ subtasks: [T014, T015, T016, T017]
 history:
 - date: '2026-03-14'
   action: created
-  agent: claude-sonnet
+  agent: implementation-agent
 authoritative_surface: kitty-specs/NNN-*/meta.json/
 execution_mode: code_change
 mission_id: 01KPR4SQGVMM0QRK337XAW84X5
@@ -210,7 +210,7 @@ If divergence persists for 2+ weeks, scale-up is paused until remediation action
 
 ## 3. MCP Integration Governance
 
-See: [mcp-integration-rubric.md](./mcp-integration-rubric.md)
+See: [mcp-approval-rubric.md](./mcp-approval-rubric.md)
 
 No new MCP integration reaches production without completing the four-stage approval lifecycle.
 The Security Team owns assessment and quarterly audit.

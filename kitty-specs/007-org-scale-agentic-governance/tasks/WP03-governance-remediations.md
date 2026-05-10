@@ -6,7 +6,7 @@ subtasks: [T009, T010, T011, T012, T013]
 history:
 - date: '2026-03-14'
   action: created
-  agent: claude-sonnet
+  agent: implementation-agent
 authoritative_surface: kitty-specs/007-org-scale-agentic-governance/
 execution_mode: planning_artifact
 mission_id: 01KPR4SQGVMM0QRK337XAW84X5
@@ -25,7 +25,7 @@ wp_code: WP03
 
 ## Objective
 
-Execute the remediation items from `governance/remediation-backlog.md` that target governance documents: constitution alignment, cross-reference integrity, README and roadmap consistency, feature artifact gap-filling, and the MCP integration rubric. This WP produces the corrected and extended governance doc set that WP05's automated checks will validate.
+Execute the remediation items from `governance/remediation-backlog.md` that target governance documents: constitution alignment, cross-reference integrity, README and roadmap consistency, feature artifact gap-filling, and the MCP approval rubric. This WP produces the corrected and extended governance doc set that WP05's automated checks will validate.
 
 ## Context
 
@@ -33,7 +33,7 @@ This is a documentation-heavy WP. No new runtime code is written. The outputs ar
 
 Constitution sync is a careful operation: the `spec/constitution.md` in `joyus-ai` is the canonical version. Any references in `joyus-ai-internal` or planning docs are informational copies. Do not modify the copy in `joyus-ai-internal` — update `joyus-ai/spec/constitution.md` only.
 
-The MCP integration rubric (T013) is a new document created from scratch using the five approval dimensions defined in `spec.md §Security + MCP Governance`.
+The MCP approval rubric (T013) is a new document created from scratch using the five approval dimensions defined in `spec.md §Security + MCP Governance`.
 
 ---
 
@@ -208,7 +208,7 @@ Check these high-risk reference patterns:
 
 **Steps**:
 
-1. Create `joyus-ai/governance/mcp-integration-rubric.md` using the five approval dimensions from `spec.md §Security + MCP Governance`:
+1. Create `joyus-ai/governance/mcp-approval-rubric.md` using the five approval dimensions from `spec.md §Security + MCP Governance`:
    - Data access scope
    - Credential and auth model
    - Logging and auditability
@@ -289,7 +289,7 @@ Check these high-risk reference patterns:
 ```
 
 **Files**:
-- `joyus-ai/governance/mcp-integration-rubric.md` (new, ~80 lines)
+- `joyus-ai/governance/mcp-approval-rubric.md` (new, ~80 lines)
 
 **Validation**:
 - [ ] All 5 approval dimensions are defined with 3-point scoring rubric
@@ -307,7 +307,7 @@ Check these high-risk reference patterns:
 - [ ] `governance/reference-integrity-log.md` published; zero broken links remain
 - [ ] `joyus-ai/README.md` feature table matches `meta.json` lifecycle states
 - [ ] All artifact gaps from the gap register have stub files
-- [ ] `governance/mcp-integration-rubric.md` published with all 5 dimensions and catalog template
+- [ ] `governance/mcp-approval-rubric.md` published with all 5 dimensions and catalog template
 - [ ] All RI items targeting WP03 are updated to `in_progress` or `done` in `remediation-backlog.md`
 - [ ] WP05 governance check script can validate all WP03 outputs without errors
 

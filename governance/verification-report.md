@@ -1,6 +1,6 @@
-# Governance Verification Report — Feature 007 WP05
+# Governance Verification Report — Org-Scale Policy Gates
 
-**Date:** 2026-03-21
+**Date:** 2026-05-09
 **Branch:** `feat/007-governance`
 **Script:** `scripts/governance-check.py`
 **Run artifact:** `governance/verification-run.json`
@@ -11,7 +11,7 @@
 
 ```
 === Governance Check Results ===
-Total: 79  Pass: 79  Fail: 0  Warn: 0
+Total: 85  Pass: 85  Fail: 0  Warn: 0
 P0 failures: 0  P1 failures: 0
 
 All governance checks passed.
@@ -21,11 +21,26 @@ All governance checks passed.
 
 | Category | Checks run | Pass | Fail | Warn |
 |---|---|---|---|---|
-| ARTIFACT — spec.md / plan.md / tasks.md per feature | 30 | 30 | 0 | 0 |
-| META — measurement_owner / review_cadence / risk_class / lifecycle_state | 40 | 40 | 0 | 0 |
-| REF — 7 required governance documents | 7 | 7 | 0 | 0 |
+| ARTIFACT — required files per lifecycle state | 27 | 27 | 0 | 0 |
+| META — measurement_owner / review_cadence / risk_class / lifecycle_state | 44 | 44 | 0 | 0 |
+| REF — 8 required reference artifacts | 8 | 8 | 0 | 0 |
+| GOVDIM — rollout / ROI / MCP approval / autonomy enforcement | 4 | 4 | 0 | 0 |
 | CONST — version header + §Governance section | 2 | 2 | 0 | 0 |
-| **Total** | **79** | **79** | **0** | **0** |
+| **Total** | **85** | **85** | **0** | **0** |
+
+---
+
+## CI Workflow Boundary
+
+Two governance workflows are expected in PR checks:
+
+| PR check | Workflow file | Script | Purpose |
+|---|---|---|---|
+| **Agentic Governance / Org-Scale Policy Gates** | `.github/workflows/governance-check.yml` | `scripts/governance-check.py` | Org-scale governance policy gates: remediation backlog artifacts, lifecycle-aware artifact gates, rollout, ROI, MCP approval, autonomy classification, and constitution checks. |
+| **Spec Governance / governance-check** | `.github/workflows/spec-governance.yml` | `scripts/spec-governance-check.py` | Repository-wide Spec Kitty governance: spec artifact lifecycle, markdown references, constitution/charter sync, checklist consistency, and platform-section requirements. |
+
+The names are intentionally different so PR status checks show whether a failure
+comes from org-scale agentic policy gates or from the broader Spec Kitty gate.
 
 ---
 
@@ -38,31 +53,34 @@ Each is attested below with the evidence from this branch.
 
 **Status: PASS**
 
-`governance/policy-v1.0.md` exists and is present in the repository. Governance check
-`REF-governance-policy-v1-0-md` passed (status: pass, severity: P1). The file describes
-the phased rollout model for agentic capabilities across the platform.
+`governance/policy-v1.0.md` exists and is present in the repository. Governance checks
+`REF-governance-policy-v1-0-md` and `GOVDIM-ROLLOUT` passed. The dimension check verifies
+the rollout model includes pilot, launch, scale, sustain, champion ownership, pilot criteria,
+and baseline availability.
 
 ### SC-2 ROI inputs defined in `governance/roi-metrics-contract.md`
 
 **Status: PASS**
 
-`governance/roi-metrics-contract.md` exists. Governance check `REF-governance-roi-metrics-contract-md`
-passed. The contract defines measurement inputs including the measured-vs-perceived productivity
-divergence metric (M06) addressed in SC-7 below.
+`governance/roi-metrics-contract.md` exists. Governance checks
+`REF-governance-roi-metrics-contract-md` and `GOVDIM-ROI` passed. The dimension check verifies
+collection owner, review owner, baseline period, measurement methods, data sources, weekly
+review cadence, M06, and remediation triggers.
 
-### SC-3 MCP integration rubric in `governance/mcp-integration-rubric.md`
+### SC-3 MCP approval rubric in `governance/mcp-approval-rubric.md`
 
 **Status: PASS**
 
-`governance/mcp-integration-rubric.md` exists. Governance check `REF-governance-mcp-integration-rubric-md`
-passed. The rubric provides decision criteria for evaluating MCP server integrations against
-security, autonomy, and operational standards.
+`governance/mcp-approval-rubric.md` exists. Governance checks
+`REF-governance-mcp-approval-rubric-md` and `GOVDIM-MCP-APPROVAL` passed. The dimension check
+verifies the five scored approval dimensions, automatic block rule, integration catalog, and
+completed example assessment record.
 
 ### SC-4 Governance checks run in CI
 
 **Status: PASS**
 
-`.github/workflows/governance.yml` added in this WP. The workflow:
+`.github/workflows/governance-check.yml` added in this WP as the **Agentic Governance** workflow with an **Org-Scale Policy Gates** job. The workflow:
 
 - Triggers on `pull_request` to `main` and `push` to `main`
 - Runs `scripts/governance-check.py --format terminal` (blocking step — exits 1 on P0/P1 failures)
@@ -75,9 +93,9 @@ P0-level check failures block merge per constitution §G.2.
 
 **Status: PASS**
 
-`governance/autonomy-levels.md` exists. Governance check `REF-governance-autonomy-levels-md`
-passed. The document assigns autonomy levels (per the constitution's §G.3 requirement) to
-platform workflows, agentic coding lanes, and content pipelines.
+`governance/autonomy-levels.md` exists. Governance checks
+`REF-governance-autonomy-levels-md` and `GOVDIM-AUTONOMY` passed. The dimension check verifies
+Levels 0-5, monthly review, team classification register, evidence links, and next-review tracking.
 
 ### SC-6 Scenario holdout policy in `governance/scenario-policy.md`
 
@@ -102,15 +120,15 @@ and guardrail calibration.
 
 | Task | File | Lines |
 |---|---|---|
-| T018 | `scripts/governance-check.py` | ~230 |
-| T019 | `scripts/pride-governance-status.py` | ~50 |
-| T020 | `.github/workflows/governance.yml` | ~40 |
+| T018 | `scripts/governance-check.py` | ~620 |
+| T019 | `scripts/pride-governance-status.py` | ~60 |
+| T020 | `.github/workflows/governance-check.yml` | ~45 |
 | T021 | `governance/verification-report.md` (this file) | — |
-| T021 | `governance/verification-run.json` | 79 result objects |
+| T021 | `governance/verification-run.json` | 85 result objects |
 
 ---
 
 ## Overall Verdict
 
-All 79 governance checks pass. All 7 spec success criteria are attested.
-Feature 007 WP05 (Automated Checks and CI) is complete.
+All 85 governance checks pass. All 7 spec success criteria are attested.
+Org-Scale Policy Gates (Automated Checks and CI) is complete.

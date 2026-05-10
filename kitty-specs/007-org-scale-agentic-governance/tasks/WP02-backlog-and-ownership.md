@@ -6,7 +6,7 @@ subtasks: [T005, T006, T007, T008]
 history:
 - date: '2026-03-14'
   action: created
-  agent: claude-sonnet
+  agent: implementation-agent
 authoritative_surface: kitty-specs/007-org-scale-agentic-governance/
 execution_mode: planning_artifact
 mission_id: 01KPR4SQGVMM0QRK337XAW84X5
@@ -71,9 +71,9 @@ Owner role assignments follow the spec's defined role model:
 | Likely Gap | Owner Role | Target File | Acceptance Test |
 |-----------|-----------|------------|----------------|
 | No pilot cohort criteria | Platform Lead | `governance/policy-v1.0.md` §Rollout | Pilot criteria section present with ≥3 selection criteria and champion role defined |
-| No MCP integration rubric | Security Team | `governance/mcp-integration-rubric.md` | Rubric file exists with all 5 approval dimensions scored |
+| No MCP approval rubric | Security Team | `governance/mcp-approval-rubric.md` | Rubric file exists with all 5 approval dimensions scored |
 | Artifact completeness gaps | Spec Author | Per-feature stub files | CI artifact check passes with 0 missing required files |
-| No governance CI check | Spec Author | `.github/workflows/governance.yml` | PR to joyus-ai triggers governance check; P0 failures block merge |
+| No governance CI check | Spec Author | `.github/workflows/governance-check.yml` | PR to joyus-ai triggers governance check; P0 failures block merge |
 
 4. Record items in a working section of `governance/remediation-backlog.md` (draft mode — full structure finalized in T008).
 
@@ -140,7 +140,7 @@ Owner role assignments follow the spec's defined role model:
 | Weak (reject) | Strong (accept) |
 |--------------|----------------|
 | "Governance is improved" | "`governance/policy-v1.0.md` exists and contains §Rollout, §ROI, §MCP, §Autonomy sections" |
-| "MCP process works" | "`governance/mcp-integration-rubric.md` scores ≥1 on all 5 dimensions (data scope, auth, logging, ext dependency, sandbox)" |
+| "MCP process works" | "`governance/mcp-approval-rubric.md` scores ≥1 on all 5 dimensions (data scope, auth, logging, ext dependency, sandbox)" |
 | "Metrics are tracked" | "`governance/roi-metrics-contract.md` lists all 6 metrics with named owner and weekly cadence for first 8 weeks" |
 
 6. For P2 items, record them in a separate section with status `tracked` — no due date required at this stage.

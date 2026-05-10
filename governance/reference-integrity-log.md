@@ -79,5 +79,5 @@ The following files were scanned and contain no broken internal links:
 ## Notes for Future Scans
 
 - `governance/autonomy-levels.md` is a planned artifact (WP06). Links to it from task files are forward references and will remain unresolvable until WP06 merges. Do not treat these as bugs after WP06 is complete.
-- `governance/mcp-integration-rubric.md` was created by this WP03 run. Future scans should include `governance/` in scope.
+- `governance/mcp-approval-rubric.md` was created by this WP03 run. Future scans should include `governance/` in scope.
 - No anchor-level (`#section-name`) broken links were found. All heading anchors referenced in scanned files matched existing headings.

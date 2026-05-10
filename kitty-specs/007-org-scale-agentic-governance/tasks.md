@@ -70,12 +70,12 @@
 - [ ] T010: Scan all spec cross-references for broken links (spec→plan→tasks→WP files); fix or stub missing targets
 - [ ] T011: Update `joyus-ai/README.md` and roadmap entries to reflect current feature lifecycle states
 - [ ] T012: For each feature flagged with artifact gaps in the gap register, create the missing plan.md, tasks.md, or data-model.md stubs
-- [ ] T013: Draft `governance/mcp-integration-rubric.md` — approval rubric (5 dimensions), catalog template, quarterly audit checklist
+- [ ] T013: Draft `governance/mcp-approval-rubric.md` — approval rubric (5 dimensions), catalog template, quarterly audit checklist
 
 **Deliverables**:
 - Updated `joyus-ai/spec/constitution.md`
 - Updated `joyus-ai/README.md`
-- `joyus-ai/governance/mcp-integration-rubric.md`
+- `joyus-ai/governance/mcp-approval-rubric.md`
 - Stub files for artifact-gap features
 
 ---
@@ -100,15 +100,15 @@
 
 **Goal**: Make governance checks runnable locally and enforce them in CI.
 
-- [ ] T018: Implement `scripts/governance-check.py` — checks artifact completeness, reference integrity, constitution sync, and metadata field presence; outputs `GovernanceCheckResult` records as JSON and human-readable terminal output
+- [ ] T018: Implement `scripts/governance-check.py` — checks artifact completeness, reference integrity, rollout/ROI/MCP/autonomy governance dimensions, constitution sync, and metadata field presence; outputs `GovernanceCheckResult` records as JSON and human-readable terminal output
 - [ ] T019: Extend pride-status reporting to surface governance check results (pass/warn/fail counts by severity)
-- [ ] T020: Add `.github/workflows/governance.yml` — runs `governance-check.py` on PRs; fails CI on any P0 result; annotates PRs with warn/fail details
+- [ ] T020: Add `.github/workflows/governance-check.yml` — runs `governance-check.py` on PRs; fails CI on any P0 result; annotates PRs with warn/fail details
 - [ ] T021: Run full check suite; publish `governance/verification-report.md` — check-by-check results, residual open items, sign-off criteria
 
 **Deliverables**:
 - `joyus-ai/scripts/governance-check.py`
 - Updated pride-status integration
-- `.github/workflows/governance.yml`
+- `.github/workflows/governance-check.yml`
 - `joyus-ai/governance/verification-report.md`
 
 ---

@@ -247,6 +247,33 @@ The platform tracks pipeline execution metrics over time: success rate, average 
 | SC-006 | A tenant can go from template selection to active pipeline within target time (including parameter configuration) | <= 10 min |
 | SC-007 | Pipeline analytics accurately reflect execution outcomes within 5 minutes of execution completion | <= 5 min staleness |
 
+## Adoption Plan
+
+Pipeline automation rolls out through one corpus-change pilot pipeline before
+scheduled triggers or templates are enabled broadly. The pilot must include a
+human review gate, retry policy, failure notification, and execution analytics.
+Platform Lead approval is required before enabling pipelines for additional
+tenant workflows, and each additional workflow must document its trigger,
+review gate, and rollback or pause behavior before activation.
+
+## ROI Metrics
+
+The measurement owner is Engineering Operations. The pilot tracks trigger-to-run
+latency, review-gate routing latency, pipeline success rate, retry recovery
+rate, average execution duration, reviewer approval rate, and manual
+orchestration time avoided. Metrics are reviewed weekly during the first pilot
+month and monthly after the pipeline framework is stable.
+
+## Security + MCP Governance
+
+Pipeline configuration and execution data must remain tenant-scoped. Pipeline
+steps cannot call arbitrary external APIs in the initial release; any future MCP
+or external connector used as a trigger, action, source query, or notification
+channel must complete the approval process in `governance/mcp-approval-rubric.md`
+before production use. Autonomy defaults to Level 3: agents may execute from
+structured specs, but human review gates remain mandatory for externally shared
+content until Level 4/5 scenario holdout criteria are satisfied.
+
 ## Assumptions
 
 - The event bus for trigger delivery exists or will be built as part of the Core Orchestrator (WP07). This spec defines the pipeline consumer, not the event infrastructure.

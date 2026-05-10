@@ -6,7 +6,7 @@ subtasks: [T018, T019, T020, T021]
 history:
 - date: '2026-03-14'
   action: created
-  agent: claude-sonnet
+  agent: implementation-agent
 authoritative_surface: kitty-specs/
 execution_mode: code_change
 mission_id: 01KPR4SQGVMM0QRK337XAW84X5
@@ -29,7 +29,7 @@ Implement a Python governance validation script, extend pride-status integrity r
 
 ## Context
 
-This is the only WP in Spec 007 that produces executable code. The primary deliverable is `scripts/governance-check.py` — a single-file Python script with no external dependencies beyond the standard library, that implements four check categories from FR-008 and NFR-001 through NFR-003.
+This is the only WP in Spec 007 that produces executable code. The primary deliverable is `scripts/governance-check.py` — a single-file Python script with no external dependencies beyond the standard library, that implements five check categories from FR-008, RI-004, and NFR-001 through NFR-003.
 
 The script must satisfy three constraints from the spec's non-functional requirements:
 - **NFR-001**: Runnable locally and in CI (no secrets required for the checks themselves)
@@ -51,15 +51,16 @@ P0 check failures must cause CI to exit non-zero. P1 and P2 failures produce war
 
 ### T018: Implement governance validation Python script
 
-**Purpose**: Write `scripts/governance-check.py` — the core governance validation tool that checks artifact completeness, metadata field presence, reference integrity, and constitution sync.
+**Purpose**: Write `scripts/governance-check.py` — the core governance validation tool that checks artifact completeness, metadata field presence, reference integrity, rollout/ROI/MCP/autonomy governance dimensions, and constitution sync.
 
 **Steps**:
 
 1. Create `joyus-ai/scripts/governance-check.py`.
-2. Implement four check categories (one function per category):
+2. Implement five check categories (one function per category):
    - `check_artifact_completeness()`: verify each feature dir has required files
    - `check_metadata_fields()`: verify each `meta.json` has required governance fields
    - `check_reference_integrity()`: verify key cross-references resolve to existing files
+   - `check_governance_dimensions()`: verify rollout, ROI, MCP approval, and autonomy classification rules are exercised by named checks
    - `check_constitution_sync()`: verify constitution has §Governance section and version header
 3. Implement output in two modes:
    - `--format terminal` (default): colored text output per check with pass/warn/fail indicators
@@ -94,14 +95,15 @@ GOVERNANCE_DIR = REPO_ROOT / "governance"
 
 REQUIRED_FEATURE_FILES = ["spec.md", "plan.md", "tasks.md"]
 REQUIRED_META_FIELDS = ["measurement_owner", "review_cadence", "risk_class", "lifecycle_state"]
-REQUIRED_GOVERNANCE_DOCS = [
+REQUIRED_REFERENCE_ARTIFACTS = [
     "governance/baseline-matrix.md",
     "governance/gap-register.md",
     "governance/remediation-backlog.md",
     "governance/policy-v1.0.md",
     "governance/roi-metrics-contract.md",
-    "governance/mcp-integration-rubric.md",
+    "governance/mcp-approval-rubric.md",
     "governance/autonomy-levels.md",
+    "checklists/requirements-template.md",
 ]
 
 @dataclass
@@ -208,9 +210,9 @@ def check_metadata_fields() -> List[GovernanceCheckResult]:
 
 
 def check_reference_integrity() -> List[GovernanceCheckResult]:
-    """REF-* checks: governance docs that must exist."""
+    """REF-* checks: required reference artifacts that must exist."""
     results = []
-    for doc_path in REQUIRED_GOVERNANCE_DOCS:
+    for doc_path in REQUIRED_REFERENCE_ARTIFACTS:
         full_path = REPO_ROOT / doc_path
         check_id = f"REF-{doc_path.replace('/', '-').replace('.', '-').upper()}"
         if full_path.exists():
@@ -219,7 +221,7 @@ def check_reference_integrity() -> List[GovernanceCheckResult]:
                 status="pass",
                 severity="P1",
                 target=doc_path,
-                message=f"Governance doc present: {doc_path}"
+                message=f"Reference artifact present: {doc_path}"
             ))
         else:
             results.append(GovernanceCheckResult(
@@ -227,7 +229,7 @@ def check_reference_integrity() -> List[GovernanceCheckResult]:
                 status="fail",
                 severity="P1",
                 target=doc_path,
-                message=f"Missing governance doc: {doc_path}"
+                message=f"Missing reference artifact: {doc_path}"
             ))
     return results
 
@@ -397,7 +399,7 @@ P1 warnings:
 
 **Steps**:
 
-1. Create `.github/workflows/governance.yml` in `joyus-ai`.
+1. Create `.github/workflows/governance-check.yml` in `joyus-ai`.
 2. Trigger: `pull_request` targeting `main`.
 3. Steps:
    - Checkout repository
@@ -412,8 +414,8 @@ P1 warnings:
 **Workflow template**:
 
 ```yaml
-# .github/workflows/governance.yml
-name: Governance Checks
+# .github/workflows/governance-check.yml
+name: Agentic Governance
 
 on:
   pull_request:
@@ -423,7 +425,7 @@ on:
 
 jobs:
   governance:
-    name: Governance Validation
+    name: Org-Scale Policy Gates
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -460,10 +462,10 @@ jobs:
 ```
 
 **Files**:
-- `joyus-ai/.github/workflows/governance.yml` (new, ~50 lines)
+- `joyus-ai/.github/workflows/governance-check.yml` (new, ~50 lines)
 
 **Validation**:
-- [ ] Workflow file parses as valid YAML (`python3 -c "import yaml; yaml.safe_load(open('.github/workflows/governance.yml'))"`)
+- [ ] Workflow file parses as valid YAML (`python3 -c "import yaml; yaml.safe_load(open('.github/workflows/governance-check.yml'))"`)
 - [ ] Workflow triggers on `pull_request` targeting `main`
 - [ ] Terminal check step exits non-zero on P0/P1 failures (check exit code logic in T018)
 - [ ] JSON artifact upload uses `if: always()` so it uploads even when checks fail
@@ -504,6 +506,7 @@ jobs:
 | ARTIFACT (artifact completeness) | N | N | N | N |
 | META (metadata fields) | N | N | N | N |
 | REF (reference integrity) | N | N | N | N |
+| GOVDIM (rollout / ROI / MCP / autonomy) | N | N | N | N |
 | CONST (constitution sync) | N | N | N | N |
 | **Total** | N | N | N | N |
 
@@ -519,8 +522,8 @@ Per spec.md §Success Criteria:
 
 1. [ ] Rollout model is approved and documented in `governance/policy-v1.0.md`
 2. [ ] ROI dashboard inputs are defined in `governance/roi-metrics-contract.md` with named owners
-3. [ ] MCP integration rubric exists at `governance/mcp-integration-rubric.md`; blocks production deployments
-4. [ ] Governance checks run in CI (`governance.yml`) and block merges on P0 failures
+3. [ ] MCP approval rubric exists at `governance/mcp-approval-rubric.md`; blocks production deployments
+4. [ ] Governance checks run in CI (`governance-check.yml`) and block merges on P0 failures
 5. [ ] Autonomy level classification documented in `governance/autonomy-levels.md`
 6. [ ] Level 4/5 scenario holdout policy documented in `governance/scenario-policy.md`
 7. [ ] Measured vs perceived productivity tracking defined in roi-metrics-contract.md §M06
@@ -552,10 +555,10 @@ Spec 007 implementation is complete and governance framework is operational.
 ## Definition of Done
 
 - [ ] `scripts/governance-check.py` runs without errors on Python 3.12
-- [ ] All four check categories are implemented and produce `GovernanceCheckResult` records
+- [ ] All five check categories are implemented and produce `GovernanceCheckResult` records
 - [ ] JSON output is valid and matches `GovernanceCheckResult` schema
 - [ ] Exit code is 1 on P0/P1 failures, 0 on pass/warn-only
-- [ ] `.github/workflows/governance.yml` is present and valid YAML
+- [ ] `.github/workflows/governance-check.yml` is present and valid YAML
 - [ ] CI workflow runs governance check on PRs; P0/P1 failures block merge
 - [ ] `governance/verification-report.md` published with all success criteria attested
 - [ ] Zero P0 failures in the final check run
