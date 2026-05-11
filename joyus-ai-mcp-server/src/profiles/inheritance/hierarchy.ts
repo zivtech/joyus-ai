@@ -116,10 +116,10 @@ export class ProfileHierarchyService {
           eq(profileInheritance.parentProfileIdentity, parentIdentity),
           eq(profileInheritance.childProfileIdentity, childIdentity),
         ),
-      );
+      )
+      .returning({ id: profileInheritance.id });
 
-    // Drizzle delete resolves to an array of deleted rows (or [] when none deleted)
-    const removed = Array.isArray(deleted) ? deleted.length > 0 : false;
+    const removed = deleted.length > 0;
 
     await this.logger.logOperation({
       tenantId,

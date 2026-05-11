@@ -48,7 +48,11 @@ vi.mock('../../../src/profiles/monitoring/metrics.js', () => ({
 
 import { ProfileGenerationPipeline } from '../../../src/profiles/generation/pipeline.js';
 import { db } from '../../../src/db/client.js';
-import type { EngineBridge, EngineResult } from '../../../src/profiles/generation/engine-bridge.js';
+import {
+  EngineNotConfiguredError,
+  type EngineBridge,
+  type EngineResult,
+} from '../../../src/profiles/generation/engine-bridge.js';
 import type { CorpusSnapshotService } from '../../../src/profiles/generation/corpus-snapshot.js';
 
 // ── Stubs ──────────────────────────────────────────────────────────────────
@@ -81,10 +85,13 @@ function makeSnapshotService(): CorpusSnapshotService {
   } as unknown as CorpusSnapshotService;
 }
 
-function makePipeline(engine?: EngineBridge): ProfileGenerationPipeline {
+function makePipeline(
+  engine?: EngineBridge,
+  snapshotService?: CorpusSnapshotService,
+): ProfileGenerationPipeline {
   return new ProfileGenerationPipeline(
     engine ?? makeEngineBridge(),
-    makeSnapshotService(),
+    snapshotService ?? makeSnapshotService(),
   );
 }
 
@@ -203,6 +210,119 @@ describe('ProfileGenerationPipeline.generate', () => {
     const result = await pipeline.generate('tenant-abc', BASE_INPUT);
 
     expect(result.status).toBe('completed');
+    expect(vi.mocked(db.update)).toHaveBeenCalledTimes(3);
+  });
+
+  it('marks the run failed when the engine fails for every requested profile', async () => {
+    setupStandardInsertUpdate();
+    setupTransactionWithLock(true);
+
+    let selectCallIndex = 0;
+    vi.mocked(db.select).mockImplementation(() => {
+      selectCallIndex++;
+      if (selectCallIndex <= 2) {
+        return selectChainResolving([SINGLE_DOC]);
+      }
+      return selectChainResolving([]);
+    });
+
+    const engine = {
+      generateProfile: vi.fn().mockRejectedValue(new Error('engine unavailable')),
+      generateBatch: vi.fn(),
+      healthCheck: vi.fn().mockResolvedValue(false),
+    } as unknown as EngineBridge;
+
+    const pipeline = makePipeline(engine);
+    const result = await pipeline.generate('tenant-abc', BASE_INPUT);
+
+    expect(result.status).toBe('failed');
+    expect(result.profileIds).toEqual([]);
+    expect(result.error).toMatch(/failed for 1 of 1/i);
+  });
+
+  it('fails clearly without creating profiles when the engine is not configured', async () => {
+    setupStandardInsertUpdate();
+    setupTransactionWithLock(true);
+    const updateChain = {
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockResolvedValue([]),
+    };
+    vi.mocked(db.update).mockReturnValue(updateChain as never);
+
+    let selectCallIndex = 0;
+    vi.mocked(db.select).mockImplementation(() => {
+      selectCallIndex++;
+      if (selectCallIndex <= 2) {
+        return selectChainResolving([SINGLE_DOC]);
+      }
+      return selectChainResolving([]);
+    });
+
+    const engine = {
+      generateProfile: vi.fn().mockRejectedValue(new EngineNotConfiguredError()),
+      generateBatch: vi.fn(),
+      healthCheck: vi.fn().mockResolvedValue(false),
+    } as unknown as EngineBridge;
+
+    const pipeline = makePipeline(engine);
+    const result = await pipeline.generate('tenant-abc', BASE_INPUT);
+
+    expect(result.status).toBe('failed');
+    expect(result.profileIds).toEqual([]);
+    expect(result.error).toMatch(/not configured/i);
+    expect(db.insert).toHaveBeenCalledTimes(1);
+    expect(updateChain.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'failed',
+        profilesCompleted: 0,
+        profilesFailed: 1,
+        profileIds: [],
+      }),
+    );
+  });
+
+  it('uses the selected corpus snapshot documents when resolving authors', async () => {
+    setupStandardInsertUpdate();
+    setupTransactionWithLock(true);
+    vi.mocked(db.select).mockReturnValue(selectChainResolving([]));
+
+    let insertCallIndex = 0;
+    vi.mocked(db.insert).mockImplementation(() => {
+      insertCallIndex++;
+      const id = insertCallIndex === 1 ? 'run-001' : 'profile-001';
+      return {
+        values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockResolvedValue([{ id, tenantId: 'tenant-abc' }]),
+      } as never;
+    });
+
+    const snapshotDoc = {
+      ...SINGLE_DOC,
+      authorId: 'author-999',
+      authorName: 'Snapshot Author',
+    };
+    const snapshotService = {
+      createSnapshot: vi.fn(),
+      getSnapshot: vi.fn(),
+      listSnapshots: vi.fn(),
+      getSnapshotDocuments: vi.fn().mockResolvedValue([snapshotDoc]),
+    } as unknown as CorpusSnapshotService;
+    const engine = makeEngineBridge('author-999');
+    const pipeline = makePipeline(engine, snapshotService);
+
+    const result = await pipeline.generate('tenant-abc', {
+      ...BASE_INPUT,
+      corpusSnapshotId: 'snap-001',
+      profileIdentities: ['individual::author-999'],
+    });
+
+    expect(result.status).toBe('completed');
+    expect(snapshotService.getSnapshotDocuments).toHaveBeenCalledWith('tenant-abc', 'snap-001');
+    expect(engine.generateProfile).toHaveBeenCalledWith(
+      '/corpus',
+      'author-999',
+      {},
+    );
   });
 
   it('does not include tenantId in user-facing error messages', async () => {

@@ -16,15 +16,6 @@ vi.mock('../../../src/db/client.js', () => ({
   },
 }));
 
-// ── Logger mock — use a spy-able implementation ───────────────────────────────
-
-vi.mock('../../../src/profiles/monitoring/logger.js', () => ({
-  ProfileOperationLogger: vi.fn().mockImplementation(() => ({
-    logOperation: vi.fn().mockResolvedValue(undefined),
-    getOperationHistory: vi.fn().mockResolvedValue([]),
-  })),
-}));
-
 // ── Hierarchy mock ────────────────────────────────────────────────────────────
 
 vi.mock('../../../src/profiles/inheritance/hierarchy.js', () => ({

@@ -78,7 +78,7 @@ export const tenantProfiles = profilesSchema.table('tenant_profiles', {
   tenantIdentityVersionUnique: uniqueIndex('tenant_profiles_tenant_identity_version_unique').on(table.tenantId, table.profileIdentity, table.version),
   tenantStatusIdx: index('tenant_profiles_tenant_status_idx').on(table.tenantId, table.status),
   tenantTierIdx: index('tenant_profiles_tenant_tier_idx').on(table.tenantId, table.tier),
-  activeProfilesIdx: index('tenant_profiles_active_idx')
+  activeProfilesIdx: uniqueIndex('tenant_profiles_active_unique')
     .on(table.tenantId, table.profileIdentity)
     .where(sql`status = 'active'`),
   parentProfileIdIdx: index('tenant_profiles_parent_profile_id_idx').on(table.parentProfileId),

@@ -22,6 +22,7 @@ import {
   EngineTimeoutError,
   EngineExecutionError,
   EngineOutputError,
+  EngineNotConfiguredError,
 } from '../../../src/profiles/generation/engine-bridge.js';
 
 const mockExecFile = vi.mocked(execFile);
@@ -89,6 +90,15 @@ function makeBridge(): EngineBridge {
 describe('EngineBridge.generateProfile', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  it('fails clearly without invoking a subprocess when no engine is configured', async () => {
+    const bridge = new EngineBridge();
+
+    await expect(bridge.generateProfile('/corpus', 'author-001')).rejects.toThrow(
+      EngineNotConfiguredError,
+    );
+    expect(mockExecFile).not.toHaveBeenCalled();
   });
 
   it('returns parsed EngineResult on successful engine output', async () => {
@@ -205,6 +215,13 @@ describe('EngineBridge.generateBatch', () => {
 describe('EngineBridge.healthCheck', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  it('returns false without invoking a subprocess when no engine is configured', async () => {
+    const bridge = new EngineBridge();
+
+    expect(await bridge.healthCheck()).toBe(false);
+    expect(mockExecFile).not.toHaveBeenCalled();
   });
 
   it('returns true when engine responds successfully', async () => {

@@ -66,7 +66,8 @@ function makeInsertChain(returning: unknown[]) {
 
 function makeDeleteChain(rows: unknown[]) {
   return {
-    where: vi.fn().mockResolvedValue(rows),
+    where: vi.fn().mockReturnThis(),
+    returning: vi.fn().mockResolvedValue(rows),
   };
 }
 

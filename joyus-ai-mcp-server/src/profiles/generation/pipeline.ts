@@ -18,6 +18,7 @@ import {
   generationRuns,
   tenantProfiles,
   corpusDocuments,
+  type CorpusDocument,
   type GenerationRun,
   type TenantProfile,
 } from '../schema.js';
@@ -25,7 +26,7 @@ import { requireTenantId, tenantWhere } from '../tenant-scope.js';
 import type { PipelineResult, ProfileTier } from '../types.js';
 
 import type { CorpusSnapshotService } from './corpus-snapshot.js';
-import type { EngineBridge, EngineOptions } from './engine-bridge.js';
+import { EngineNotConfiguredError, type EngineBridge, type EngineOptions } from './engine-bridge.js';
 
 // ============================================================
 // TYPES
@@ -153,7 +154,7 @@ export class ProfileGenerationPipeline {
 
     try {
       // Step 3: validate corpus
-      await this.validateCorpus(tenantId);
+      await this.validateCorpus(tenantId, input.corpusSnapshotId);
 
       // Step 4 + 5: acquire advisory lock inside a transaction, then run generation
       const result = await this.runWithAdvisoryLock(tenantId, async () => {
@@ -168,15 +169,21 @@ export class ProfileGenerationPipeline {
       });
 
       const durationMs = Date.now() - startMs;
+      const status = result.failedCount > 0 ? 'failed' : 'completed';
+      const error =
+        result.failedCount > 0
+          ? `Profile generation failed for ${result.failedCount} of ${input.profileIdentities.length} requested profile(s)`
+          : null;
 
-      // Step 7: update run to completed
+      // Step 7: update run to terminal status
       await db
         .update(generationRuns)
         .set({
-          status: 'completed',
+          status,
           profilesCompleted: result.profileIds.length,
           profilesFailed: result.failedCount,
           profileIds: result.profileIds,
+          error,
           completedAt: new Date(),
           durationMs,
           engineVersion: result.engineVersion ?? null,
@@ -188,7 +195,7 @@ export class ProfileGenerationPipeline {
         tenantId,
         operation: 'generate',
         durationMs,
-        success: true,
+        success: status === 'completed',
         metadata: {
           runId,
           profilesCompleted: result.profileIds.length,
@@ -196,24 +203,30 @@ export class ProfileGenerationPipeline {
         },
       });
 
-      this.metrics.recordGeneration(tenantId, durationMs, true);
+      this.metrics.recordGeneration(tenantId, durationMs, status === 'completed');
 
       // Step 9: return result
       return {
         runId,
-        status: 'completed',
+        status,
         profileIds: result.profileIds,
         durationMs,
+        error: error ?? undefined,
       };
     } catch (err) {
       const durationMs = Date.now() - startMs;
       const errorMessage = err instanceof Error ? err.message : String(err);
+      const profilesFailed =
+        err instanceof EngineNotConfiguredError ? input.profileIdentities.length : 0;
 
       // Update run to failed (don't include tenant details in error)
       await db
         .update(generationRuns)
         .set({
           status: 'failed',
+          profilesCompleted: 0,
+          profilesFailed,
+          profileIds: [],
           error: errorMessage,
           completedAt: new Date(),
           durationMs,
@@ -225,7 +238,7 @@ export class ProfileGenerationPipeline {
         operation: 'generate',
         durationMs,
         success: false,
-        metadata: { runId, error: errorMessage },
+        metadata: { runId, error: errorMessage, profilesFailed },
       });
 
       this.metrics.recordGeneration(tenantId, durationMs, false);
@@ -269,19 +282,6 @@ export class ProfileGenerationPipeline {
   // PRIVATE HELPERS
   // ----------------------------------------------------------
 
-  /** Validate that the corpus has at least one active document. */
-  private async validateCorpus(tenantId: string): Promise<void> {
-    const docs = await db
-      .select({ id: corpusDocuments.id })
-      .from(corpusDocuments)
-      .where(tenantWhere(corpusDocuments, tenantId, eq(corpusDocuments.isActive, true)))
-      .limit(1);
-
-    if (docs.length === 0) {
-      throw new EmptyCorpusError();
-    }
-  }
-
   /**
    * Acquire a PostgreSQL advisory transaction lock scoped to the tenant.
    * Same tenant: second call within the same transaction gets lock=false → throw.
@@ -324,8 +324,12 @@ export class ProfileGenerationPipeline {
     let failedCount = 0;
     let engineVersion: string | undefined;
 
-    // Collect author metadata from each profile identity
-    const authorMetas = await this.resolveAuthorMetas(tenantId, input.profileIdentities);
+    // Collect author metadata from each profile identity.
+    const authorMetas = await this.resolveAuthorMetas(
+      tenantId,
+      input.profileIdentities,
+      input.corpusSnapshotId,
+    );
 
     const engineOptions: EngineOptions = {};
     if (input.engineVersion) {
@@ -356,6 +360,18 @@ export class ProfileGenerationPipeline {
 
         const nextVersion = (versionRow?.maxVersion ?? 0) + 1;
 
+        await db
+          .update(tenantProfiles)
+          .set({ status: 'rolled_back', updatedAt: new Date() })
+          .where(
+            tenantWhere(
+              tenantProfiles,
+              tenantId,
+              eq(tenantProfiles.profileIdentity, meta.profileIdentity),
+              eq(tenantProfiles.status, 'active'),
+            ),
+          );
+
         const profileMetadata: Record<string, unknown> = {
           generationRunId: runId,
         };
@@ -383,7 +399,10 @@ export class ProfileGenerationPipeline {
           .returning();
 
         profileIds.push(profile.id);
-      } catch {
+      } catch (err) {
+        if (err instanceof EngineNotConfiguredError) {
+          throw err;
+        }
         failedCount += 1;
       }
     }
@@ -402,28 +421,15 @@ export class ProfileGenerationPipeline {
   private async resolveAuthorMetas(
     tenantId: string,
     profileIdentities: string[],
+    corpusSnapshotId?: string,
   ): Promise<AuthorGenerationMeta[]> {
     const metas: AuthorGenerationMeta[] = [];
+    const docs = await this.fetchGenerationDocuments(tenantId, corpusSnapshotId);
 
     for (const identity of profileIdentities) {
       const [tierPart, namePart] = identity.split('::');
       const tier = (tierPart ?? 'base') as ProfileTier;
       const name = namePart ?? identity;
-
-      // Look up matching corpus documents by authorName pattern
-      const docs = await db
-        .select({
-          authorId: corpusDocuments.authorId,
-          authorName: corpusDocuments.authorName,
-        })
-        .from(corpusDocuments)
-        .where(
-          tenantWhere(
-            corpusDocuments,
-            tenantId,
-            eq(corpusDocuments.isActive, true),
-          ),
-        );
 
       // Filter to documents whose authorId or authorName matches the identity name
       const matching = docs.filter(
@@ -438,5 +444,36 @@ export class ProfileGenerationPipeline {
     }
 
     return metas;
+  }
+
+  /** Validate that the selected generation corpus has at least one document. */
+  private async validateCorpus(tenantId: string, corpusSnapshotId?: string): Promise<void> {
+    const docs = await this.fetchGenerationDocuments(tenantId, corpusSnapshotId, 1);
+
+    if (docs.length === 0) {
+      throw new EmptyCorpusError();
+    }
+  }
+
+  private async fetchGenerationDocuments(
+    tenantId: string,
+    corpusSnapshotId?: string,
+    limit?: number,
+  ): Promise<CorpusDocument[]> {
+    if (corpusSnapshotId) {
+      const docs = await this.snapshotService.getSnapshotDocuments(tenantId, corpusSnapshotId);
+      return limit === undefined ? docs : docs.slice(0, limit);
+    }
+
+    const query = db
+      .select()
+      .from(corpusDocuments)
+      .where(tenantWhere(corpusDocuments, tenantId, eq(corpusDocuments.isActive, true)));
+
+    if (limit !== undefined) {
+      return query.limit(limit);
+    }
+
+    return query;
   }
 }
