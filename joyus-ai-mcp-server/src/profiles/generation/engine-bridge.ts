@@ -103,6 +103,15 @@ export class EngineOutputError extends Error {
   }
 }
 
+export class EngineNotConfiguredError extends Error {
+  constructor() {
+    super(
+      'Profile engine is not configured. Set ENGINE_SCRIPT_PATH after wiring the private joyus-profile-engine adapter.',
+    );
+    this.name = 'EngineNotConfiguredError';
+  }
+}
+
 // ============================================================
 // ENGINE BRIDGE
 // ============================================================
@@ -117,13 +126,17 @@ const DEFAULT_CONFIG: EngineBridgeConfig = {
 export class EngineBridge {
   private readonly config: EngineBridgeConfig;
 
-  constructor(config: Partial<EngineBridgeConfig> & { engineScriptPath: string }) {
+  constructor(config: Partial<EngineBridgeConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
   // ----------------------------------------------------------
   // PUBLIC API
   // ----------------------------------------------------------
+
+  isConfigured(): boolean {
+    return this.config.engineScriptPath.trim().length > 0;
+  }
 
   /**
    * Invoke the Python stylometric engine for a single author.
@@ -134,6 +147,10 @@ export class EngineBridge {
     authorId: string,
     options?: EngineOptions,
   ): Promise<EngineResult> {
+    if (!this.isConfigured()) {
+      throw new EngineNotConfiguredError();
+    }
+
     const args = this.buildArgs(corpusPath, authorId, options);
     const startMs = Date.now();
 
@@ -188,6 +205,10 @@ export class EngineBridge {
    * Returns true on success, false if the engine is unreachable.
    */
   async healthCheck(): Promise<boolean> {
+    if (!this.isConfigured()) {
+      return false;
+    }
+
     try {
       await execFileAsync(
         this.config.pythonPath,

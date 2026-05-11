@@ -5,11 +5,12 @@
  * tenantId is always injected from the auth context — never accepted from tool input.
  */
 
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 import { ProfileCacheService } from '../../profiles/cache/service.js';
 import { CorpusSnapshotService } from '../../profiles/generation/corpus-snapshot.js';
+import { EngineBridge } from '../../profiles/generation/engine-bridge.js';
 import { ProfileGenerationPipeline } from '../../profiles/generation/pipeline.js';
 import { ProfileHierarchyService } from '../../profiles/inheritance/hierarchy.js';
 import { InheritanceResolver } from '../../profiles/inheritance/resolver.js';
@@ -137,7 +138,11 @@ export async function executeProfileTool(
 
       // Verify snapshot belongs to tenant
       const [snapshot] = await db
-        .select({ id: corpusSnapshots.id, name: corpusSnapshots.name })
+        .select({
+          id: corpusSnapshots.id,
+          name: corpusSnapshots.name,
+          documentHashes: corpusSnapshots.documentHashes,
+        })
         .from(corpusSnapshots)
         .where(
           and(
@@ -151,21 +156,24 @@ export async function executeProfileTool(
         throw new Error(`Corpus snapshot not found: ${corpusSnapshotId}`);
       }
 
-      // Resolve profile identities from snapshot authors
-      const docsQuery = db
-        .select({
-          authorId: corpusDocuments.authorId,
-          authorName: corpusDocuments.authorName,
-        })
-        .from(corpusDocuments)
-        .where(
-          and(
-            eq(corpusDocuments.tenantId, tenantId),
-            eq(corpusDocuments.isActive, true),
-          ),
-        );
-
-      const docs = await docsQuery;
+      // Resolve profile identities from the selected snapshot only.
+      const snapshotHashes = Array.isArray(snapshot.documentHashes)
+        ? snapshot.documentHashes as string[]
+        : [];
+      const docs = snapshotHashes.length === 0
+        ? []
+        : await db
+          .select({
+            authorId: corpusDocuments.authorId,
+            authorName: corpusDocuments.authorName,
+          })
+          .from(corpusDocuments)
+          .where(
+            and(
+              eq(corpusDocuments.tenantId, tenantId),
+              inArray(corpusDocuments.contentHash, snapshotHashes),
+            ),
+          );
       const uniqueAuthors = new Map<string, string>();
       for (const doc of docs) {
         if (!uniqueAuthors.has(doc.authorId)) {
@@ -185,16 +193,32 @@ export async function executeProfileTool(
         (authorId) => `${tier}::${authorId}`,
       );
 
-      // Return a deferred generation response — the pipeline requires a Python engine.
-      // This records intent and returns the run metadata; actual execution is async.
+      const snapshotService = new CorpusSnapshotService();
+      const engine = new EngineBridge({
+        engineScriptPath: process.env.ENGINE_SCRIPT_PATH ?? '',
+      });
+      const pipeline = new ProfileGenerationPipeline(engine, snapshotService);
+      const result = await pipeline.generate(tenantId, {
+        corpusPath: corpusSnapshotId,
+        corpusSnapshotId,
+        profileIdentities,
+        trigger: 'mcp_tool',
+      });
+
       return {
-        message: 'Profile generation queued. Use profile_get_generation_status to track progress.',
+        message: result.status === 'completed'
+          ? 'Profile generation completed.'
+          : 'Profile generation failed. Use profile_get_generation_status for details.',
+        runId: result.runId,
+        status: result.status,
+        profileIds: result.profileIds,
+        durationMs: result.durationMs,
+        error: result.error ?? null,
         corpusSnapshotId,
         profileIdentitiesQueued: profileIdentities,
         authorCount: targetAuthors.length,
         tier,
         parentProfileIdentity: parentProfileIdentity ?? null,
-        note: 'Full pipeline execution requires the Python stylometric engine (EngineBridge). Wired in production deployment.',
       };
     }
 

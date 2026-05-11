@@ -29,6 +29,13 @@
       "when": 1778285713325,
       "tag": "0003_moaning_juggernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778505114108,
+      "tag": "0004_profile_isolation",
+      "breakpoints": true
     }
   ]
 }
