@@ -1,4 +1,15 @@
-# PR #33 Manual Testing Steps
+# Inngest Pipeline Trigger Manual Test
+
+| Field | Value |
+| --- | --- |
+| Feature area | Inngest pipeline execution |
+| Related PR/issues | PR #33 |
+| Environment | Local Docker Compose |
+| Required services | PostgreSQL, MCP server, Inngest Dev Server |
+| Required credentials | MCP bearer token |
+| Last verified | Not yet verified |
+
+## Purpose
 
 These steps validate the Inngest migration changes for PR #33, especially manual pipeline triggering through `pipelineId`.
 
