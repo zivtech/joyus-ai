@@ -1,6 +1,19 @@
-# Manual Testing: External Event Adapter (Branch `claude/018-external-event-adapter`)
+# External Event Adapter Manual Test
 
-**Prerequisites**
+| Field | Value |
+| --- | --- |
+| Feature area | External event adapter |
+| Related PR/issues | Spec/branch 018, `claude/018-external-event-adapter` |
+| Environment | Local Docker Compose |
+| Required services | PostgreSQL, MCP server, optional Inngest Dev Server |
+| Required credentials | MCP bearer token |
+| Last verified | Not yet verified |
+
+## Purpose
+
+This validates the `/v1/events/*` external event adapter flow, including event source CRUD, signed webhook ingestion, schedule management, automation callbacks, event log queries, health reporting, Inngest delivery, and the admin UI.
+
+## Prerequisites
 
 - Docker stack running: `docker compose up`
 - MCP bearer token — get it from `http://localhost:3000/auth` after signing in with Google. The token is shown once on login; use the **Regenerate** button if you need to retrieve it again. This is the same token used to connect Claude Desktop to the server.

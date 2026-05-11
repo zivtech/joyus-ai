@@ -1,4 +1,15 @@
-# Mediation Manual Testing
+# Content Mediation Manual Test
+
+| Field | Value |
+| --- | --- |
+| Feature area | Content mediation |
+| Related PR/issues | Not specified |
+| Environment | Local Docker Compose |
+| Required services | PostgreSQL, MCP server, local JWT/JWKS helper |
+| Required credentials | Mediation API key and user JWT |
+| Last verified | Not yet verified |
+
+## Purpose
 
 This tests the `/api/mediation/*` flow, including session creation, message
 count increments, idle-gap tracking, and cache-miss logging.

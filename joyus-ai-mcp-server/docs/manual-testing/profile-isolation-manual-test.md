@@ -1,4 +1,15 @@
-# Profile Isolation Manual Steps
+# Profile Isolation Manual Test
+
+| Field | Value |
+| --- | --- |
+| Feature area | Profile isolation and generation |
+| Related PR/issues | PR #43, issue #67 |
+| Environment | Local Docker Compose |
+| Required services | PostgreSQL, MCP server |
+| Required credentials | MCP bearer token |
+| Last verified | 2026-05-11 |
+
+## Purpose
 
 These are the manual follow-up steps for PR #43 after the profile isolation fixes are committed.
 
