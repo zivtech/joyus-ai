@@ -6,6 +6,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Workbook exports shell out to scripts/export_workbook.py.
+RUN apk add --no-cache python3 py3-openpyxl
+
 # Install dependencies
 COPY package*.json ./
 RUN npm ci --ignore-scripts
@@ -20,11 +23,15 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
+# Workbook exports shell out to scripts/export_workbook.py.
+RUN apk add --no-cache python3 py3-openpyxl
+
 # Copy built files and production dependencies
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/scripts ./scripts
 
 # Set environment
 ENV NODE_ENV=production
