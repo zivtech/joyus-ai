@@ -62,12 +62,12 @@ WP01 (sessions + tenancy + durability)
 | T025 | Implement event emission service | WP03 | | [D] |
 | T026 | Implement SSE streaming for external consumers | WP03 | | [D] |
 | T027 | Implement notification routing to gateway | WP03 | | [D] |
-| T028 | Add coordination tables to Drizzle schema | WP04 | |
-| T029 | Create database migration for coordination tables | WP04 | |
-| T030 | Implement work unit service | WP04 | |
-| T031 | Implement coordination group service | WP04 | |
-| T032 | Implement inter-agent messaging via Inngest events | WP04 | |
-| T033 | Create Inngest coordination lifecycle function | WP04 | |
+| T028 | Add coordination tables to Drizzle schema | WP04 | | [D] |
+| T029 | Create database migration for coordination tables | WP04 | | [D] |
+| T030 | Implement work unit service | WP04 | | [D] |
+| T031 | Implement coordination group service | WP04 | | [D] |
+| T032 | Implement inter-agent messaging via Inngest events | WP04 | | [D] |
+| T033 | Create Inngest coordination lifecycle function | WP04 | | [D] |
 | T034 | Implement tool router service | WP05 | |
 | T035 | Implement tool dispatch and result marshaling | WP05 | |
 | T036 | Implement tool permission filtering | WP05 | |
@@ -181,12 +181,12 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~300 lines
 **Prompt:** [WP04-multi-agent-coordination.md](tasks/WP04-multi-agent-coordination.md)
 
-- [ ] T028 Add work_units and coordination_groups tables to Drizzle schema (WP04)
-- [ ] T029 Create database migration for coordination tables (WP04)
-- [ ] T030 Implement work unit service: create, update, query, dependency enforcement (WP04)
-- [ ] T031 Implement coordination group service: create, completion policy evaluation (WP04)
-- [ ] T032 Implement inter-agent messaging via Inngest events (signals pattern) (WP04)
-- [ ] T033 Create Inngest coordination lifecycle function (WP04)
+- [x] T028 Add work_units and coordination_groups tables to Drizzle schema (WP04)
+- [x] T029 Create database migration for coordination tables (WP04)
+- [x] T030 Implement work unit service: create, update, query, dependency enforcement (WP04)
+- [x] T031 Implement coordination group service: create, completion policy evaluation (WP04)
+- [x] T032 Implement inter-agent messaging via Inngest events (signals pattern) (WP04)
+- [x] T033 Create Inngest coordination lifecycle function (WP04)
 
 **Parallel opportunities:** T030-T031 (services) and T032-T033 (Inngest) are independent tracks.
 **Risks:** Dependency cycle detection adds complexity; keep simple (topological sort).
