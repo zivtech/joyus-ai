@@ -30,6 +30,10 @@ export class EnforcementEventRouter {
   // Instance-scoped debounce state (replaces module-level vars in file-change.ts)
   private pendingFiles: string[] = [];
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingDebounceResolvers: Array<{
+    resolve: (result: SkillReloadResult) => void;
+    reject: (error: unknown) => void;
+  }> = [];
 
   constructor(
     config: MergedEnforcementConfig,
@@ -48,11 +52,22 @@ export class EnforcementEventRouter {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
     }
+    const resolvers = this.pendingDebounceResolvers.splice(0);
+    const emptyResult: SkillReloadResult = {
+      reloaded: false,
+      newSkillIds: [],
+      skillContext: '',
+      auditEntryIds: [],
+    };
+    for (const { resolve } of resolvers) {
+      resolve(emptyResult);
+    }
   }
 
   private debouncedFileChange(files: string[]): Promise<SkillReloadResult> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.pendingFiles.push(...files);
+      this.pendingDebounceResolvers.push({ resolve, reject });
 
       if (this.debounceTimer) {
         clearTimeout(this.debounceTimer);
@@ -60,16 +75,24 @@ export class EnforcementEventRouter {
 
       this.debounceTimer = setTimeout(() => {
         const accumulated = [...this.pendingFiles];
+        const resolvers = this.pendingDebounceResolvers.splice(0);
         this.pendingFiles = [];
         this.debounceTimer = null;
-        resolve(
-          processFileChange(accumulated, this.config, {
+        try {
+          const result = processFileChange(accumulated, this.config, {
             sessionId: this.sessionId,
             auditDir: this.auditDir,
             repoPath: this.projectRoot,
             previousSkillIds: this.previousSkillIds,
-          }),
-        );
+          });
+          for (const { resolve: resolvePending } of resolvers) {
+            resolvePending(result);
+          }
+        } catch (error) {
+          for (const { reject: rejectPending } of resolvers) {
+            rejectPending(error);
+          }
+        }
       }, DEBOUNCE_MS);
     });
   }
