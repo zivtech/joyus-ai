@@ -50,12 +50,12 @@ WP01 (sessions + tenancy + durability)
 | T013 | Create Inngest session-run function | WP01 | | [D] |
 | T014 | Implement crash recovery via Inngest checkpoints | WP01 | | [D] |
 | T015 | Add per-tenant concurrency controls | WP01 | | [D] |
-| T016 | Implement agent loop service | WP02 | |
-| T017 | Integrate Claude Agent SDK | WP02 | |
-| T018 | Implement SSE response streaming | WP02 | [P] |
-| T019 | Implement turn persistence | WP02 | |
-| T020 | Implement sliding window conversation memory | WP02 | |
-| T021 | Add context window utilization monitoring | WP02 | |
+| T016 | Implement agent loop service | WP02 | | [D] |
+| T017 | Integrate Claude Agent SDK | WP02 | | [D] |
+| T018 | Implement SSE response streaming | WP02 | [D] |
+| T019 | Implement turn persistence | WP02 | | [D] |
+| T020 | Implement sliding window conversation memory | WP02 | | [D] |
+| T021 | Add context window utilization monitoring | WP02 | | [D] |
 | T022 | Add events table to Drizzle schema | WP03 | |
 | T023 | Create database migration for events table | WP03 | |
 | T024 | Implement typed event registry | WP03 | |
@@ -141,12 +141,12 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~350 lines
 **Prompt:** [WP02-agent-loop-streaming.md](tasks/WP02-agent-loop-streaming.md)
 
-- [ ] T016 Implement agent loop service: message → context assembly → invoke → tool routing → stream (WP02)
-- [ ] T017 Integrate Claude Agent SDK (subprocess or sidecar per WP00 decision) (WP02)
-- [ ] T018 Implement SSE response streaming to client (WP02)
-- [ ] T019 Implement turn persistence: save each turn to DB after completion (WP02)
-- [ ] T020 Implement sliding window conversation memory (WP02)
-- [ ] T021 Add context window utilization monitoring (instrument, don't act) (WP02)
+- [x] T016 Implement agent loop service: message → context assembly → invoke → tool routing → stream (WP02)
+- [x] T017 Integrate Claude Agent SDK (subprocess or sidecar per WP00 decision) (WP02)
+- [x] T018 Implement SSE response streaming to client (WP02)
+- [x] T019 Implement turn persistence: save each turn to DB after completion (WP02)
+- [x] T020 Implement sliding window conversation memory (WP02)
+- [x] T021 Add context window utilization monitoring (instrument, don't act) (WP02)
 
 **Parallel opportunities:** T018 (SSE streaming) can be developed independently as transport layer.
 **Risks:** Python↔TypeScript boundary latency; fallback to custom agent loop with raw Claude API.
