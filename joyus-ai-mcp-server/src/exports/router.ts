@@ -10,23 +10,26 @@ function inferredBaseUrl(req: Request): string {
   return process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 }
 
-function writeAudit(
+async function writeAudit(
   userId: string,
   tool: string,
   input: Record<string, unknown>,
   success: boolean,
   duration: number,
   error?: string
-): void {
-  // Fire-and-forget — audit logging must not delay or fail the response
-  db.insert(auditLogs).values({
-    userId,
-    tool,
-    input,
-    success,
-    duration,
-    error,
-  }).catch((auditError: unknown) => console.error('audit log failed', auditError));
+): Promise<void> {
+  try {
+    await db.insert(auditLogs).values({
+      userId,
+      tool,
+      input,
+      success,
+      duration,
+      error,
+    });
+  } catch (auditError) {
+    console.warn('Failed to persist export audit log', auditError);
+  }
 }
 
 export const exportRouter = Router();
@@ -51,7 +54,7 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
       baseUrl: inferredBaseUrl(req),
     });
 
-    writeAudit(
+    await writeAudit(
       user.id,
       'ops_export_excel_api_create',
       {
@@ -80,7 +83,7 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Export generation failed';
 
-    writeAudit(
+    await writeAudit(
       user.id,
       'ops_export_excel_api_create',
       {
@@ -155,4 +158,3 @@ exportRouter.get('/exports/download/:token', async (req: Request, res: Response)
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.download(filePath, fileName);
 });
-
