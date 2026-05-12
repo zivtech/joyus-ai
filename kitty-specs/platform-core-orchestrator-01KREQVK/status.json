@@ -1,7 +1,7 @@
 {
-  "event_count": 28,
-  "last_event_id": "01KREZ4SCNQE270ZR4QW7XEMJJ",
-  "materialized_at": "2026-05-12T20:48:05.525526+00:00",
+  "event_count": 29,
+  "last_event_id": "01KREZ5CQCQK0ZQ76NX438PDZC",
+  "materialized_at": "2026-05-12T20:48:25.324616+00:00",
   "mission_number": "",
   "mission_slug": "platform-core-orchestrator-01KREQVK",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
-    "in_progress": 0,
+    "for_review": 0,
+    "in_progress": 1,
     "in_review": 0,
     "planned": 6
   },
@@ -25,11 +25,11 @@
       "last_transition_at": "2026-05-12T20:27:23.946583+00:00"
     },
     "WP01": {
-      "actor": "user",
-      "force_count": 2,
-      "lane": "for_review",
-      "last_event_id": "01KREZ4SCNQE270ZR4QW7XEMJJ",
-      "last_transition_at": "2026-05-12T20:48:05.525526+00:00"
+      "actor": "claude:opus:orchestrator:reviewer",
+      "force_count": 3,
+      "lane": "in_progress",
+      "last_event_id": "01KREZ5CQCQK0ZQ76NX438PDZC",
+      "last_transition_at": "2026-05-12T20:48:25.324616+00:00"
     },
     "WP02": {
       "actor": "finalize-tasks",
