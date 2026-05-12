@@ -18,8 +18,8 @@ subtasks:
 - T013
 - T014
 - T015
-agent: "claude:opus:orchestrator:implementer"
-shell_pid: "65789"
+agent: "claude:opus:orchestrator:reviewer"
+shell_pid: "1980"
 history:
 - date: '2026-05-12'
   action: created
@@ -197,3 +197,4 @@ Build the foundational data layer and session lifecycle for the orchestrator. Af
 - 2026-05-12T20:41:18Z – claude:opus:orchestrator:reviewer – shell_pid=21064 – Moved to planned
 - 2026-05-12T20:41:41Z – claude:opus:orchestrator:implementer – shell_pid=65789 – Started implementation via action command
 - 2026-05-12T20:48:05Z – claude:opus:orchestrator:implementer – shell_pid=65789 – Cycle 2: fixed all 3 blocking issues — cancelled status, crash recovery wired, queued event emitted
+- 2026-05-12T20:48:25Z – claude:opus:orchestrator:reviewer – shell_pid=1980 – Started review via action command
