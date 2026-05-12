@@ -18,6 +18,8 @@ subtasks:
 - T013
 - T014
 - T015
+agent: "claude:opus:orchestrator:implementer"
+shell_pid: "62861"
 history:
 - date: '2026-05-12'
   action: created
@@ -186,3 +188,7 @@ Build the foundational data layer and session lifecycle for the orchestrator. Af
 - **Tenant isolation is the #1 check:** Every query MUST include tenantId. Grep for any query that touches sessions/turns without a tenantId filter.
 - **State machine:** Verify all valid transitions are implemented and all invalid ones are rejected.
 - **No raw SQL:** All queries through Drizzle query builder.
+
+## Activity Log
+
+- 2026-05-12T20:27:51Z – claude:opus:orchestrator:implementer – shell_pid=62861 – Started implementation via action command
