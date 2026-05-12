@@ -1,14 +1,16 @@
 # Joyus AI Playwright Container
 # Browser automation + Backstop.js visual regression testing
 
-FROM mcr.microsoft.com/playwright:v1.50.0-noble
+ARG PLAYWRIGHT_VERSION=1.59.1
+FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
+ARG PLAYWRIGHT_VERSION
 
 WORKDIR /app
 
 # Install MCP SDK, Playwright tools, and Backstop.js
 RUN npm init -y && npm pkg set type=module && npm install --no-save \
     @modelcontextprotocol/sdk \
-    playwright \
+    playwright@${PLAYWRIGHT_VERSION} \
     backstopjs
 
 # Copy the MCP server wrapper
