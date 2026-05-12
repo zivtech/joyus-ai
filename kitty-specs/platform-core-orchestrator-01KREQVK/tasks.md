@@ -68,13 +68,13 @@ WP01 (sessions + tenancy + durability)
 | T031 | Implement coordination group service | WP04 | | [D] |
 | T032 | Implement inter-agent messaging via Inngest events | WP04 | | [D] |
 | T033 | Create Inngest coordination lifecycle function | WP04 | | [D] |
-| T034 | Implement tool router service | WP05 | |
-| T035 | Implement tool dispatch and result marshaling | WP05 | |
-| T036 | Implement tool permission filtering | WP05 | |
-| T037 | Implement tool failure handling and retry | WP05 | |
-| T038 | Implement skill loader service | WP05 | [P] |
-| T039 | Implement skill injection with token budget | WP05 | [P] |
-| T040 | Implement Constitution injection | WP05 | [P] |
+| T034 | Implement tool router service | WP05 | | [D] |
+| T035 | Implement tool dispatch and result marshaling | WP05 | | [D] |
+| T036 | Implement tool permission filtering | WP05 | | [D] |
+| T037 | Implement tool failure handling and retry | WP05 | | [D] |
+| T038 | Implement skill loader service | WP05 | [D] |
+| T039 | Implement skill injection with token budget | WP05 | [D] |
+| T040 | Implement Constitution injection | WP05 | [D] |
 | T041 | Create Express router for orchestrator | WP06 | |
 | T042 | Implement session API endpoints | WP06 | |
 | T043 | Implement message endpoint with SSE | WP06 | |
@@ -201,13 +201,13 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~400 lines
 **Prompt:** [WP05-tool-routing-skills.md](tasks/WP05-tool-routing-skills.md)
 
-- [ ] T034 Implement tool router service: discover tools from MCP Gateway or direct MCP servers (WP05)
-- [ ] T035 Implement tool dispatch: route tool_use calls to correct backend, marshal results (WP05)
-- [ ] T036 Implement tool permission filtering: present only tenant-authorized tools (WP05)
-- [ ] T037 Implement tool failure handling: structured errors, transient retry, circuit breaker (WP05)
-- [ ] T038 Implement skill loader service: resolve tenant/role/task skills from Spec 013 or filesystem stub (WP05)
-- [ ] T039 Implement skill injection: compose into system prompt with token budget awareness (WP05)
-- [ ] T040 Implement Constitution injection: load and prepend Constitution rules (WP05)
+- [x] T034 Implement tool router service: discover tools from MCP Gateway or direct MCP servers (WP05)
+- [x] T035 Implement tool dispatch: route tool_use calls to correct backend, marshal results (WP05)
+- [x] T036 Implement tool permission filtering: present only tenant-authorized tools (WP05)
+- [x] T037 Implement tool failure handling: structured errors, transient retry, circuit breaker (WP05)
+- [x] T038 Implement skill loader service: resolve tenant/role/task skills from Spec 013 or filesystem stub (WP05)
+- [x] T039 Implement skill injection: compose into system prompt with token budget awareness (WP05)
+- [x] T040 Implement Constitution injection: load and prepend Constitution rules (WP05)
 
 **Parallel opportunities:** T034-T037 (tool routing) and T038-T040 (skill loading) are independent tracks.
 **Risks:** Spec 013 and Spec 014 not ready — must work with filesystem stubs initially.
