@@ -72,4 +72,5 @@ Known failure modes and fixes.
 | [content-mediation-manual-test.md](content-mediation-manual-test.md) | `/api/mediation/*` session, JWT/JWKS, and cache-miss flows |
 | [external-event-adapter-manual-test.md](external-event-adapter-manual-test.md) | `/v1/events/*` source, webhook, schedule, automation, health, and admin flows |
 | [inngest-pipeline-trigger-manual-test.md](inngest-pipeline-trigger-manual-test.md) | Inngest local dev server and manual pipeline trigger smoke test |
+| [meta-critic-hardening-manual-test.md](meta-critic-hardening-manual-test.md) | Playwright MCP auth hardening, MCP Playwright health, and audited MCP tool-call smoke checks |
 | [profile-isolation-manual-test.md](profile-isolation-manual-test.md) | Profile isolation migration, no-engine generation stub, and profile smoke checks |
