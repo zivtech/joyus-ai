@@ -35,14 +35,14 @@ WP01 (sessions + tenancy + durability)
 
 | ID | Description | WP | Parallel |
 |----|-------------|-----|---------|
-| T001 | Set up spike project directory | WP00 | |
-| T002 | Test Mastra + Inngest step.run() composition | WP00 | [P] |
-| T003 | Test multi-step agent loop across Inngest boundaries | WP00 | [P] |
-| T004 | Test Mastra MCP client with existing tools | WP00 | [P] |
-| T005 | Test tenant isolation in agent/tool context | WP00 | [P] |
-| T006 | Measure token overhead: Mastra vs raw Claude API | WP00 | [P] |
-| T007 | Evaluate Python↔TypeScript SDK boundary | WP00 | [P] |
-| T008 | Write architecture decision document | WP00 | |
+| T001 | Set up spike project directory | WP00 | | [D] |
+| T002 | Test Mastra + Inngest step.run() composition | WP00 | [D] |
+| T003 | Test multi-step agent loop across Inngest boundaries | WP00 | [D] |
+| T004 | Test Mastra MCP client with existing tools | WP00 | [D] |
+| T005 | Test tenant isolation in agent/tool context | WP00 | [D] |
+| T006 | Measure token overhead: Mastra vs raw Claude API | WP00 | [D] |
+| T007 | Evaluate Python↔TypeScript SDK boundary | WP00 | [D] |
+| T008 | Write architecture decision document | WP00 | | [D] |
 | T009 | Add orchestrator tables to Drizzle schema | WP01 | |
 | T010 | Create database migration for orchestrator tables | WP01 | |
 | T011 | Implement session service | WP01 | |
@@ -98,14 +98,14 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~400 lines
 **Prompt:** [WP00-architecture-spike.md](tasks/WP00-architecture-spike.md)
 
-- [ ] T001 Set up spike project directory in joyus-ai-mcp-server/spike/orchestrator (WP00)
-- [ ] T002 Test Mastra agent invocation inside Inngest step.run() — single-shot and multi-step (WP00)
-- [ ] T003 Test multi-step agent loop across Inngest step boundaries with tool use (WP00)
-- [ ] T004 Test Mastra MCP client connecting to existing MCP server tools (WP00)
-- [ ] T005 Test tenant isolation: tenantId in agent/tool context without global state (WP00)
-- [ ] T006 Measure token overhead: Mastra agent loop vs raw Claude API calls (WP00)
-- [ ] T007 Evaluate Python↔TypeScript boundary: subprocess vs sidecar latency (WP00)
-- [ ] T008 Write architecture decision document with pass/fail results and recommendation (WP00)
+- [x] T001 Set up spike project directory in joyus-ai-mcp-server/spike/orchestrator (WP00)
+- [x] T002 Test Mastra agent invocation inside Inngest step.run() — single-shot and multi-step (WP00)
+- [x] T003 Test multi-step agent loop across Inngest step boundaries with tool use (WP00)
+- [x] T004 Test Mastra MCP client connecting to existing MCP server tools (WP00)
+- [x] T005 Test tenant isolation: tenantId in agent/tool context without global state (WP00)
+- [x] T006 Measure token overhead: Mastra agent loop vs raw Claude API calls (WP00)
+- [x] T007 Evaluate Python↔TypeScript boundary: subprocess vs sidecar latency (WP00)
+- [x] T008 Write architecture decision document with pass/fail results and recommendation (WP00)
 
 **Parallel opportunities:** T002-T007 are independent experiments; can run in parallel.
 **Risks:** Mastra may not compose cleanly with Inngest; fallback is custom TypeScript layer.
