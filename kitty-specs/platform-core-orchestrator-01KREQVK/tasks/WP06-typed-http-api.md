@@ -17,6 +17,8 @@ subtasks:
 - T045
 - T046
 - T047
+agent: "claude:opus:orchestrator:implementer"
+shell_pid: "11917"
 history:
 - date: '2026-05-12'
   action: created
@@ -185,3 +187,7 @@ Expose all orchestrator functionality via a typed HTTP API with auto-generated O
 - **404 vs 403:** Session/work-unit not found and "not yours" MUST return the same 404 (prevent ID enumeration).
 - **Zod schema completeness:** Every field in contracts/api.yaml should have a corresponding Zod schema field.
 - **SSE endpoints:** Verify they set correct Content-Type headers and handle disconnect.
+
+## Activity Log
+
+- 2026-05-12T22:04:23Z – claude:opus:orchestrator:implementer – shell_pid=11917 – Started implementation via action command
