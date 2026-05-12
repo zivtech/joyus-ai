@@ -75,13 +75,13 @@ WP01 (sessions + tenancy + durability)
 | T038 | Implement skill loader service | WP05 | [D] |
 | T039 | Implement skill injection with token budget | WP05 | [D] |
 | T040 | Implement Constitution injection | WP05 | [D] |
-| T041 | Create Express router for orchestrator | WP06 | |
-| T042 | Implement session API endpoints | WP06 | |
-| T043 | Implement message endpoint with SSE | WP06 | |
-| T044 | Implement event subscription endpoints | WP06 | |
-| T045 | Implement coordination API endpoints | WP06 | |
-| T046 | Add Zod schemas and OpenAPI generation | WP06 | |
-| T047 | Add CI schema drift detection | WP06 | |
+| T041 | Create Express router for orchestrator | WP06 | | [D] |
+| T042 | Implement session API endpoints | WP06 | | [D] |
+| T043 | Implement message endpoint with SSE | WP06 | | [D] |
+| T044 | Implement event subscription endpoints | WP06 | | [D] |
+| T045 | Implement coordination API endpoints | WP06 | | [D] |
+| T046 | Add Zod schemas and OpenAPI generation | WP06 | | [D] |
+| T047 | Add CI schema drift detection | WP06 | | [D] |
 | T048 | Implement safety hook interface | WP07 | |
 | T049 | Implement hook audit logging | WP07 | |
 | T050 | Implement token accounting events | WP07 | |
@@ -222,13 +222,13 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~380 lines
 **Prompt:** [WP06-typed-http-api.md](tasks/WP06-typed-http-api.md)
 
-- [ ] T041 Create Express router and mount orchestrator endpoints (WP06)
-- [ ] T042 Implement session API endpoints: create, get, update, list with pagination (WP06)
-- [ ] T043 Implement message endpoint: POST with SSE response stream (WP06)
-- [ ] T044 Implement event subscription endpoints: session-level and tenant-level SSE (WP06)
-- [ ] T045 Implement work unit and coordination group CRUD endpoints (WP06)
-- [ ] T046 Add Zod schemas for all request/response types and generate OpenAPI (WP06)
-- [ ] T047 Add CI schema drift detection: validate OpenAPI matches Zod schemas in build (WP06)
+- [x] T041 Create Express router and mount orchestrator endpoints (WP06)
+- [x] T042 Implement session API endpoints: create, get, update, list with pagination (WP06)
+- [x] T043 Implement message endpoint: POST with SSE response stream (WP06)
+- [x] T044 Implement event subscription endpoints: session-level and tenant-level SSE (WP06)
+- [x] T045 Implement work unit and coordination group CRUD endpoints (WP06)
+- [x] T046 Add Zod schemas for all request/response types and generate OpenAPI (WP06)
+- [x] T047 Add CI schema drift detection: validate OpenAPI matches Zod schemas in build (WP06)
 
 **Parallel opportunities:** T042-T045 (endpoint groups) are independent.
 **Risks:** OpenAPI generation from Zod requires choosing a library (zod-to-openapi or similar).
