@@ -13,6 +13,9 @@ requirement_refs:
 planning_base_branch: claude/platform-core-orchestrator
 merge_target_branch: claude/platform-core-orchestrator
 branch_strategy: Planning artifacts for this feature were generated on claude/platform-core-orchestrator. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into claude/platform-core-orchestrator unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-platform-core-orchestrator-01KREQVK
+base_commit: 1fae1edb5e24411a14af3c7808445c4ce05c3484
+created_at: '2026-05-12T19:48:51.834862+00:00'
 subtasks:
 - T001
 - T002
@@ -22,6 +25,7 @@ subtasks:
 - T006
 - T007
 - T008
+shell_pid: '29545'
 history:
 - date: '2026-05-12'
   action: created
