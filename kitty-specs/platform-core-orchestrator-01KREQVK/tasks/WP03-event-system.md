@@ -16,6 +16,8 @@ subtasks:
 - T025
 - T026
 - T027
+agent: "claude:opus:orchestrator:implementer"
+shell_pid: "75358"
 history:
 - date: '2026-05-12'
   action: created
@@ -187,3 +189,7 @@ data: {"sessionId":"...","tenantId":"...","toolName":"search","durationMs":234}
 - **Schema validation:** Every `emitEvent` call should pass through schema validation. No bypass.
 - **SSE format:** Verify `id:`, `event:`, and `data:` fields are correctly formatted. Missing newlines break SSE parsing.
 - **Tenant isolation:** Event queries MUST filter by tenantId. SSE streams MUST only send tenant-scoped events.
+
+## Activity Log
+
+- 2026-05-12T21:05:13Z – claude:opus:orchestrator:implementer – shell_pid=75358 – Started implementation via action command
