@@ -1,0 +1,620 @@
+openapi: 3.1.0
+info:
+  title: Joyus Platform Core Orchestrator API
+  version: 0.1.0
+  description: >
+    Typed HTTP API for the Joyus AI orchestrator. All endpoints require
+    tenant context from JWT authentication. tenantId is NEVER accepted
+    from the request body.
+
+servers:
+  - url: /api/v1/orchestrator
+    description: Platform API (tenant-scoped)
+
+security:
+  - bearerAuth: []
+
+paths:
+  /sessions:
+    post:
+      operationId: createSession
+      summary: Create a new agent session
+      tags: [Sessions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '429':
+          description: Tenant concurrency limit reached
+
+    get:
+      operationId: listSessions
+      summary: List sessions for the authenticated tenant
+      tags: [Sessions]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/SessionStatus'
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated session list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+
+  /sessions/{sessionId}:
+    get:
+      operationId: getSession
+      summary: Get session details
+      tags: [Sessions]
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: Session not found or not owned by tenant
+
+    patch:
+      operationId: updateSession
+      summary: Update session status (suspend, resume, stop)
+      tags: [Sessions]
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSessionRequest'
+      responses:
+        '200':
+          description: Session updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  /sessions/{sessionId}/messages:
+    post:
+      operationId: sendMessage
+      summary: Send a message to an agent session
+      description: >
+        Sends a user message and returns the agent response as an SSE stream.
+        The stream includes token-by-token text, tool call notifications,
+        and a final completion event.
+      tags: [Messages]
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: SSE stream of agent response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /sessions/{sessionId}/turns:
+    get:
+      operationId: listTurns
+      summary: Get conversation history for a session
+      tags: [Messages]
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: afterSequence
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Turn history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnList'
+
+  /sessions/{sessionId}/events:
+    get:
+      operationId: subscribeSessionEvents
+      summary: Subscribe to session events via SSE
+      tags: [Events]
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+        - name: types
+          in: query
+          description: Comma-separated event types to filter
+          schema:
+            type: string
+        - name: lastEventId
+          in: query
+          description: Resume from this event sequence number
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /events:
+    get:
+      operationId: subscribeTenantEvents
+      summary: Subscribe to all tenant events via SSE
+      tags: [Events]
+      parameters:
+        - name: types
+          in: query
+          schema:
+            type: string
+        - name: lastEventId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /work-units:
+    post:
+      operationId: createWorkUnit
+      summary: Create a work unit
+      tags: [Coordination]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkUnitRequest'
+      responses:
+        '201':
+          description: Work unit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkUnit'
+
+    get:
+      operationId: listWorkUnits
+      summary: List work units
+      tags: [Coordination]
+      parameters:
+        - name: sessionId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: coordinationGroupId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/WorkUnitStatus'
+      responses:
+        '200':
+          description: Work unit list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkUnitList'
+
+  /work-units/{workUnitId}:
+    get:
+      operationId: getWorkUnit
+      summary: Get work unit details
+      tags: [Coordination]
+      parameters:
+        - name: workUnitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Work unit details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkUnit'
+
+    patch:
+      operationId: updateWorkUnit
+      summary: Update work unit status
+      tags: [Coordination]
+      parameters:
+        - name: workUnitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkUnitRequest'
+      responses:
+        '200':
+          description: Work unit updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkUnit'
+
+  /coordination-groups:
+    post:
+      operationId: createCoordinationGroup
+      summary: Create a coordination group
+      tags: [Coordination]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCoordinationGroupRequest'
+      responses:
+        '201':
+          description: Coordination group created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinationGroup'
+
+  /coordination-groups/{groupId}:
+    get:
+      operationId: getCoordinationGroup
+      summary: Get coordination group with work units
+      tags: [Coordination]
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Coordination group details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinationGroupDetail'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT containing tenantId and userId claims
+
+  parameters:
+    sessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    SessionStatus:
+      type: string
+      enum: [pending, running, suspended, completed, failed]
+
+    WorkUnitStatus:
+      type: string
+      enum: [pending, assigned, running, completed, failed, cancelled]
+
+    CompletionPolicy:
+      type: string
+      enum: [all, any, majority]
+
+    CreateSessionRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+          additionalProperties: true
+
+    UpdateSessionRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [suspend, resume, stop, kill]
+
+    SendMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: object
+
+    CreateWorkUnitRequest:
+      type: object
+      required: [title, type]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        type:
+          type: string
+          maxLength: 100
+        sessionId:
+          type: string
+          format: uuid
+        coordinationGroupId:
+          type: string
+          format: uuid
+        dependencies:
+          type: array
+          items:
+            type: string
+            format: uuid
+        labels:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    UpdateWorkUnitRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/WorkUnitStatus'
+        assignee:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    CreateCoordinationGroupRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        completionPolicy:
+          $ref: '#/components/schemas/CompletionPolicy'
+        metadata:
+          type: object
+          additionalProperties: true
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    SessionList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+        cursor:
+          type: string
+          nullable: true
+
+    Turn:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant, tool]
+        content:
+          type: string
+          nullable: true
+        toolCalls:
+          type: array
+          nullable: true
+        toolResults:
+          type: array
+          nullable: true
+        tokenUsage:
+          type: object
+          nullable: true
+          properties:
+            inputTokens:
+              type: integer
+            outputTokens:
+              type: integer
+            cacheHits:
+              type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    TurnList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Turn'
+
+    WorkUnit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+          nullable: true
+        coordinationGroupId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: '#/components/schemas/WorkUnitStatus'
+        title:
+          type: string
+        type:
+          type: string
+        assignee:
+          type: string
+          nullable: true
+        dependencies:
+          type: array
+          items:
+            type: string
+            format: uuid
+        labels:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    WorkUnitList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkUnit'
+
+    CoordinationGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        completionPolicy:
+          $ref: '#/components/schemas/CompletionPolicy'
+        status:
+          type: string
+          enum: [active, completed, failed]
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CoordinationGroupDetail:
+      allOf:
+        - $ref: '#/components/schemas/CoordinationGroup'
+        - type: object
+          properties:
+            workUnits:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkUnit'
