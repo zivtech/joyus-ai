@@ -16,6 +16,8 @@ subtasks:
 - T031
 - T032
 - T033
+agent: "claude:opus:orchestrator:implementer"
+shell_pid: "24004"
 history:
 - date: '2026-05-12'
   action: created
@@ -171,3 +173,7 @@ Build the work unit and coordination group system that allows multiple agents to
 - **Dependency cycles:** Verify cycle detection runs on creation, not just on status transition.
 - **Completion policy edge cases:** What happens if a group has zero work units? (Should reject at creation.)
 - **Signal isolation:** Verify signals cannot be sent across tenants.
+
+## Activity Log
+
+- 2026-05-12T21:17:48Z – claude:opus:orchestrator:implementer – shell_pid=24004 – Started implementation via action command
