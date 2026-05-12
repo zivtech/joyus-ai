@@ -7,3 +7,8 @@ tools:
     strategy: preferred
     preferred_implementer: claude
     preferred_reviewer: claude
+project:
+  uuid: 99ce5f85-99c6-4826-905d-2badbc82c7bd
+  slug: joyus-ai
+  node_id: c22641f36e34
+  build_id: 256075a1-4878-4c48-a75c-8870dd38f9db
