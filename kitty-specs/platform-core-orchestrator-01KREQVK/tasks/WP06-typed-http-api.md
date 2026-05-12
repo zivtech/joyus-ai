@@ -191,3 +191,4 @@ Expose all orchestrator functionality via a typed HTTP API with auto-generated O
 ## Activity Log
 
 - 2026-05-12T22:04:23Z – claude:opus:orchestrator:implementer – shell_pid=11917 – Started implementation via action command
+- 2026-05-12T22:15:40Z – claude:opus:orchestrator:implementer – shell_pid=11917 – Typed HTTP API: sessions, messages, events SSE, work units, OpenAPI — 27 tests
