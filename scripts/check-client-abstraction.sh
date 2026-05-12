@@ -14,7 +14,7 @@ mode="${1:-}"
 
 is_exempt_file() {
   case "$1" in
-    CLAUDE.md|.githooks/*|scripts/check-client-abstraction.sh)
+    CLAUDE.md|.githooks/*|scripts/check-client-abstraction.sh|kitty-specs/*/tasks/*)
       return 0
       ;;
     *)
