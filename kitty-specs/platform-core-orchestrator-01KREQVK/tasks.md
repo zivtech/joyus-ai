@@ -43,13 +43,13 @@ WP01 (sessions + tenancy + durability)
 | T006 | Measure token overhead: Mastra vs raw Claude API | WP00 | [D] |
 | T007 | Evaluate Python↔TypeScript SDK boundary | WP00 | [D] |
 | T008 | Write architecture decision document | WP00 | | [D] |
-| T009 | Add orchestrator tables to Drizzle schema | WP01 | |
-| T010 | Create database migration for orchestrator tables | WP01 | |
-| T011 | Implement session service | WP01 | |
-| T012 | Implement tenant scoping middleware | WP01 | [P] |
-| T013 | Create Inngest session-run function | WP01 | |
-| T014 | Implement crash recovery via Inngest checkpoints | WP01 | |
-| T015 | Add per-tenant concurrency controls | WP01 | |
+| T009 | Add orchestrator tables to Drizzle schema | WP01 | | [D] |
+| T010 | Create database migration for orchestrator tables | WP01 | | [D] |
+| T011 | Implement session service | WP01 | | [D] |
+| T012 | Implement tenant scoping middleware | WP01 | [D] |
+| T013 | Create Inngest session-run function | WP01 | | [D] |
+| T014 | Implement crash recovery via Inngest checkpoints | WP01 | | [D] |
+| T015 | Add per-tenant concurrency controls | WP01 | | [D] |
 | T016 | Implement agent loop service | WP02 | |
 | T017 | Integrate Claude Agent SDK | WP02 | |
 | T018 | Implement SSE response streaming | WP02 | [P] |
@@ -120,13 +120,13 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~350 lines
 **Prompt:** [WP01-session-tenant-foundation.md](tasks/WP01-session-tenant-foundation.md)
 
-- [ ] T009 Add sessions and turns tables to Drizzle schema (WP01)
-- [ ] T010 Create database migration for orchestrator tables (WP01)
-- [ ] T011 Implement session service: create, get, updateStatus, list (tenant-scoped) (WP01)
-- [ ] T012 Implement tenant scoping middleware: extract tenantId from JWT, enforce on queries (WP01)
-- [ ] T013 Create Inngest session-run function: session lifecycle as durable function (WP01)
-- [ ] T014 Implement crash recovery: checkpoint-resume via Inngest step boundaries (WP01)
-- [ ] T015 Add per-tenant concurrency controls via Inngest concurrency config (WP01)
+- [x] T009 Add sessions and turns tables to Drizzle schema (WP01)
+- [x] T010 Create database migration for orchestrator tables (WP01)
+- [x] T011 Implement session service: create, get, updateStatus, list (tenant-scoped) (WP01)
+- [x] T012 Implement tenant scoping middleware: extract tenantId from JWT, enforce on queries (WP01)
+- [x] T013 Create Inngest session-run function: session lifecycle as durable function (WP01)
+- [x] T014 Implement crash recovery: checkpoint-resume via Inngest step boundaries (WP01)
+- [x] T015 Add per-tenant concurrency controls via Inngest concurrency config (WP01)
 
 **Parallel opportunities:** T012 (middleware) is independent of T009-T011 (schema + service).
 **Risks:** Inngest checkpoint granularity may not align with desired session recovery points.
