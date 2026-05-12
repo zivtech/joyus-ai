@@ -201,3 +201,4 @@ Replace the stub tool router from WP02 with real tool discovery, routing, and pe
 ## Activity Log
 
 - 2026-05-12T21:41:31Z – claude:opus:orchestrator:implementer – shell_pid=22415 – Started implementation via action command
+- 2026-05-12T21:52:13Z – claude:opus:orchestrator:implementer – shell_pid=22415 – Tool routing, skill loading, Constitution injection — 44 tests
