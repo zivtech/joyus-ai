@@ -140,19 +140,20 @@ function sendSseReady(req, res) {
 /**
  * Authenticate a request using a Bearer token.
  * Returns true if the request is authorized, false otherwise.
- * The /health endpoint is intentionally exempt so orchestration infrastructure
- * can monitor liveness without credentials.
+ * The /health and /sse endpoints are intentionally exempt so orchestration
+ * infrastructure can monitor liveness without credentials.
  *
  * @param {import('node:http').IncomingMessage} req
  * @returns {boolean}
  */
 function isAuthorized(req) {
   if (!AUTH_TOKEN) {
-    // No token configured — log a warning and allow the request so the server
-    // remains functional during local development, but operators should always
-    // set PLAYWRIGHT_AUTH_TOKEN in deployed environments.
-    console.error('[playwright-server] WARNING: PLAYWRIGHT_AUTH_TOKEN is not set. All requests are accepted.');
-    return true;
+    if (process.env.NODE_ENV === 'development' || process.env.PLAYWRIGHT_ALLOW_UNAUTHENTICATED === 'true') {
+      console.error('[playwright-server] WARNING: PLAYWRIGHT_AUTH_TOKEN is not set. All requests are accepted for local development.');
+      return true;
+    }
+    console.error('[playwright-server] ERROR: PLAYWRIGHT_AUTH_TOKEN is required for non-health requests.');
+    return false;
   }
   const authHeader = req.headers['authorization'] || '';
   const match = authHeader.match(/^Bearer (.+)$/i);

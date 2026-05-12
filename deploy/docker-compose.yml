@@ -17,6 +17,7 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER:-jawn}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-jawn_ai}
       - PLAYWRIGHT_MCP_BASE_URL=${PLAYWRIGHT_MCP_BASE_URL:-http://playwright:3002}
+      - PLAYWRIGHT_AUTH_TOKEN=${PLAYWRIGHT_AUTH_TOKEN:?PLAYWRIGHT_AUTH_TOKEN must be set}
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,6 +33,8 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      - PLAYWRIGHT_AUTH_TOKEN=${PLAYWRIGHT_AUTH_TOKEN:?PLAYWRIGHT_AUTH_TOKEN must be set}
     networks:
       - jawn-net
 

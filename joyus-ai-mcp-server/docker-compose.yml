@@ -45,6 +45,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - JOYUS_ANTHROPIC_MODEL=${JOYUS_ANTHROPIC_MODEL:-claude-sonnet-4-6}
       - PLAYWRIGHT_MCP_BASE_URL=http://playwright:3002
+      - PLAYWRIGHT_AUTH_TOKEN=${PLAYWRIGHT_AUTH_TOKEN:?PLAYWRIGHT_AUTH_TOKEN must be set}
       - INNGEST_DEV=1
       - INNGEST_BASE_URL=http://inngest:8288
       - INNGEST_EVENT_KEY=${INNGEST_EVENT_KEY:?INNGEST_EVENT_KEY must be set}
@@ -67,6 +68,8 @@ services:
       dockerfile: deploy/Dockerfile.playwright
     ports:
       - "127.0.0.1:3002:3002"
+    environment:
+      - PLAYWRIGHT_AUTH_TOKEN=${PLAYWRIGHT_AUTH_TOKEN:?PLAYWRIGHT_AUTH_TOKEN must be set}
     healthcheck:
       test: ["CMD", "node", "-e", "const c=new AbortController(); const t=setTimeout(() => c.abort(), 2000); fetch('http://127.0.0.1:3002/sse', { signal: c.signal }).then((r) => { clearTimeout(t); process.exit(r.ok ? 0 : 1); }).catch(() => process.exit(1));"]
       interval: 10s
