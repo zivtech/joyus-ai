@@ -88,7 +88,8 @@ check_conventional_commit_message() {
 
 case "$mode" in
   --staged)
-    mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR)
+    files=()
+    while IFS= read -r f; do files+=("$f"); done < <(git diff --cached --name-only --diff-filter=ACMR)
     failed=0
     for file in "${files[@]}"; do
       is_exempt_file "$file" && continue

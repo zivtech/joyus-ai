@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "mission_slug": "platform-core-orchestrator-01KREQVK",
+  "mission_id": "01KREQVK1F3R8Y8VK62KMT75A1",
+  "mission_branch": "kitty/mission-platform-core-orchestrator-01KREQVK",
+  "target_branch": "claude/platform-core-orchestrator",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP00",
+        "WP01",
+        "WP02",
+        "WP03",
+        "WP04",
+        "WP05",
+        "WP06",
+        "WP07"
+      ],
+      "write_scope": [
+        "joyus-ai-mcp-server/spike/orchestrator/**",
+        "joyus-ai-mcp-server/src/db/schema/coordination.ts",
+        "joyus-ai-mcp-server/src/db/schema/events.ts",
+        "joyus-ai-mcp-server/src/db/schema/orchestrator.ts",
+        "joyus-ai-mcp-server/src/inngest/functions/orchestrator/coordination.ts",
+        "joyus-ai-mcp-server/src/inngest/functions/orchestrator/session-run.ts",
+        "joyus-ai-mcp-server/src/orchestrator/agent-loop.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/coordination.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/event.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/index.ts",
+        "joyus-ai-mcp-server/src/orchestrator/memory.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/middleware/tenant.ts",
+        "joyus-ai-mcp-server/src/orchestrator/notification.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/routes/**",
+        "joyus-ai-mcp-server/src/orchestrator/safety.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/schemas.ts",
+        "joyus-ai-mcp-server/src/orchestrator/session.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/skill-loader.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/streaming.ts",
+        "joyus-ai-mcp-server/src/orchestrator/tool-router.service.ts",
+        "joyus-ai-mcp-server/src/orchestrator/types.ts",
+        "joyus-ai-mcp-server/src/orchestrator/usage.service.ts",
+        "kitty-specs/platform-core-orchestrator-01KREQVK/research/architecture-decision.md"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-05-12T19:21:53.234833+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP00",
+        "rule": "dependency",
+        "evidence": "WP01 depends on WP00"
+      },
+      {
+        "wp_a": "WP02",
+        "wp_b": "WP01",
+        "rule": "dependency",
+        "evidence": "WP02 depends on WP01"
+      },
+      {
+        "wp_a": "WP03",
+        "wp_b": "WP01",
+        "rule": "dependency",
+        "evidence": "WP03 depends on WP01"
+      },
+      {
+        "wp_a": "WP04",
+        "wp_b": "WP01",
+        "rule": "dependency",
+        "evidence": "WP04 depends on WP01"
+      },
+      {
+        "wp_a": "WP05",
+        "wp_b": "WP02",
+        "rule": "dependency",
+        "evidence": "WP05 depends on WP02"
+      },
+      {
+        "wp_a": "WP06",
+        "wp_b": "WP02",
+        "rule": "dependency",
+        "evidence": "WP06 depends on WP02"
+      },
+      {
+        "wp_a": "WP07",
+        "wp_b": "WP02",
+        "rule": "dependency",
+        "evidence": "WP07 depends on WP02"
+      }
+    ],
+    "total_merges": 7,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "dependency": 7
+    }
+  }
+}
