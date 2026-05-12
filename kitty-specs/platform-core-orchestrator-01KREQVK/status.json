@@ -1,7 +1,7 @@
 {
-  "event_count": 64,
-  "last_event_id": "01KRF3FV0GBAW20APYVP0CA40M",
-  "materialized_at": "2026-05-12T22:04:01.936972+00:00",
+  "event_count": 65,
+  "last_event_id": "01KRF3GDX5N7JXKRQ333HVCJ1J",
+  "materialized_at": "2026-05-12T22:04:21.285210+00:00",
   "mission_number": "",
   "mission_slug": "platform-core-orchestrator-01KREQVK",
   "mission_type": "software-dev",
@@ -54,10 +54,10 @@
     },
     "WP05": {
       "actor": "user",
-      "force_count": 4,
+      "force_count": 5,
       "lane": "approved",
-      "last_event_id": "01KRF3FV0GBAW20APYVP0CA40M",
-      "last_transition_at": "2026-05-12T22:04:01.936972+00:00"
+      "last_event_id": "01KRF3GDX5N7JXKRQ333HVCJ1J",
+      "last_transition_at": "2026-05-12T22:04:21.285210+00:00"
     },
     "WP06": {
       "actor": "finalize-tasks",
