@@ -17,6 +17,8 @@ subtasks:
 - T038
 - T039
 - T040
+agent: "claude:opus:orchestrator:implementer"
+shell_pid: "22415"
 history:
 - date: '2026-05-12'
   action: created
@@ -195,3 +197,7 @@ Replace the stub tool router from WP02 with real tool discovery, routing, and pe
 - **Token budget math:** Verify the budget calculation doesn't allow overflow. Check edge case: zero remaining budget.
 - **Skill priority:** Verify higher-priority skills are kept when budget is tight, not lower-priority ones.
 - **Constitution always present:** Verify Constitution injection cannot be bypassed even if skill loading fails.
+
+## Activity Log
+
+- 2026-05-12T21:41:31Z – claude:opus:orchestrator:implementer – shell_pid=22415 – Started implementation via action command
