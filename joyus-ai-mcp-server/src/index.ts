@@ -37,6 +37,7 @@ import {
   SecretStoreResolver,
   TriggerForwarder,
 } from './event-adapter/index.js';
+import { exportRouter } from './exports/router.js';
 import { createAllFunctions, inngest } from './inngest/index.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
@@ -311,6 +312,11 @@ try {
 } catch (error) {
   console.error('Failed to initialize content module:', error);
 }
+
+// Export routes must be mounted before the generic /api bearer-token router.
+// Creation/status routes perform their own bearer-token auth; signed download
+// URLs are authorized by their one-time token in the path.
+app.use('/api/v1', exportRouter);
 
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
