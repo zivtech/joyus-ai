@@ -56,12 +56,12 @@ WP01 (sessions + tenancy + durability)
 | T019 | Implement turn persistence | WP02 | | [D] |
 | T020 | Implement sliding window conversation memory | WP02 | | [D] |
 | T021 | Add context window utilization monitoring | WP02 | | [D] |
-| T022 | Add events table to Drizzle schema | WP03 | |
-| T023 | Create database migration for events table | WP03 | |
-| T024 | Implement typed event registry | WP03 | |
-| T025 | Implement event emission service | WP03 | |
-| T026 | Implement SSE streaming for external consumers | WP03 | |
-| T027 | Implement notification routing to gateway | WP03 | |
+| T022 | Add events table to Drizzle schema | WP03 | | [D] |
+| T023 | Create database migration for events table | WP03 | | [D] |
+| T024 | Implement typed event registry | WP03 | | [D] |
+| T025 | Implement event emission service | WP03 | | [D] |
+| T026 | Implement SSE streaming for external consumers | WP03 | | [D] |
+| T027 | Implement notification routing to gateway | WP03 | | [D] |
 | T028 | Add coordination tables to Drizzle schema | WP04 | |
 | T029 | Create database migration for coordination tables | WP04 | |
 | T030 | Implement work unit service | WP04 | |
@@ -161,12 +161,12 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~300 lines
 **Prompt:** [WP03-event-system.md](tasks/WP03-event-system.md)
 
-- [ ] T022 Add events table to Drizzle schema (append-only, sequence-indexed) (WP03)
-- [ ] T023 Create database migration for events table (WP03)
-- [ ] T024 Implement typed event registry: register event types with JSON schemas (WP03)
-- [ ] T025 Implement event emission service: emit, query by filters, replay from offset (WP03)
-- [ ] T026 Implement SSE streaming endpoint for external consumers (filtered by session/tenant/type) (WP03)
-- [ ] T027 Implement notification routing: forward eligible events to gateway event bus (WP03)
+- [x] T022 Add events table to Drizzle schema (append-only, sequence-indexed) (WP03)
+- [x] T023 Create database migration for events table (WP03)
+- [x] T024 Implement typed event registry: register event types with JSON schemas (WP03)
+- [x] T025 Implement event emission service: emit, query by filters, replay from offset (WP03)
+- [x] T026 Implement SSE streaming endpoint for external consumers (filtered by session/tenant/type) (WP03)
+- [x] T027 Implement notification routing: forward eligible events to gateway event bus (WP03)
 
 **Parallel opportunities:** T026 (SSE endpoint) and T027 (routing) are independent of T024-T025.
 **Can run in parallel with WP02.**
