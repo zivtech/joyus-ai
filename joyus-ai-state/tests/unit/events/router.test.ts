@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { EnforcementEventRouter } from '../../../src/enforcement/events/router.js';
 import { EnforcementConfigSchema } from '../../../src/enforcement/schemas.js';
 import { mergeConfig } from '../../../src/enforcement/config.js';
@@ -66,5 +66,26 @@ describe('EnforcementEventRouter', () => {
     const newConfig = makeConfig();
     router.updateConfig(newConfig);
     // No error thrown
+  });
+
+  it('resolves all rapid file-change callers in one debounce batch', async () => {
+    vi.useFakeTimers();
+    try {
+      const router = new EnforcementEventRouter(makeConfig(), {
+        sessionId: 'test',
+        auditDir,
+        projectRoot: '/tmp/nonexistent',
+      });
+
+      const first = router.handleEvent({ type: 'file-change', files: ['src/first.ts'] });
+      const second = router.handleEvent({ type: 'file-change', files: ['src/second.ts'] });
+
+      await vi.advanceTimersByTimeAsync(2000);
+
+      await expect(first).resolves.toMatchObject({ reloaded: false });
+      await expect(second).resolves.toMatchObject({ reloaded: false });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
