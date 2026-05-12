@@ -17,8 +17,8 @@ subtasks:
 - T038
 - T039
 - T040
-agent: "claude:opus:orchestrator:implementer"
-shell_pid: "22415"
+agent: "claude:opus:orchestrator:reviewer"
+shell_pid: "86829"
 history:
 - date: '2026-05-12'
   action: created
@@ -202,3 +202,4 @@ Replace the stub tool router from WP02 with real tool discovery, routing, and pe
 
 - 2026-05-12T21:41:31Z – claude:opus:orchestrator:implementer – shell_pid=22415 – Started implementation via action command
 - 2026-05-12T21:52:13Z – claude:opus:orchestrator:implementer – shell_pid=22415 – Tool routing, skill loading, Constitution injection — 44 tests
+- 2026-05-12T21:52:15Z – claude:opus:orchestrator:reviewer – shell_pid=86829 – Started review via action command
