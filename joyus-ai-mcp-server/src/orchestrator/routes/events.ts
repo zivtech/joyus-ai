@@ -18,9 +18,10 @@
 
 import { Router } from 'express';
 
-import { getTenantId } from '../middleware/tenant.js';
 import type { EventService } from '../event.service.js';
+import { getTenantId } from '../middleware/tenant.js';
 import { eventSubscriptionQuerySchema } from '../schemas.js';
+
 import { validate } from './helpers.js';
 
 export function createEventsRouter(eventService: EventService): Router {

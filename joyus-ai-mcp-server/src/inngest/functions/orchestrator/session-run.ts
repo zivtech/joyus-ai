@@ -25,8 +25,8 @@
 
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import { SessionService } from '../../orchestrator/session.service.js';
-import { inngest } from '../client.js';
+import { SessionService } from '../../../orchestrator/session.service.js';
+import { inngest } from '../../client.js';
 
 // ---------------------------------------------------------------------------
 // Configuration

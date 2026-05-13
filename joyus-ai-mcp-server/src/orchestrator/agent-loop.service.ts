@@ -29,13 +29,13 @@ import { createId } from '@paralleldrive/cuid2';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 import { MemoryService } from './memory.service.js';
-import type { SseStream } from './streaming.js';
-import { SessionService } from './session.service.js';
-import type { SkillLoaderService } from './skill-loader.service.js';
-import { SessionNotFoundError } from './types.js';
-import type { ToolCall, ToolResult } from './types.js';
 import type { SafetyService } from './safety.service.js';
 import { SafetyBlockedError } from './safety.service.js';
+import { SessionService } from './session.service.js';
+import type { SkillLoaderService } from './skill-loader.service.js';
+import type { SseStream } from './streaming.js';
+import { SessionNotFoundError } from './types.js';
+import type { ToolCall, ToolResult } from './types.js';
 import type { UsageService } from './usage.service.js';
 
 // ============================================================
@@ -71,10 +71,15 @@ const HIGH_UTILIZATION_THRESHOLD = 0.8;
 
 /**
  * A single message in Claude's messages array format.
+ *
+ * Uses ContentBlockParam (the request-side block union) rather than
+ * ContentBlock (the response-side union) so the agent loop can construct
+ * tool_use + tool_result messages without satisfying response-only fields
+ * like TextBlock.citations.
  */
 export interface AgentMessage {
   role: 'user' | 'assistant';
-  content: string | Anthropic.ContentBlock[];
+  content: string | Anthropic.ContentBlockParam[];
 }
 
 /**
@@ -400,6 +405,16 @@ export class AgentLoopService {
     });
 
     // ----------------------------------------------------------------
+    // Step 5: Build initial messages array
+    // (Built before the pre-generation safety hooks so the hooks can
+    // inspect the full message list.)
+    // ----------------------------------------------------------------
+    const messages: AgentMessage[] = [
+      ...historyMessages,
+      { role: 'user', content: userMessage },
+    ];
+
+    // ----------------------------------------------------------------
     // WP07: Pre-generation safety hooks
     // ----------------------------------------------------------------
     if (this.safetyService) {
@@ -420,14 +435,6 @@ export class AgentLoopService {
     const tools = this.toolRouter.getAuthorizedTools
       ? await this.toolRouter.getAuthorizedTools(tenantId)
       : await this.toolRouter.discoverTools(tenantId);
-
-    // ----------------------------------------------------------------
-    // Step 5: Build initial messages array
-    // ----------------------------------------------------------------
-    const messages: AgentMessage[] = [
-      ...historyMessages,
-      { role: 'user', content: userMessage },
-    ];
 
     // ----------------------------------------------------------------
     // T021: Context window monitoring

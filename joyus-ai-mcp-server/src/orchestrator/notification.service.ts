@@ -22,6 +22,7 @@
  */
 
 import type { OrchestratorEvent } from '../db/schema/events.js';
+
 import type { NotificationRouter } from './event.service.js';
 
 // ============================================================

@@ -21,9 +21,9 @@
 
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import { CoordinationService } from '../../orchestrator/coordination.service.js';
-import { EventService } from '../../orchestrator/event.service.js';
-import { inngest } from '../client.js';
+import { CoordinationService } from '../../../orchestrator/coordination.service.js';
+import { EventService } from '../../../orchestrator/event.service.js';
+import { inngest } from '../../client.js';
 
 // ============================================================
 // DEPS INTERFACE

@@ -19,17 +19,17 @@
 
 import { Router } from 'express';
 
-import { resolveTenantId } from '../middleware/tenant.js';
 import type { AgentLoopService } from '../agent-loop.service.js';
 import type { CoordinationService } from '../coordination.service.js';
 import type { EventService } from '../event.service.js';
+import { resolveTenantId } from '../middleware/tenant.js';
 import type { SessionService } from '../session.service.js';
 
-import { createSessionsRouter } from './sessions.js';
-import { createMessagesRouter } from './messages.js';
-import { createEventsRouter, createTenantEventsRouter } from './events.js';
 import { createCoordinationRouter } from './coordination.js';
+import { createEventsRouter, createTenantEventsRouter } from './events.js';
+import { createMessagesRouter } from './messages.js';
 import { createOpenApiRouter } from './openapi.js';
+import { createSessionsRouter } from './sessions.js';
 
 export interface OrchestratorRouterDeps {
   sessionService: SessionService;

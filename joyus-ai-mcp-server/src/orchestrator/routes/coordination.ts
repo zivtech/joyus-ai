@@ -21,7 +21,6 @@
 
 import { Router } from 'express';
 
-import { getTenantId } from '../middleware/tenant.js';
 import type { CoordinationService } from '../coordination.service.js';
 import {
   WorkUnitNotFoundError,
@@ -30,12 +29,14 @@ import {
   DependencyNotMetError,
   DependencyCycleError,
 } from '../coordination.service.js';
+import { getTenantId } from '../middleware/tenant.js';
 import {
   createWorkUnitRequestSchema,
   updateWorkUnitRequestSchema,
   listWorkUnitsQuerySchema,
   createCoordinationGroupRequestSchema,
 } from '../schemas.js';
+
 import { apiError, validate } from './helpers.js';
 
 export function createCoordinationRouter(coordinationService: CoordinationService): Router {

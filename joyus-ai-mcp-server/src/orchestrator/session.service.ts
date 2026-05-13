@@ -20,6 +20,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { orchestratorSessions } from '../db/schema/orchestrator.js';
 import type { OrchestratorSession } from '../db/schema/orchestrator.js';
 import { inngest } from '../inngest/client.js';
+
 import {
   type CreateSessionInput,
   type ListSessionsFilters,
@@ -33,10 +34,10 @@ import {
   updateSessionStatusInputSchema,
 } from './types.js';
 
-/** Inngest client interface (subset used here — facilitates testing). */
-interface InngestClient {
-  send(event: { name: string; data: Record<string, unknown> }): Promise<unknown>;
-}
+/** Inngest client interface (subset used here — facilitates testing).
+ *  Picks the typed `send` from the real client so call-sites stay constrained
+ *  to declared event schemas. */
+type InngestClient = Pick<typeof inngest, 'send'>;
 
 export type { OrchestratorSession };
 

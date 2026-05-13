@@ -21,10 +21,13 @@
  *   2. If flagged/blocked: suppress or modify response, return reason to caller
  */
 
+import { z } from 'zod';
+
+import type { AgentMessage } from './agent-loop.service.js';
 import type { EventService } from './event.service.js';
 import { registerEventType } from './event.service.js';
-import type { AgentMessage, ToolCall as AgentToolCall } from './agent-loop.service.js';
-import { z } from 'zod';
+import type { ToolCall as AgentToolCall } from './types.js';
+
 
 // ============================================================
 // EVENT TYPE REGISTRATION — T049 (audit logging)
