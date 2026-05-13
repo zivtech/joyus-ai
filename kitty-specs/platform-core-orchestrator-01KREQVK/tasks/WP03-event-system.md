@@ -16,7 +16,7 @@ subtasks:
 - T025
 - T026
 - T027
-agent: "claude:opus:orchestrator:reviewer"
+agent: "user"
 shell_pid: "2892"
 history:
 - date: '2026-05-12'
@@ -196,3 +196,4 @@ data: {"sessionId":"...","tenantId":"...","toolName":"search","durationMs":234}
 - 2026-05-12T21:13:18Z – claude:opus:orchestrator:implementer – shell_pid=75358 – Event system complete: typed registry, SSE subscription, notification routing
 - 2026-05-12T21:13:35Z – claude:opus:orchestrator:reviewer – shell_pid=2892 – Started review via action command
 - 2026-05-12T21:17:46Z – claude:opus:orchestrator:reviewer – shell_pid=2892 – Review passed: typed event system, SSE subscription, notification routing
+- 2026-05-13T13:57:43Z – user – shell_pid=2892 – Done override: Squash merge commit fa3e94a landed on branch; post-merge invariant interrupted before done transition

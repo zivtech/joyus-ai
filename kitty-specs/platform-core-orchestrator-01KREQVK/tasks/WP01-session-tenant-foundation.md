@@ -18,7 +18,7 @@ subtasks:
 - T013
 - T014
 - T015
-agent: "claude:opus:orchestrator:reviewer"
+agent: "user"
 shell_pid: "1980"
 history:
 - date: '2026-05-12'
@@ -199,3 +199,4 @@ Build the foundational data layer and session lifecycle for the orchestrator. Af
 - 2026-05-12T20:48:05Z – claude:opus:orchestrator:implementer – shell_pid=65789 – Cycle 2: fixed all 3 blocking issues — cancelled status, crash recovery wired, queued event emitted
 - 2026-05-12T20:48:25Z – claude:opus:orchestrator:reviewer – shell_pid=1980 – Started review via action command
 - 2026-05-12T20:49:55Z – claude:opus:orchestrator:reviewer – shell_pid=1980 – Review passed: all 3 cycle-1 blocking issues resolved — cancelled status in enum/transitions/migration SQL; orchestrator/session.queued emitted from createSession when tenant hits concurrency limit; crash recovery wired into server startup via runCrashRecovery(). Non-blocking items also addressed: markOrphanedAsFailed merges metadata via COALESCE+|| rather than overwriting; concurrency scope deviation (fn vs env) is documented with rationale.
+- 2026-05-13T13:57:41Z – user – shell_pid=1980 – Done override: Squash merge commit fa3e94a landed on branch; post-merge invariant interrupted before done transition

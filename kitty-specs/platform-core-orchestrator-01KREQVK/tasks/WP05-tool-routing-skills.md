@@ -17,7 +17,7 @@ subtasks:
 - T038
 - T039
 - T040
-agent: "claude:opus:orchestrator:reviewer"
+agent: "user"
 shell_pid: "94101"
 history:
 - date: '2026-05-12'
@@ -209,3 +209,4 @@ Replace the stub tool router from WP02 with real tool discovery, routing, and pe
 - 2026-05-12T22:02:57Z – claude:opus:orchestrator:reviewer – shell_pid=94101 – Started review via action command
 - 2026-05-12T22:04:01Z – claude:opus:orchestrator:reviewer – shell_pid=94101 – Review passed: Cycle 1 blocker fixed. assemblePromptPrefix now loads constitution first with sequential await, wraps loadSkills in try/catch. Non-ENOENT skill failures (EACCES, EIO) log a warning and return constitution-only — constitution cannot be discarded by a skill resolver failure. New test 'delivers constitution even when loadSkills throws EACCES' confirms the invariant (26/26 skill-loader tests pass).
 - 2026-05-12T22:04:21Z – claude:opus:orchestrator:reviewer – shell_pid=94101 – Review passed: Constitution resilience, tool routing, skill injection
+- 2026-05-13T13:57:44Z – user – shell_pid=94101 – Done override: Squash merge commit fa3e94a landed on branch; post-merge invariant interrupted before done transition
