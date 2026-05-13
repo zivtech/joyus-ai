@@ -82,11 +82,11 @@ WP01 (sessions + tenancy + durability)
 | T045 | Implement coordination API endpoints | WP06 | | [D] |
 | T046 | Add Zod schemas and OpenAPI generation | WP06 | | [D] |
 | T047 | Add CI schema drift detection | WP06 | | [D] |
-| T048 | Implement safety hook interface | WP07 | |
-| T049 | Implement hook audit logging | WP07 | |
-| T050 | Implement token accounting events | WP07 | |
-| T051 | Implement per-session cost accumulation | WP07 | |
-| T052 | Implement idle gap detection | WP07 | |
+| T048 | Implement safety hook interface | WP07 | | [D] |
+| T049 | Implement hook audit logging | WP07 | | [D] |
+| T050 | Implement token accounting events | WP07 | | [D] |
+| T051 | Implement per-session cost accumulation | WP07 | | [D] |
+| T052 | Implement idle gap detection | WP07 | | [D] |
 
 ---
 
@@ -243,11 +243,11 @@ WP01 (sessions + tenancy + durability)
 **Estimated prompt:** ~260 lines
 **Prompt:** [WP07-safety-cost-integration.md](tasks/WP07-safety-cost-integration.md)
 
-- [ ] T048 Implement safety service: pre/post-generation hook interface (WP07)
-- [ ] T049 Implement hook audit logging: record invocations and outcomes (WP07)
-- [ ] T050 Implement token accounting: emit usage events on every model invocation (WP07)
-- [ ] T051 Implement per-session cost accumulation: queryable via session API (WP07)
-- [ ] T052 Implement idle gap detection: flag sessions consuming tokens without interaction (WP07)
+- [x] T048 Implement safety service: pre/post-generation hook interface (WP07)
+- [x] T049 Implement hook audit logging: record invocations and outcomes (WP07)
+- [x] T050 Implement token accounting: emit usage events on every model invocation (WP07)
+- [x] T051 Implement per-session cost accumulation: queryable via session API (WP07)
+- [x] T052 Implement idle gap detection: flag sessions consuming tokens without interaction (WP07)
 
 **Parallel opportunities:** T048-T049 (safety) and T050-T052 (cost) are independent tracks.
 **Can run in parallel with WP05.**
