@@ -53,6 +53,8 @@ export class PgFtsProvider implements SearchProvider {
       return [];
     }
 
+    // Bind each source id as a scalar parameter; raw ANY($array) binding is
+    // driver-sensitive and can drift from the multi-source search contract.
     const sourceIdList = sql.join(sourceIds.map((id) => sql`${id}`), sql`, `);
 
     const rows = await this.db.execute<FtsRow>(sql`
