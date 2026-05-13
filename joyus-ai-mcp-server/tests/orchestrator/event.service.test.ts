@@ -53,7 +53,10 @@ function buildMockEvent(overrides: Partial<Record<string, unknown>> = {}) {
 function makeDb(rows: unknown[] = []): MockDb {
   const returning = vi.fn().mockResolvedValue(rows);
   const limit = vi.fn().mockResolvedValue(rows);
-  const orderBy = vi.fn().mockReturnValue({ limit });
+  const orderBy = vi.fn().mockImplementation(() => {
+    const thenableResult = { limit, then: (resolve: (v: unknown) => void) => resolve(rows) };
+    return thenableResult;
+  });
   const where = vi.fn().mockReturnValue({ orderBy, limit, returning });
   const from = vi.fn().mockReturnValue({ where });
   const values = vi.fn().mockReturnValue({ returning });
