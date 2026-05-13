@@ -449,6 +449,35 @@ A subset of FR-004 events are forwarded to tenant-configured external backends f
 
 ---
 
+## Adoption Plan
+
+This feature introduces a new platform subsystem; rollout proceeds work-package by work-package behind feature flags:
+
+- WP00 architecture spike merges first and gates downstream packages on its decision outputs.
+- WP01–WP07 are merged sequentially; each package ships with feature-flagged routes that default off until the package's tests pass in staging.
+- Existing MCP server traffic is unaffected — orchestrator endpoints are mounted under a separate route namespace and only enabled per-tenant via the runtime config.
+- Cutover to orchestrator-backed sessions for production tenants is gated on: (a) all WP tests green for two consecutive weeks, (b) observability dashboards live (sessions/sec, p95 turn latency, durable-run failure rate), and (c) platform team sign-off recorded in the feature changelog.
+
+## ROI Metrics
+
+- **Session throughput**: sustained sessions/sec/tenant at target SLO (measured via orchestrator session metrics).
+- **Durable-run recovery**: zero data-loss incidents from process crashes during agent turns in the first 30 days post-cutover.
+- **Tool routing overhead**: p95 tool-dispatch latency below the budget defined in WP05.
+- **Test suite stability**: orchestrator test suite runs in CI without flakes for two consecutive weeks before cutover.
+- **Owner**: Platform Engineering.
+- **Review cadence**: weekly during rollout, monthly thereafter.
+
+## Security + MCP Governance
+
+- **Tenant isolation**: every session is scoped by `tenantId`; queries and event subscriptions are filtered at the service layer (FR-006). Cross-tenant access is rejected at the route handler.
+- **Secrets**: orchestrator does not introduce new long-lived secrets. Inngest signing keys and Anthropic API keys remain environment-variable-only and continue to be excluded from the repository via existing gitleaks rules.
+- **MCP tool routing**: skill-loaded tools execute through the orchestrator's tool router, which enforces per-skill allowlists and records every tool call in the event stream for audit (FR-008, FR-009).
+- **Safety integration**: agent loops invoke the safety service before each tool dispatch and after each model response (FR-011). Safety rejections are surfaced as durable events for review.
+- **Approval gates**: enabling the orchestrator for a production tenant requires platform team lead sign-off recorded in the feature changelog.
+- **Audit trail**: every session run, coordination event, and tool call is recorded in the events schema and retained per the platform retention policy.
+
+---
+
 *Spec created: May 12, 2026*
 *Supersedes: March 2026 draft (joyus-ai/kitty-specs/012-platform-core-orchestrator/)*
 *Tool evaluation: planning/agent-orchestration-evaluation-2026-05.md*
