@@ -39,14 +39,14 @@ import {
 } from './event-adapter/index.js';
 import { exportRouter } from './exports/router.js';
 import { createAllFunctions, inngest } from './inngest/index.js';
-import { runCrashRecovery } from './orchestrator/recovery.js';
-import { SessionService } from './orchestrator/session.service.js';
 import {
   createOrchestratorRoutes,
   AgentLoopService,
   EventService,
   CoordinationService,
 } from './orchestrator/index.js';
+import { runCrashRecovery } from './orchestrator/recovery.js';
+import { SessionService } from './orchestrator/session.service.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
 import { createStepRegistry } from './pipelines/steps/registry.js';

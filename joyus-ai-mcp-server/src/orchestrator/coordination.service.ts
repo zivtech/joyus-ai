@@ -23,9 +23,9 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { z } from 'zod';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { z } from 'zod';
 
 import {
   coordinationGroups,
@@ -36,8 +36,9 @@ import {
   type WorkUnit,
   type WorkUnitStatus,
 } from '../db/schema/coordination.js';
-import { registerEventType, type EventService } from './event.service.js';
 import { inngest } from '../inngest/client.js';
+
+import { registerEventType, type EventService } from './event.service.js';
 
 // ============================================================
 // REGISTER COORDINATION EVENT TYPES

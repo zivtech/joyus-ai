@@ -18,11 +18,12 @@
  *   - Session suspension on idle (Spec 011 decision)
  */
 
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, eq, inArray, sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 
 import { orchestratorEvents } from '../db/schema/events.js';
+
 import type { EventService } from './event.service.js';
 import { registerEventType } from './event.service.js';
 

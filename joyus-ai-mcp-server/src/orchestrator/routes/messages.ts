@@ -24,13 +24,14 @@
 
 import { Router } from 'express';
 
-import { getTenantId } from '../middleware/tenant.js';
 import type { AgentLoopService } from '../agent-loop.service.js';
 import { AgentLoopError } from '../agent-loop.service.js';
-import type { SessionService } from '../session.service.js';
-import { SessionNotFoundError } from '../types.js';
-import { SseStream } from '../streaming.js';
+import { getTenantId } from '../middleware/tenant.js';
 import { sendMessageRequestSchema } from '../schemas.js';
+import type { SessionService } from '../session.service.js';
+import { SseStream } from '../streaming.js';
+import { SessionNotFoundError } from '../types.js';
+
 import { apiError, validate } from './helpers.js';
 
 export function createMessagesRouter(

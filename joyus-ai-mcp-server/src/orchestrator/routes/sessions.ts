@@ -18,14 +18,8 @@
 
 import { Router } from 'express';
 
-import { getTenantId } from '../middleware/tenant.js';
-import type { SessionService } from '../session.service.js';
-import {
-  InvalidStatusTransitionError,
-  SessionNotFoundError,
-} from '../types.js';
 import type { MemoryService } from '../memory.service.js';
-import type { UsageService } from '../usage.service.js';
+import { getTenantId } from '../middleware/tenant.js';
 import {
   createSessionRequestSchema,
   updateSessionRequestSchema,
@@ -33,6 +27,13 @@ import {
   listTurnsQuerySchema,
   SESSION_ACTION_TO_STATUS,
 } from '../schemas.js';
+import type { SessionService } from '../session.service.js';
+import {
+  InvalidStatusTransitionError,
+  SessionNotFoundError,
+} from '../types.js';
+import type { UsageService } from '../usage.service.js';
+
 import { apiError, validate } from './helpers.js';
 
 export function createSessionsRouter(
@@ -152,7 +153,7 @@ export function createSessionsRouter(
       (parsed.limit ?? 50) + 1,
     );
 
-    const filtered = parsed.after_sequence != null
+    const filtered = parsed.after_sequence !== null && parsed.after_sequence !== undefined
       ? turns.filter((t) => t.sequence > parsed.after_sequence!)
       : turns;
 

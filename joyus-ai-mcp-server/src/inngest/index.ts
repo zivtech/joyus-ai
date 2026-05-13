@@ -27,11 +27,11 @@ import type { StepHandlerRegistry } from '../pipelines/types.js';
 import { createContentAuditPipeline } from './functions/content-audit-pipeline.js';
 import { createCorpusUpdatePipeline } from './functions/corpus-update-pipeline.js';
 import { createManualTriggerPipeline } from './functions/manual-trigger-pipeline.js';
+import { createCoordinationGroupLifecycleFunction } from './functions/orchestrator/coordination.js';
+import { createSessionRunFunction } from './functions/orchestrator/session-run.js';
 import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import { stubFunction } from './functions/stub.js';
-import { createSessionRunFunction } from './functions/orchestrator/session-run.js';
-import { createCoordinationGroupLifecycleFunction } from './functions/orchestrator/coordination.js';
 
 export interface InngestFunctionDeps {
   db?: NodePgDatabase;

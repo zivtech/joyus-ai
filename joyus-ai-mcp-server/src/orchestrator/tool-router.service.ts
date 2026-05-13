@@ -22,12 +22,7 @@
 
 import { z } from 'zod';
 
-import {
-  type ToolRouter,
-  type ToolRegistration,
-  type ToolExecutionResult,
-} from './agent-loop.service.js';
-import { registerEventType, type EventService } from './event.service.js';
+import { executeTool } from '../tools/executor.js';
 import {
   contentTools,
   githubTools,
@@ -39,7 +34,13 @@ import {
   slackTools,
   type ToolDefinition,
 } from '../tools/index.js';
-import { executeTool } from '../tools/executor.js';
+
+import {
+  type ToolRouter,
+  type ToolRegistration,
+  type ToolExecutionResult,
+} from './agent-loop.service.js';
+import { registerEventType, type EventService } from './event.service.js';
 
 // ============================================================
 // CIRCUIT BREAKER EVENTS (registered at module init)
