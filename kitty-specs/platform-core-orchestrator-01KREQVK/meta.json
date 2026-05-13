@@ -2,7 +2,7 @@
   "created_at": "2026-05-12T18:40:44.180058+00:00",
   "friendly_name": "Platform Core Orchestrator",
   "mission_id": "01KREQVK1F3R8Y8VK62KMT75A1",
-  "mission_number": null,
+  "mission_number": 13,
   "mission_slug": "platform-core-orchestrator-01KREQVK",
   "mission_type": "software-dev",
   "slug": "platform-core-orchestrator-01KREQVK",

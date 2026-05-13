@@ -13,6 +13,9 @@ import * as eventAdapterSchema from '../event-adapter/schema.js';
 import * as pipelinesSchema from '../pipelines/schema.js';
 import * as profilesSchema from '../profiles/schema.js';
 
+import * as coordinationSchema from './schema/coordination.js';
+import * as eventsSchema from './schema/events.js';
+import * as orchestratorSchema from './schema/orchestrator.js';
 import * as coreSchema from './schema.js';
 
 /**
@@ -25,6 +28,9 @@ export const allSchemas = {
   ...pipelinesSchema,
   ...eventAdapterSchema,
   ...profilesSchema,
+  ...orchestratorSchema,
+  ...eventsSchema,
+  ...coordinationSchema,
 };
 
 // Re-export each domain namespace for convenience
@@ -33,3 +39,6 @@ export * from '../content/schema.js';
 export * from '../pipelines/schema.js';
 export * from '../event-adapter/schema.js';
 export * from '../profiles/schema.js';
+export * from './schema/orchestrator.js';
+export * from './schema/events.js';
+export * from './schema/coordination.js';

@@ -15,6 +15,8 @@ export { createManualTriggerPipeline } from './functions/manual-trigger-pipeline
 export { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
 export { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 export { stubFunction } from './functions/stub.js';
+export { createSessionRunFunction } from './functions/orchestrator/session-run.js';
+export { createCoordinationGroupLifecycleFunction } from './functions/orchestrator/coordination.js';
 export { createInngestAdapter } from './adapter.js';
 export type { InngestStep, InngestStepHandlerAdapter } from './adapter.js';
 
@@ -28,6 +30,8 @@ import { createManualTriggerPipeline } from './functions/manual-trigger-pipeline
 import { createRegulatoryChangeMonitorPipeline } from './functions/regulatory-change-monitor-pipeline.js';
 import { createScheduleTickPipeline } from './functions/schedule-tick-pipeline.js';
 import { stubFunction } from './functions/stub.js';
+import { createSessionRunFunction } from './functions/orchestrator/session-run.js';
+import { createCoordinationGroupLifecycleFunction } from './functions/orchestrator/coordination.js';
 
 export interface InngestFunctionDeps {
   db?: NodePgDatabase;
@@ -50,6 +54,8 @@ export function createAllFunctions(
     createRegulatoryChangeMonitorPipeline(registry),
     createScheduleTickPipeline(),
     createManualTriggerPipeline(registry, deps),
+    createSessionRunFunction(deps),
+    createCoordinationGroupLifecycleFunction(deps),
   ];
 }
 

@@ -39,6 +39,14 @@ import {
 } from './event-adapter/index.js';
 import { exportRouter } from './exports/router.js';
 import { createAllFunctions, inngest } from './inngest/index.js';
+import { runCrashRecovery } from './orchestrator/recovery.js';
+import { SessionService } from './orchestrator/session.service.js';
+import {
+  createOrchestratorRoutes,
+  AgentLoopService,
+  EventService,
+  CoordinationService,
+} from './orchestrator/index.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
 import { createStepRegistry } from './pipelines/steps/registry.js';
@@ -321,6 +329,19 @@ app.use('/api/v1', exportRouter);
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
 
+// Orchestrator HTTP API — WP06: sessions, messages, events, coordination
+// requireBearerToken guards the entire tree; resolveTenantId is applied inside.
+app.use(
+  '/api/v1/orchestrator',
+  requireBearerToken,
+  createOrchestratorRoutes({
+    sessionService: new SessionService(pipelineDb),
+    agentLoopService: new AgentLoopService({ db: pipelineDb }),
+    eventService: new EventService(pipelineDb),
+    coordinationService: new CoordinationService(pipelineDb),
+  }),
+);
+
 // Trigger callback — no MCP bearer token; auth is via shared secret validated
 // against automationDestinations.authSecretRef inside the route handler.
 app.use('/v1/events', createTriggerRouter({ db: pipelineDb }));
@@ -525,6 +546,20 @@ const server = app.listen(PORT, async () => {
     console.log('   Profiles: initialized');
   } catch (error) {
     console.error('Failed to initialize profiles module:', error);
+  }
+
+  // Crash recovery (T014): mark orphaned sessions as failed on startup.
+  // Runs after DB is available and before the server starts serving traffic.
+  // Failure is isolated — a recovery error won't prevent the server from starting.
+  try {
+    const sessionService = new SessionService(pipelineDb);
+    const recoveryResult = await runCrashRecovery(sessionService);
+    console.log(
+      `   Crash recovery: recovered=${recoveryResult.recovered} ` +
+      `skipped=${recoveryResult.skipped} errors=${recoveryResult.errors}`,
+    );
+  } catch (error) {
+    console.error('Failed to run crash recovery:', error);
   }
 
   console.log(`   Mediation: http://localhost:${PORT}/api/mediation`);
