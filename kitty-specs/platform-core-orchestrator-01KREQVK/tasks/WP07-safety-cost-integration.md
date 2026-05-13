@@ -15,7 +15,7 @@ subtasks:
 - T050
 - T051
 - T052
-agent: "claude:opus:orchestrator:reviewer"
+agent: "user"
 shell_pid: "33318"
 history:
 - date: '2026-05-12'
@@ -191,3 +191,4 @@ Add pre/post-generation safety hooks and token usage tracking to the agent loop.
 - 2026-05-13T12:57:27Z – claude:opus:orchestrator:reviewer – shell_pid=33318 – Started review via action command
 - 2026-05-13T13:02:35Z – claude:opus:orchestrator:reviewer – shell_pid=33318 – Moved to planned
 - 2026-05-13T13:15:04Z – claude:opus:orchestrator:reviewer – shell_pid=33318 – Arbiter approved: all 3 review issues fixed — safety hooks wired, usage tracking wired, session route returns usage
+- 2026-05-13T13:57:46Z – user – shell_pid=33318 – Done override: Squash merge commit fa3e94a landed on branch; post-merge invariant interrupted before done transition

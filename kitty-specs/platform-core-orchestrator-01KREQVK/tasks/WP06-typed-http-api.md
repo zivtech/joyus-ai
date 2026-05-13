@@ -17,7 +17,7 @@ subtasks:
 - T045
 - T046
 - T047
-agent: "claude:opus:orchestrator:reviewer"
+agent: "user"
 shell_pid: "51280"
 history:
 - date: '2026-05-12'
@@ -198,3 +198,4 @@ Expose all orchestrator functionality via a typed HTTP API with auto-generated O
 - 2026-05-13T00:21:57Z – claude:opus:orchestrator:implementer – shell_pid=33412 – Cycle 2: listTurns endpoint, Turn/TurnList schemas, operationId fix
 - 2026-05-13T00:22:13Z – claude:opus:orchestrator:reviewer – shell_pid=51280 – Started review via action command
 - 2026-05-13T13:15:27Z – claude:opus:orchestrator:reviewer – shell_pid=51280 – Review passed: listTurns endpoint added, all API endpoints complete
+- 2026-05-13T13:57:45Z – user – shell_pid=51280 – Done override: Squash merge commit fa3e94a landed on branch; post-merge invariant interrupted before done transition

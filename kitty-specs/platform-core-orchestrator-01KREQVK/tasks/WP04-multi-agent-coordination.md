@@ -16,7 +16,7 @@ subtasks:
 - T031
 - T032
 - T033
-agent: "claude:opus:orchestrator:reviewer"
+agent: "user"
 shell_pid: "15496"
 history:
 - date: '2026-05-12'
@@ -184,3 +184,4 @@ Build the work unit and coordination group system that allows multiple agents to
 - 2026-05-12T21:40:18Z – claude:opus:orchestrator:implementer – shell_pid=96229 – Cycle 2: DB mocks fixed, 38/38 tests pass
 - 2026-05-12T21:40:19Z – claude:opus:orchestrator:reviewer – shell_pid=15496 – Started review via action command
 - 2026-05-12T21:41:30Z – claude:opus:orchestrator:reviewer – shell_pid=15496 – Review passed: coordination system with 38/38 tests
+- 2026-05-13T13:57:43Z – user – shell_pid=15496 – Done override: Squash merge commit fa3e94a landed on branch; post-merge invariant interrupted before done transition
