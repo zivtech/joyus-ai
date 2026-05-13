@@ -90,6 +90,7 @@ case "$mode" in
   --staged)
     files=()
     while IFS= read -r f; do files+=("$f"); done < <(git diff --cached --name-only --diff-filter=ACMR)
+    if [ "${#files[@]}" -eq 0 ]; then exit 0; fi
     failed=0
     for file in "${files[@]}"; do
       is_exempt_file "$file" && continue
