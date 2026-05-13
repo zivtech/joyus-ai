@@ -17,8 +17,8 @@ subtasks:
 - T045
 - T046
 - T047
-agent: "claude:opus:orchestrator:implementer"
-shell_pid: "33412"
+agent: "claude:opus:orchestrator:reviewer"
+shell_pid: "51280"
 history:
 - date: '2026-05-12'
   action: created
@@ -196,3 +196,4 @@ Expose all orchestrator functionality via a typed HTTP API with auto-generated O
 - 2026-05-12T23:43:49Z – claude:opus:orchestrator:reviewer – shell_pid=2883 – Moved to planned
 - 2026-05-12T23:44:00Z – claude:opus:orchestrator:implementer – shell_pid=33412 – Started implementation via action command
 - 2026-05-13T00:21:57Z – claude:opus:orchestrator:implementer – shell_pid=33412 – Cycle 2: listTurns endpoint, Turn/TurnList schemas, operationId fix
+- 2026-05-13T00:22:13Z – claude:opus:orchestrator:reviewer – shell_pid=51280 – Started review via action command
