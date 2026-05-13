@@ -189,3 +189,4 @@ Add pre/post-generation safety hooks and token usage tracking to the agent loop.
 - 2026-05-13T00:23:22Z – claude:opus:orchestrator:implementer – shell_pid=55736 – Started implementation via action command
 - 2026-05-13T12:57:23Z – claude:opus:orchestrator:implementer – shell_pid=55736 – Safety hooks, usage tracking, idle detection — FINAL WP
 - 2026-05-13T12:57:27Z – claude:opus:orchestrator:reviewer – shell_pid=33318 – Started review via action command
+- 2026-05-13T13:02:35Z – claude:opus:orchestrator:reviewer – shell_pid=33318 – Moved to planned
