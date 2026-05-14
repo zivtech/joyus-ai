@@ -38,6 +38,8 @@ function makeSessionService(overrides: Partial<SessionService> = {}): SessionSer
   return {
     findAllOrphanedSessions: vi.fn().mockResolvedValue([]),
     markOrphanedAsFailed: vi.fn().mockResolvedValue(null),
+    findAllOrphanedPendingSessions: vi.fn().mockResolvedValue([]),
+    markOrphanedPendingAsFailed: vi.fn().mockResolvedValue(null),
     ...overrides,
   } as unknown as SessionService;
 }
@@ -130,5 +132,91 @@ describe('runCrashRecovery — handles findAllOrphanedSessions failure', () => {
 
     expect(result).toEqual({ recovered: 0, skipped: 0, errors: 1 });
     expect(service.markOrphanedAsFailed).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Pending session sweep (Fix 1c)
+// ---------------------------------------------------------------------------
+
+describe('runCrashRecovery — pending session sweep', () => {
+  it('sweeps stuck pending sessions in addition to orphaned running sessions', async () => {
+    const runningSessions = [
+      buildMockSession({ id: 'running-1', tenantId: 'tenant-1', status: 'running' }),
+    ];
+    const pendingSessions = [
+      buildMockSession({ id: 'pending-1', tenantId: 'tenant-1', status: 'pending' }),
+    ];
+
+    const service = makeSessionService({
+      findAllOrphanedSessions: vi.fn().mockResolvedValue(runningSessions),
+      markOrphanedAsFailed: vi.fn().mockImplementation((tenantId, sessionId) =>
+        Promise.resolve(buildMockSession({ id: sessionId, tenantId, status: 'failed' })),
+      ),
+      findAllOrphanedPendingSessions: vi.fn().mockResolvedValue(pendingSessions),
+      markOrphanedPendingAsFailed: vi.fn().mockImplementation((tenantId, sessionId) =>
+        Promise.resolve(buildMockSession({ id: sessionId, tenantId, status: 'failed' })),
+      ),
+    });
+
+    const result = await runCrashRecovery(service);
+
+    expect(result).toEqual({ recovered: 2, skipped: 0, errors: 0 });
+    expect(service.markOrphanedAsFailed).toHaveBeenCalledWith('tenant-1', 'running-1');
+    expect(service.markOrphanedPendingAsFailed).toHaveBeenCalledWith('tenant-1', 'pending-1');
+  });
+
+  it('recovers pending sessions even when no running sessions are orphaned', async () => {
+    const pendingSessions = [
+      buildMockSession({ id: 'pending-1', tenantId: 'tenant-2', status: 'pending' }),
+      buildMockSession({ id: 'pending-2', tenantId: 'tenant-2', status: 'pending' }),
+    ];
+
+    const service = makeSessionService({
+      findAllOrphanedSessions: vi.fn().mockResolvedValue([]),
+      findAllOrphanedPendingSessions: vi.fn().mockResolvedValue(pendingSessions),
+      markOrphanedPendingAsFailed: vi.fn().mockImplementation((tenantId, sessionId) =>
+        Promise.resolve(buildMockSession({ id: sessionId, tenantId, status: 'failed' })),
+      ),
+    });
+
+    const result = await runCrashRecovery(service);
+
+    expect(result).toEqual({ recovered: 2, skipped: 0, errors: 0 });
+    expect(service.markOrphanedAsFailed).not.toHaveBeenCalled();
+    expect(service.markOrphanedPendingAsFailed).toHaveBeenCalledTimes(2);
+  });
+
+  it('counts pending session recovery errors without aborting the sweep', async () => {
+    const pendingSessions = [
+      buildMockSession({ id: 'pending-1', tenantId: 'tenant-1', status: 'pending' }),
+      buildMockSession({ id: 'pending-2', tenantId: 'tenant-1', status: 'pending' }),
+    ];
+
+    const service = makeSessionService({
+      findAllOrphanedSessions: vi.fn().mockResolvedValue([]),
+      findAllOrphanedPendingSessions: vi.fn().mockResolvedValue(pendingSessions),
+      markOrphanedPendingAsFailed: vi.fn()
+        .mockRejectedValueOnce(new Error('DB connection lost'))
+        .mockResolvedValueOnce(buildMockSession({ id: 'pending-2', status: 'failed' })),
+    });
+
+    const result = await runCrashRecovery(service);
+
+    expect(result).toEqual({ recovered: 1, skipped: 0, errors: 1 });
+    expect(service.markOrphanedPendingAsFailed).toHaveBeenCalledTimes(2);
+  });
+
+  it('continues to phase 2 even when findAllOrphanedPendingSessions fails', async () => {
+    const service = makeSessionService({
+      findAllOrphanedSessions: vi.fn().mockResolvedValue([]),
+      findAllOrphanedPendingSessions: vi.fn().mockRejectedValue(new Error('DB timeout')),
+    });
+
+    const result = await runCrashRecovery(service);
+
+    // Phase 1 no-op + phase 2 query error = errors: 1, but no throw
+    expect(result).toEqual({ recovered: 0, skipped: 0, errors: 1 });
+    expect(service.markOrphanedPendingAsFailed).not.toHaveBeenCalled();
   });
 });

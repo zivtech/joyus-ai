@@ -93,6 +93,19 @@ export class SessionService {
       })
       .returning();
 
+    try {
+      await this.inngestClient.send({
+        name: 'orchestrator/session.created',
+        data: {
+          sessionId: id,
+          tenantId: validated.tenantId,
+          userId: validated.userId,
+        },
+      });
+    } catch (err) {
+      console.error('[SessionService] Failed to emit session.created event:', err);
+    }
+
     // T015: Emit queued event when the tenant is at or above concurrency capacity.
     // Count active (running + pending) sessions for this tenant — if at or over
     // the limit, the new session will be queued by Inngest's concurrency controls.
@@ -286,6 +299,61 @@ export class SessionService {
         ),
       )
       .orderBy(asc(orchestratorSessions.tenantId), asc(orchestratorSessions.createdAt));
+  }
+
+  /**
+   * Find all pending sessions with stale updatedAt across all tenants.
+   * Used for server-startup crash recovery when the Inngest send fails after
+   * session creation, leaving sessions stuck in 'pending'.
+   */
+  async findAllOrphanedPendingSessions(cutoffMs = 10 * 60 * 1000): Promise<OrchestratorSession[]> {
+    const cutoff = new Date(Date.now() - cutoffMs);
+
+    return this.db
+      .select()
+      .from(orchestratorSessions)
+      .where(
+        and(
+          eq(orchestratorSessions.status, 'pending'),
+          lt(orchestratorSessions.updatedAt, cutoff),
+        ),
+      )
+      .orderBy(asc(orchestratorSessions.tenantId), asc(orchestratorSessions.createdAt));
+  }
+
+  /**
+   * Mark a stuck pending session as failed (crash recovery path for pending sessions).
+   * Used when the Inngest session.created event was never delivered and the session
+   * is stuck in 'pending'. Does NOT go through the normal state machine.
+   */
+  async markOrphanedPendingAsFailed(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<OrchestratorSession | null> {
+    const now = new Date();
+    const recoveryPatch = JSON.stringify({
+      recoveredFromCrash: true,
+      recoveredAt: now.toISOString(),
+    });
+
+    const [updated] = await this.db
+      .update(orchestratorSessions)
+      .set({
+        status: 'failed',
+        updatedAt: now,
+        completedAt: now,
+        metadata: sql`COALESCE(${orchestratorSessions.metadata}, '{}'::jsonb) || ${recoveryPatch}::jsonb`,
+      })
+      .where(
+        and(
+          eq(orchestratorSessions.id, sessionId),
+          eq(orchestratorSessions.tenantId, tenantId),
+          eq(orchestratorSessions.status, 'pending'),
+        ),
+      )
+      .returning();
+
+    return updated ?? null;
   }
 
   /**

@@ -101,6 +101,38 @@ describe('SessionService.createSession', () => {
     expect(db.insert).toHaveBeenCalledOnce();
   });
 
+  it('emits orchestrator/session.created event after inserting the session row', async () => {
+    const mockSession = buildMockSession({ tenantId: TENANT, userId: USER });
+    const db = makeDb([mockSession]);
+    const inngestClient = { send: vi.fn().mockResolvedValue(undefined) };
+    const service = new SessionService(db as never, 10, inngestClient);
+
+    await service.createSession({ tenantId: TENANT, userId: USER });
+
+    expect(inngestClient.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'orchestrator/session.created',
+        data: expect.objectContaining({
+          // sessionId is a cuid2 generated at createSession call-time, not the mock's id
+          sessionId: expect.any(String),
+          tenantId: TENANT,
+          userId: USER,
+        }),
+      }),
+    );
+  });
+
+  it('does not fail createSession when inngestClient.send rejects', async () => {
+    const mockSession = buildMockSession({ tenantId: TENANT, userId: USER });
+    const db = makeDb([mockSession]);
+    const inngestClient = { send: vi.fn().mockRejectedValue(new Error('Inngest unavailable')) };
+    const service = new SessionService(db as never, 10, inngestClient);
+
+    // Must not throw
+    const result = await service.createSession({ tenantId: TENANT, userId: USER });
+    expect(result).toEqual(mockSession);
+  });
+
   it('applies default empty metadata when omitted', async () => {
     const mockSession = buildMockSession({ metadata: {} });
     const { db, service } = makeService([mockSession]);
