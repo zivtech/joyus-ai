@@ -405,7 +405,7 @@ export class AgentLoopService {
     });
 
     // ----------------------------------------------------------------
-    // Step 5: Build initial messages array
+    // Step 4: Build initial messages array
     // (Built before the pre-generation safety hooks so the hooks can
     // inspect the full message list.)
     // ----------------------------------------------------------------
@@ -417,6 +417,7 @@ export class AgentLoopService {
     // ----------------------------------------------------------------
     // WP07: Pre-generation safety hooks
     // ----------------------------------------------------------------
+    let effectivePrompt = systemPrompt;
     if (this.safetyService) {
       const preResult = await this.safetyService.runPreHooks({
         tenantId,
@@ -427,10 +428,11 @@ export class AgentLoopService {
       if (preResult.action === 'block') {
         throw new SafetyBlockedError('pre', preResult.reason);
       }
+      effectivePrompt = preResult.effectiveSystemPrompt;
     }
 
     // ----------------------------------------------------------------
-    // Step 4: Get authorized tools (WP05: real permission-filtered discovery)
+    // Step 5: Get authorized tools (WP05: real permission-filtered discovery)
     // ----------------------------------------------------------------
     const tools = this.toolRouter.getAuthorizedTools
       ? await this.toolRouter.getAuthorizedTools(tenantId)
@@ -439,7 +441,7 @@ export class AgentLoopService {
     // ----------------------------------------------------------------
     // T021: Context window monitoring
     // ----------------------------------------------------------------
-    this.monitorContextWindow({ systemPrompt, messages, sessionId, tenantId, correlationId });
+    this.monitorContextWindow({ systemPrompt: effectivePrompt, messages, sessionId, tenantId, correlationId });
 
     // ----------------------------------------------------------------
     // Step 6: Persist the user turn BEFORE invoking the agent
@@ -465,7 +467,7 @@ export class AgentLoopService {
 
       // Invoke the agent
       const output = await this.agentClient.generate(loopMessages, {
-        systemPrompt,
+        systemPrompt: effectivePrompt,
         tenantId,
         tools,
         correlationId,
@@ -489,13 +491,15 @@ export class AgentLoopService {
         });
       }
 
-      // Stream text tokens if we have a stream
-      if (stream && !stream.isClosed && output.text) {
+      const isFinal = output.stopReason === 'end_turn' || output.toolCalls.length === 0;
+
+      // Stream mid-loop (non-final) text tokens immediately
+      if (!isFinal && stream && !stream.isClosed && output.text) {
         stream.sendToken(output.text);
       }
 
       // If the agent returned a final text response with no tool calls, we're done
-      if (output.stopReason === 'end_turn' || output.toolCalls.length === 0) {
+      if (isFinal) {
         finalText = output.text;
 
         // WP07: Post-generation safety hooks
@@ -514,12 +518,17 @@ export class AgentLoopService {
           }
         }
 
+        // Stream the final (possibly modified) text
+        if (stream && !stream.isClosed && finalText) {
+          stream.sendToken(finalText);
+        }
+
         // Persist assistant turn
         const assistantTurn = await this.memoryService.saveTurn({
           sessionId,
           tenantId,
           role: 'assistant',
-          content: output.text,
+          content: finalText,
           toolCalls: output.toolCalls.length > 0
             ? output.toolCalls.map((tc) => tc as Record<string, unknown>)
             : undefined,
