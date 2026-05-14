@@ -21,3 +21,8 @@ export { SessionService } from './session.service.js';
 export { AgentLoopService } from './agent-loop.service.js';
 export { EventService } from './event.service.js';
 export { CoordinationService } from './coordination.service.js';
+export { MemoryService } from './memory.service.js';
+export { ToolRouterService } from './tool-router.service.js';
+export { createDefaultSafetyService } from './safety.service.js';
+export { UsageService } from './usage.service.js';
+export { SkillLoaderService } from './skill-loader.service.js';
