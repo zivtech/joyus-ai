@@ -22,8 +22,10 @@ import { Router } from 'express';
 import type { AgentLoopService } from '../agent-loop.service.js';
 import type { CoordinationService } from '../coordination.service.js';
 import type { EventService } from '../event.service.js';
+import type { MemoryService } from '../memory.service.js';
 import { resolveTenantId } from '../middleware/tenant.js';
 import type { SessionService } from '../session.service.js';
+import type { UsageService } from '../usage.service.js';
 
 import { createCoordinationRouter } from './coordination.js';
 import { createEventsRouter, createTenantEventsRouter } from './events.js';
@@ -36,6 +38,8 @@ export interface OrchestratorRouterDeps {
   agentLoopService: AgentLoopService;
   eventService: EventService;
   coordinationService: CoordinationService;
+  memoryService?: MemoryService;
+  usageService?: UsageService;
 }
 
 /**
@@ -57,7 +61,7 @@ export function createOrchestratorRoutes(deps: OrchestratorRouterDeps): Router {
   router.use('/', createOpenApiRouter());
 
   // ── Session routes ──────────────────────────────────────────────────────────
-  router.use('/sessions', createSessionsRouter(deps.sessionService));
+  router.use('/sessions', createSessionsRouter(deps.sessionService, deps.memoryService, deps.usageService));
 
   // ── Message route (nested under sessions) ──────────────────────────────────
   router.use('/sessions/:sessionId/messages', createMessagesRouter(deps.sessionService, deps.agentLoopService));
@@ -66,7 +70,7 @@ export function createOrchestratorRoutes(deps: OrchestratorRouterDeps): Router {
   router.use('/sessions/:sessionId/events', createEventsRouter(deps.eventService));
 
   // ── Tenant-wide event SSE ───────────────────────────────────────────────────
-  router.use('/', createTenantEventsRouter(deps.eventService));
+  router.use('/events', createTenantEventsRouter(deps.eventService));
 
   // ── Coordination routes (work units + groups) ───────────────────────────────
   router.use('/', createCoordinationRouter(deps.coordinationService));
