@@ -28,6 +28,7 @@ import {
   CoordinationGroupNotFoundError,
   DependencyNotMetError,
   DependencyCycleError,
+  DependencyNotFoundError,
 } from '../coordination.service.js';
 import { getTenantId } from '../middleware/tenant.js';
 import {
@@ -66,6 +67,11 @@ export function createCoordinationRouter(coordinationService: CoordinationServic
       });
       return res.status(201).json(unit);
     } catch (err) {
+      if (err instanceof DependencyNotFoundError) {
+        return res.status(422).json(
+          apiError('DEPENDENCY_NOT_FOUND', err.message),
+        );
+      }
       if (err instanceof DependencyCycleError) {
         return res.status(422).json(
           apiError('DEPENDENCY_CYCLE', err.message),
@@ -126,6 +132,11 @@ export function createCoordinationRouter(coordinationService: CoordinationServic
       if (err instanceof InvalidWorkUnitTransitionError) {
         return res.status(409).json(
           apiError('INVALID_TRANSITION', err.message),
+        );
+      }
+      if (err instanceof DependencyNotFoundError) {
+        return res.status(422).json(
+          apiError('DEPENDENCY_NOT_FOUND', err.message),
         );
       }
       if (err instanceof DependencyNotMetError) {
