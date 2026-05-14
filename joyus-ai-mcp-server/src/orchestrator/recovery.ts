@@ -113,7 +113,7 @@ export async function runCrashRecovery(
 
   // --- Phase 2: sweep stuck pending sessions ---
 
-  let orphanedPending;
+  let orphanedPending: OrchestratorSession[];
   try {
     orphanedPending = await sessionService.findAllOrphanedPendingSessions(cutoffMs);
   } catch (err) {
