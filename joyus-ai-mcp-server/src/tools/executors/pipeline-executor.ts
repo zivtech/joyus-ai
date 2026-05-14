@@ -1,7 +1,7 @@
 /**
  * Pipeline Tool Executor
  *
- * Routes pipeline_ and template_ tool calls to pipeline module operations.
+ * Routes pipeline_ tool calls to pipeline module operations.
  * Follows the same pattern as content-executor.ts.
  */
 

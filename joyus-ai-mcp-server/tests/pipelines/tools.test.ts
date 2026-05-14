@@ -263,6 +263,54 @@ describe('Pipeline Tool Executor', () => {
     });
   });
 
+  describe('pipeline_template_instantiate', () => {
+    it('creates a pipeline from a visible template', async () => {
+      const template = {
+        id: 'tmpl-1',
+        tenantId: null,
+        name: 'Content Pipeline',
+        description: 'Standard content pipeline',
+        category: 'content',
+        definition: {
+          triggerType: 'manual_request',
+          triggerConfig: { type: 'manual_request' },
+          steps: [
+            {
+              name: 'Notify',
+              stepType: 'notification',
+              config: { channel: 'email', message: 'Done' },
+            },
+          ],
+        },
+        parameters: {},
+        assumptions: [],
+        version: 1,
+        isActive: true,
+      };
+      db._setSelectResults([[template], []]);
+
+      const result = await executePipelineTool(
+        'pipeline_template_instantiate',
+        {
+          templateId: 'tmpl-1',
+          name: 'Tenant Content Pipeline',
+        },
+        context,
+      );
+
+      const data = result as {
+        pipeline: { name: string; steps: Array<{ name: string }> };
+        templateId: string;
+        templateName: string;
+      };
+      expect(data.templateId).toBe('tmpl-1');
+      expect(data.templateName).toBe('Content Pipeline');
+      expect(data.pipeline.name).toBe('Tenant Content Pipeline');
+      expect(data.pipeline.steps).toHaveLength(1);
+      expect(data.pipeline.steps[0].name).toBe('Notify');
+    });
+  });
+
   describe('pipeline_review_decide', () => {
     it('delegates to DecisionRecorder', async () => {
       const result = await executePipelineTool(

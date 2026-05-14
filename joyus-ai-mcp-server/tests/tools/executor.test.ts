@@ -134,7 +134,7 @@ describe('executeTool — content_ prefix', () => {
 });
 
 // ============================================================
-// pipeline_ / template_ / review_ prefix
+// pipeline_ prefix
 // ============================================================
 
 describe('executeTool — pipeline prefix', () => {

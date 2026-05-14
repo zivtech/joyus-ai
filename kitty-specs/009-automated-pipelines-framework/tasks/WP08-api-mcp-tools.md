@@ -183,17 +183,17 @@ This WP is the external surface of the pipeline framework — everything built i
 7. **pipeline_history**: Get execution history for a pipeline
    - Input: pipelineId, optional status filter, limit, offset
    - Handler: queries executions with tenant filter
-8. **review_decide**: Submit a review decision
+8. **pipeline_review_decide**: Submit a review decision
    - Input: decisionId, status (approved/rejected), optional feedback
    - Handler: delegates to DecisionRecorder
-9. **template_list**: List available pipeline templates
+9. **pipeline_template_list**: List available pipeline templates
    - Input: optional category filter
    - Handler: queries templates
-10. **template_instantiate**: Create a pipeline from a template
+10. **pipeline_template_instantiate**: Create a pipeline from a template
     - Input: templateId, parameters object, optional name override
     - Handler: delegates to TemplateStore.instantiate
 11. All tools include:
-    - `name` (string, pipeline_ or template_ prefix)
+    - `name` (string, pipeline_ prefix)
     - `description` (clear, human-readable)
     - `inputSchema` (Zod schema matching the tool's input)
     - `handler` (async function taking validated input + context, returning result)
@@ -405,9 +405,9 @@ This WP is the external surface of the pipeline framework — everything built i
    - **pipeline_create**: Valid input creates pipeline via tool
    - **pipeline_list**: Returns tenant-scoped results
    - **pipeline_trigger**: Publishes event
-   - **review_decide**: Delegates to DecisionRecorder
-   - **template_list**: Returns active templates
-   - **template_instantiate**: Creates pipeline from template
+   - **pipeline_review_decide**: Delegates to DecisionRecorder
+   - **pipeline_template_list**: Returns active templates
+   - **pipeline_template_instantiate**: Creates pipeline from template
 4. Use Vitest + supertest (or direct handler invocation) for route tests
 
 **Files**:
@@ -442,7 +442,7 @@ This WP is the external surface of the pipeline framework — everything built i
 - Verify EVERY route and tool includes tenantId in queries (Leash pattern audit)
 - Check that cross-tenant access returns 404 (not 403) to prevent enumeration
 - Verify pipeline creation runs: Zod validation -> step config validation -> cycle detection -> tenant limit check -> persist
-- Check that tool names follow the `pipeline_` and `template_` prefix convention
+- Check that tool names follow the `pipeline_` prefix convention
 - Verify module initialization creates all components in correct dependency order
 - Confirm server mount does not break existing routes or tools
 - Check that shutdown() cleans up: executor, event bus, cron jobs, schedule handler
