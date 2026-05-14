@@ -15,6 +15,12 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Mock the Inngest client so status-change tests don't hit a real Inngest endpoint.
+// Must be at the top level — vi.mock is hoisted before imports.
+vi.mock('../../src/inngest/client.js', () => ({
+  inngest: { send: vi.fn().mockResolvedValue(undefined) },
+}));
+
 import {
   CoordinationService,
   WORK_UNIT_TRANSITIONS,
@@ -22,8 +28,10 @@ import {
   InvalidWorkUnitTransitionError,
   DependencyNotMetError,
   DependencyCycleError,
+  DependencyNotFoundError,
   CoordinationGroupNotFoundError,
 } from '../../src/orchestrator/coordination.service.js';
+import { inngest } from '../../src/inngest/client.js';
 
 // ---------------------------------------------------------------------------
 // Mock DB factory
@@ -385,6 +393,76 @@ describe('CoordinationService.updateWorkUnit — dependency checking', () => {
 });
 
 // ---------------------------------------------------------------------------
+// updateWorkUnit — Inngest event emission
+// ---------------------------------------------------------------------------
+
+describe('CoordinationService.updateWorkUnit — Inngest event emission', () => {
+  beforeEach(() => {
+    vi.mocked(inngest.send).mockClear();
+  });
+
+  it('emits orchestrator/work_unit.status_changed Inngest event on status change', async () => {
+    const current = buildMockWorkUnit({ status: 'pending' });
+    const updated = buildMockWorkUnit({ status: 'assigned' });
+
+    const db = makeDb([current]);
+    const updateReturning = vi.fn().mockResolvedValue([updated]);
+    const updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    (db as MockDb & { update: ReturnType<typeof vi.fn> }).update = vi.fn().mockReturnValue({ set: updateSet });
+
+    const service = new CoordinationService(db as never);
+    await service.updateWorkUnit(TENANT, 'wu-1', { status: 'assigned' });
+
+    expect(inngest.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'orchestrator/work_unit.status_changed',
+        data: expect.objectContaining({
+          workUnitId: updated.id,
+          tenantId: TENANT,
+          previousStatus: current.status,
+          newStatus: updated.status,
+        }),
+      }),
+    );
+  });
+
+  it('does not emit Inngest event when only metadata is updated (no status change)', async () => {
+    const current = buildMockWorkUnit({ status: 'pending' });
+    const updated = buildMockWorkUnit({ status: 'pending', metadata: { tag: 'v2' } });
+
+    const db = makeDb([current]);
+    const updateReturning = vi.fn().mockResolvedValue([updated]);
+    const updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    (db as MockDb & { update: ReturnType<typeof vi.fn> }).update = vi.fn().mockReturnValue({ set: updateSet });
+
+    const service = new CoordinationService(db as never);
+    await service.updateWorkUnit(TENANT, 'wu-1', { metadata: { tag: 'v2' } });
+
+    expect(inngest.send).not.toHaveBeenCalled();
+  });
+
+  it('does not fail updateWorkUnit when Inngest send rejects', async () => {
+    vi.mocked(inngest.send).mockRejectedValueOnce(new Error('Inngest unavailable'));
+
+    const current = buildMockWorkUnit({ status: 'pending' });
+    const updated = buildMockWorkUnit({ status: 'assigned' });
+
+    const db = makeDb([current]);
+    const updateReturning = vi.fn().mockResolvedValue([updated]);
+    const updateWhere = vi.fn().mockReturnValue({ returning: updateReturning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    (db as MockDb & { update: ReturnType<typeof vi.fn> }).update = vi.fn().mockReturnValue({ set: updateSet });
+
+    const service = new CoordinationService(db as never);
+    // Must not throw
+    const result = await service.updateWorkUnit(TENANT, 'wu-1', { status: 'assigned' });
+    expect(result.status).toBe('assigned');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Cycle detection
 // ---------------------------------------------------------------------------
 
@@ -687,6 +765,67 @@ describe('CoordinationService.evaluateCompletion — majority policy', () => {
     const result = await service.evaluateCompletion(TENANT, 'group-1');
     expect(result.isComplete).toBe(false);
     expect(result.isFailed).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DependencyNotFoundError — createWorkUnit existence check
+// ---------------------------------------------------------------------------
+
+describe('CoordinationService.createWorkUnit — dependency existence', () => {
+  it('throws DependencyNotFoundError when a dependency ID does not exist', async () => {
+    // First select (assertNoCycle): no existing units → no cycle possible
+    // Second select (existence check): empty result → dep ID not found
+    const db = makeDbMultiSelect([[], []]);
+    const service = new CoordinationService(db as never);
+
+    await expect(
+      service.createWorkUnit(TENANT, {
+        title: 'Task with ghost dep',
+        type: 'research',
+        dependencies: ['nonexistent-id-123'],
+      }),
+    ).rejects.toThrow(DependencyNotFoundError);
+  });
+
+  it('throws DependencyNotFoundError listing only the missing IDs when some exist', async () => {
+    // First select (assertNoCycle): unit-real exists, no cycle
+    // Second select (existence check): only unit-real returned, not unit-ghost
+    const existingUnit = { id: 'unit-real', deps: [] };
+    const existingUnitFull = buildMockWorkUnit({ id: 'unit-real' });
+    const db = makeDbMultiSelect([[existingUnit], [existingUnitFull]]);
+    const service = new CoordinationService(db as never);
+
+    await expect(
+      service.createWorkUnit(TENANT, {
+        title: 'Task with mixed deps',
+        type: 'research',
+        dependencies: ['unit-real', 'unit-ghost'],
+      }),
+    ).rejects.toThrow(DependencyNotFoundError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DependencyNotFoundError — assertDependenciesCompleted existence check
+// ---------------------------------------------------------------------------
+
+describe('CoordinationService.updateWorkUnit — dependency not found check', () => {
+  it('throws DependencyNotFoundError when a dependency ID does not exist at transition time', async () => {
+    // Work unit assigned, depends on 'ghost-dep-456' which doesn't exist
+    const currentUnit = buildMockWorkUnit({
+      status: 'assigned',
+      dependencies: ['ghost-dep-456'],
+    });
+
+    // First select: getWorkUnit returns currentUnit
+    // Second select: assertDependenciesCompleted returns [] (dep not found)
+    const db = makeDbMultiSelect([[currentUnit], []]);
+    const service = new CoordinationService(db as never);
+
+    await expect(
+      service.updateWorkUnit(TENANT, 'wu-1', { status: 'running' }),
+    ).rejects.toThrow(DependencyNotFoundError);
   });
 });
 

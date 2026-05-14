@@ -154,6 +154,13 @@ export class DependencyCycleError extends Error {
   }
 }
 
+export class DependencyNotFoundError extends Error {
+  constructor(missingIds: string[]) {
+    super(`Dependencies not found: ${missingIds.join(', ')}`);
+    this.name = 'DependencyNotFoundError';
+  }
+}
+
 export class CoordinationGroupNotFoundError extends Error {
   constructor(groupId: string, tenantId: string) {
     super(`Coordination group not found: ${groupId} (tenant: ${tenantId})`);
@@ -242,6 +249,17 @@ export class CoordinationService {
     // Validate dependency cycle before any DB write
     if (dependencies.length > 0) {
       await this.assertNoCycle(tenantId, dependencies);
+
+      // Verify all declared dependency IDs actually exist for this tenant
+      const existingDeps = await this.db
+        .select({ id: workUnits.id })
+        .from(workUnits)
+        .where(and(eq(workUnits.tenantId, tenantId), inArray(workUnits.id, dependencies)));
+      const foundIds = new Set(existingDeps.map((r) => r.id));
+      const missingIds = dependencies.filter((depId) => !foundIds.has(depId));
+      if (missingIds.length > 0) {
+        throw new DependencyNotFoundError(missingIds);
+      }
     }
 
     const id = createId();
@@ -366,6 +384,25 @@ export class CoordinationService {
         },
         updated.sessionId ?? undefined,
       );
+    }
+
+    if (input.status !== undefined) {
+      try {
+        await inngest.send({
+          name: 'orchestrator/work_unit.status_changed',
+          data: {
+            workUnitId: updated.id,
+            tenantId,
+            previousStatus: current.status,
+            newStatus: updated.status as string,
+            ...(updated.coordinationGroupId
+              ? { coordinationGroupId: updated.coordinationGroupId }
+              : {}),
+          },
+        });
+      } catch (err) {
+        console.error('[CoordinationService] Failed to emit work_unit.status_changed Inngest event:', err);
+      }
     }
 
     return updated;
@@ -720,6 +757,13 @@ export class CoordinationService {
           inArray(workUnits.id, dependencyIds),
         ),
       );
+
+    // Check for dependency IDs that don't exist in the DB at all
+    if (deps.length < dependencyIds.length) {
+      const foundIds = new Set(deps.map((d) => d.id));
+      const missingIds = dependencyIds.filter((id) => !foundIds.has(id));
+      throw new DependencyNotFoundError(missingIds);
+    }
 
     const unmet = deps.filter((d) => d.status !== 'completed').map((d) => d.id);
 
