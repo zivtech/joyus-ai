@@ -44,6 +44,11 @@ import {
   AgentLoopService,
   EventService,
   CoordinationService,
+  MemoryService,
+  ToolRouterService,
+  createDefaultSafetyService,
+  UsageService,
+  SkillLoaderService,
 } from './orchestrator/index.js';
 import { runCrashRecovery } from './orchestrator/recovery.js';
 import { SessionService } from './orchestrator/session.service.js';
@@ -331,14 +336,29 @@ app.use('/api', requireBearerToken, pipelineRouter);
 
 // Orchestrator HTTP API — WP06: sessions, messages, events, coordination
 // requireBearerToken guards the entire tree; resolveTenantId is applied inside.
+const orchestratorEventService = new EventService(pipelineDb);
+const orchestratorMemoryService = new MemoryService(pipelineDb);
+const orchestratorUsageService = new UsageService({ db: pipelineDb, eventService: orchestratorEventService });
+const orchestratorSafetyService = createDefaultSafetyService(orchestratorEventService);
+const orchestratorToolRouter = new ToolRouterService({ eventService: orchestratorEventService });
+const orchestratorSkillLoader = new SkillLoaderService();
+
 app.use(
   '/api/v1/orchestrator',
   requireBearerToken,
   createOrchestratorRoutes({
     sessionService: new SessionService(pipelineDb),
-    agentLoopService: new AgentLoopService({ db: pipelineDb }),
-    eventService: new EventService(pipelineDb),
-    coordinationService: new CoordinationService(pipelineDb),
+    agentLoopService: new AgentLoopService({
+      db: pipelineDb,
+      toolRouter: orchestratorToolRouter,
+      safetyService: orchestratorSafetyService,
+      usageService: orchestratorUsageService,
+      skillLoader: orchestratorSkillLoader,
+    }),
+    eventService: orchestratorEventService,
+    coordinationService: new CoordinationService(pipelineDb, orchestratorEventService),
+    memoryService: orchestratorMemoryService,
+    usageService: orchestratorUsageService,
   }),
 );
 
