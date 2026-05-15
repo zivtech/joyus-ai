@@ -128,6 +128,38 @@ describe('Session Routes', () => {
     expect(res.json).toHaveBeenCalledWith(session);
   });
 
+  it('createSession returns 400 when userId does not reference an existing user', async () => {
+    mockSessionService.createSession.mockRejectedValue({
+      cause: {
+        code: '23503',
+        constraint: 'orchestrator_sessions_user_id_fkey',
+      },
+    });
+
+    const router = createSessionsRouter(mockSessionService as never);
+    const req = buildMockReq({
+      body: { userId: 'missing-user' },
+      tenantId: 'tenant-1',
+    });
+    const res = buildMockRes();
+    const next = vi.fn();
+
+    const layer = router.stack.find(
+      (l: { route?: { methods?: Record<string, boolean>; path?: string } }) =>
+        l.route?.methods?.post && l.route?.path === '/',
+    );
+    await layer!.route.stack[0].handle(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: {
+        code: 'INVALID_USER_ID',
+        message: 'userId must reference an existing user for the authenticated tenant',
+      },
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it('getSession returns 404 when session is null (not found or cross-tenant)', async () => {
     mockSessionService.getSession.mockResolvedValue(null);
 

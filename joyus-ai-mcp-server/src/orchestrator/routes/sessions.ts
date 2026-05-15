@@ -36,6 +36,20 @@ import type { UsageService } from '../usage.service.js';
 
 import { apiError, validate } from './helpers.js';
 
+function isUserForeignKeyViolation(err: unknown): boolean {
+  const cause = err && typeof err === 'object' && 'cause' in err
+    ? (err as { cause?: unknown }).cause
+    : err;
+
+  if (!cause || typeof cause !== 'object') {
+    return false;
+  }
+
+  const pgError = cause as { code?: unknown; constraint?: unknown };
+  return pgError.code === '23503'
+    && pgError.constraint === 'orchestrator_sessions_user_id_fkey';
+}
+
 export function createSessionsRouter(
   sessionService: SessionService,
   memoryService?: MemoryService,
@@ -44,19 +58,31 @@ export function createSessionsRouter(
   const router = Router();
 
   // ─── POST /sessions ─────────────────────────────────────────────────────────
-  router.post('/', async (req, res) => {
+  router.post('/', async (req, res, next) => {
     const tenantId = getTenantId(req);
 
     const parsed = validate(createSessionRequestSchema, req.body, res);
     if (!parsed) return;
 
-    const session = await sessionService.createSession({
-      tenantId,
-      userId: parsed.userId,
-      metadata: parsed.metadata ?? {},
-    });
+    try {
+      const session = await sessionService.createSession({
+        tenantId,
+        userId: parsed.userId,
+        metadata: parsed.metadata ?? {},
+      });
 
-    return res.status(201).json(session);
+      return res.status(201).json(session);
+    } catch (err) {
+      if (isUserForeignKeyViolation(err)) {
+        return res.status(400).json(
+          apiError(
+            'INVALID_USER_ID',
+            'userId must reference an existing user for the authenticated tenant',
+          ),
+        );
+      }
+      return next(err);
+    }
   });
 
   // ─── GET /sessions ───────────────────────────────────────────────────────────

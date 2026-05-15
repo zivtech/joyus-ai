@@ -59,7 +59,7 @@ services:
       playwright:
         condition: service_healthy
     command: >
-      sh -c "npm run db:push && npm run dev"
+      sh -c "npm run db:migrate && npm run dev"
 
   # Playwright MCP dependency
   playwright:

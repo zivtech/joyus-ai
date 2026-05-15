@@ -1,13 +1,13 @@
 /**
  * SSE Streaming Utilities — WP02 (T018)
  *
- * Server-Sent Events (SSE) response helpers for event-streamed agent
- * completion. The current agent client uses buffered provider completion, so
- * `token` events carry available text chunks/final text and do not promise
- * true provider token-by-token streaming.
+ * Server-Sent Events (SSE) response helpers for orchestrator message events.
+ * The current agent client uses buffered provider completion, so `token` events
+ * carry available text chunks/final text and are not guaranteed to correspond
+ * to provider token deltas.
  *
  * Event types:
- *   token       — available agent text chunk/final text (not provider-token granularity)
+ *   token       — available agent text chunk/final text
  *   tool_call   — agent is invoking a tool
  *   tool_result — tool returned a result
  *   done        — response complete

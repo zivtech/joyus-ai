@@ -18,10 +18,10 @@
  *   - Returns JSON when stream=false.
  *
  * Streaming contract:
- *   This endpoint currently performs buffered provider completion and delivers
- *   the result over SSE. It is event-streamed completion, not true provider
- *   token-by-token streaming. Clients must not assume `token` events map to
- *   provider token boundaries.
+ *   When stream=true, this endpoint uses standard Server-Sent Events (SSE) for
+ *   orchestrator message events. Text payloads may contain partial or final
+ *   completion content, but clients must not assume they map to provider token
+ *   boundaries.
  *
  * Note on implicit pending→running transition:
  *   The WP spec is silent on whether POST /messages triggers this. We opt for

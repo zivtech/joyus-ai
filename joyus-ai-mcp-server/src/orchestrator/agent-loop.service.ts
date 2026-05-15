@@ -14,8 +14,8 @@
  *   package.json, the `AnthropicAgentClient` can be replaced with a thin
  *   Mastra wrapper — no changes to AgentLoopService required.
  * - Tool routing is STUBBED (WP05 implements real discovery).
- * - Event-streamed completion is via SseStream (SSE to HTTP clients) — see
- *   streaming.ts. This is not true provider token streaming.
+ * - Standard SSE delivery is via SseStream — see streaming.ts. Text payloads
+ *   are not guaranteed to correspond to provider token deltas.
  * - Turn persistence is via MemoryService — see memory.service.ts.
  * - Context window monitoring is T021 (inline, not a separate service).
  *
@@ -57,8 +57,8 @@ const MAX_TOOL_ITERATIONS = 10;
 const CHARS_PER_TOKEN_ESTIMATE = 4;
 
 /**
- * Context window size assumed for the default model (claude-3-5-sonnet).
- * Update if the model changes.
+ * Context window size assumed for current Sonnet-class defaults.
+ * Update if the model family changes.
  */
 const MAX_CONTEXT_TOKENS = 200_000;
 
@@ -212,7 +212,10 @@ export class AnthropicAgentClient implements AgentClient {
     this.client = new Anthropic({
       apiKey: options.apiKey ?? process.env.ANTHROPIC_API_KEY,
     });
-    this.model = options.model ?? process.env.ORCHESTRATOR_MODEL ?? 'claude-3-5-sonnet-20241022';
+    this.model = options.model
+      ?? process.env.ORCHESTRATOR_MODEL
+      ?? process.env.JOYUS_ANTHROPIC_MODEL
+      ?? 'claude-sonnet-4-6';
   }
 
   async generate(
