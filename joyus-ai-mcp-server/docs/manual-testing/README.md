@@ -74,4 +74,5 @@ Known failure modes and fixes.
 | [inngest-pipeline-trigger-manual-test.md](inngest-pipeline-trigger-manual-test.md) | Inngest local dev server and manual pipeline trigger smoke test |
 | [meta-critic-hardening-manual-test.md](meta-critic-hardening-manual-test.md) | Playwright MCP auth hardening, MCP Playwright health, and audited MCP tool-call smoke checks |
 | [pipeline-tool-prefixes-manual-test.md](pipeline-tool-prefixes-manual-test.md) | MCP pipeline tool rename smoke test for new `pipeline_` names and removed old names |
+| [orchestrator-event-streamed-completion-manual-test.md](orchestrator-event-streamed-completion-manual-test.md) | Orchestrator event-streamed completion contract, typed events, and follow-up boundaries |
 | [profile-isolation-manual-test.md](profile-isolation-manual-test.md) | Profile isolation migration, no-engine generation stub, and profile smoke checks |

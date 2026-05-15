@@ -481,9 +481,30 @@ describe('assembleSystemPrompt', () => {
 // ---------------------------------------------------------------------------
 
 describe('AnthropicAgentClient', () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('can be instantiated without a real API key (unit test boundary)', () => {
     // This just tests that the class can be constructed.
     // generate() would fail without a real API key — that is expected.
     expect(() => new AnthropicAgentClient({ apiKey: 'test-key' })).not.toThrow();
+  });
+
+  it('uses JOYUS_ANTHROPIC_MODEL when ORCHESTRATOR_MODEL is not set', () => {
+    vi.stubEnv('JOYUS_ANTHROPIC_MODEL', 'claude-sonnet-4-6');
+
+    const client = new AnthropicAgentClient({ apiKey: 'test-key' });
+
+    expect((client as unknown as { model: string }).model).toBe('claude-sonnet-4-6');
+  });
+
+  it('lets ORCHESTRATOR_MODEL override the shared Anthropic model env var', () => {
+    vi.stubEnv('JOYUS_ANTHROPIC_MODEL', 'claude-sonnet-4-6');
+    vi.stubEnv('ORCHESTRATOR_MODEL', 'claude-opus-4-7');
+
+    const client = new AnthropicAgentClient({ apiKey: 'test-key' });
+
+    expect((client as unknown as { model: string }).model).toBe('claude-opus-4-7');
   });
 });

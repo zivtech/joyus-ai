@@ -36,6 +36,27 @@
       "when": 1778505114108,
       "tag": "0004_profile_isolation",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778505114109,
+      "tag": "0005_orchestrator_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778505114110,
+      "tag": "0006_orchestrator_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778505114111,
+      "tag": "0007_coordination_tables",
+      "breakpoints": true
     }
   ]
 }

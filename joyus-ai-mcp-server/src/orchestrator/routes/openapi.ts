@@ -115,7 +115,7 @@ export function buildOrchestratorOpenApiSpec(): Record<string, unknown> {
           stream: {
             type: 'boolean',
             default: true,
-            description: 'When true, return event-streamed completion over SSE; not true provider token streaming.',
+            description: 'When true, return standard SSE orchestrator message events; text payloads are not guaranteed to correspond to provider token deltas.',
           },
         },
       },
@@ -383,9 +383,10 @@ export function buildOrchestratorOpenApiSpec(): Record<string, unknown> {
         operationId: 'sendMessage',
         summary: 'Send a message to a session (may return SSE events)',
         description: [
-          'When stream=true, the response is an SSE event stream containing tool events,',
-          'available text/final response, and done/error events. The current implementation',
-          'uses buffered provider completion; it does not promise provider token-by-token streaming.',
+          'When stream=true, the response uses standard Server-Sent Events (SSE)',
+          'containing orchestrator message events such as tool events, available',
+          'text or final response content, and done/error events. Text payloads',
+          'are not guaranteed to correspond to provider token deltas.',
         ].join(' '),
         tags: ['Messages'],
         security,
@@ -395,13 +396,13 @@ export function buildOrchestratorOpenApiSpec(): Record<string, unknown> {
         },
         responses: {
           '200': {
-            description: 'JSON response (stream=false) or event-streamed completion over SSE (stream=true)',
+            description: 'JSON response (stream=false) or standard SSE orchestrator message events (stream=true)',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
               'text/event-stream': {
                 schema: {
                   type: 'string',
-                  description: 'SSE event stream for tool events and buffered completion text; not provider token streaming',
+                  description: 'Standard SSE stream for orchestrator message events; text payloads are not guaranteed provider token deltas',
                 },
               },
             },

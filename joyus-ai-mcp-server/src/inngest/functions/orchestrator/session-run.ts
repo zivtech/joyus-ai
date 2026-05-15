@@ -18,14 +18,15 @@
  *   - Within a running function, Inngest's built-in retry handles transient failures.
  *     The step-based design ensures we never double-process completed steps.
  *
- * Agent loop stub (WP02 fills this in):
- *   The core agent interaction loop is a placeholder that WP02 will replace
- *   with the Mastra-powered agent integration.
+ * Execution ownership:
+ *   The HTTP message route now owns agent execution via AgentLoopService.
+ *   This function remains registered so existing `orchestrator/session.created`
+ *   events are accepted by Inngest, but it must not run a placeholder agent loop
+ *   or mark a new session completed before the first message arrives.
  */
 
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-import { SessionService } from '../../../orchestrator/session.service.js';
 import { inngest } from '../../client.js';
 
 // ---------------------------------------------------------------------------
@@ -108,54 +109,14 @@ export function createSessionRunFunction(deps: SessionRunDeps = {}) {
         };
       }
 
-      const sessionService = new SessionService(
-        deps.db as NodePgDatabase<Record<string, unknown>>,
-      );
-
-      // Step 1: Transition to running, record the Inngest run ID.
-      // This checkpoint means: if we crash here, the session is still 'pending'
-      // and the orphan recovery can safely re-dispatch.
-      const initializedSession = await step.run('init-session', async () => {
-        return sessionService.updateSessionStatus({
-          tenantId,
-          sessionId,
-          newStatus: 'running',
-          inngestRunId: runId,
-        });
-      });
-
-      // Step 2: Agent loop (stub — WP02 replaces this with Mastra integration).
-      // Each turn will become its own step.run() for fine-grained replay.
-      const agentResult = await step.run('agent-loop-stub', async () => {
-        // WP02: Replace with actual Mastra agent invocation
-        // e.g.: return await mastraAgent.run({ sessionId, tenantId, ... });
-        return {
-          isStub: true,
-          message: 'Agent loop placeholder — WP02 will implement the Mastra integration',
-          sessionId,
-          tenantId,
-          userId,
-        };
-      });
-
-      // Step 3: Persist result and transition to completed.
-      // This is the final checkpoint — if we crash between step 2 and 3,
-      // Inngest will replay step 2 (agent loop) on retry.
-      const completedSession = await step.run('complete-session', async () => {
-        return sessionService.updateSessionStatus({
-          tenantId,
-          sessionId,
-          newStatus: 'completed',
-        });
-      });
-
-      return {
-        status: 'completed' as const,
+      return step.run('ack-session-created', async () => ({
+        status: 'skipped' as const,
         sessionId,
         tenantId,
+        userId,
         inngestRunId: runId,
-        agentResult,
-      };
+        reason: 'Agent execution is owned by POST /sessions/:sessionId/messages',
+      }));
     },
   );
 }

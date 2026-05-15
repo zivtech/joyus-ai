@@ -173,10 +173,10 @@ describe('buildOrchestratorOpenApiSpec (T047 drift detection)', () => {
     expect(JSON.parse(json)).toEqual(spec);
   });
 
-  it('documents message SSE as event-streamed completion, not provider token streaming', () => {
+  it('documents message streaming as standard SSE without provider token-delta guarantees', () => {
     const specJson = JSON.stringify(spec);
-    expect(specJson).toContain('event-streamed completion');
-    expect(specJson).toContain('not true provider token streaming');
+    expect(specJson).toContain('standard Server-Sent Events (SSE)');
+    expect(specJson).toContain('not guaranteed to correspond to provider token deltas');
   });
 
   it('paths contain only objects (not arrays or primitives)', () => {
