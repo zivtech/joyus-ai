@@ -110,9 +110,11 @@ paths:
       operationId: sendMessage
       summary: Send a message to an agent session
       description: >
-        Sends a user message and returns the agent response as an SSE stream.
-        The stream includes token-by-token text, tool call notifications,
-        and a final completion event.
+        Sends a user message and returns either JSON or an SSE event stream.
+        The SSE path carries tool call notifications, available text or final
+        response content, and a final completion event. The current contract is
+        event-streamed completion; it does not promise provider token-by-token
+        streaming.
       tags: [Messages]
       parameters:
         - $ref: '#/components/parameters/sessionId'
@@ -124,7 +126,7 @@ paths:
               $ref: '#/components/schemas/SendMessageRequest'
       responses:
         '200':
-          description: SSE stream of agent response
+          description: SSE event stream of agent response lifecycle and completion
           content:
             text/event-stream:
               schema:

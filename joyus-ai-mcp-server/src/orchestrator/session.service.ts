@@ -21,6 +21,7 @@ import { orchestratorSessions } from '../db/schema/orchestrator.js';
 import type { OrchestratorSession } from '../db/schema/orchestrator.js';
 import { inngest } from '../inngest/client.js';
 
+import type { EventService } from './event.service.js';
 import {
   type CreateSessionInput,
   type ListSessionsFilters,
@@ -63,6 +64,7 @@ export class SessionService {
       10,
     ),
     private readonly inngestClient: InngestClient = inngest,
+    private readonly eventService?: EventService,
   ) {}
 
   /**
@@ -105,6 +107,12 @@ export class SessionService {
     } catch (err) {
       console.error('[SessionService] Failed to emit session.created event:', err);
     }
+
+    await this.emitEvent('session.created', {
+      sessionId: id,
+      tenantId: validated.tenantId,
+      userId: validated.userId,
+    }, id);
 
     // T015: Emit queued event when the tenant is at or above concurrency capacity.
     // Count active (running + pending) sessions for this tenant — if at or over
@@ -209,6 +217,13 @@ export class SessionService {
         ),
       )
       .returning();
+
+    await this.emitEvent('session.status_changed', {
+      sessionId,
+      tenantId,
+      previousStatus: current.status,
+      newStatus: updated.status,
+    }, sessionId);
 
     return updated;
   }
@@ -401,6 +416,20 @@ export class SessionService {
     const allowed = SESSION_TRANSITIONS[from];
     if (!allowed.includes(to)) {
       throw new InvalidStatusTransitionError(from, to);
+    }
+  }
+
+  private async emitEvent(
+    type: 'session.created' | 'session.status_changed',
+    payload: Record<string, unknown>,
+    sessionId: string,
+  ): Promise<void> {
+    if (!this.eventService) return;
+
+    try {
+      await this.eventService.emitEvent(String(payload.tenantId), type, payload, sessionId);
+    } catch (err) {
+      console.error(`[SessionService] Failed to emit ${type} event:`, err);
     }
   }
 }

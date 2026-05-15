@@ -1,7 +1,7 @@
 /**
  * Message Routes — WP06 (T043)
  *
- * Endpoint for sending a message to a session and receiving a streamed response.
+ * Endpoint for sending a message to a session and receiving the agent response.
  *
  * Endpoints:
  *   POST /sessions/:sessionId/messages
@@ -13,8 +13,15 @@
  *     separate PATCH action before the first message.
  *   - If session is already 'running', proceeds directly.
  *   - Any other status → 409 Conflict.
- *   - Streams response as SSE when stream=true (default).
+ *   - Returns an SSE event stream when stream=true (default): tool events,
+ *     available text/final response, then done/error.
  *   - Returns JSON when stream=false.
+ *
+ * Streaming contract:
+ *   This endpoint currently performs buffered provider completion and delivers
+ *   the result over SSE. It is event-streamed completion, not true provider
+ *   token-by-token streaming. Clients must not assume `token` events map to
+ *   provider token boundaries.
  *
  * Note on implicit pending→running transition:
  *   The WP spec is silent on whether POST /messages triggers this. We opt for
@@ -85,7 +92,7 @@ export function createMessagesRouter(
     const shouldStream = parsed.stream !== false;
 
     if (shouldStream) {
-      // ── Streaming SSE response ────────────────────────────────────────────
+      // ── Event-streamed SSE response ───────────────────────────────────────
       const stream = new SseStream(res);
       stream.open();
 
