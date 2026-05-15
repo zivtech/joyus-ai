@@ -53,7 +53,13 @@ function makeDb(rows: unknown[] = []): MockDb {
   const returning = vi.fn().mockResolvedValue(rows);
   const limit = vi.fn().mockResolvedValue(rows);
   const orderBy = vi.fn().mockReturnValue({ limit });
-  const where = vi.fn().mockReturnValue({ limit, returning, orderBy });
+  const whereResult = {
+    limit,
+    returning,
+    orderBy,
+    then: (resolve: (value: Array<{ total: number }>) => unknown) => resolve([{ total: 0 }]),
+  };
+  const where = vi.fn().mockReturnValue(whereResult);
   const from = vi.fn().mockReturnValue({ where, orderBy });
   const values = vi.fn().mockReturnValue({ returning });
   const set = vi.fn().mockReturnValue({ where });
@@ -78,7 +84,11 @@ const SESSION_ID = 'session-cuid-1';
 
 function makeService(rows: unknown[] = []) {
   const db = makeDb(rows);
-  const service = new SessionService(db as never);
+  const service = new SessionService(
+    db as never,
+    10,
+    { send: vi.fn().mockResolvedValue(undefined) },
+  );
   return { db, service };
 }
 
@@ -122,6 +132,60 @@ describe('SessionService.createSession', () => {
     );
   });
 
+  it('records session.created in the typed event log when an EventService is provided', async () => {
+    const mockSession = buildMockSession({ tenantId: TENANT, userId: USER });
+    const db = makeDb([mockSession]);
+    const inngestClient = { send: vi.fn().mockResolvedValue(undefined) };
+    const eventService = { emitEvent: vi.fn().mockResolvedValue(undefined) };
+    const service = new SessionService(db as never, 10, inngestClient, eventService as never);
+
+    await service.createSession({ tenantId: TENANT, userId: USER });
+
+    expect(eventService.emitEvent).toHaveBeenCalledWith(
+      TENANT,
+      'session.created',
+      expect.objectContaining({
+        sessionId: expect.any(String),
+        tenantId: TENANT,
+        userId: USER,
+      }),
+      expect.any(String),
+    );
+  });
+
+  it('emits orchestrator/session.queued when active sessions meet the tenant limit', async () => {
+    const mockSession = buildMockSession({ tenantId: TENANT, userId: USER });
+    const inngestClient = { send: vi.fn().mockResolvedValue(undefined) };
+    const db = {
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([mockSession]),
+        }),
+      }),
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ total: 1 }]),
+        }),
+      }),
+    };
+    const service = new SessionService(db as never, 1, inngestClient);
+
+    await service.createSession({ tenantId: TENANT, userId: USER });
+
+    await vi.waitFor(() => {
+      expect(inngestClient.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'orchestrator/session.queued',
+          data: expect.objectContaining({
+            sessionId: mockSession.id,
+            tenantId: TENANT,
+            queuedAt: expect.any(String),
+          }),
+        }),
+      );
+    });
+  });
+
   it('does not fail createSession when inngestClient.send rejects', async () => {
     const mockSession = buildMockSession({ tenantId: TENANT, userId: USER });
     const db = makeDb([mockSession]);
@@ -153,8 +217,17 @@ describe('SessionService.createSession', () => {
           }),
         };
       }),
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ total: 0 }]),
+        }),
+      }),
     } as unknown as ReturnType<typeof makeDb>;
-    const captureService = new SessionService(captureDb as never);
+    const captureService = new SessionService(
+      captureDb as never,
+      10,
+      { send: vi.fn().mockResolvedValue(undefined) },
+    );
 
     await captureService.createSession({ tenantId: TENANT, userId: USER });
     expect(captureDb.insert).toHaveBeenCalledOnce();
@@ -234,7 +307,11 @@ describe('SessionService.updateSessionStatus — valid transitions', () => {
       const updateFn = vi.fn().mockReturnValue({ set: updateSet });
 
       const db = { select: selectFn, update: updateFn } as unknown as ReturnType<typeof makeDb>;
-      const service = new SessionService(db as never);
+      const service = new SessionService(
+        db as never,
+        10,
+        { send: vi.fn().mockResolvedValue(undefined) },
+      );
 
       const result = await service.updateSessionStatus({
         tenantId: TENANT,
@@ -336,6 +413,50 @@ describe('SessionService.updateSessionStatus — completedAt', () => {
     });
 
     expect(capturedSet[0]).toMatchObject({ status: 'completed', completedAt: expect.any(Date) });
+  });
+});
+
+describe('SessionService.updateSessionStatus — event log', () => {
+  it('records session.status_changed when an EventService is provided', async () => {
+    const current = buildMockSession({ status: 'pending' });
+    const updated = buildMockSession({ status: 'running' });
+
+    const selectLimit = vi.fn().mockResolvedValue([current]);
+    const selectWhere = vi.fn().mockReturnValue({ limit: selectLimit });
+    const selectFrom = vi.fn().mockReturnValue({ where: selectWhere });
+    const selectFn = vi.fn().mockReturnValue({ from: selectFrom });
+
+    const returning = vi.fn().mockResolvedValue([updated]);
+    const updateWhere = vi.fn().mockReturnValue({ returning });
+    const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
+    const updateFn = vi.fn().mockReturnValue({ set: updateSet });
+
+    const eventService = { emitEvent: vi.fn().mockResolvedValue(undefined) };
+    const db = { select: selectFn, update: updateFn } as unknown as ReturnType<typeof makeDb>;
+    const service = new SessionService(
+      db as never,
+      10,
+      { send: vi.fn().mockResolvedValue(undefined) },
+      eventService as never,
+    );
+
+    await service.updateSessionStatus({
+      tenantId: TENANT,
+      sessionId: SESSION_ID,
+      newStatus: 'running',
+    });
+
+    expect(eventService.emitEvent).toHaveBeenCalledWith(
+      TENANT,
+      'session.status_changed',
+      {
+        sessionId: SESSION_ID,
+        tenantId: TENANT,
+        previousStatus: 'pending',
+        newStatus: 'running',
+      },
+      SESSION_ID,
+    );
   });
 });
 

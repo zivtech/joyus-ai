@@ -157,7 +157,10 @@ export const paginatedSessionsResponseSchema = z.object({
 /** POST /sessions/:id/messages body */
 export const sendMessageRequestSchema = z.object({
   message: nonEmptyString,
-  /** If true, client supports SSE streaming. Defaults to true. */
+  /**
+   * If true, client accepts SSE event-streamed completion. Defaults to true.
+   * Current behavior is not true provider token-by-token streaming.
+   */
   stream: z.boolean().default(true),
 });
 

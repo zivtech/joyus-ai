@@ -112,7 +112,11 @@ export function buildOrchestratorOpenApiSpec(): Record<string, unknown> {
         required: ['message'],
         properties: {
           message: { type: 'string', minLength: 1 },
-          stream: { type: 'boolean', default: true },
+          stream: {
+            type: 'boolean',
+            default: true,
+            description: 'When true, return event-streamed completion over SSE; not true provider token streaming.',
+          },
         },
       },
       MessageResponse: {
@@ -377,7 +381,12 @@ export function buildOrchestratorOpenApiSpec(): Record<string, unknown> {
       parameters: [{ in: 'path', name: 'sessionId', required: true, schema: { type: 'string' } }],
       post: {
         operationId: 'sendMessage',
-        summary: 'Send a message to a session (may stream SSE)',
+        summary: 'Send a message to a session (may return SSE events)',
+        description: [
+          'When stream=true, the response is an SSE event stream containing tool events,',
+          'available text/final response, and done/error events. The current implementation',
+          'uses buffered provider completion; it does not promise provider token-by-token streaming.',
+        ].join(' '),
         tags: ['Messages'],
         security,
         requestBody: {
@@ -386,10 +395,15 @@ export function buildOrchestratorOpenApiSpec(): Record<string, unknown> {
         },
         responses: {
           '200': {
-            description: 'JSON response (stream=false) or SSE stream (stream=true)',
+            description: 'JSON response (stream=false) or event-streamed completion over SSE (stream=true)',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/MessageResponse' } },
-              'text/event-stream': { schema: { type: 'string', description: 'SSE event stream' } },
+              'text/event-stream': {
+                schema: {
+                  type: 'string',
+                  description: 'SSE event stream for tool events and buffered completion text; not provider token streaming',
+                },
+              },
             },
           },
           '404': { description: 'Session not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },

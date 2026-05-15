@@ -173,6 +173,12 @@ describe('buildOrchestratorOpenApiSpec (T047 drift detection)', () => {
     expect(JSON.parse(json)).toEqual(spec);
   });
 
+  it('documents message SSE as event-streamed completion, not provider token streaming', () => {
+    const specJson = JSON.stringify(spec);
+    expect(specJson).toContain('event-streamed completion');
+    expect(specJson).toContain('not true provider token streaming');
+  });
+
   it('paths contain only objects (not arrays or primitives)', () => {
     const paths = spec.paths as Record<string, unknown>;
     for (const [path, pathItem] of Object.entries(paths)) {

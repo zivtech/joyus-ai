@@ -347,13 +347,14 @@ app.use(
   '/api/v1/orchestrator',
   requireBearerToken,
   createOrchestratorRoutes({
-    sessionService: new SessionService(pipelineDb),
+    sessionService: new SessionService(pipelineDb, undefined, undefined, orchestratorEventService),
     agentLoopService: new AgentLoopService({
       db: pipelineDb,
       toolRouter: orchestratorToolRouter,
       safetyService: orchestratorSafetyService,
       usageService: orchestratorUsageService,
       skillLoader: orchestratorSkillLoader,
+      eventService: orchestratorEventService,
     }),
     eventService: orchestratorEventService,
     coordinationService: new CoordinationService(pipelineDb, orchestratorEventService),

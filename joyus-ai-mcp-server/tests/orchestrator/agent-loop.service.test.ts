@@ -284,6 +284,37 @@ describe('AgentLoopService.processMessage — single turn, no tools', () => {
     // Should insert: user turn + assistant turn = 2 inserts
     expect(insertFn).toHaveBeenCalledTimes(2);
   });
+
+  it('emits a typed context-window event when utilization is high', async () => {
+    const session = buildMockSession();
+    const { db } = makeMockDb(session);
+    const agentClient = makeAgentClient({
+      text: 'Short answer.',
+      toolCalls: [],
+      stopReason: 'end_turn',
+    });
+    const eventService = { emitEvent: vi.fn().mockResolvedValue(undefined) };
+    const service = new AgentLoopService({
+      db: db as never,
+      agentClient,
+      eventService: eventService as never,
+    });
+
+    await service.processMessage(SESSION_ID, TENANT_ID, 'x'.repeat(700_000));
+
+    await vi.waitFor(() => {
+      expect(eventService.emitEvent).toHaveBeenCalledWith(
+        TENANT_ID,
+        'orchestrator.context_window.high_utilization',
+        expect.objectContaining({
+          sessionId: SESSION_ID,
+          tenantId: TENANT_ID,
+          utilizationPct: expect.any(Number),
+        }),
+        SESSION_ID,
+      );
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

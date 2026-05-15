@@ -1,11 +1,13 @@
 /**
  * SSE Streaming Utilities — WP02 (T018)
  *
- * Server-Sent Events (SSE) response helpers for streaming agent output
- * token-by-token to the client.
+ * Server-Sent Events (SSE) response helpers for event-streamed agent
+ * completion. The current agent client uses buffered provider completion, so
+ * `token` events carry available text chunks/final text and do not promise
+ * true provider token-by-token streaming.
  *
  * Event types:
- *   token       — text chunk from the agent
+ *   token       — available agent text chunk/final text (not provider-token granularity)
  *   tool_call   — agent is invoking a tool
  *   tool_result — tool returned a result
  *   done        — response complete
@@ -117,7 +119,10 @@ export class SseStream {
   }
 
   /**
-   * Send a token event (text chunk).
+   * Send a token event with currently available text.
+   *
+   * Current contract: this may be a full final response or a coarse text chunk.
+   * It is not guaranteed to map to provider token boundaries.
    */
   sendToken(text: string): void {
     this.send('token', { text } satisfies TokenEvent);

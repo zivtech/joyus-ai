@@ -3,8 +3,8 @@
  *
  * Core orchestration loop: receive a user message, assemble context, invoke
  * Claude via the Anthropic SDK (native TypeScript — WP00 decision OQ-1), route
- * tool calls via the stub tool router (WP05 fills in real tool discovery), stream
- * the response via SseStream, and persist each conversation turn.
+ * tool calls via the stub tool router (WP05 fills in real tool discovery),
+ * deliver events via SseStream, and persist each conversation turn.
  *
  * Architecture decisions:
  * - ADOPT MASTRA (WP00): Mastra is not yet installed in joyus-ai-mcp-server.
@@ -14,7 +14,8 @@
  *   package.json, the `AnthropicAgentClient` can be replaced with a thin
  *   Mastra wrapper — no changes to AgentLoopService required.
  * - Tool routing is STUBBED (WP05 implements real discovery).
- * - Streaming is via SseStream (SSE to HTTP clients) — see streaming.ts.
+ * - Event-streamed completion is via SseStream (SSE to HTTP clients) — see
+ *   streaming.ts. This is not true provider token streaming.
  * - Turn persistence is via MemoryService — see memory.service.ts.
  * - Context window monitoring is T021 (inline, not a separate service).
  *
@@ -28,6 +29,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createId } from '@paralleldrive/cuid2';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
+import type { EventService } from './event.service.js';
 import { MemoryService } from './memory.service.js';
 import type { SafetyService } from './safety.service.js';
 import { SafetyBlockedError } from './safety.service.js';
@@ -308,6 +310,8 @@ export interface AgentLoopServiceDeps {
   safetyService?: SafetyService;
   /** WP07: Optional usage tracking service. When absent, no usage events are emitted. */
   usageService?: UsageService;
+  /** Optional typed event log for agent-loop observability events. */
+  eventService?: EventService;
 }
 
 export class AgentLoopService {
@@ -318,6 +322,7 @@ export class AgentLoopService {
   private readonly skillLoader: SkillLoaderService | null;
   private readonly safetyService: SafetyService | null;
   private readonly usageService: UsageService | null;
+  private readonly eventService: EventService | null;
 
   constructor(deps: AgentLoopServiceDeps) {
     this.sessionService = new SessionService(deps.db);
@@ -327,6 +332,7 @@ export class AgentLoopService {
     this.skillLoader = deps.skillLoader ?? null;
     this.safetyService = deps.safetyService ?? null;
     this.usageService = deps.usageService ?? null;
+    this.eventService = deps.eventService ?? null;
   }
 
   /**
@@ -346,7 +352,7 @@ export class AgentLoopService {
    * @param sessionId - The session to process the message in
    * @param tenantId - Tenant scope (must match session.tenantId)
    * @param userMessage - The user's message text
-   * @param stream - Optional SSE stream to forward tokens to the client
+   * @param stream - Optional SSE stream for tool events and available response text
    */
   async processMessage(
     sessionId: string,
@@ -493,7 +499,7 @@ export class AgentLoopService {
 
       const isFinal = output.stopReason === 'end_turn' || output.toolCalls.length === 0;
 
-      // Stream mid-loop (non-final) text tokens immediately
+      // Send any non-final text already returned by the buffered provider call.
       if (!isFinal && stream && !stream.isClosed && output.text) {
         stream.sendToken(output.text);
       }
@@ -518,7 +524,7 @@ export class AgentLoopService {
           }
         }
 
-        // Stream the final (possibly modified) text
+        // Send the final (possibly modified) text as an SSE text event.
         if (stream && !stream.isClosed && finalText) {
           stream.sendToken(finalText);
         }
@@ -698,6 +704,30 @@ export class AgentLoopService {
         estimatedTokens,
         utilizationPct,
       });
+      void this.emitContextWindowEvent({
+        sessionId,
+        tenantId,
+        utilizationPct,
+      });
+    }
+  }
+
+  private async emitContextWindowEvent(params: {
+    sessionId: string;
+    tenantId: string;
+    utilizationPct: number;
+  }): Promise<void> {
+    if (!this.eventService) return;
+
+    try {
+      await this.eventService.emitEvent(
+        params.tenantId,
+        'orchestrator.context_window.high_utilization',
+        params,
+        params.sessionId,
+      );
+    } catch (err) {
+      console.error('[AgentLoopService] Failed to emit context window event:', err);
     }
   }
 }

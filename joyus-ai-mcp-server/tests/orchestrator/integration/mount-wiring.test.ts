@@ -281,9 +281,7 @@ describe('Integration: Inngest event emission from services', () => {
     // Override select for the concurrency check in emitQueuedEventIfAtCapacity
     selectFn.mockImplementation(() => ({
       from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([]),
-        }),
+        where: vi.fn().mockResolvedValue([{ total: 0 }]),
       }),
     }));
 
@@ -315,9 +313,7 @@ describe('Integration: Inngest event emission from services', () => {
 
     selectFn.mockImplementation(() => ({
       from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([]),
-        }),
+        where: vi.fn().mockResolvedValue([{ total: 0 }]),
       }),
     }));
 
