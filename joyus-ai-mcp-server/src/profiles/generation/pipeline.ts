@@ -25,7 +25,7 @@ import {
 import { requireTenantId, tenantWhere } from '../tenant-scope.js';
 import type { PipelineResult, ProfileTier } from '../types.js';
 
-import type { CorpusSnapshotService } from './corpus-snapshot.js';
+import type { CorpusSnapshotService, MaterializedCorpusSnapshot } from './corpus-snapshot.js';
 import { EngineNotConfiguredError, type EngineBridge, type EngineOptions } from './engine-bridge.js';
 
 // ============================================================
@@ -33,7 +33,7 @@ import { EngineNotConfiguredError, type EngineBridge, type EngineOptions } from 
 // ============================================================
 
 export interface PipelineInput {
-  /** Corpus path passed to the engine (filesystem path or identifier). */
+  /** Fallback corpus path passed to the engine when no snapshot ID is provided. */
   corpusPath: string;
   /** Profile identities to generate, in `{tier}::{name}` format. */
   profileIdentities: string[];
@@ -165,7 +165,18 @@ export class ProfileGenerationPipeline {
           .where(tenantWhere(generationRuns, tenantId, eq(generationRuns.id, runId)));
 
         // Step 6: generate profiles
-        return this.generateProfiles(tenantId, runId, input);
+        const materialized = input.corpusSnapshotId
+          ? await this.snapshotService.materializeSnapshot(tenantId, input.corpusSnapshotId)
+          : null;
+
+        try {
+          return this.generateProfiles(tenantId, runId, {
+            ...input,
+            corpusPath: materialized?.corpusPath ?? input.corpusPath,
+          });
+        } finally {
+          await this.cleanupMaterializedSnapshot(materialized);
+        }
       });
 
       const durationMs = Date.now() - startMs;
@@ -475,5 +486,19 @@ export class ProfileGenerationPipeline {
     }
 
     return query;
+  }
+
+  private async cleanupMaterializedSnapshot(
+    materialized: MaterializedCorpusSnapshot | null,
+  ): Promise<void> {
+    if (!materialized) {
+      return;
+    }
+
+    try {
+      await materialized.cleanup();
+    } catch {
+      // Best-effort cleanup; the generation result should reflect engine behavior.
+    }
   }
 }
