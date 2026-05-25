@@ -125,7 +125,7 @@ export const pipelines = pipelinesSchema.table('pipelines', {
   tenantIdIdx: index('pipelines_tenant_id_idx').on(table.tenantId),
   tenantStatusIdx: index('pipelines_tenant_status_idx').on(table.tenantId, table.status),
   tenantTriggerIdx: index('pipelines_tenant_trigger_idx').on(table.tenantId, table.triggerType),
-  tenantNameUnique: uniqueIndex('pipelines_tenant_name_unique').on(table.tenantId, table.name),
+  tenantNameIdx: index('pipelines_tenant_name_idx').on(table.tenantId, table.name),
 }));
 ```
 
