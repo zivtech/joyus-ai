@@ -66,10 +66,12 @@ export class GenerationService {
     );
 
     const durationMs = Date.now() - startMs;
+    const generationLogId = createId();
+    const operationLogId = createId();
 
     // 4. Log to generation_logs (no durationMs column in this table)
     await this.db.insert(contentGenerationLogs).values({
-      id: createId(),
+      id: generationLogId,
       tenantId,
       userId,
       sessionId: options?.sessionId ?? null,
@@ -82,13 +84,15 @@ export class GenerationService {
 
     // 5. Audit log via operation_logs (includes durationMs)
     await this.db.insert(contentOperationLogs).values({
-      id: createId(),
+      id: operationLogId,
       tenantId,
       operation: 'generate',
       userId,
+      sessionId: options?.sessionId ?? null,
       durationMs,
       success: true,
       metadata: {
+        generationLogId,
         citationCount: citationResult.citationCount,
         sourcesUsed: retrieval.items.length,
         profileId: options?.profileId ?? null,
@@ -100,6 +104,7 @@ export class GenerationService {
       citations: citationResult.citations,
       profileUsed: genOutput.profileUsed,
       metadata: {
+        generationLogId,
         totalSearchResults: retrieval.totalSearchResults,
         sourcesUsed: retrieval.items.length,
         durationMs,
