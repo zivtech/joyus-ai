@@ -57,6 +57,13 @@
       "when": 1778505114111,
       "tag": "0007_coordination_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779713480527,
+      "tag": "0008_pipeline_name_not_unique",
+      "breakpoints": true
     }
   ]
 }

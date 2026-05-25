@@ -67,6 +67,34 @@ function getTenantId(req: Request): string {
   return '';
 }
 
+function getPgError(err: unknown): { code?: unknown } | null {
+  const cause = err && typeof err === 'object' && 'cause' in err
+    ? (err as { cause?: unknown }).cause
+    : null;
+  const candidate = cause ?? err;
+
+  if (!candidate || typeof candidate !== 'object') {
+    return null;
+  }
+
+  return candidate as { code?: unknown };
+}
+
+function isPgUniqueViolation(err: unknown): boolean {
+  return getPgError(err)?.code === '23505';
+}
+
+function sendPipelineMutationError(res: Response, err: unknown): Response {
+  if (isPgUniqueViolation(err)) {
+    return res.status(409).json({
+      error: 'Pipeline conflicts with an existing record',
+    });
+  }
+
+  const message = err instanceof Error ? err.message : 'Internal error';
+  return res.status(500).json({ error: message });
+}
+
 // ============================================================
 // ROUTER FACTORY
 // ============================================================
@@ -187,8 +215,7 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
         pipeline: { ...pipeline, steps: stepRecords },
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Internal error';
-      return res.status(500).json({ error: message });
+      return sendPipelineMutationError(res, err);
     }
   });
 
@@ -375,8 +402,7 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
 
       return res.json({ pipeline: { ...updated, steps } });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Internal error';
-      return res.status(500).json({ error: message });
+      return sendPipelineMutationError(res, err);
     }
   });
 
