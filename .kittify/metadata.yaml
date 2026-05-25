@@ -3,9 +3,9 @@
 # DO NOT EDIT MANUALLY
 
 spec_kitty:
-  version: 3.1.1
+  version: 3.1.8
   initialized_at: '2026-02-11T21:18:53.991526'
-  last_upgraded_at: '2026-04-21T09:48:52.850099'
+  last_upgraded_at: '2026-05-25T08:28:57.953272'
 environment:
   python_version: 3.14.0
   platform: darwin
@@ -406,3 +406,15 @@ migrations:
     applied_at: '2026-04-21T09:48:52.839902'
     result: skipped
     notes: Not applicable
+  - id: 3.1.2_globalize_commands
+    applied_at: '2026-05-25T08:28:57.945905'
+    result: success
+    notes: 'Removed: .claude/commands/spec-kitty.accept.md; Removed: .claude/commands/spec-kitty.analyze.md;
+      Removed: .claude/commands/spec-kitty.charter.md; Removed: .claude/commands/spec-kitty.checklist.md;
+      Removed: .claude/commands/spec-kitty.dashboard.md; Removed: .claude/commands/spec-kitty.implement.md;
+      Removed: .claude/commands/spec-kitty.merge.md; Removed: .claude/commands/spec-kitty.plan.md;
+      Removed: .claude/commands/spec-kitty.research.md; Removed: .claude/commands/spec-kitty.review.md;
+      Removed: .claude/commands/spec-kitty.specify.md; Removed: .claude/commands/spec-kitty.status.md;
+      Removed: .claude/commands/spec-kitty.tasks-finalize.md; Removed: .claude/commands/spec-kitty.tasks-outline.md;
+      Removed: .claude/commands/spec-kitty.tasks-packages.md; Removed: .claude/commands/spec-kitty.tasks.md;
+      Removed empty directory: .claude/commands'
