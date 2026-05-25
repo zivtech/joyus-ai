@@ -552,6 +552,20 @@ describe('POST /trigger', () => {
     expect(res.status).toHaveBeenCalledWith(401);
   });
 
+  it('returns 401 when the destination credential has been revoked', async () => {
+    const { db } = makeTriggerDb({ id: 'pipe-001' }, makeWebhookEvent(), { authSecretRef: null });
+    const handler = getTriggerHandler(db);
+    const req = mockReq({
+      headers: { authorization: 'Bearer valid-token-123' },
+      body: { triggerType: 'corpus-change', pipelineId: 'pipe-001', metadata: {} },
+    });
+    const res = mockRes();
+
+    await handler?.(req, res, () => {});
+
+    expect(res.status).toHaveBeenCalledWith(401);
+  });
+
   it('returns 202 and event_id when token matches destination secret', async () => {
     const insertedEvent = makeWebhookEvent({ id: 'evt-999' });
     const { db } = makeTriggerDb({ id: 'pipe-001' }, insertedEvent);
