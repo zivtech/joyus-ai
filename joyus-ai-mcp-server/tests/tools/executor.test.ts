@@ -103,6 +103,7 @@ const validConnection = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
 });
 
 // ============================================================
@@ -111,8 +112,8 @@ beforeEach(() => {
 
 describe('executeTool — ops_ prefix', () => {
   it('routes ops_* tools directly to executeOpsTool', async () => {
-    const result = await executeTool('user-1', 'ops_export_excel', { tenant_id: 't1' });
-    expect(vi.mocked(executeOpsTool)).toHaveBeenCalledWith('ops_export_excel', { tenant_id: 't1' }, { userId: 'user-1' });
+    const result = await executeTool('user-1', 'ops_export_excel', { tenant_id: 'user-1' });
+    expect(vi.mocked(executeOpsTool)).toHaveBeenCalledWith('ops_export_excel', { tenant_id: 'user-1' }, { userId: 'user-1', tenantAccessPreResolved: true });
     expect(result).toEqual({ ops: 'result' });
   });
 });
@@ -130,6 +131,32 @@ describe('executeTool — content_ prefix', () => {
       expect.objectContaining({ userId: 'user-1', tenantId: 'user-1' }),
     );
     expect(result).toEqual({ content: 'result' });
+  });
+
+  it('uses the shared resolver for explicitly requested tenants', async () => {
+    vi.stubEnv('EXPORT_TENANT_ALLOWLIST', 'user-1:tenant-allowed');
+
+    await executeTool('user-1', 'content_list_sources', {
+      tenant_id: 'tenant-allowed',
+    });
+
+    expect(vi.mocked(executeContentTool)).toHaveBeenCalledWith(
+      'content_list_sources',
+      { tenant_id: 'tenant-allowed' },
+      expect.objectContaining({ userId: 'user-1', tenantId: 'tenant-allowed' }),
+    );
+  });
+
+  it('rejects explicitly requested tenants without membership or allowlist access', async () => {
+    vi.mocked(db.select).mockReturnValue(chainable([]));
+
+    await expect(
+      executeTool('user-1', 'content_list_sources', {
+        tenant_id: 'tenant-denied',
+      }),
+    ).rejects.toThrow('not authorized for tenant tenant-denied');
+
+    expect(vi.mocked(executeContentTool)).not.toHaveBeenCalled();
   });
 });
 

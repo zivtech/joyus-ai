@@ -7,7 +7,7 @@
  *   PATCH  /schedules/:id          — update with cron re-evaluation
  *   DELETE /schedules/:id          — soft delete (archive)
  *
- * Tenant context: resolved from x-tenant-id header (same pattern as sources.ts).
+ * Tenant context: resolved by the shared tenant resolver before these routes run.
  * Cron validation: uses validateCronExpression and isValidTimezone from scheduler service.
  * nextFireAt: computed on create, recomputed on cron/timezone/lifecycle changes.
  */
@@ -37,12 +37,11 @@ export interface SchedulesRouterDeps {
 // ============================================================
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present (platform-admin context).
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
 }
 
 /** Shape returned for each schedule in list/create/update responses. */

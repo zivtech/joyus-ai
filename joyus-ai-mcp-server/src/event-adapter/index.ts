@@ -6,7 +6,9 @@
  */
 
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Router } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
+
+import { resolveTenantContext, sendTenantResolutionError } from '../tenancy/resolver.js';
 
 import { createAdminRouter } from './routes/admin.js';
 import { createAutomationRouter } from './routes/automation.js';
@@ -135,6 +137,21 @@ export function createEventAdapterRouter(deps?: EventAdapterRouterDeps): Router 
   const router = Router();
 
   if (deps) {
+    router.use(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await resolveTenantContext(req, {
+          db: deps.db,
+          allowPlatformWide: true,
+          lookupDefaultTenant: true,
+          tenantHeaderNames: ['x-tenant-id'],
+          tenantQueryKeys: ['tenant_id', 'tenantId'],
+        });
+        next();
+      } catch (error) {
+        sendTenantResolutionError(res, error);
+      }
+    });
+
     const sourcesRouter = createSourcesRouter({ db: deps.db });
     router.use(sourcesRouter);
 

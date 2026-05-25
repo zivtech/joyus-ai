@@ -5,7 +5,7 @@
  *   GET  /events          — paginated event query with filters (T046)
  *   POST /events/:id/replay — replay a failed or dead-lettered event (T047)
  *
- * Tenant context: resolved from x-tenant-id header.
+ * Tenant context: resolved by the shared tenant resolver before these routes run.
  * Payload and headers are NOT returned in list responses (can be large).
  * Cross-tenant access returns 404, not 403.
  */
@@ -51,12 +51,11 @@ interface EventSummary {
 // ============================================================
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present.
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
 }
 
 /**

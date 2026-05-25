@@ -7,7 +7,7 @@
  *   PATCH  /sources/:id          — update config, lifecycle; slug is immutable (T037)
  *   DELETE /sources/:id          — soft delete (archive); blocked if active subscriptions exist (T038)
  *
- * Tenant context: resolved from x-tenant-id header (auth middleware not yet implemented).
+ * Tenant context: resolved by the shared tenant resolver before these routes run.
  * Secrets: authConfig.secretRef stores AES-256-GCM encrypted ciphertext via secret-store.
  * Response: authConfig is never returned; hasSecret: boolean is returned instead.
  */
@@ -105,12 +105,11 @@ function toPublicSource(row: typeof eventSources.$inferSelect) {
 }
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present (platform-wide callers).
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
 }
 
 async function pipelineExists(
