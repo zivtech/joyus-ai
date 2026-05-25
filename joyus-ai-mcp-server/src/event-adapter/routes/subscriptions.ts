@@ -27,12 +27,11 @@ export interface SubscriptionsRouterDeps {
 // ============================================================
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present (platform-admin context).
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
 }
 
 // ============================================================

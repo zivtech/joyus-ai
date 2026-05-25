@@ -11,9 +11,10 @@
 import { createId } from '@paralleldrive/cuid2';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Router, type Request, type Response } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 
 import { inngest } from '../inngest/client.js';
+import { resolveTenantContext, sendTenantResolutionError } from '../tenancy/resolver.js';
 
 import { validateNoCycle } from './graph/cycle-detector.js';
 import type { DecisionRecorder } from './review/decision.js';
@@ -54,10 +55,16 @@ export interface PipelineRouterDeps {
 
 /**
  * Extract tenantId from the authenticated request context.
- * userId === tenantId until formal tenant resolution exists (see #37).
- * Never trust request headers for tenant identity.
+ * Prefer the shared tenant resolver context; fall back to the authenticated
+ * user id for direct route tests that invoke handlers without Express middleware.
  */
 function getTenantId(req: Request): string {
+  if (req.tenantContext?.tenantId) {
+    return req.tenantContext.tenantId;
+  }
+  if (req.tenantId) {
+    return req.tenantId;
+  }
   if (req.mcpUser?.id) {
     return req.mcpUser.id;
   }
@@ -106,6 +113,20 @@ function sendPipelineMutationError(res: Response, err: unknown): Response {
 export function createPipelineRouter(deps: PipelineRouterDeps): Router {
   const { db, stepRegistry, decisionRecorder } = deps;
   const router = Router();
+
+  router.use(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await resolveTenantContext(req, {
+        db,
+        lookupDefaultTenant: true,
+        tenantHeaderNames: ['x-tenant-id'],
+        tenantQueryKeys: ['tenant_id', 'tenantId'],
+      });
+      next();
+    } catch (error) {
+      sendTenantResolutionError(res, error);
+    }
+  });
 
   // ----------------------------------------------------------
   // PIPELINE CRUD

@@ -1,27 +1,28 @@
 /**
  * Tenant Scoping Middleware — WP01
  *
- * Extracts tenantId from the authenticated MCP user and attaches it
- * to the request object for use by all orchestrator handlers.
+ * Resolves tenantId from the authenticated MCP user and attaches it to the
+ * request object for use by all orchestrator handlers.
  *
  * This middleware MUST run after requireBearerToken (from src/auth/middleware.ts),
  * which populates req.mcpUser.
  *
  * tenantId derivation:
- *   In the current single-tenant world, tenantId == userId (req.mcpUser.id).
- *   This is consistent with the comment in src/tools/executor.ts:
- *     "tenant resolution deferred to WP12; use userId as tenantId for now"
- *   When multi-tenancy ships, this file is the single place to update.
+ *   Shared tenancy resolver first checks the user's default membership.
+ *   If no membership is present, it falls back to the historical userId ==
+ *   tenantId behavior for backward compatibility.
  *
  * Security contract:
- *   tenantId is NEVER read from the request body, query params, or custom headers.
- *   It is derived ONLY from the verified auth context (req.mcpUser), which was
- *   validated against the database by the upstream bearer-token middleware.
+ *   tenantId is never read from the request body, query params, or custom
+ *   headers for orchestrator routes. It is derived from the verified auth
+ *   context and tenant membership state.
  */
 
 import { Request, Response, NextFunction } from 'express';
 
 import type { UserWithConnections } from '../../auth/verify.js';
+import { db } from '../../db/client.js';
+import { resolveTenantContext, sendTenantResolutionError } from '../../tenancy/resolver.js';
 import { MissingTenantError } from '../types.js';
 
 // ============================================================
@@ -61,9 +62,12 @@ export function resolveTenantId(req: Request, res: Response, next: NextFunction)
     return;
   }
 
-  // tenantId = userId until multi-tenant resolution is implemented (WP12)
-  req.tenantId = user.id;
-  next();
+  resolveTenantContext(req, {
+    db,
+    lookupDefaultTenant: true,
+  })
+    .then(() => next())
+    .catch((error) => sendTenantResolutionError(res, error));
 }
 
 // ============================================================

@@ -4,6 +4,8 @@ import path from 'path';
 
 import { createId } from '@paralleldrive/cuid2';
 
+import { canAccessTenantFromEnvironment } from '../tenancy/resolver.js';
+
 import { buildWorkbookFile } from './excel-builder.js';
 import {
   CreateExportJobParams,
@@ -49,29 +51,9 @@ export function normalizeExportLocations(value: string | undefined): ExcelExport
   return value === 'all_accessible' ? 'all_accessible' : 'current';
 }
 
-function parseTenantAllowlist(raw: string): Map<string, Set<string>> {
-  const result = new Map<string, Set<string>>();
-  raw
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .forEach((entry) => {
-      const [userId, tenantId] = entry.split(':').map((part) => part.trim());
-      if (!userId || !tenantId) return;
-      const existing = result.get(userId) || new Set<string>();
-      existing.add(tenantId);
-      result.set(userId, existing);
-    });
-  return result;
-}
-
 export function canAccessTenant(userId: string, tenantId: string): boolean {
-  if (process.env.EXPORT_ALLOW_ANY_TENANT === 'true') return true;
   if (tenantId === userId) return true;
-
-  const allowlist = parseTenantAllowlist(process.env.EXPORT_TENANT_ALLOWLIST || '');
-  const allowedTenants = allowlist.get(userId);
-  return Boolean(allowedTenants && allowedTenants.has(tenantId));
+  return canAccessTenantFromEnvironment(userId, tenantId);
 }
 
 function assertTenantAccess(userId: string, tenantId: string): void {
@@ -164,7 +146,9 @@ function buildDownloadUrl(baseUrl: string, token: string): string {
 }
 
 export async function createExcelExportJob(params: CreateExportJobParams): Promise<{ job: ExcelExportJob; downloadUrl: string }> {
-  assertTenantAccess(params.userId, params.tenantId);
+  if (!params.tenantAccessPreResolved) {
+    assertTenantAccess(params.userId, params.tenantId);
+  }
 
   const scope = normalizeExportScope(params.request.scope);
   const locations = normalizeExportLocations(params.request.locations);
@@ -236,8 +220,15 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
   }
 }
 
-export function getExcelExportJobForUser(userId: string, tenantId: string, exportId: string): ExcelExportJob | null {
-  assertTenantAccess(userId, tenantId);
+export function getExcelExportJobForUser(
+  userId: string,
+  tenantId: string,
+  exportId: string,
+  options: { tenantAccessPreResolved?: boolean } = {},
+): ExcelExportJob | null {
+  if (!options.tenantAccessPreResolved) {
+    assertTenantAccess(userId, tenantId);
+  }
   const job = exportJobs.get(exportId);
   if (!job) return null;
   if (job.userId !== userId || job.tenantId !== tenantId) return null;
@@ -254,4 +245,3 @@ export function resolveDownloadToken(token: string): { job: ExcelExportJob; file
   if (!job || !job.filePath || job.status !== 'completed') return null;
   return { job, filePath: job.filePath };
 }
-

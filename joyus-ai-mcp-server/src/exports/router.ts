@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 
 import { requireBearerToken } from '../auth/middleware.js';
 import { db, auditLogs } from '../db/client.js';
+import { resolveTenantContext, sendTenantResolutionError, TenantResolutionError } from '../tenancy/resolver.js';
 
 import { createExcelExportJob, getExcelExportJobForUser, resolveDownloadToken } from './service.js';
 import { ExcelExportRequest } from './types.js';
@@ -37,7 +38,6 @@ export const exportRouter = Router();
 exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async (req: Request, res: Response) => {
   const startedAt = Date.now();
   const user = req.mcpUser;
-  const tenantId = req.params.tenantId;
 
   if (!user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -45,13 +45,25 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
   }
 
   const body = (req.body && typeof req.body === 'object' ? req.body : {}) as ExcelExportRequest;
+  let tenantId = req.params.tenantId;
 
   try {
+    const tenantContext = await resolveTenantContext(req, {
+      db,
+      requestedTenantId: tenantId,
+    });
+    if (!tenantContext.tenantId) {
+      res.status(403).json({ error: 'tenant_required', message: 'Tenant-scoped export requests require a tenant' });
+      return;
+    }
+    tenantId = tenantContext.tenantId;
+
     const { job, downloadUrl } = await createExcelExportJob({
       userId: user.id,
       tenantId,
       request: body,
       baseUrl: inferredBaseUrl(req),
+      tenantAccessPreResolved: true,
     });
 
     await writeAudit(
@@ -81,6 +93,11 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
       file_size_bytes: job.fileSizeBytes,
     });
   } catch (error) {
+    if (error instanceof TenantResolutionError) {
+      sendTenantResolutionError(res, error);
+      return;
+    }
+
     const message = error instanceof Error ? error.message : 'Export generation failed';
 
     await writeAudit(
@@ -107,7 +124,7 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
 
 exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, async (req: Request, res: Response) => {
   const user = req.mcpUser;
-  const { tenantId, exportId } = req.params;
+  const { exportId } = req.params;
 
   if (!user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -115,7 +132,18 @@ exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, asy
   }
 
   try {
-    const job = getExcelExportJobForUser(user.id, tenantId, exportId);
+    const tenantContext = await resolveTenantContext(req, {
+      db,
+      requestedTenantId: req.params.tenantId,
+    });
+    if (!tenantContext.tenantId) {
+      res.status(403).json({ error: 'tenant_required', message: 'Tenant-scoped export requests require a tenant' });
+      return;
+    }
+
+    const job = getExcelExportJobForUser(user.id, tenantContext.tenantId, exportId, {
+      tenantAccessPreResolved: true,
+    });
     if (!job) {
       res.status(404).json({ error: 'Export not found' });
       return;

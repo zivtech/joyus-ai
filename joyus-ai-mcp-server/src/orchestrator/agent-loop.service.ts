@@ -159,6 +159,7 @@ export interface ToolRouter {
     toolName: string,
     toolInput: Record<string, unknown>,
     tenantId: string,
+    actorUserId?: string,
   ): Promise<ToolExecutionResult>;
 }
 
@@ -176,6 +177,7 @@ export class StubToolRouter implements ToolRouter {
     toolName: string,
     _toolInput: Record<string, unknown>,
     _tenantId: string,
+    _actorUserId?: string,
   ): Promise<ToolExecutionResult> {
     // WP05 will route to real MCP tool servers
     return {
@@ -575,6 +577,7 @@ export class AgentLoopService {
           toolCall.name,
           toolCall.input,
           tenantId,
+          session.userId,
         );
 
         // Notify client of the tool result

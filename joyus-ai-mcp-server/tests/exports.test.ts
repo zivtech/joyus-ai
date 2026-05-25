@@ -28,6 +28,7 @@ vi.mock('../src/exports/excel-builder.js', () => ({
 
 vi.mock('../src/db/client.js', () => ({
   db: {
+    select: vi.fn(),
     insert: vi.fn().mockReturnValue({
       values: vi.fn().mockResolvedValue(undefined),
     }),
@@ -59,7 +60,7 @@ import {
 } from '../src/exports/service.js';
 
 
-import { getUserFromToken } from '../src/auth/verify.js';
+import { db } from '../src/db/client.js';
 import { buildWorkbookFile } from '../src/exports/excel-builder.js';
 import { exportRouter } from '../src/exports/router.js';
 
@@ -112,6 +113,16 @@ function makeRes(): Response & {
   });
 
   return res;
+}
+
+function chainableSelect(resolveValue: unknown[]) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue(resolveValue),
+      }),
+    }),
+  };
 }
 
 /** Build a minimal CreateExportJobParams. */
@@ -379,11 +390,15 @@ type RouterLayer = {
   };
 };
 
-function findDownloadHandler(router: import('express').Router) {
+function findRouteHandler(router: import('express').Router, path: string, handlerIndex = 0) {
   const layers = (router as unknown as { stack: RouterLayer[] }).stack;
-  const layer = layers.find((l) => l.route?.path === '/exports/download/:token');
-  if (!layer?.route) throw new Error('Download route not found on exportRouter');
-  return layer.route.stack[0].handle;
+  const layer = layers.find((l) => l.route?.path === path);
+  if (!layer?.route) throw new Error(`Route not found on exportRouter: ${path}`);
+  return layer.route.stack[handlerIndex].handle;
+}
+
+function findDownloadHandler(router: import('express').Router) {
+  return findRouteHandler(router, '/exports/download/:token');
 }
 
 describe('Router: GET /exports/download/:token', () => {
@@ -431,5 +446,47 @@ describe('Router: GET /exports/download/:token', () => {
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     );
+  });
+});
+
+describe('Router: POST /tenants/:tenantId/exports/excel', () => {
+  beforeEach(() => {
+    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'false');
+    vi.stubEnv('EXPORT_TENANT_ALLOWLIST', '');
+    vi.mocked(buildWorkbookFile).mockResolvedValue(undefined);
+    vi.mocked(db.insert).mockReturnValue({
+      values: vi.fn().mockResolvedValue(undefined),
+    } as never);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('allows a distinct requested tenant when membership resolution succeeds', async () => {
+    vi.mocked(db.select).mockReturnValue(chainableSelect([
+      {
+        id: 'membership-1',
+        userId: 'user-member',
+        tenantId: 'tenant-member',
+        role: 'member',
+        isDefault: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]) as never);
+
+    const handler = findRouteHandler(exportRouter, '/tenants/:tenantId/exports/excel', 1);
+    const req = makeReq({
+      params: { tenantId: 'tenant-member' },
+      body: { scope: 'current_view', locations: 'current' },
+      mcpUser: { id: 'user-member' },
+    });
+    const res = makeRes();
+
+    await handler(req, res, vi.fn());
+
+    expect(res._status).toBe(201);
+    expect((res._body as { tenant_id: string }).tenant_id).toBe('tenant-member');
   });
 });

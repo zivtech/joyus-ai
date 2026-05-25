@@ -2,6 +2,7 @@ import { createExcelExportJob } from '../../exports/service.js';
 
 interface OpsExecutorContext {
   userId: string;
+  tenantAccessPreResolved?: boolean;
 }
 
 function requireString(input: Record<string, unknown>, key: string): string {
@@ -38,6 +39,7 @@ export async function executeOpsTool(
     userId: context.userId,
     tenantId,
     baseUrl,
+    tenantAccessPreResolved: context.tenantAccessPreResolved,
     request: {
       scope,
       locations,
@@ -60,4 +62,3 @@ export async function executeOpsTool(
     download_url: downloadUrl,
   };
 }
-

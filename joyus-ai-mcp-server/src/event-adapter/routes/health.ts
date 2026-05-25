@@ -20,12 +20,11 @@ import type { SchedulerService } from '../services/scheduler.js';
 // ============================================================
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present.
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
 }
 
 // ============================================================

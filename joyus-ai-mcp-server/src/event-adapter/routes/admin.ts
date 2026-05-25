@@ -59,13 +59,12 @@ function escapeHtml(str: string): string {
 // ============================================================
 
 /**
- * Resolve tenant id from x-tenant-id header.
- * Returns null if missing (platform admin context).
+ * Resolve tenant id from the authenticated tenant context.
+ * Returns null only for explicit platform-operator context.
  */
 function resolveTenantId(req: Request): string | null {
-  const header = req.headers['x-tenant-id'];
-  if (Array.isArray(header)) return header[0] ?? null;
-  return header ?? null;
+  if (req.tenantContext) return req.tenantContext.tenantId;
+  return req.tenantId ?? null;
 }
 
 /**
@@ -111,8 +110,8 @@ function eventStatusBadge(status: string): string {
 function platformAdminBanner(): string {
   return `
 <div class="alert alert-warning">
-  <strong>Platform admin view.</strong>
-  Add the <code>x-tenant-id</code> header to scope data to a specific tenant.
+  <strong>Platform operator view.</strong>
+  Tenant-scoped data is controlled by the authenticated tenant context.
   Showing all tenants.
 </div>`;
 }
@@ -635,7 +634,7 @@ function automationPageHandler(deps: AdminRouterDeps) {
       const content = `
         ${platformAdminBanner()}
         <div class="card">
-          <p>Select a specific tenant (via <code>x-tenant-id</code> header) to manage automation destinations.</p>
+          <p>Select a specific tenant through the authenticated tenant context to manage automation destinations.</p>
         </div>`;
       res.status(200).send(renderLayout('Automation', content, 'automation'));
       return;
