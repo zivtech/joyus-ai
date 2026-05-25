@@ -1,7 +1,7 @@
 {
-  "event_count": 12,
-  "last_event_id": "01KSGRS5GRFF6CXA8Q6W9QM9EE",
-  "materialized_at": "2026-05-25T23:51:03.960652+00:00",
+  "event_count": 15,
+  "last_event_id": "01KSGS17TMXDZ3NQKAB69QCPZ2",
+  "materialized_at": "2026-05-25T23:55:28.468602+00:00",
   "mission_number": "",
   "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
   "mission_type": "software-dev",
@@ -11,10 +11,10 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
+    "for_review": 3,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -32,11 +32,11 @@
       "last_transition_at": "2026-05-25T23:51:03.960652+00:00"
     },
     "WP03": {
-      "actor": "finalize-tasks",
+      "actor": "user",
       "force_count": 1,
-      "lane": "planned",
-      "last_event_id": "01KSGPGG9TCJDMGFYF8RRAPW7T",
-      "last_transition_at": "2026-05-25T23:11:22.938938+00:00"
+      "lane": "for_review",
+      "last_event_id": "01KSGS17TMXDZ3NQKAB69QCPZ2",
+      "last_transition_at": "2026-05-25T23:55:28.468602+00:00"
     },
     "WP04": {
       "actor": "finalize-tasks",
