@@ -189,6 +189,9 @@ docker-compose up
 | `github_search_code` | Search code |
 | `github_list_prs` | List pull requests |
 | `github_get_pr` | Get PR details |
+| `github_create_pr` | Create a pull request |
+| `github_request_reviewers` | Request PR reviewers |
+| `github_get_pr_checks` | Get PR check status |
 | `github_list_issues` | List issues |
 | `github_get_issue` | Get issue details |
 | `github_list_repos` | List org repos |
