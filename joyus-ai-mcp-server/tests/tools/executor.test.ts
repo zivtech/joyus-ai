@@ -32,6 +32,10 @@ vi.mock('../../src/tools/executors/content-executor.js', () => ({
   executeContentTool: vi.fn().mockResolvedValue({ content: 'result' }),
 }));
 
+vi.mock('../../src/tools/executors/approval-executor.js', () => ({
+  executeApprovalTool: vi.fn().mockResolvedValue({ approval: 'result' }),
+}));
+
 vi.mock('../../src/tools/executors/github-executor.js', () => ({
   executeGithubTool: vi.fn().mockResolvedValue({ github: 'result' }),
 }));
@@ -66,6 +70,7 @@ vi.mock('axios', () => ({
 
 import { db, connections } from '../../src/db/client.js';
 import { decryptToken, encryptToken } from '../../src/db/encryption.js';
+import { executeApprovalTool } from '../../src/tools/executors/approval-executor.js';
 import { executeContentTool } from '../../src/tools/executors/content-executor.js';
 import { executeGithubTool } from '../../src/tools/executors/github-executor.js';
 import { executeGoogleTool } from '../../src/tools/executors/google-executor.js';
@@ -130,6 +135,22 @@ describe('executeTool — content_ prefix', () => {
       expect.objectContaining({ userId: 'user-1', tenantId: 'user-1' }),
     );
     expect(result).toEqual({ content: 'result' });
+  });
+});
+
+// ============================================================
+// approval_ prefix — no DB lookup required
+// ============================================================
+
+describe('executeTool — approval_ prefix', () => {
+  it('routes approval_* tools directly to executeApprovalTool', async () => {
+    const result = await executeTool('user-1', 'approval_status', { approvalId: 'approval-1' });
+    expect(vi.mocked(executeApprovalTool)).toHaveBeenCalledWith(
+      'approval_status',
+      { approvalId: 'approval-1' },
+      expect.objectContaining({ tenantId: 'user-1' }),
+    );
+    expect(result).toEqual({ approval: 'result' });
   });
 });
 

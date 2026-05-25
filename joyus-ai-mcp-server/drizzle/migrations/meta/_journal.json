@@ -57,6 +57,13 @@
       "when": 1778505114111,
       "tag": "0007_coordination_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779724808297,
+      "tag": "0008_workflow_approval_state",
+      "breakpoints": true
     }
   ]
 }

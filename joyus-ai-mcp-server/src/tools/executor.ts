@@ -9,6 +9,7 @@ import type { SearchService } from '../content/search/index.js';
 import { db, connections, type Service } from '../db/client.js';
 import { decryptToken, encryptToken } from '../db/encryption.js';
 
+import { executeApprovalTool, type ApprovalExecutorContext } from './executors/approval-executor.js';
 import { executeContentTool } from './executors/content-executor.js';
 import { executeGithubTool } from './executors/github-executor.js';
 import { executeGoogleTool } from './executors/google-executor.js';
@@ -113,6 +114,14 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   if (toolName.startsWith('profile_')) {
     const tenantId = userId; // tenant resolution deferred; use userId as tenantId for now
     return executeProfileTool(toolName, input, { userId, tenantId, db });
+  }
+
+  if (toolName.startsWith('approval_')) {
+    const tenantId = userId; // tenant resolution deferred; use userId as tenantId for now
+    return executeApprovalTool(toolName, input, {
+      tenantId,
+      db: db as unknown as ApprovalExecutorContext['db'],
+    });
   }
 
   if (toolName.startsWith('pipeline_')) {
