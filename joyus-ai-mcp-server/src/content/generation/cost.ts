@@ -10,6 +10,8 @@ export interface GenerationOperationMetadata {
   cacheHitRate?: number;
   model?: string;
   tokensAvailable?: boolean;
+  pricingAvailable?: boolean;
+  pricingVersion?: string;
 }
 
 export interface ModelPricing {
@@ -41,6 +43,113 @@ export const PRICING: Record<string, ModelPricing> = {
 };
 
 export const PRICING_VERSION = '2026-04-14';
+
+export interface GenerationTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheWriteTokens: number;
+  cacheReadTokens: number;
+}
+
+export interface AnthropicUsageShape {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+const USD_SCALE = 1_000_000;
+
+function nonNegativeInteger(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+  return Math.trunc(value);
+}
+
+function hasNumericField(source: Record<string, unknown>, field: string): boolean {
+  return typeof source[field] === 'number' && Number.isFinite(source[field]);
+}
+
+export function normalizeAnthropicUsage(
+  usage: AnthropicUsageShape | null | undefined
+): GenerationTokenUsage | null {
+  if (!usage) return null;
+
+  const source = usage as Record<string, unknown>;
+  const hasUsage = [
+    'input_tokens',
+    'output_tokens',
+    'cache_creation_input_tokens',
+    'cache_read_input_tokens',
+  ].some(field => hasNumericField(source, field));
+
+  if (!hasUsage) return null;
+
+  return {
+    inputTokens: nonNegativeInteger(usage.input_tokens),
+    outputTokens: nonNegativeInteger(usage.output_tokens),
+    cacheWriteTokens: nonNegativeInteger(usage.cache_creation_input_tokens),
+    cacheReadTokens: nonNegativeInteger(usage.cache_read_input_tokens),
+  };
+}
+
+export function resolveModelPricing(model: string | null | undefined): ModelPricing | null {
+  if (!model) return null;
+  if (PRICING[model]) return PRICING[model];
+
+  const modelFamily = Object.keys(PRICING).find(key => model.startsWith(`${key}-`));
+  return modelFamily ? PRICING[modelFamily] : null;
+}
+
+export function estimateGenerationCostMicroUsd(
+  usage: GenerationTokenUsage,
+  pricing: ModelPricing
+): number {
+  return Math.round(
+    usage.inputTokens * pricing.inputPerMTok +
+      usage.outputTokens * pricing.outputPerMTok +
+      usage.cacheWriteTokens * pricing.cacheWritePerMTok +
+      usage.cacheReadTokens * pricing.cacheReadPerMTok
+  );
+}
+
+export function formatCostUsd(microUsd: number): string {
+  return (microUsd / USD_SCALE).toFixed(6);
+}
+
+export function costUsdNumber(microUsd: number): number {
+  return Number(formatCostUsd(microUsd));
+}
+
+export function buildGenerationCostMetadata(
+  model: string | null | undefined,
+  usage: GenerationTokenUsage | null | undefined
+): Partial<GenerationOperationMetadata> | null {
+  if (!usage) return null;
+
+  const promptTokenTotal = usage.inputTokens + usage.cacheWriteTokens + usage.cacheReadTokens;
+  const pricing = resolveModelPricing(model);
+  const metadata: Partial<GenerationOperationMetadata> = {
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    cacheWriteTokens: usage.cacheWriteTokens,
+    cacheReadTokens: usage.cacheReadTokens,
+    tokensAvailable: true,
+    pricingAvailable: pricing !== null,
+    ...(model ? { model } : {}),
+    ...(promptTokenTotal > 0 ? { cacheHitRate: usage.cacheReadTokens / promptTokenTotal } : {}),
+  };
+
+  if (!pricing) return metadata;
+
+  const microUsd = estimateGenerationCostMicroUsd(usage, pricing);
+  return {
+    ...metadata,
+    estimatedCostUsd: costUsdNumber(microUsd),
+    pricingVersion: PRICING_VERSION,
+  };
+}
 
 const parsedTtl = parseInt(process.env.JOYUS_CACHE_TTL_SECONDS ?? '', 10);
 export const CACHE_TTL_SECONDS: number =

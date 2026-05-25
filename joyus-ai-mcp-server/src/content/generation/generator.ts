@@ -5,16 +5,25 @@
  * system prompt from the retrieved context and optional voice profile.
  */
 
+import type { GenerationTokenUsage } from './cost.js';
 import type { RetrievalResult } from './retriever.js';
 
+export interface GenerationProviderResponse {
+  text: string;
+  model?: string;
+  usage?: GenerationTokenUsage | null;
+}
+
 export interface GenerationProvider {
-  generate(prompt: string, systemPrompt: string): Promise<string>;
+  generate(prompt: string, systemPrompt: string): Promise<string | GenerationProviderResponse>;
 }
 
 export interface GenerationOutput {
   text: string;
   profileUsed: string | null;
   sourcesProvided: number;
+  model?: string;
+  usage?: GenerationTokenUsage;
 }
 
 export class ContentGenerator {
@@ -23,14 +32,19 @@ export class ContentGenerator {
   async generate(
     query: string,
     retrieval: RetrievalResult,
-    profileId?: string,
+    profileId?: string
   ): Promise<GenerationOutput> {
     const systemPrompt = this.buildSystemPrompt(retrieval, profileId);
-    const text = await this.provider.generate(query, systemPrompt);
+    const providerResult = await this.provider.generate(query, systemPrompt);
+    const normalized =
+      typeof providerResult === 'string' ? { text: providerResult } : providerResult;
+
     return {
-      text,
+      text: normalized.text,
       profileUsed: profileId ?? null,
       sourcesProvided: retrieval.items.length,
+      ...(normalized.model ? { model: normalized.model } : {}),
+      ...(normalized.usage ? { usage: normalized.usage } : {}),
     };
   }
 
@@ -48,8 +62,7 @@ export class ContentGenerator {
     prompt += '- Use ONLY the reference material above to answer\n';
     prompt += '- Cite sources using [Source N] markers matching the numbers above\n';
     prompt += '- Do NOT reference content not in the provided sources\n';
-    prompt +=
-      '- If the reference material does not contain relevant information, say so\n';
+    prompt += '- If the reference material does not contain relevant information, say so\n';
 
     return prompt;
   }
