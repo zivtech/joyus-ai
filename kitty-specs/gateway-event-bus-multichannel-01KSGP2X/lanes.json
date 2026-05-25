@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
+  "mission_id": "01KSGP2XG4CWRYWH6DES0WQ6WA",
+  "mission_branch": "kitty/mission-gateway-event-bus-multichannel-01KSGP2X",
+  "target_branch": "codex/gateway-event-bus-promotion-20260525",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01",
+        "WP02",
+        "WP03",
+        "WP04",
+        "WP05",
+        "WP06"
+      ],
+      "write_scope": [
+        "joyus-ai-mcp-server/docs/manual-testing/gateway-event-bus-manual-test.md",
+        "joyus-ai-mcp-server/drizzle/migrations/**",
+        "joyus-ai-mcp-server/src/content/monitoring/**",
+        "joyus-ai-mcp-server/src/db/schema/gateway-events.ts",
+        "joyus-ai-mcp-server/src/gateway-events/**/*.test.ts",
+        "joyus-ai-mcp-server/src/gateway-events/adapters/**",
+        "joyus-ai-mcp-server/src/gateway-events/audit.service.ts",
+        "joyus-ai-mcp-server/src/gateway-events/dead-letter.service.ts",
+        "joyus-ai-mcp-server/src/gateway-events/decision.service.ts",
+        "joyus-ai-mcp-server/src/gateway-events/delivery.service.ts",
+        "joyus-ai-mcp-server/src/gateway-events/event.service.ts",
+        "joyus-ai-mcp-server/src/gateway-events/handler-registry.ts",
+        "joyus-ai-mcp-server/src/gateway-events/index.ts",
+        "joyus-ai-mcp-server/src/gateway-events/retry.worker.ts",
+        "joyus-ai-mcp-server/src/gateway-events/routes/decisions.ts",
+        "joyus-ai-mcp-server/src/gateway-events/routes/deliveries.ts",
+        "joyus-ai-mcp-server/src/gateway-events/routes/endpoints.ts",
+        "joyus-ai-mcp-server/src/gateway-events/routes/events.ts",
+        "joyus-ai-mcp-server/src/gateway-events/routes/subscriptions.ts",
+        "joyus-ai-mcp-server/src/gateway-events/schemas.ts",
+        "joyus-ai-mcp-server/src/gateway-events/store.ts",
+        "joyus-ai-mcp-server/src/gateway-events/subscription.service.ts",
+        "joyus-ai-mcp-server/src/gateway-events/types.ts",
+        "joyus-ai-mcp-server/src/index.ts",
+        "joyus-ai-mcp-server/src/orchestrator/notification.service.ts",
+        "joyus-ai-mcp-server/src/pipelines/review/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "dashboard",
+        "tests"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-05-25T23:11:22.943864+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP02",
+        "wp_b": "WP01",
+        "rule": "dependency",
+        "evidence": "WP02 depends on WP01"
+      },
+      {
+        "wp_a": "WP03",
+        "wp_b": "WP02",
+        "rule": "dependency",
+        "evidence": "WP03 depends on WP02"
+      },
+      {
+        "wp_a": "WP04",
+        "wp_b": "WP03",
+        "rule": "dependency",
+        "evidence": "WP04 depends on WP03"
+      },
+      {
+        "wp_a": "WP05",
+        "wp_b": "WP02",
+        "rule": "dependency",
+        "evidence": "WP05 depends on WP02"
+      },
+      {
+        "wp_a": "WP06",
+        "wp_b": "WP03",
+        "rule": "dependency",
+        "evidence": "WP06 depends on WP03"
+      }
+    ],
+    "total_merges": 5,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "dependency": 5
+    }
+  }
+}

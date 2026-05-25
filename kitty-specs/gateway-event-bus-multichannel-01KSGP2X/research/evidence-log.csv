@@ -1,0 +1,6 @@
+evidence_id,source_id,claim,artifact,notes
+E001,S001,The platform already has tenant-scoped append-only events that can act as a producer for gateway delivery.,research.md,D-001 and D-002.
+E002,S002,Notification routing is already fire-and-forget and expects a gateway implementation behind an interface.,research.md,D-001.
+E003,S003,Gateway persistence should follow the local text ID and Drizzle schema conventions.,data-model.md,Implementation note for WP01.
+E004,S004,Review decisions should remain domain-owned after gateway routing.,spec.md,Supports FR-012 and C-005.
+E005,S005,Gateway routes can be mounted in the existing Express server for Phase 1.,plan.md,Supports in-process placement.

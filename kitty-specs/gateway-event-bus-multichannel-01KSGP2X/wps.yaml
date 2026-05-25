@@ -1,0 +1,57 @@
+work_packages:
+  - id: WP01
+    title: Gateway Event Domain and Persistence
+    dependencies: []
+    requirement_refs: [FR-001, FR-013, NFR-003, NFR-004, NFR-005]
+    owned_files:
+      - joyus-ai-mcp-server/src/gateway-events/types.ts
+      - joyus-ai-mcp-server/src/gateway-events/schemas.ts
+      - joyus-ai-mcp-server/src/db/schema/gateway-events.ts
+      - joyus-ai-mcp-server/drizzle/migrations/**
+      - joyus-ai-mcp-server/src/gateway-events/**/*.test.ts
+  - id: WP02
+    title: Emission and Subscription APIs
+    dependencies: [WP01]
+    requirement_refs: [FR-001, FR-002, FR-003, FR-004, NFR-001, NFR-003, NFR-006]
+    owned_files:
+      - joyus-ai-mcp-server/src/gateway-events/store.ts
+      - joyus-ai-mcp-server/src/gateway-events/event.service.ts
+      - joyus-ai-mcp-server/src/gateway-events/subscription.service.ts
+      - joyus-ai-mcp-server/src/gateway-events/routes/events.ts
+      - joyus-ai-mcp-server/src/gateway-events/routes/endpoints.ts
+      - joyus-ai-mcp-server/src/gateway-events/routes/subscriptions.ts
+      - joyus-ai-mcp-server/src/gateway-events/routes/deliveries.ts
+  - id: WP03
+    title: Delivery Routing and Backends
+    dependencies: [WP02]
+    requirement_refs: [FR-004, FR-006, FR-007, FR-008, FR-009, NFR-001, NFR-005]
+    owned_files:
+      - joyus-ai-mcp-server/src/gateway-events/adapters/**
+      - joyus-ai-mcp-server/src/gateway-events/delivery.service.ts
+  - id: WP04
+    title: Retry Dead Letter and Audit
+    dependencies: [WP03]
+    requirement_refs: [FR-005, FR-013, NFR-002, NFR-004, NFR-005, NFR-007]
+    owned_files:
+      - joyus-ai-mcp-server/src/gateway-events/retry.worker.ts
+      - joyus-ai-mcp-server/src/gateway-events/dead-letter.service.ts
+      - joyus-ai-mcp-server/src/gateway-events/audit.service.ts
+  - id: WP05
+    title: Decision Ingestion and Handler Registry
+    dependencies: [WP02]
+    requirement_refs: [FR-010, FR-011, FR-012, FR-013, NFR-003, NFR-004, NFR-007]
+    owned_files:
+      - joyus-ai-mcp-server/src/gateway-events/decision.service.ts
+      - joyus-ai-mcp-server/src/gateway-events/handler-registry.ts
+      - joyus-ai-mcp-server/src/gateway-events/routes/decisions.ts
+  - id: WP06
+    title: Producer Integration and Acceptance Tests
+    dependencies: [WP03, WP04, WP05]
+    requirement_refs: [C-001, C-002, C-003, C-004, C-005]
+    owned_files:
+      - joyus-ai-mcp-server/src/gateway-events/index.ts
+      - joyus-ai-mcp-server/src/index.ts
+      - joyus-ai-mcp-server/src/orchestrator/notification.service.ts
+      - joyus-ai-mcp-server/src/pipelines/review/**
+      - joyus-ai-mcp-server/src/content/monitoring/**
+      - joyus-ai-mcp-server/docs/manual-testing/gateway-event-bus-manual-test.md
