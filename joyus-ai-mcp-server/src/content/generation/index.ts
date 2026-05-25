@@ -4,13 +4,26 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
+import { and, eq, sql } from 'drizzle-orm';
 
 import type { DrizzleClient } from '../../db/types.js';
-import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
+import {
+  contentGenerationLogs,
+  contentMediationSessions,
+  contentOperationLogs,
+} from '../schema.js';
 import type { SearchService } from '../search/index.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 
 import { CitationManager, type CitationResult } from './citations.js';
+import {
+  buildGenerationCostMetadata,
+  estimateGenerationCostMicroUsd,
+  formatCostUsd,
+  resolveModelPricing,
+  type GenerationOperationMetadata,
+  type GenerationTokenUsage,
+} from './cost.js';
 import {
   ContentGenerator,
   PlaceholderGenerationProvider,
@@ -34,7 +47,7 @@ export class GenerationService {
   constructor(
     searchService: SearchService,
     provider: GenerationProvider,
-    private db: DrizzleClient,
+    private db: DrizzleClient
   ) {
     this.retriever = new ContentRetriever(searchService, db);
     this.generator = new ContentGenerator(provider);
@@ -46,7 +59,7 @@ export class GenerationService {
     userId: string,
     tenantId: string,
     entitlements: ResolvedEntitlements,
-    options?: GenerateOptions,
+    options?: GenerateOptions
   ): Promise<GenerationResult> {
     const startMs = Date.now();
 
@@ -60,12 +73,16 @@ export class GenerationService {
     const genOutput = await this.generator.generate(query, retrieval, options?.profileId);
 
     // 3. Extract citations from generated text
-    const citationResult = this.citationManager.extractCitations(
-      genOutput.text,
-      retrieval.items,
-    );
+    const citationResult = this.citationManager.extractCitations(genOutput.text, retrieval.items);
 
     const durationMs = Date.now() - startMs;
+    const costMetadata = buildGenerationCostMetadata(genOutput.model, genOutput.usage);
+    const operationMetadata: GenerationOperationMetadata = {
+      citationCount: citationResult.citationCount,
+      sourcesUsed: retrieval.items.length,
+      profileId: options?.profileId ?? null,
+      ...(costMetadata ?? {}),
+    };
 
     // 4. Log to generation_logs (no durationMs column in this table)
     await this.db.insert(contentGenerationLogs).values({
@@ -86,14 +103,20 @@ export class GenerationService {
       tenantId,
       operation: 'generate',
       userId,
+      sessionId: options?.sessionId ?? null,
       durationMs,
       success: true,
-      metadata: {
-        citationCount: citationResult.citationCount,
-        sourcesUsed: retrieval.items.length,
-        profileId: options?.profileId ?? null,
-      },
+      metadata: operationMetadata,
     });
+
+    if (options?.sessionId && genOutput.usage) {
+      await this.addGenerationUsageToSession(
+        options.sessionId,
+        tenantId,
+        genOutput.usage,
+        genOutput.model
+      );
+    }
 
     return {
       text: citationResult.text,
@@ -106,14 +129,38 @@ export class GenerationService {
       },
     };
   }
+
+  private async addGenerationUsageToSession(
+    sessionId: string,
+    tenantId: string,
+    usage: GenerationTokenUsage,
+    model: string | undefined
+  ): Promise<void> {
+    const pricing = resolveModelPricing(model);
+    const estimatedCostIncrement = pricing
+      ? formatCostUsd(estimateGenerationCostMicroUsd(usage, pricing))
+      : formatCostUsd(0);
+
+    await this.db
+      .update(contentMediationSessions)
+      .set({
+        totalInputTokens: sql`${contentMediationSessions.totalInputTokens} + ${usage.inputTokens}`,
+        totalOutputTokens: sql`${contentMediationSessions.totalOutputTokens} + ${usage.outputTokens}`,
+        totalCacheWriteTokens: sql`${contentMediationSessions.totalCacheWriteTokens} + ${usage.cacheWriteTokens}`,
+        totalCacheReadTokens: sql`${contentMediationSessions.totalCacheReadTokens} + ${usage.cacheReadTokens}`,
+        totalEstimatedCostUsd: sql`${contentMediationSessions.totalEstimatedCostUsd} + cast(${estimatedCostIncrement} as numeric(14, 6))`,
+      })
+      .where(
+        and(
+          eq(contentMediationSessions.id, sessionId),
+          eq(contentMediationSessions.tenantId, tenantId)
+        )
+      );
+  }
 }
 
 // Re-exports so callers can import everything from this module
-export {
-  ContentRetriever,
-  type RetrievalResult,
-  type RetrievedItem,
-} from './retriever.js';
+export { ContentRetriever, type RetrievalResult, type RetrievedItem } from './retriever.js';
 export type { SearchService } from '../search/index.js';
 export { AnthropicGenerationProvider } from './anthropic-provider.js';
 export {

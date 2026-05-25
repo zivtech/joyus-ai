@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-import type { GenerationProvider } from './generator.js';
+import { normalizeAnthropicUsage, type AnthropicUsageShape } from './cost.js';
+import type { GenerationProvider, GenerationProviderResponse } from './generator.js';
 
 export class AnthropicGenerationProvider implements GenerationProvider {
   private client: Anthropic;
@@ -21,7 +22,7 @@ export class AnthropicGenerationProvider implements GenerationProvider {
     this.maxTokens = options?.maxTokens ?? 4096;
   }
 
-  async generate(prompt: string, systemPrompt: string): Promise<string> {
+  async generate(prompt: string, systemPrompt: string): Promise<GenerationProviderResponse> {
     const response = await this.client.messages
       .create({
         model: this.model,
@@ -37,15 +38,15 @@ export class AnthropicGenerationProvider implements GenerationProvider {
       })
       .catch((err: unknown) => {
         if (err instanceof Anthropic.RateLimitError) {
-          throw Object.assign(
-            new Error('Anthropic rate limit exceeded — request is retryable'),
-            { retryable: true, cause: err },
-          );
+          throw Object.assign(new Error('Anthropic rate limit exceeded — request is retryable'), {
+            retryable: true,
+            cause: err,
+          });
         }
         if (err instanceof Anthropic.AuthenticationError) {
           throw Object.assign(
             new Error('Anthropic authentication failed — check ANTHROPIC_API_KEY'),
-            { retryable: false, cause: err },
+            { retryable: false, cause: err }
           );
         }
         throw err;
@@ -53,16 +54,20 @@ export class AnthropicGenerationProvider implements GenerationProvider {
 
     if (response.stop_reason === 'max_tokens') {
       console.warn(
-        `[AnthropicGenerationProvider] Response truncated at max_tokens=${this.maxTokens} for model ${this.model}`,
+        `[AnthropicGenerationProvider] Response truncated at max_tokens=${this.maxTokens} for model ${this.model}`
       );
     }
 
     const textBlock = response.content.find(
-      (block): block is Anthropic.TextBlock => block.type === 'text',
+      (block): block is Anthropic.TextBlock => block.type === 'text'
     );
     if (!textBlock) {
       throw new Error('Anthropic response contained no text block');
     }
-    return textBlock.text;
+    return {
+      text: textBlock.text,
+      model: response.model ?? this.model,
+      usage: normalizeAnthropicUsage(response.usage as AnthropicUsageShape | undefined),
+    };
   }
 }
