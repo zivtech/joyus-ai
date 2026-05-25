@@ -5,13 +5,13 @@
  *   - Export service helpers (normalizeExportScope, normalizeExportLocations, canAccessTenant)
  *   - createExcelExportJob (success path, tenant access denial, returned job fields)
  *   - getExcelExportJobForUser (valid user/tenant, wrong user, nonexistent export)
- *   - resolveDownloadToken (valid token, expired token, nonexistent token)
+ *   - resolveDownloadToken (valid token, expired token, nonexistent token, persisted lookup)
  *   - Auth middleware (extractBearerToken, requireTokenAuth)
  *   - Router download endpoint (GET /exports/download/:token)
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from 'vitest';
-import type { Request, Response, NextFunction } from 'express';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import type { Request, Response } from 'express';
 
 // ── Module mocks — hoisted by Vitest before any other module initialization ──
 
@@ -56,12 +56,18 @@ import {
   createExcelExportJob,
   getExcelExportJobForUser,
   resolveDownloadToken,
+  cleanupExpiredDownloadTokens,
+  setExportDownloadTokenStore,
 } from '../src/exports/service.js';
 
-
-import { getUserFromToken } from '../src/auth/verify.js';
 import { buildWorkbookFile } from '../src/exports/excel-builder.js';
 import { exportRouter } from '../src/exports/router.js';
+import {
+  exportDownloadTokenId,
+  type CreateExportDownloadTokenInput,
+  type ExportDownloadTokenStore,
+} from '../src/exports/token-store.js';
+import type { ExportDownloadToken } from '../src/exports/schema.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -106,10 +112,12 @@ function makeRes(): Response & {
     res._body = body;
     return res;
   });
-  (res.download as ReturnType<typeof vi.fn>).mockImplementation((filePath: string, fileName: string) => {
-    res._downloadFile = filePath;
-    res._downloadName = fileName;
-  });
+  (res.download as ReturnType<typeof vi.fn>).mockImplementation(
+    (filePath: string, fileName: string) => {
+      res._downloadFile = filePath;
+      res._downloadName = fileName;
+    }
+  );
 
   return res;
 }
@@ -127,6 +135,55 @@ function makeJobParams(overrides: Partial<Parameters<typeof createExcelExportJob
     ...overrides,
   };
 }
+
+class InMemoryExportDownloadTokenStore implements ExportDownloadTokenStore {
+  records = new Map<string, ExportDownloadToken>();
+
+  async create(input: CreateExportDownloadTokenInput): Promise<ExportDownloadToken> {
+    const record: ExportDownloadToken = {
+      tokenId: exportDownloadTokenId(input.token),
+      jobId: input.jobId,
+      userId: input.userId,
+      tenantId: input.tenantId,
+      exportType: input.exportType,
+      filePath: input.filePath,
+      fileName: input.fileName ?? null,
+      createdAt: input.createdAt,
+      expiresAt: input.expiresAt,
+    };
+    this.records.set(record.tokenId, record);
+    return record;
+  }
+
+  async findActiveByToken(token: string, now = new Date()): Promise<ExportDownloadToken | null> {
+    await this.cleanupExpired(now);
+    return this.records.get(exportDownloadTokenId(token)) ?? null;
+  }
+
+  async cleanupExpired(now = new Date()): Promise<number> {
+    let deleted = 0;
+    for (const [tokenId, record] of this.records.entries()) {
+      if (record.expiresAt <= now) {
+        this.records.delete(tokenId);
+        deleted += 1;
+      }
+    }
+    return deleted;
+  }
+}
+
+let tokenStore: InMemoryExportDownloadTokenStore;
+let restoreTokenStore: (() => void) | undefined;
+
+beforeEach(() => {
+  tokenStore = new InMemoryExportDownloadTokenStore();
+  restoreTokenStore = setExportDownloadTokenStore(tokenStore);
+});
+
+afterEach(() => {
+  restoreTokenStore?.();
+  restoreTokenStore = undefined;
+});
 
 // ── Suite 1: Export Service Helpers ──────────────────────────────────────────
 
@@ -239,6 +296,27 @@ describe('createExcelExportJob', () => {
     expect(typeof job.downloadToken).toBe('string');
   });
 
+  it('persists a hashed download token record with tenant and file metadata', async () => {
+    const { job } = await createExcelExportJob(
+      makeJobParams({ userId: 'user-token', tenantId: 'tenant-token' })
+    );
+    const token = job.downloadToken!;
+    const [record] = Array.from(tokenStore.records.values());
+
+    expect(record).toMatchObject({
+      tokenId: exportDownloadTokenId(token),
+      jobId: job.id,
+      userId: 'user-token',
+      tenantId: 'tenant-token',
+      exportType: 'excel',
+      filePath: job.filePath,
+      fileName: job.fileName,
+    });
+    expect(record!.tokenId).not.toBe(token);
+    expect(record!.createdAt).toBeInstanceOf(Date);
+    expect(record!.expiresAt).toBeInstanceOf(Date);
+  });
+
   it('throws and leaves job as failed when buildWorkbookFile rejects', async () => {
     vi.mocked(buildWorkbookFile).mockRejectedValueOnce(new Error('python crashed'));
     await expect(createExcelExportJob(makeJobParams())).rejects.toThrow('python crashed');
@@ -306,9 +384,9 @@ describe('getExcelExportJobForUser', () => {
   it('throws when caller does not have tenant access', () => {
     vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'false');
     vi.stubEnv('EXPORT_TENANT_ALLOWLIST', '');
-    expect(() =>
-      getExcelExportJobForUser('user-x', 'tenant-blocked', 'any-id')
-    ).toThrow('not authorized');
+    expect(() => getExcelExportJobForUser('user-x', 'tenant-blocked', 'any-id')).toThrow(
+      'not authorized'
+    );
   });
 });
 
@@ -329,18 +407,47 @@ describe('resolveDownloadToken', () => {
       makeJobParams({ userId: 'user-g', tenantId: 'user-g' })
     );
     const token = job.downloadToken!;
-    const resolved = resolveDownloadToken(token);
+    const resolved = await resolveDownloadToken(token);
     expect(resolved).not.toBeNull();
-    expect(resolved!.job.id).toBe(job.id);
+    expect(resolved!.jobId).toBe(job.id);
+    expect(resolved!.tenantId).toBe('user-g');
+    expect(resolved!.userId).toBe('user-g');
+    expect(resolved!.exportType).toBe('excel');
     expect(resolved!.filePath).toContain('.xlsx');
   });
 
-  it('returns null for a nonexistent token', () => {
-    expect(resolveDownloadToken('deadbeef-invalid-token')).toBeNull();
+  it('resolves a persisted token record without an in-memory export job', async () => {
+    await tokenStore.create({
+      token: 'persisted-token',
+      jobId: 'job-from-db',
+      userId: 'user-db',
+      tenantId: 'tenant-db',
+      exportType: 'excel',
+      filePath: '/tmp/joyus-exports/example.xlsx',
+      fileName: 'example.xlsx',
+      createdAt: new Date('2099-05-25T10:00:00Z'),
+      expiresAt: new Date('2099-05-25T10:15:00Z'),
+    });
+
+    const resolved = await resolveDownloadToken('persisted-token');
+
+    expect(resolved).toEqual({
+      jobId: 'job-from-db',
+      userId: 'user-db',
+      tenantId: 'tenant-db',
+      exportType: 'excel',
+      filePath: '/tmp/joyus-exports/example.xlsx',
+      fileName: 'example.xlsx',
+      expiresAt: '2099-05-25T10:15:00.000Z',
+    });
   });
 
-  it('returns null for an empty string token', () => {
-    expect(resolveDownloadToken('')).toBeNull();
+  it('returns null for a nonexistent token', async () => {
+    await expect(resolveDownloadToken('deadbeef-invalid-token')).resolves.toBeNull();
+  });
+
+  it('returns null for an empty string token', async () => {
+    await expect(resolveDownloadToken('')).resolves.toBeNull();
   });
 
   it('returns null after TTL has expired', async () => {
@@ -354,10 +461,42 @@ describe('resolveDownloadToken', () => {
     const future = Date.now() + 5_000;
     vi.spyOn(Date, 'now').mockReturnValue(future);
 
-    const resolved = resolveDownloadToken(token);
+    const resolved = await resolveDownloadToken(token);
 
     vi.restoreAllMocks();
     expect(resolved).toBeNull();
+    expect(tokenStore.records.size).toBe(0);
+  });
+
+  it('cleanup removes expired tokens while preserving valid tokens', async () => {
+    await tokenStore.create({
+      token: 'expired-token',
+      jobId: 'expired-job',
+      userId: 'user-cleanup',
+      tenantId: 'tenant-cleanup',
+      exportType: 'excel',
+      filePath: '/tmp/joyus-exports/expired.xlsx',
+      fileName: 'expired.xlsx',
+      createdAt: new Date('2026-05-25T09:00:00Z'),
+      expiresAt: new Date('2026-05-25T09:15:00Z'),
+    });
+    await tokenStore.create({
+      token: 'valid-token',
+      jobId: 'valid-job',
+      userId: 'user-cleanup',
+      tenantId: 'tenant-cleanup',
+      exportType: 'excel',
+      filePath: '/tmp/joyus-exports/valid.xlsx',
+      fileName: 'valid.xlsx',
+      createdAt: new Date('2026-05-25T10:00:00Z'),
+      expiresAt: new Date('2026-05-25T10:15:00Z'),
+    });
+
+    const deleted = await cleanupExpiredDownloadTokens(new Date('2026-05-25T09:30:00Z'));
+
+    expect(deleted).toBe(1);
+    expect(tokenStore.records.has(exportDownloadTokenId('expired-token'))).toBe(false);
+    expect(tokenStore.records.has(exportDownloadTokenId('valid-token'))).toBe(true);
   });
 });
 
@@ -381,18 +520,15 @@ type RouterLayer = {
 
 function findDownloadHandler(router: import('express').Router) {
   const layers = (router as unknown as { stack: RouterLayer[] }).stack;
-  const layer = layers.find((l) => l.route?.path === '/exports/download/:token');
+  const layer = layers.find(l => l.route?.path === '/exports/download/:token');
   if (!layer?.route) throw new Error('Download route not found on exportRouter');
   return layer.route.stack[0].handle;
 }
 
 describe('Router: GET /exports/download/:token', () => {
-  // The exportJobs / downloadTokenToJob Maps are module-level singletons that
-  // persist across all suites in one test run. We create one job here in
-  // beforeAll and reuse the token — no need to call createExcelExportJob again.
   let validToken: string;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'true');
     // Re-establish fs/promises mock return values in case a prior suite's
     // vi.resetAllMocks() cleared them.
@@ -404,15 +540,14 @@ describe('Router: GET /exports/download/:token', () => {
       makeJobParams({ userId: 'user-router', tenantId: 'user-router' })
     );
     validToken = job.downloadToken!;
-    vi.unstubAllEnvs();
   });
 
-  it('responds 404 for an invalid download token', () => {
+  it('responds 404 for an invalid download token', async () => {
     const req = makeReq({ params: { token: 'completely-invalid-token' } });
     const res = makeRes();
     const handler = findDownloadHandler(exportRouter);
 
-    handler(req, res, vi.fn());
+    await handler(req, res, vi.fn());
 
     expect(res._status).toBe(404);
     expect((res._body as { error: string }).error).toMatch(/invalid|expired/i);
