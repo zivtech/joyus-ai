@@ -101,6 +101,8 @@ describe('Tool Definitions', () => {
       expect(toolNames).toContain('github_create_pr');
       expect(toolNames).toContain('github_request_reviewers');
       expect(toolNames).toContain('github_get_pr_checks');
+      expect(toolNames).toContain('github_watch_pr_checks');
+      expect(toolNames).toContain('github_get_check_annotations');
     });
 
     it('should have required fields specified', () => {
@@ -120,7 +122,13 @@ describe('Tool Definitions', () => {
 
       const checksTool = githubTools.find(t => t.name === 'github_get_pr_checks');
       expect(checksTool?.inputSchema.required).toContain('repo');
-      expect(checksTool?.inputSchema.required).toContain('prNumber');
+
+      const watchChecksTool = githubTools.find(t => t.name === 'github_watch_pr_checks');
+      expect(watchChecksTool?.inputSchema.required).toContain('repo');
+
+      const annotationsTool = githubTools.find(t => t.name === 'github_get_check_annotations');
+      expect(annotationsTool?.inputSchema.required).toContain('repo');
+      expect(annotationsTool?.inputSchema.required).toContain('checkRunId');
     });
   });
 

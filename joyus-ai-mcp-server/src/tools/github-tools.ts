@@ -140,7 +140,7 @@ export const githubTools: ToolDefinition[] = [
   },
   {
     name: 'github_get_pr_checks',
-    description: 'Get commit statuses and check runs for a pull request head commit',
+    description: 'Get normalized commit statuses and check runs for a pull request head commit or commit SHA',
     inputSchema: {
       type: 'object',
       properties: {
@@ -150,10 +150,86 @@ export const githubTools: ToolDefinition[] = [
         },
         prNumber: {
           type: 'number',
-          description: 'Pull request number'
+          description: 'Pull request number. Required when sha is not provided'
+        },
+        sha: {
+          type: 'string',
+          description: 'Commit SHA to inspect. Required when prNumber is not provided'
+        },
+        includeAnnotations: {
+          type: 'boolean',
+          description: 'Fetch bounded annotations for non-successful check runs'
+        },
+        annotationLimit: {
+          type: 'number',
+          description: 'Maximum annotations to include when includeAnnotations is true (default: 50, max: 100)'
         }
       },
-      required: ['repo', 'prNumber']
+      required: ['repo']
+    }
+  },
+  {
+    name: 'github_watch_pr_checks',
+    description: 'Poll GitHub check runs and commit statuses until checks complete, fail, or time out',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        repo: {
+          type: 'string',
+          description: 'Repository in owner/repo format (e.g., "example-org/example-app")'
+        },
+        prNumber: {
+          type: 'number',
+          description: 'Pull request number. Required when sha is not provided'
+        },
+        sha: {
+          type: 'string',
+          description: 'Commit SHA to inspect. Required when prNumber is not provided'
+        },
+        pollIntervalMs: {
+          type: 'number',
+          description: 'Milliseconds to wait between polls (default: 10000, max: 60000)'
+        },
+        timeoutMs: {
+          type: 'number',
+          description: 'Maximum milliseconds to poll before returning timeout (default: 600000)'
+        },
+        includeAnnotations: {
+          type: 'boolean',
+          description: 'Fetch bounded annotations for non-successful check runs'
+        },
+        annotationLimit: {
+          type: 'number',
+          description: 'Maximum annotations to include when includeAnnotations is true (default: 50, max: 100)'
+        }
+      },
+      required: ['repo']
+    }
+  },
+  {
+    name: 'github_get_check_annotations',
+    description: 'Get normalized annotations for a GitHub check run and extract accessibility failures',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        repo: {
+          type: 'string',
+          description: 'Repository in owner/repo format (e.g., "example-org/example-app")'
+        },
+        checkRunId: {
+          type: 'number',
+          description: 'GitHub check run ID'
+        },
+        page: {
+          type: 'number',
+          description: 'Annotation page to fetch (default: 1)'
+        },
+        per_page: {
+          type: 'number',
+          description: 'Annotations per page (default: 100, max: 100)'
+        }
+      },
+      required: ['repo', 'checkRunId']
     }
   },
   {
