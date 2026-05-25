@@ -770,6 +770,80 @@ authRouter.get('/github/callback', async (req: Request, res: Response) => {
 });
 
 // ============================================================
+// GitHub OAuth — Desktop Exchange
+// ============================================================
+
+authRouter.post('/github/desktop-exchange', async (req: Request, res: Response) => {
+  const { code, redirectUri } = req.body;
+
+  if (!code || typeof code !== 'string') {
+    return res.status(400).json({ error: 'bad_request', message: 'Missing required field: code' });
+  }
+
+  try {
+    const tokenResponse = await axios.post(OAUTH_CONFIG.github.tokenUrl, {
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      code,
+      ...(redirectUri ? { redirect_uri: redirectUri } : {})
+    }, {
+      headers: { Accept: 'application/json' }
+    });
+
+    const { access_token } = tokenResponse.data;
+    if (!access_token) {
+      return res.status(401).json({ error: 'oauth_failed', message: 'GitHub did not return an access token' });
+    }
+
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${access_token}` }
+    });
+
+    const githubLogin = userResponse.data.login as string;
+
+    const allGithubConnections = await db
+      .select()
+      .from(connections)
+      .where(eq(connections.service, 'GITHUB'));
+
+    const matchingConnection = allGithubConnections.find((c) => {
+      const meta = c.metadata as Record<string, unknown> | null;
+      return meta !== null && meta['login'] === githubLogin;
+    });
+
+    if (!matchingConnection) {
+      return res.status(404).json({
+        error: 'no_account',
+        message: `No Joyus account linked to GitHub user "${githubLogin}". Connect GitHub in the web portal first.`
+      });
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, matchingConnection.userId))
+      .limit(1);
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'user_not_found',
+        message: 'The linked Joyus account no longer exists.'
+      });
+    }
+
+    res.json({
+      token: user.mcpToken,
+      tenantId: user.id,
+      workspaceId: user.id,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('GitHub desktop exchange error:', message);
+    res.status(500).json({ error: 'exchange_failed', message: 'GitHub authentication failed' });
+  }
+});
+
+// ============================================================
 // Disconnect & Logout
 // ============================================================
 
