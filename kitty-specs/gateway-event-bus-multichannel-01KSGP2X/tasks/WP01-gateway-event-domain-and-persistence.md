@@ -1,21 +1,25 @@
 ---
-work_package_id: "WP01"
-title: "Gateway Event Domain and Persistence"
+work_package_id: WP01
+title: Gateway Event Domain and Persistence
 dependencies: []
-planning_base_branch: "codex/gateway-event-bus-promotion-20260525"
-merge_target_branch: "codex/gateway-event-bus-promotion-20260525"
-branch_strategy: "Planning artifacts for this feature were generated on codex/gateway-event-bus-promotion-20260525. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/gateway-event-bus-promotion-20260525 unless the human explicitly redirects the landing branch."
-requirement_refs: ["FR-001", "FR-013", "NFR-003", "NFR-004", "NFR-005"]
-subtasks: ["T001", "T002", "T003", "T004", "T005"]
-phase: "Phase 1 - Foundation"
-authoritative_surface: "joyus-ai-mcp-server/"
-execution_mode: "code_change"
+requirement_refs: [FR-001, FR-013, NFR-003, NFR-004, NFR-005]
+planning_base_branch: codex/gateway-event-bus-promotion-20260525
+merge_target_branch: codex/gateway-event-bus-promotion-20260525
+branch_strategy: Planning artifacts for this feature were generated on codex/gateway-event-bus-promotion-20260525. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/gateway-event-bus-promotion-20260525 unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-gateway-event-bus-multichannel-01KSGP2X
+base_commit: 2d4b34fa420cfbf9b5c88c7544880908a951e20f
+created_at: '2026-05-25T23:38:34.367115+00:00'
+subtasks: [T001, T002, T003, T004, T005]
+phase: Phase 1 - Foundation
+shell_pid: '50834'
+authoritative_surface: joyus-ai-mcp-server/
+execution_mode: code_change
 owned_files:
-  - "joyus-ai-mcp-server/src/gateway-events/types.ts"
-  - "joyus-ai-mcp-server/src/gateway-events/schemas.ts"
-  - "joyus-ai-mcp-server/src/db/schema/gateway-events.ts"
-  - "joyus-ai-mcp-server/drizzle/migrations/**"
-  - "joyus-ai-mcp-server/src/gateway-events/**/*.test.ts"
+- joyus-ai-mcp-server/src/gateway-events/types.ts
+- joyus-ai-mcp-server/src/gateway-events/schemas.ts
+- joyus-ai-mcp-server/src/db/schema/gateway-events.ts
+- joyus-ai-mcp-server/drizzle/migrations/**
+- joyus-ai-mcp-server/src/gateway-events/**/*.test.ts
 ---
 
 # Work Package Prompt: WP01 - Gateway Event Domain and Persistence
