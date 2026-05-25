@@ -56,3 +56,4 @@ npm test -- gateway-events
 ## Activity Log
 
 - 2026-05-25T23:38:34Z – codex – shell_pid=50834 – Assigned agent via action command
+- 2026-05-25T23:45:25Z – codex – shell_pid=50834 – Ready for review
