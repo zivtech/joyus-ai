@@ -5,6 +5,22 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const coordinationMocks = vi.hoisted(() => ({
+  listWorkUnits: vi.fn(),
+  createWorkUnit: vi.fn(),
+}));
+
+vi.mock('../../src/db/client.js', () => ({
+  db: {},
+}));
+
+vi.mock('../../src/orchestrator/coordination.service.js', () => ({
+  CoordinationService: vi.fn().mockImplementation(() => ({
+    listWorkUnits: coordinationMocks.listWorkUnits,
+    createWorkUnit: coordinationMocks.createWorkUnit,
+  })),
+}));
+
 vi.mock('../../src/tools/executor.js', () => ({
   executeTool: vi.fn(),
 }));
@@ -18,6 +34,8 @@ const mockUser = { id: 'user-1', connections: [] };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  coordinationMocks.listWorkUnits.mockResolvedValue([]);
+  coordinationMocks.createWorkUnit.mockResolvedValue({ id: 'wu-1', status: 'pending' });
 });
 
 describe('executeScheduledTask — dispatch', () => {
@@ -83,6 +101,167 @@ describe('executeScheduledTask — dispatch', () => {
 
       expect(result.type).toBe('sprint_report');
       expect(result.markdown).toContain('Sprint');
+    });
+
+    it('JIRA_A11Y_TRIAGE — dry run qualifies matching Jira issues without enqueueing', async () => {
+      mockedExecuteTool.mockResolvedValueOnce({
+        issues: [
+          {
+            key: 'A11Y-1',
+            fields: {
+              summary: 'Button has no accessible name',
+              status: { name: 'Open' },
+              priority: { name: 'High' },
+              labels: ['a11y'],
+              components: [{ name: 'UI' }],
+              customfield_10001: { value: 'Critical' },
+              updated: '2026-05-25T10:00:00.000Z',
+            },
+          },
+        ],
+        total: 1,
+      });
+
+      const result = await executeScheduledTask(
+        {
+          id: 'task-1',
+          taskType: 'JIRA_A11Y_TRIAGE',
+          config: {
+            dryRun: true,
+            priorityAllowlist: ['High'],
+            componentAllowlist: ['UI'],
+            severityField: 'customfield_10001',
+            severityAllowlist: ['Critical'],
+          },
+        },
+        mockUser,
+      );
+
+      expect(mockedExecuteTool).toHaveBeenCalledWith('user-1', 'jira_search_issues', expect.objectContaining({
+        includeRawFields: true,
+        fields: expect.arrayContaining(['summary', 'status', 'priority', 'components', 'customfield_10001']),
+      }));
+      expect(coordinationMocks.listWorkUnits).toHaveBeenCalledWith('user-1');
+      expect(coordinationMocks.createWorkUnit).not.toHaveBeenCalled();
+      expect(result.type).toBe('jira_a11y_triage');
+      expect(result.examined).toBe(1);
+      expect(result.qualified).toBe(1);
+      expect(result.enqueued).toHaveLength(0);
+      expect(result.markdown).toContain('Jira Accessibility Triage');
+    });
+
+    it('JIRA_A11Y_TRIAGE — deduplicates existing work units and records skipped issues', async () => {
+      mockedExecuteTool.mockResolvedValueOnce({
+        issues: [
+          {
+            key: 'A11Y-1',
+            fields: {
+              summary: 'Missing heading order',
+              status: { name: 'Open' },
+              priority: { name: 'High' },
+              labels: ['a11y'],
+              components: [{ name: 'UI' }],
+            },
+          },
+          {
+            key: 'A11Y-2',
+            fields: {
+              summary: 'Already fixed',
+              status: { name: 'Done' },
+              priority: { name: 'High' },
+              labels: ['a11y'],
+              components: [{ name: 'UI' }],
+            },
+          },
+          {
+            key: 'A11Y-3',
+            fields: {
+              summary: 'Low priority color contrast issue',
+              status: { name: 'Open' },
+              priority: { name: 'Low' },
+              labels: ['a11y'],
+              components: [{ name: 'UI' }],
+            },
+          },
+        ],
+        total: 3,
+      });
+      coordinationMocks.listWorkUnits.mockResolvedValueOnce([
+        {
+          id: 'wu-existing',
+          status: 'running',
+          createdAt: new Date('2026-05-25T09:00:00.000Z'),
+          metadata: { sourceIssueKey: 'A11Y-1' },
+        },
+      ]);
+
+      const result = await executeScheduledTask(
+        {
+          id: 'task-1',
+          taskType: 'JIRA_A11Y_TRIAGE',
+          config: {
+            dryRun: true,
+            priorityAllowlist: ['High'],
+          },
+        },
+        mockUser,
+      );
+
+      expect(result.examined).toBe(3);
+      expect(result.qualified).toBe(0);
+      expect(result.duplicates).toEqual([
+        { issueKey: 'A11Y-1', workUnitId: 'wu-existing', status: 'running' },
+      ]);
+      expect(result.skipped).toEqual([
+        { issueKey: 'A11Y-2', reason: 'terminal_status' },
+        { issueKey: 'A11Y-3', reason: 'priority_not_allowed' },
+      ]);
+    });
+
+    it('JIRA_A11Y_TRIAGE — enqueues qualified issues as coordination work units', async () => {
+      mockedExecuteTool.mockResolvedValueOnce({
+        issues: [
+          {
+            key: 'A11Y-1',
+            fields: {
+              summary: 'Input error is not announced',
+              status: { name: 'Open' },
+              priority: { name: 'High' },
+              labels: ['accessibility'],
+              components: [{ name: 'Forms' }],
+            },
+          },
+        ],
+        total: 1,
+      });
+      coordinationMocks.createWorkUnit.mockResolvedValueOnce({ id: 'wu-a11y-1', status: 'pending' });
+
+      const result = await executeScheduledTask(
+        {
+          id: 'task-1',
+          taskType: 'JIRA_A11Y_TRIAGE',
+          config: {
+            tenantId: 'tenant-a',
+            workUnitType: 'a11y_remediation',
+          },
+        },
+        mockUser,
+      );
+
+      expect(coordinationMocks.createWorkUnit).toHaveBeenCalledWith('tenant-a', expect.objectContaining({
+        title: 'Remediate accessibility issue A11Y-1',
+        type: 'a11y_remediation',
+        labels: ['accessibility', 'jira-triage'],
+        metadata: expect.objectContaining({
+          sourceSystem: 'jira',
+          sourceIssueKey: 'A11Y-1',
+          schedulerTaskId: 'task-1',
+          components: ['Forms'],
+        }),
+      }));
+      expect(result.enqueued).toEqual([
+        { issueKey: 'A11Y-1', workUnitId: 'wu-a11y-1', status: 'pending' },
+      ]);
     });
   });
 

@@ -53,6 +53,7 @@ describe('Scheduler Utilities', () => {
       'JIRA_STANDUP_SUMMARY',
       'JIRA_OVERDUE_ALERT',
       'JIRA_SPRINT_REPORT',
+      'JIRA_A11Y_TRIAGE',
       'SLACK_CHANNEL_DIGEST',
       'SLACK_MENTIONS_SUMMARY',
       'GITHUB_PR_REMINDER',

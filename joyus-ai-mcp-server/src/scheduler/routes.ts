@@ -172,6 +172,7 @@ taskRouter.get('/', requireSessionOrRedirect, async (req: Request, res: Response
                   <option value="JIRA_STANDUP_SUMMARY">Standup Summary</option>
                   <option value="JIRA_OVERDUE_ALERT">Overdue Alert</option>
                   <option value="JIRA_SPRINT_REPORT">Sprint Report</option>
+                  <option value="JIRA_A11Y_TRIAGE">Accessibility Triage</option>
                 </optgroup>
                 <optgroup label="Slack">
                   <option value="SLACK_CHANNEL_DIGEST">Channel Digest</option>

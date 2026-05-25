@@ -7,11 +7,28 @@
 
 import { DateTime } from 'luxon';
 
+import { db } from '../db/client.js';
+import type { WorkUnit } from '../db/schema/coordination.js';
+import { CoordinationService } from '../orchestrator/coordination.service.js';
 import { executeTool } from '../tools/executor.js';
 
 // Type helpers for tool results
+interface JiraIssueLike {
+  key?: string;
+  summary?: string;
+  status?: string;
+  assignee?: string;
+  duedate?: string;
+  priority?: string;
+  storyPoints?: number;
+  updated?: string;
+  labels?: string[];
+  components?: string[];
+  fields?: Record<string, any>;
+}
+
 interface JiraSearchResult {
-  issues?: { key: string; summary: string; status: string; assignee?: string; duedate?: string; priority?: string; storyPoints?: number; updated?: string }[];
+  issues?: JiraIssueLike[];
   total?: number;
 }
 
@@ -40,6 +57,17 @@ interface TaskConfig {
   team?: string[];
   sprintId?: string;
   daysOverdue?: number;
+  tenantId?: string;
+  maxResults?: number;
+  automationStatuses?: string[];
+  priorityAllowlist?: string[];
+  componentAllowlist?: string[];
+  severityField?: string;
+  severityAllowlist?: string[];
+  dedupeWindowHours?: number;
+  dryRun?: boolean;
+  workflowType?: string;
+  workUnitType?: string;
 
   // Slack configs
   channel?: string;
@@ -56,6 +84,23 @@ interface TaskConfig {
   // Custom tool sequence
   tools?: { name: string; input: any }[];
 }
+
+interface NormalizedJiraIssue {
+  key: string;
+  summary: string;
+  status?: string;
+  priority?: string;
+  severity?: string;
+  components: string[];
+  labels: string[];
+  updated?: string;
+}
+
+const DEFAULT_A11Y_TRIAGE_JQL =
+  'labels in (a11y, accessibility) AND status not in (Done, Closed) ORDER BY priority DESC, updated ASC';
+
+const DEFAULT_TERMINAL_STATUSES = new Set(['done', 'closed', 'resolved']);
+const ACTIVE_WORK_UNIT_STATUSES = new Set(['pending', 'assigned', 'running']);
 
 /**
  * Execute a scheduled task based on its type
@@ -76,6 +121,9 @@ export async function executeScheduledTask(task: any, user: any): Promise<any> {
 
     case 'JIRA_SPRINT_REPORT':
       return executeJiraSprintReport(user.id, config);
+
+    case 'JIRA_A11Y_TRIAGE':
+      return executeJiraA11yTriage(user.id, config, task.id);
 
     // ========================================
     // SLACK TASKS
@@ -225,6 +273,108 @@ async function executeJiraSprintReport(userId: string, config: TaskConfig): Prom
     },
     issues: issues.slice(0, 20),
     markdown: formatSprintMarkdown({ total, byStatus, progressPercent })
+  };
+}
+
+async function executeJiraA11yTriage(userId: string, config: TaskConfig, taskId?: string): Promise<any> {
+  const jql = config.jql || DEFAULT_A11Y_TRIAGE_JQL;
+  const maxResults = clampPositiveInteger(config.maxResults, 50, 100);
+  const tenantId = config.tenantId || userId;
+  const dryRun = config.dryRun === true;
+  const coordinationService = new CoordinationService(db as never);
+
+  const result = await executeTool(userId, 'jira_search_issues', {
+    jql,
+    maxResults,
+    fields: buildJiraA11yFields(config.severityField),
+    includeRawFields: true
+  }) as JiraSearchResult;
+
+  const issues = (result.issues || []).map((issue) => normalizeJiraIssue(issue, config.severityField));
+  const existingWorkUnits = await coordinationService.listWorkUnits(tenantId);
+  const dedupeWindowHours = Math.max(0, Number(config.dedupeWindowHours ?? 168));
+  const dedupeCutoff = DateTime.now().minus({ hours: dedupeWindowHours }).toJSDate();
+
+  const skipped: any[] = [];
+  const duplicates: any[] = [];
+  const qualifiedIssues: NormalizedJiraIssue[] = [];
+  const enqueued: any[] = [];
+  const errors: any[] = [];
+
+  for (const issue of issues) {
+    const skipReason = getTriageSkipReason(issue, config);
+    if (skipReason) {
+      skipped.push({ issueKey: issue.key, reason: skipReason });
+      continue;
+    }
+
+    const duplicate = findDuplicateWorkUnit(existingWorkUnits, issue.key, dedupeCutoff, dedupeWindowHours);
+    if (duplicate) {
+      duplicates.push({
+        issueKey: issue.key,
+        workUnitId: duplicate.id,
+        status: duplicate.status,
+      });
+      continue;
+    }
+
+    qualifiedIssues.push(issue);
+  }
+
+  if (!dryRun) {
+    for (const issue of qualifiedIssues) {
+      try {
+        const workUnit = await coordinationService.createWorkUnit(tenantId, {
+          title: `Remediate accessibility issue ${issue.key}`,
+          type: config.workUnitType || 'accessibility_remediation',
+          labels: ['accessibility', 'jira-triage'],
+          metadata: {
+            sourceSystem: 'jira',
+            sourceIssueKey: issue.key,
+            workflowType: config.workflowType || 'accessibility_remediation',
+            summary: issue.summary,
+            status: issue.status,
+            priority: issue.priority,
+            severity: issue.severity,
+            components: issue.components,
+            labels: issue.labels,
+            schedulerTaskId: taskId,
+            triagedAt: DateTime.now().toISO(),
+          },
+        });
+
+        enqueued.push({
+          issueKey: issue.key,
+          workUnitId: workUnit.id,
+          status: workUnit.status,
+        });
+      } catch (error: any) {
+        errors.push({
+          issueKey: issue.key,
+          message: error?.message || 'Failed to enqueue work unit',
+        });
+      }
+    }
+  }
+
+  const output = {
+    type: 'jira_a11y_triage',
+    title: 'Jira Accessibility Triage',
+    jql,
+    maxResults,
+    dryRun,
+    examined: issues.length,
+    qualified: qualifiedIssues.length,
+    qualifiedIssues: qualifiedIssues.map(formatQualifiedIssue),
+    skipped,
+    enqueued,
+    duplicates,
+    errors,
+  };
+
+  return {
+    ...output,
+    markdown: formatJiraA11yTriageMarkdown(output),
   };
 }
 
@@ -469,6 +619,168 @@ async function executeCustomToolSequence(userId: string, config: TaskConfig): Pr
   };
 }
 
+function buildJiraA11yFields(severityField?: string): string[] {
+  const fields = new Set([
+    'summary',
+    'status',
+    'assignee',
+    'priority',
+    'labels',
+    'components',
+    'created',
+    'updated',
+  ]);
+
+  if (severityField) fields.add(severityField);
+
+  return Array.from(fields);
+}
+
+function clampPositiveInteger(value: unknown, fallback: number, max: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(Math.floor(parsed), max);
+}
+
+function normalizeJiraIssue(issue: JiraIssueLike, severityField?: string): NormalizedJiraIssue {
+  const fields = issue.fields || {};
+
+  return {
+    key: issue.key || '',
+    summary: issue.summary || asString(fields.summary) || '',
+    status: issue.status || asString(fields.status?.name),
+    priority: issue.priority || asString(fields.priority?.name),
+    severity: extractSeverity(issue, severityField),
+    components: normalizeComponents(issue.components || fields.components),
+    labels: normalizeStringArray(issue.labels || fields.labels),
+    updated: issue.updated || asString(fields.updated),
+  };
+}
+
+function extractSeverity(issue: JiraIssueLike, severityField?: string): string | undefined {
+  const fields = issue.fields || {};
+
+  if (severityField && fields[severityField] !== undefined) {
+    return normalizeFieldValue(fields[severityField]);
+  }
+
+  const labels = normalizeStringArray(issue.labels || fields.labels);
+  const severityLabel = labels.find((label) => {
+    const normalized = label.toLowerCase();
+    return normalized.startsWith('severity:') || normalized.startsWith('severity-');
+  });
+
+  if (!severityLabel) return undefined;
+
+  return severityLabel.replace(/^severity[:-]/i, '');
+}
+
+function normalizeFieldValue(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return value.map(normalizeFieldValue).filter(Boolean).join(', ') || undefined;
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return normalizeFieldValue(record.value ?? record.name ?? record.displayName ?? record.id);
+  }
+  return undefined;
+}
+
+function normalizeComponents(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((component) => {
+      if (typeof component === 'string') return component;
+      if (component && typeof component === 'object') {
+        return normalizeFieldValue(component);
+      }
+      return undefined;
+    })
+    .filter((component): component is string => Boolean(component));
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function getTriageSkipReason(issue: NormalizedJiraIssue, config: TaskConfig): string | null {
+  if (!issue.key) return 'missing_issue_key';
+
+  const automationStatuses = normalizeCriteria(config.automationStatuses);
+  const issueStatus = normalizeCriteriaValue(issue.status);
+  if (automationStatuses.length > 0 && !automationStatuses.includes(issueStatus)) {
+    return 'status_not_allowed';
+  }
+  if (automationStatuses.length === 0 && DEFAULT_TERMINAL_STATUSES.has(issueStatus)) {
+    return 'terminal_status';
+  }
+
+  const priorityAllowlist = normalizeCriteria(config.priorityAllowlist);
+  if (priorityAllowlist.length > 0 && !priorityAllowlist.includes(normalizeCriteriaValue(issue.priority))) {
+    return 'priority_not_allowed';
+  }
+
+  const componentAllowlist = normalizeCriteria(config.componentAllowlist);
+  if (
+    componentAllowlist.length > 0 &&
+    !issue.components.some((component) => componentAllowlist.includes(normalizeCriteriaValue(component)))
+  ) {
+    return 'component_not_allowed';
+  }
+
+  const severityAllowlist = normalizeCriteria(config.severityAllowlist);
+  if (severityAllowlist.length > 0 && !severityAllowlist.includes(normalizeCriteriaValue(issue.severity))) {
+    return 'severity_not_allowed';
+  }
+
+  return null;
+}
+
+function normalizeCriteria(values?: string[]): string[] {
+  return (values || []).map(normalizeCriteriaValue).filter(Boolean);
+}
+
+function normalizeCriteriaValue(value?: string): string {
+  return (value || '').trim().toLowerCase();
+}
+
+function findDuplicateWorkUnit(
+  workUnits: WorkUnit[],
+  issueKey: string,
+  dedupeCutoff: Date,
+  dedupeWindowHours: number,
+): WorkUnit | undefined {
+  return workUnits.find((unit) => {
+    const metadata = (unit.metadata || {}) as Record<string, unknown>;
+    const sourceIssueKey = metadata.sourceIssueKey;
+    if (sourceIssueKey !== issueKey) return false;
+
+    if (ACTIVE_WORK_UNIT_STATUSES.has(String(unit.status))) return true;
+    if (dedupeWindowHours <= 0) return false;
+
+    const createdAt = unit.createdAt instanceof Date ? unit.createdAt : new Date(String(unit.createdAt));
+    return !Number.isNaN(createdAt.getTime()) && createdAt >= dedupeCutoff;
+  });
+}
+
+function formatQualifiedIssue(issue: NormalizedJiraIssue): Record<string, unknown> {
+  return {
+    key: issue.key,
+    summary: issue.summary,
+    status: issue.status,
+    priority: issue.priority,
+    severity: issue.severity,
+    components: issue.components,
+  };
+}
+
 // ============================================================
 // MARKDOWN FORMATTERS
 // ============================================================
@@ -514,6 +826,44 @@ function formatSprintMarkdown(stats: any): string {
   md += `## By Status\n`;
   for (const [status, count] of Object.entries(stats.byStatus)) {
     md += `- ${status}: ${count}\n`;
+  }
+
+  return md;
+}
+
+function formatJiraA11yTriageMarkdown(summary: any): string {
+  let md = `# Jira Accessibility Triage\n\n`;
+  md += `**Examined:** ${summary.examined}\n`;
+  md += `**Qualified:** ${summary.qualified}\n`;
+  md += `**Enqueued:** ${summary.enqueued.length}\n`;
+  md += `**Duplicates:** ${summary.duplicates.length}\n`;
+  md += `**Skipped:** ${summary.skipped.length}\n`;
+  md += `**Errors:** ${summary.errors.length}\n`;
+  md += `**Dry Run:** ${summary.dryRun ? 'Yes' : 'No'}\n\n`;
+
+  if (summary.qualifiedIssues.length > 0) {
+    md += `## Qualified Issues\n`;
+    for (const issue of summary.qualifiedIssues.slice(0, 15)) {
+      md += `- ${issue.key}: ${issue.summary}`;
+      if (issue.priority) md += ` (${issue.priority})`;
+      md += `\n`;
+    }
+    md += `\n`;
+  }
+
+  if (summary.enqueued.length > 0) {
+    md += `## Enqueued Work Units\n`;
+    for (const item of summary.enqueued.slice(0, 15)) {
+      md += `- ${item.issueKey}: ${item.workUnitId}\n`;
+    }
+    md += `\n`;
+  }
+
+  if (summary.skipped.length > 0) {
+    md += `## Skipped\n`;
+    for (const item of summary.skipped.slice(0, 15)) {
+      md += `- ${item.issueKey || 'Unknown issue'}: ${item.reason}\n`;
+    }
   }
 
   return md;
