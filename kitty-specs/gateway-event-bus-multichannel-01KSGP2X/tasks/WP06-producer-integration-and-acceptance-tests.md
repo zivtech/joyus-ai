@@ -17,6 +17,8 @@ owned_files:
   - "joyus-ai-mcp-server/src/pipelines/review/**"
   - "joyus-ai-mcp-server/src/content/monitoring/**"
   - "joyus-ai-mcp-server/docs/manual-testing/gateway-event-bus-manual-test.md"
+agent: "codex"
+shell_pid: "50834"
 ---
 
 # Work Package Prompt: WP06 - Producer Integration and Acceptance Tests

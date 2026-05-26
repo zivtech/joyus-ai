@@ -13,6 +13,8 @@ execution_mode: "code_change"
 owned_files:
   - "joyus-ai-mcp-server/src/gateway-events/adapters/**"
   - "joyus-ai-mcp-server/src/gateway-events/delivery.service.ts"
+agent: "codex"
+shell_pid: "50834"
 ---
 
 # Work Package Prompt: WP03 - Delivery Routing and Backends

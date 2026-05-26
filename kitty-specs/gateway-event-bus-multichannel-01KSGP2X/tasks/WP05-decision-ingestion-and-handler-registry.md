@@ -14,6 +14,8 @@ owned_files:
   - "joyus-ai-mcp-server/src/gateway-events/decision.service.ts"
   - "joyus-ai-mcp-server/src/gateway-events/handler-registry.ts"
   - "joyus-ai-mcp-server/src/gateway-events/routes/decisions.ts"
+agent: "codex"
+shell_pid: "50834"
 ---
 
 # Work Package Prompt: WP05 - Decision Ingestion and Handler Registry

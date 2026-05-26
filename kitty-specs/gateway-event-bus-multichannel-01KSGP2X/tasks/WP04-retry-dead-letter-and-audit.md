@@ -14,6 +14,8 @@ owned_files:
   - "joyus-ai-mcp-server/src/gateway-events/retry.worker.ts"
   - "joyus-ai-mcp-server/src/gateway-events/dead-letter.service.ts"
   - "joyus-ai-mcp-server/src/gateway-events/audit.service.ts"
+agent: "codex"
+shell_pid: "50834"
 ---
 
 # Work Package Prompt: WP04 - Retry Dead Letter and Audit
