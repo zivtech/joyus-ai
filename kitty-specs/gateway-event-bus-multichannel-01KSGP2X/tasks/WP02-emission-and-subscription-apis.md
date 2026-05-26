@@ -59,3 +59,4 @@ npm test -- gateway-events
 - 2026-05-25T23:45:49Z – codex – shell_pid=50834 – Started implementation via action command
 - 2026-05-25T23:51:04Z – codex – shell_pid=50834 – Ready for review
 - 2026-05-26T00:09:21Z – codex – shell_pid=50834 – Review passed; fixed inactive endpoint fanout
+- 2026-05-26T00:14:48Z – codex – shell_pid=50834 – Merged to target branch | Done override: Implementation was manually squashed to target in commit 983f07b after Spec Kitty squash hit mission metadata conflict
