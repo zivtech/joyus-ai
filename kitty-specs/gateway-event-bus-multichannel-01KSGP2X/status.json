@@ -2,7 +2,7 @@
   "event_count": 36,
   "last_event_id": "01KSGSX1DTCYF3ND1YSXE61VCZ",
   "materialized_at": "2026-05-26T00:10:39.418852+00:00",
-  "mission_number": "",
+  "mission_number": "14",
   "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
   "mission_type": "software-dev",
   "summary": {

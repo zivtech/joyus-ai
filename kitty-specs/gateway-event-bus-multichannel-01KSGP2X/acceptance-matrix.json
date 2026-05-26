@@ -1,0 +1,83 @@
+{
+  "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
+  "mission_number": 14,
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "AC-GEB-001",
+      "description": "Gateway event module provides typed event, endpoint, subscription, delivery attempt, decision, channel connection, and handler registry primitives.",
+      "proof_type": "automated_test",
+      "evidence": "joyus-ai-mcp-server/src/gateway-events/** implemented; npm run typecheck passed; npm test -- gateway-events passed with 33 tests.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "Fixtures use generic tenants, operators, dashboards, webhooks, review decisions, and monitoring alerts."
+    },
+    {
+      "criterion_id": "AC-GEB-002",
+      "description": "Drizzle schema and migration persist tenant-scoped gateway tables with idempotency, retry, audit, and channel indexes.",
+      "proof_type": "code_review",
+      "evidence": "joyus-ai-mcp-server/src/db/schema/gateway-events.ts, joyus-ai-mcp-server/drizzle/migrations/0008_gateway_event_bus.sql, and src/db/schemas.ts.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "Gateway schema is registered with the shared Drizzle schema registry."
+    },
+    {
+      "criterion_id": "AC-GEB-003",
+      "description": "Gateway routes cover events, endpoints, subscriptions, delivery inspection, and decisions with tenant validation.",
+      "proof_type": "automated_test",
+      "evidence": "Route and service tests cover tenant mismatch, duplicate idempotency, inactive endpoints, decisions, and delivery outcomes.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "Routes are mounted at /gateway behind bearer auth and tenant resolution."
+    },
+    {
+      "criterion_id": "AC-GEB-004",
+      "description": "Dashboard and webhook backends work through a shared adapter boundary; Slack, email, and channel use the same abstraction.",
+      "proof_type": "automated_test",
+      "evidence": "delivery.service.test.ts covers dashboard sent, webhook failure sanitization, Slack/email stubs, and channel skipped_no_channel.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "Channel delivery remains optional and non-blocking."
+    },
+    {
+      "criterion_id": "AC-GEB-005",
+      "description": "Retry, dead-letter, audit, and skipped channel metrics are bounded, tenant-scoped, and redacted.",
+      "proof_type": "automated_test",
+      "evidence": "reliability.service.test.ts covers retry scheduling, dead-letter exhaustion, due retry dispatch, audit redaction, and skipped_no_channel metrics.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "Default maximum attempts is three."
+    },
+    {
+      "criterion_id": "AC-GEB-006",
+      "description": "Producer integration and manual validation paths are present without requiring Slack, email, or channel setup.",
+      "proof_type": "code_review",
+      "evidence": "src/orchestrator/notification.service.ts, src/pipelines/review/gateway-events.ts, src/content/monitoring/gateway-events.ts, and docs/manual-testing/gateway-event-bus-manual-test.md.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "Manual route uses dashboard and monitoring acknowledgment as the non-channel baseline."
+    },
+    {
+      "criterion_id": "AC-GEB-007",
+      "description": "OpenAPI contract remains parseable after implementation quickstart updates.",
+      "proof_type": "automated_test",
+      "evidence": "ruby -e \"require 'yaml'; YAML.load_file('kitty-specs/gateway-event-bus-multichannel-01KSGP2X/contracts/gateway-event-bus.openapi.yaml')\" passed.",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-05-26T00:13:00Z",
+      "notes": "git diff --check passed in both target checkout and lane worktree."
+    }
+  ],
+  "negative_invariants": [
+    "No client names or client-specific terminology are present in gateway fixtures, tests, docs, or examples.",
+    "Channel delivery absence is represented as skipped_no_channel rather than failed.",
+    "Gateway services record routing and decisions but do not become the canonical lifecycle state store for pipeline review or monitoring domains."
+  ]
+}
