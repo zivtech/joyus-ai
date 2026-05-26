@@ -79,6 +79,30 @@ Platform workflows need a common delivery and decision path. Without one, each f
 - C-004: Channel delivery is optional and cannot be required for admin workflows.
 - C-005: Domain services own their lifecycle state after decisions are routed.
 
+## Adoption Plan
+
+Phase 1 lands the in-process gateway module, database schema, API routes, dashboard delivery, webhook delivery, retry/dead-letter behavior, decision ingestion, audit records, and producer integration for review and monitoring events. Operators can validate delivery behavior through manual API workflows before any dedicated admin UI is required.
+
+Phase 2 should add the first configured external notification backend beyond webhook when an operator workflow needs it. Slack and email must reuse the endpoint, subscription, attempt, retry, and audit abstractions rather than adding backend-specific state machines.
+
+Phase 3 should evaluate whether delivery scheduling should move from the in-process retry worker to the platform durable execution layer. A separate service boundary should be introduced only if delivery volume, deployment ownership, or operational isolation makes the in-process module insufficient.
+
+## ROI Metrics
+
+- Delivery consolidation: number of producer surfaces using the gateway instead of custom notification logic.
+- Operator response coverage: percentage of review, monitoring, and workflow events with at least one successful dashboard or external delivery.
+- Reliability visibility: delivery attempts, retry counts, dead-letter counts, and terminal skip counts available per tenant and event type.
+- Decision throughput: accepted decisions deduplicated and routed to registered domain handlers without duplicate state transitions.
+- Maintenance reduction: new delivery backends added without schema changes or source-domain delivery rewrites.
+
+## Security + MCP Governance
+
+The gateway must resolve tenant context from authenticated platform middleware and reject cross-tenant combinations across events, endpoints, subscriptions, deliveries, decisions, and audit reads. Request bodies cannot override tenant ownership.
+
+Delivery adapters must store configuration through typed endpoint records and must never write secrets, raw tokens, webhook signatures, SMTP credentials, or sensitive payload fragments into delivery logs, audit records, or error summaries.
+
+MCP-facing tools and routes that expose gateway state must preserve the same tenant boundary as the HTTP routes. Tool responses should return sanitized delivery summaries and stable identifiers, not raw backend credentials or unbounded event payloads.
+
 ## Acceptance Criteria
 
 - AC-001: `joyus-ai-mcp-server` contains a gateway event module with typed event, endpoint, subscription, delivery attempt, decision, and handler registry primitives.

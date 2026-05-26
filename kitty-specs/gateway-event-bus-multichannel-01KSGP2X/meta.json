@@ -1,5 +1,6 @@
 {
   "created_at": "2026-05-25T23:03:57.873058+00:00",
+  "feature_number": "014",
   "friendly_name": "Gateway Event Bus and Multi-Channel Delivery",
   "lifecycle_state": "planning",
   "measurement_owner": "Platform Engineering",
