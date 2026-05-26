@@ -1,18 +1,27 @@
 # Quickstart: Gateway Event Bus
 
-This quickstart describes the expected implementation behavior for local validation after the work packages are complete.
+This quickstart describes the implementation behavior for local validation after the work packages are complete. Auth derives tenant scope from the bearer token; use a tenant id that matches the authenticated user id in local development.
+
+```bash
+export BASE_URL=http://localhost:3000
+export TOKEN='<mcp bearer token>'
+export TENANT_ID='<authenticated user id>'
+```
 
 ## 1. Create a Dashboard Endpoint
 
 Create a tenant-scoped dashboard endpoint:
 
-```json
-{
-  "tenantId": "tenant_123",
-  "type": "dashboard",
-  "name": "Operations Dashboard",
-  "isActive": true
-}
+```bash
+curl -sS -X POST "$BASE_URL/gateway/endpoints" \
+  -H "authorization: Bearer $TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+    \"tenantId\": \"$TENANT_ID\",
+    \"type\": \"dashboard\",
+    \"name\": \"Operations Dashboard\",
+    \"isActive\": true
+  }"
 ```
 
 Expected outcome:
@@ -25,14 +34,19 @@ Expected outcome:
 
 Create a subscription:
 
-```json
-{
-  "tenantId": "tenant_123",
-  "eventType": "review.pending",
-  "minimumSeverity": "warning",
-  "endpointId": "endpoint_dashboard_123",
-  "isEnabled": true
-}
+```bash
+export DASHBOARD_ENDPOINT_ID='<endpoint id>'
+
+curl -sS -X POST "$BASE_URL/gateway/subscriptions" \
+  -H "authorization: Bearer $TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+    \"tenantId\": \"$TENANT_ID\",
+    \"eventType\": \"review.pending\",
+    \"minimumSeverity\": \"warning\",
+    \"endpointId\": \"$DASHBOARD_ENDPOINT_ID\",
+    \"isEnabled\": true
+  }"
 ```
 
 Expected outcome:
@@ -45,25 +59,28 @@ Expected outcome:
 
 Emit:
 
-```json
-{
-  "type": "review.pending",
-  "tenantId": "tenant_123",
-  "severity": "warning",
-  "sourceSpec": "gateway-event-bus",
-  "sourceComponent": "pipeline-review",
-  "subjectType": "pipeline_execution",
-  "subjectId": "execution_456",
-  "correlationId": "run_789",
-  "idempotencyKey": "pipeline-review:execution_456:pending",
-  "payloadSchemaVersion": "review.pending.v1",
-  "requiresDecision": true,
-  "handlerKey": "pipeline-review",
-  "payload": {
-    "title": "Review required",
-    "summary": "Generated output is ready for operator review."
-  }
-}
+```bash
+curl -sS -X POST "$BASE_URL/gateway/events" \
+  -H "authorization: Bearer $TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+    \"type\": \"review.pending\",
+    \"tenantId\": \"$TENANT_ID\",
+    \"severity\": \"warning\",
+    \"sourceSpec\": \"gateway-event-bus\",
+    \"sourceComponent\": \"pipeline-review\",
+    \"subjectType\": \"review_decision\",
+    \"subjectId\": \"review_decision_456\",
+    \"correlationId\": \"run_789\",
+    \"idempotencyKey\": \"pipeline-review:review_decision_456:pending\",
+    \"payloadSchemaVersion\": \"review.pending.v1\",
+    \"requiresDecision\": true,
+    \"handlerKey\": \"pipeline-review\",
+    \"payload\": {
+      \"title\": \"Review required\",
+      \"summary\": \"Generated output is ready for operator review.\"
+    }
+  }"
 ```
 
 Expected outcome:
@@ -78,15 +95,18 @@ Expected outcome:
 
 Create a webhook endpoint with a secret reference:
 
-```json
-{
-  "tenantId": "tenant_123",
-  "type": "webhook",
-  "name": "Example Webhook",
-  "url": "https://example.invalid/hooks/gateway",
-  "hmacSecretRef": "secret_ref_webhook_123",
-  "isActive": true
-}
+```bash
+curl -sS -X POST "$BASE_URL/gateway/endpoints" \
+  -H "authorization: Bearer $TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+    \"tenantId\": \"$TENANT_ID\",
+    \"type\": \"webhook\",
+    \"name\": \"Example Webhook\",
+    \"url\": \"https://example.invalid/hooks/gateway\",
+    \"hmacSecretRef\": \"secret_ref_webhook_123\",
+    \"isActive\": true
+  }"
 ```
 
 Expected outcome:
@@ -99,20 +119,25 @@ Expected outcome:
 
 ## 5. Ingest a Decision
 
-Post a dashboard approval:
+For a route that does not require pre-existing pipeline review rows, emit a `monitoring.alert` event with `handlerKey=monitoring-alert`, then post an acknowledgment:
 
-```json
-{
-  "tenantId": "tenant_123",
-  "eventId": "22222222-2222-4222-8222-222222222222",
-  "decision": "approved",
-  "decisionBy": "operator_456",
-  "sourceBackend": "dashboard",
-  "idempotencyKey": "dashboard:event_222:operator_456:approved",
-  "metadata": {
-    "comment": "Approved after review."
-  }
-}
+```bash
+export GATEWAY_EVENT_ID='<event id>'
+
+curl -sS -X POST "$BASE_URL/gateway/decisions" \
+  -H "authorization: Bearer $TOKEN" \
+  -H "content-type: application/json" \
+  -d "{
+    \"tenantId\": \"$TENANT_ID\",
+    \"eventId\": \"$GATEWAY_EVENT_ID\",
+    \"decision\": \"acknowledged\",
+    \"decisionBy\": \"operator_456\",
+    \"sourceBackend\": \"dashboard\",
+    \"idempotencyKey\": \"dashboard:event_222:operator_456:acknowledged\",
+    \"metadata\": {
+      \"comment\": \"Acknowledged after review.\"
+    }
+  }"
 ```
 
 Expected outcome:
