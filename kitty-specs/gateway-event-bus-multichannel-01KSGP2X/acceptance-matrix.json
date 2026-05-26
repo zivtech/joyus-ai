@@ -2,7 +2,7 @@
   "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
   "mission_number": "14",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "AC-GEB-001",
@@ -82,7 +82,7 @@
       "verification_method": "custom_command",
       "verification_command": "! rg -n \"Acme|Globex|Client X|Client Y|CFPB\" joyus-ai-mcp-server/src/gateway-events joyus-ai-mcp-server/docs/manual-testing/gateway-event-bus-manual-test.md",
       "result": "confirmed_absent",
-      "evidence": "Gateway fixtures and docs use generic tenants, operators, dashboards, webhooks, review decisions, and monitoring alerts."
+      "evidence": "Command exited 0: "
     },
     {
       "invariant_id": "NI-GEB-002",
@@ -90,7 +90,7 @@
       "verification_method": "custom_command",
       "verification_command": "cd joyus-ai-mcp-server && npm test -- gateway-events",
       "result": "confirmed_absent",
-      "evidence": "delivery.service.test.ts and reliability.service.test.ts cover skipped_no_channel as terminal and separate from failures."
+      "evidence": "Command exited 0: > joyus-ai-mcp-server@0.1.0 test\n> vitest run gateway-events\n\n\n RUN  v1.6.1 /Users/AlexUA_1/claude/joyus-ai/joyus-ai-mcp-server\n\n \u2713 src/gateway-events/schemas.test.ts  (8 tests) 3ms\n \u2713 src/gateway-eve"
     },
     {
       "invariant_id": "NI-GEB-003",
@@ -98,7 +98,7 @@
       "verification_method": "custom_command",
       "verification_command": "test -f joyus-ai-mcp-server/src/pipelines/review/decision.ts && test -f joyus-ai-mcp-server/src/gateway-events/handler-registry.ts",
       "result": "confirmed_absent",
-      "evidence": "Decision handlers route into domain ports; pipeline review and monitoring remain domain-owned."
+      "evidence": "Command exited 0: "
     }
   ]
 }
