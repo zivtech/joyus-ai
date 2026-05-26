@@ -5,7 +5,7 @@
   "measurement_owner": "Platform Engineering",
   "mission": "software-dev",
   "mission_id": "01KSGP2XG4CWRYWH6DES0WQ6WA",
-  "mission_number": null,
+  "mission_number": 14,
   "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
   "mission_type": "software-dev",
   "review_cadence": "weekly",

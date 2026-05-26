@@ -18,6 +18,7 @@ import {
 } from './generation/index.js';
 import { createMediationRouter } from './mediation/router.js';
 import { DriftMonitor } from './monitoring/drift.js';
+import type { MonitoringGatewayEmitter } from './monitoring/gateway-events.js';
 import { HealthChecker } from './monitoring/health.js';
 import { MetricsCollector } from './monitoring/metrics.js';
 import { createMonitoringRouter } from './monitoring/routes.js';
@@ -28,6 +29,7 @@ import type { DrizzleClient } from './types.js';
 
 export interface ContentModuleConfig {
   db: DrizzleClient;
+  monitoringGatewayEvents?: MonitoringGatewayEmitter;
 }
 
 export async function initializeContentModule(
@@ -81,7 +83,7 @@ export async function initializeContentModule(
     const syncEngine = new SyncEngine(db, connectorRegistry);
 
     // 5. Monitoring (use module-level db from db/client.js)
-    const healthChecker = new HealthChecker();
+    const healthChecker = new HealthChecker(config.monitoringGatewayEvents);
     const metricsCollector = new MetricsCollector();
     const driftMonitor = new DriftMonitor(new StubVoiceAnalyzer(), db);
 

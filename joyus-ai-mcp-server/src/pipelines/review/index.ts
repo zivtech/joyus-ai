@@ -62,3 +62,4 @@ export { DecisionRecorder } from './decision.js';
 export type { ReviewGateResult } from './decision.js';
 export { EscalationChecker } from './escalation.js';
 export type { EscalationResult } from './escalation.js';
+export { PipelineReviewGatewayEmitter } from './gateway-events.js';

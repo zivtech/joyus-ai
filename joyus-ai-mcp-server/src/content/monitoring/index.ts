@@ -8,6 +8,7 @@
 export { ContentLogger } from './logger.js';
 export type { ContentLogEntry } from './logger.js';
 
+export { MonitoringGatewayEmitter } from './gateway-events.js';
 export { HealthChecker } from './health.js';
 export type { HealthReport, ComponentHealth, HealthStatus } from './health.js';
 

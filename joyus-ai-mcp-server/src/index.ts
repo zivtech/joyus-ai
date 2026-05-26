@@ -24,6 +24,7 @@ import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
 import { initializeContentModule } from './content/index.js';
+import { MonitoringGatewayEmitter } from './content/monitoring/index.js';
 import { db, auditLogs } from './db/client.js';
 import { users } from './db/schema.js';
 import {
@@ -38,6 +39,11 @@ import {
   TriggerForwarder,
 } from './event-adapter/index.js';
 import { exportRouter } from './exports/router.js';
+import {
+  createGatewayEventBusModule,
+  createMonitoringDecisionHandler,
+  createPipelineReviewDecisionHandler,
+} from './gateway-events/index.js';
 import { createAllFunctions, inngest } from './inngest/index.js';
 import {
   createOrchestratorRoutes,
@@ -50,6 +56,11 @@ import {
   UsageService,
   SkillLoaderService,
 } from './orchestrator/index.js';
+import { resolveTenantId } from './orchestrator/middleware/tenant.js';
+import {
+  GatewayEventServiceBus,
+  NotificationService,
+} from './orchestrator/notification.service.js';
 import { runCrashRecovery } from './orchestrator/recovery.js';
 import { SessionService } from './orchestrator/session.service.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
@@ -73,6 +84,53 @@ const pipelineRouter = createPipelineRouter({
   stepRegistry,
   decisionRecorder,
 });
+const gatewayModule = createGatewayEventBusModule({
+  db: pipelineDb as NodePgDatabase<Record<string, unknown>>,
+  decisionHandlers: [
+    {
+      handlerKey: 'pipeline-review',
+      handler: createPipelineReviewDecisionHandler({
+        async routeReviewDecision(context) {
+          const reviewDecisionId = context.metadata['reviewDecisionId'];
+          if (typeof reviewDecisionId !== 'string' || reviewDecisionId.length === 0) {
+            throw new Error('reviewDecisionId metadata is required');
+          }
+
+          const status = context.decision === 'approved' ? 'approved' : 'rejected';
+          const feedback = status === 'rejected'
+            ? {
+                reason: String(context.metadata['reason'] ?? 'Decision rejected through gateway'),
+                category: context.decision === 'request_changes' ? 'changes_requested' : 'rejected',
+              }
+            : undefined;
+
+          return decisionRecorder.recordDecision(
+            reviewDecisionId,
+            context.tenantId,
+            status,
+            context.decisionBy,
+            feedback,
+          );
+        },
+      }),
+    },
+    {
+      handlerKey: 'monitoring-alert',
+      handler: createMonitoringDecisionHandler({
+        async routeMonitoringDecision(context) {
+          return {
+            action: context.decision,
+            eventId: context.eventId,
+            handledBy: 'monitoring-alert',
+          };
+        },
+      }),
+    },
+  ],
+});
+const gatewayNotificationService = new NotificationService(
+  new GatewayEventServiceBus(gatewayModule.eventService),
+);
 
 setPipelineContext({ stepRegistry, decisionRecorder });
 
@@ -321,7 +379,10 @@ app.use('/api/inngest', serve({
 // Content routes must be mounted before the generic /api bearer-token router.
 // /api/mediation has its own two-layer API key + JWT auth.
 try {
-  await initializeContentModule(app, { db });
+  await initializeContentModule(app, {
+    db,
+    monitoringGatewayEvents: new MonitoringGatewayEmitter(gatewayModule.eventService),
+  });
 } catch (error) {
   console.error('Failed to initialize content module:', error);
 }
@@ -331,12 +392,16 @@ try {
 // URLs are authorized by their one-time token in the path.
 app.use('/api/v1', exportRouter);
 
+// Gateway Event Bus routes. Auth supplies req.mcpUser and resolveTenantId
+// derives the tenant scope used by all gateway route handlers.
+app.use('/gateway', requireBearerToken, resolveTenantId, gatewayModule.router);
+
 // Pipeline routes (behind auth — spec WP08 T042: "relies on existing auth middleware")
 app.use('/api', requireBearerToken, pipelineRouter);
 
 // Orchestrator HTTP API — WP06: sessions, messages, events, coordination
 // requireBearerToken guards the entire tree; resolveTenantId is applied inside.
-const orchestratorEventService = new EventService(pipelineDb);
+const orchestratorEventService = new EventService(pipelineDb, gatewayNotificationService);
 const orchestratorMemoryService = new MemoryService(pipelineDb);
 const orchestratorUsageService = new UsageService({ db: pipelineDb, eventService: orchestratorEventService });
 const orchestratorSafetyService = createDefaultSafetyService(orchestratorEventService);
