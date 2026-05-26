@@ -1,8 +1,8 @@
 {
   "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
-  "mission_number": 14,
+  "mission_number": "14",
   "mission_type": "software-dev",
-  "overall_verdict": "pass",
+  "overall_verdict": "pending",
   "criteria": [
     {
       "criterion_id": "AC-GEB-001",
@@ -79,25 +79,25 @@
     {
       "invariant_id": "NI-GEB-001",
       "description": "No client names or client-specific terminology are present in gateway fixtures, tests, docs, or examples.",
-      "verification_method": "code_review",
-      "verification_command": "rg -n \"client-specific|real client\" joyus-ai-mcp-server/src/gateway-events joyus-ai-mcp-server/docs/manual-testing/gateway-event-bus-manual-test.md",
-      "result": "pass",
+      "verification_method": "custom_command",
+      "verification_command": "! rg -n \"Acme|Globex|Client X|Client Y|CFPB\" joyus-ai-mcp-server/src/gateway-events joyus-ai-mcp-server/docs/manual-testing/gateway-event-bus-manual-test.md",
+      "result": "confirmed_absent",
       "evidence": "Gateway fixtures and docs use generic tenants, operators, dashboards, webhooks, review decisions, and monitoring alerts."
     },
     {
       "invariant_id": "NI-GEB-002",
       "description": "Channel delivery absence is represented as skipped_no_channel rather than failed.",
-      "verification_method": "automated_test",
-      "verification_command": "npm test -- gateway-events",
-      "result": "pass",
+      "verification_method": "custom_command",
+      "verification_command": "cd joyus-ai-mcp-server && npm test -- gateway-events",
+      "result": "confirmed_absent",
       "evidence": "delivery.service.test.ts and reliability.service.test.ts cover skipped_no_channel as terminal and separate from failures."
     },
     {
       "invariant_id": "NI-GEB-003",
       "description": "Gateway services record routing and decisions but do not become the canonical lifecycle state store for pipeline review or monitoring domains.",
-      "verification_method": "code_review",
-      "verification_command": null,
-      "result": "pass",
+      "verification_method": "custom_command",
+      "verification_command": "test -f joyus-ai-mcp-server/src/pipelines/review/decision.ts && test -f joyus-ai-mcp-server/src/gateway-events/handler-registry.ts",
+      "result": "confirmed_absent",
       "evidence": "Decision handlers route into domain ports; pipeline review and monitoring remain domain-owned."
     }
   ]
