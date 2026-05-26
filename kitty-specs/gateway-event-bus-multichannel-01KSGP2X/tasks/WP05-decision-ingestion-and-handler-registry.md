@@ -46,3 +46,7 @@ Run from `joyus-ai-mcp-server/`:
 npm run typecheck
 npm test -- gateway-events
 ```
+
+## Activity Log
+
+- 2026-05-26T00:01:03Z – unknown – Ready for review
