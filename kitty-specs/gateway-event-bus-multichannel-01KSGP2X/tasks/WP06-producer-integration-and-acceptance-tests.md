@@ -57,3 +57,7 @@ Run from the repository root:
 ruby -e "require 'yaml'; YAML.load_file('kitty-specs/gateway-event-bus-multichannel-01KSGP2X/contracts/gateway-event-bus.openapi.yaml')"
 git diff --check
 ```
+
+## Activity Log
+
+- 2026-05-26T00:07:56Z – unknown – Ready for review
