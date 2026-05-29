@@ -18,11 +18,11 @@ import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 import { CitationManager, type CitationResult } from './citations.js';
 import {
   buildGenerationCostMetadata,
-  estimateGenerationCostMicroUsd,
   formatCostUsd,
-  resolveModelPricing,
+  resolveGenerationCost,
   type GenerationOperationMetadata,
   type GenerationTokenUsage,
+  type ResolvedGenerationCost,
 } from './cost.js';
 import {
   ContentGenerator,
@@ -31,6 +31,9 @@ import {
   type GenerationOutput,
 } from './generator.js';
 import { ContentRetriever, type RetrievalResult, type RetrievedItem } from './retriever.js';
+
+/** Transaction handle passed to the `db.transaction(async tx => …)` callback. */
+type DrizzleTransaction = Parameters<Parameters<DrizzleClient['transaction']>[0]>[0];
 
 export interface GenerateOptions {
   profileId?: string;
@@ -76,7 +79,10 @@ export class GenerationService {
     const citationResult = this.citationManager.extractCitations(genOutput.text, retrieval.items);
 
     const durationMs = Date.now() - startMs;
-    const costMetadata = buildGenerationCostMetadata(genOutput.model, genOutput.usage);
+    // Resolve pricing + micro-USD once so the operation-log metadata and the
+    // session accumulator share an identical figure and cannot diverge.
+    const cost = resolveGenerationCost(genOutput.model, genOutput.usage);
+    const costMetadata = buildGenerationCostMetadata(genOutput.model, genOutput.usage, cost);
     const operationMetadata: GenerationOperationMetadata = {
       citationCount: citationResult.citationCount,
       sourcesUsed: retrieval.items.length,
@@ -84,39 +90,53 @@ export class GenerationService {
       ...(costMetadata ?? {}),
     };
 
-    // 4. Log to generation_logs (no durationMs column in this table)
-    await this.db.insert(contentGenerationLogs).values({
-      id: createId(),
-      tenantId,
-      userId,
-      sessionId: options?.sessionId ?? null,
-      profileId: options?.profileId ?? null,
-      query,
-      sourcesUsed: retrieval.items.map(i => i.itemId),
-      citationCount: citationResult.citationCount,
-      responseLength: citationResult.text.length,
-    });
-
-    // 5. Audit log via operation_logs (includes durationMs)
-    await this.db.insert(contentOperationLogs).values({
-      id: createId(),
-      tenantId,
-      operation: 'generate',
-      userId,
-      sessionId: options?.sessionId ?? null,
-      durationMs,
-      success: true,
-      metadata: operationMetadata,
-    });
-
-    if (options?.sessionId && genOutput.usage) {
-      await this.addGenerationUsageToSession(
-        options.sessionId,
-        tenantId,
-        genOutput.usage,
-        genOutput.model
+    // Surface usage that we recorded but could not price, so unpriced spend is
+    // observable rather than silently accumulating as $0.
+    if (genOutput.usage && cost.pricing === null) {
+      console.warn(
+        `[GenerationService] No pricing for model "${genOutput.model ?? 'unknown'}"; ` +
+          'token usage recorded but estimated cost is $0.'
       );
     }
+
+    // Cost-accounting writes must commit all-or-nothing: a failure between them
+    // would desync the per-operation logs from the session accumulator.
+    await this.db.transaction(async tx => {
+      // 4. Log to generation_logs (no durationMs column in this table)
+      await tx.insert(contentGenerationLogs).values({
+        id: createId(),
+        tenantId,
+        userId,
+        sessionId: options?.sessionId ?? null,
+        profileId: options?.profileId ?? null,
+        query,
+        sourcesUsed: retrieval.items.map(i => i.itemId),
+        citationCount: citationResult.citationCount,
+        responseLength: citationResult.text.length,
+      });
+
+      // 5. Audit log via operation_logs (includes durationMs)
+      await tx.insert(contentOperationLogs).values({
+        id: createId(),
+        tenantId,
+        operation: 'generate',
+        userId,
+        sessionId: options?.sessionId ?? null,
+        durationMs,
+        success: true,
+        metadata: operationMetadata,
+      });
+
+      if (options?.sessionId && genOutput.usage) {
+        await this.addGenerationUsageToSession(
+          tx,
+          options.sessionId,
+          tenantId,
+          genOutput.usage,
+          cost
+        );
+      }
+    });
 
     return {
       text: citationResult.text,
@@ -131,17 +151,15 @@ export class GenerationService {
   }
 
   private async addGenerationUsageToSession(
+    tx: DrizzleTransaction,
     sessionId: string,
     tenantId: string,
     usage: GenerationTokenUsage,
-    model: string | undefined
+    cost: ResolvedGenerationCost
   ): Promise<void> {
-    const pricing = resolveModelPricing(model);
-    const estimatedCostIncrement = pricing
-      ? formatCostUsd(estimateGenerationCostMicroUsd(usage, pricing))
-      : formatCostUsd(0);
+    const estimatedCostIncrement = formatCostUsd(cost.microUsd ?? 0);
 
-    await this.db
+    await tx
       .update(contentMediationSessions)
       .set({
         totalInputTokens: sql`${contentMediationSessions.totalInputTokens} + ${usage.inputTokens}`,

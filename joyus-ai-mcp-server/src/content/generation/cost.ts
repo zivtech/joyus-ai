@@ -34,6 +34,14 @@ export const PRICING: Record<string, ModelPricing> = {
     cacheReadPerMTok: 0.5,
     outputPerMTok: 25.0,
   },
+  // claude-opus-4-7 rates assumed identical to the opus-4-6 tier pending
+  // confirmed published pricing; revisit alongside PRICING_VERSION if rates differ.
+  'claude-opus-4-7': {
+    inputPerMTok: 5.0,
+    cacheWritePerMTok: 6.25,
+    cacheReadPerMTok: 0.5,
+    outputPerMTok: 25.0,
+  },
   'claude-haiku-4-5': {
     inputPerMTok: 1.0,
     cacheWritePerMTok: 1.25,
@@ -64,6 +72,8 @@ function nonNegativeInteger(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
     return 0;
   }
+  // Math.trunc is deliberate: token counts are whole units, so fractional
+  // provider values are floored toward zero rather than rounded.
   return Math.trunc(value);
 }
 
@@ -122,14 +132,40 @@ export function costUsdNumber(microUsd: number): number {
   return Number(formatCostUsd(microUsd));
 }
 
-export function buildGenerationCostMetadata(
+/**
+ * Resolved cost for a single generation. Computed once per generation so the
+ * operation-log metadata and the session-accumulator update share an identical
+ * figure and cannot diverge. `microUsd` is null when the model has no pricing.
+ */
+export interface ResolvedGenerationCost {
+  pricing: ModelPricing | null;
+  microUsd: number | null;
+}
+
+export function resolveGenerationCost(
   model: string | null | undefined,
   usage: GenerationTokenUsage | null | undefined
+): ResolvedGenerationCost {
+  const pricing = resolveModelPricing(model);
+  if (!pricing || !usage) {
+    return { pricing, microUsd: null };
+  }
+  return { pricing, microUsd: estimateGenerationCostMicroUsd(usage, pricing) };
+}
+
+export function buildGenerationCostMetadata(
+  model: string | null | undefined,
+  usage: GenerationTokenUsage | null | undefined,
+  cost?: ResolvedGenerationCost
 ): Partial<GenerationOperationMetadata> | null {
   if (!usage) return null;
 
+  // cacheHitRate denominator = inputTokens + cacheWriteTokens + cacheReadTokens.
+  // Anthropic's input_tokens already excludes cached tokens, so cache reads/writes
+  // are additive here with no double-count.
   const promptTokenTotal = usage.inputTokens + usage.cacheWriteTokens + usage.cacheReadTokens;
-  const pricing = resolveModelPricing(model);
+  const resolved = cost ?? resolveGenerationCost(model, usage);
+  const pricing = resolved.pricing;
   const metadata: Partial<GenerationOperationMetadata> = {
     inputTokens: usage.inputTokens,
     outputTokens: usage.outputTokens,
@@ -141,12 +177,11 @@ export function buildGenerationCostMetadata(
     ...(promptTokenTotal > 0 ? { cacheHitRate: usage.cacheReadTokens / promptTokenTotal } : {}),
   };
 
-  if (!pricing) return metadata;
+  if (resolved.microUsd === null) return metadata;
 
-  const microUsd = estimateGenerationCostMicroUsd(usage, pricing);
   return {
     ...metadata,
-    estimatedCostUsd: costUsdNumber(microUsd),
+    estimatedCostUsd: costUsdNumber(resolved.microUsd),
     pricingVersion: PRICING_VERSION,
   };
 }
