@@ -5,7 +5,7 @@ This quickstart describes how to validate Spec 013 after implementation.
 ## 1. Apply schema migrations
 
 ```bash
-cd /Users/AlexUA_1/claude/joyus-ai-tenant-identity/joyus-ai-mcp-server
+cd joyus-ai-mcp-server
 npm run db:migrate
 ```
 
@@ -18,7 +18,7 @@ Expected result:
 ## 2. Run targeted tests
 
 ```bash
-cd /Users/AlexUA_1/claude/joyus-ai-tenant-identity/joyus-ai-mcp-server
+cd joyus-ai-mcp-server
 npm test -- --run tests/auth tests/exports.test.ts tests/content/integration/mediation-auth.test.ts tests/pipelines/routes.test.ts tests/event-adapter
 ```
 
@@ -33,8 +33,8 @@ Expected result:
 ## 3. Check for legacy runtime paths
 
 ```bash
-cd /Users/AlexUA_1/claude/joyus-ai-tenant-identity
-rg -n "x-tenant-id|EXPORT_TENANT_ALLOWLIST|EXPORT_ALLOW_ANY_TENANT|tenantId = userId|userId === tenantId|req.mcpUser\\.id" joyus-ai-mcp-server/src joyus-ai-mcp-server/tests kitty-specs/013-tenant-identity-resolution
+# Run from the repository root. Canonical acceptance grep (matches plan.md Acceptance Gate 3).
+rg -n "x-tenant-id|EXPORT_TENANT_ALLOWLIST|EXPORT_ALLOW_ANY_TENANT|userId === tenantId|tenantId = userId|req.mcpUser\\.id" joyus-ai-mcp-server/src joyus-ai-mcp-server/tests kitty-specs/013-tenant-identity-resolution
 ```
 
 Expected result:
@@ -45,7 +45,7 @@ Expected result:
 ## 4. Run platform checks
 
 ```bash
-cd /Users/AlexUA_1/claude/joyus-ai-tenant-identity
+# Run from the repository root.
 scripts/check-client-abstraction.sh
 git diff --check
 ```

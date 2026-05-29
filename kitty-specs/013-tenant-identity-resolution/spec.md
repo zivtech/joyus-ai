@@ -62,6 +62,7 @@ The current notes live in `kitty-specs/009-automated-pipelines-framework/tenant-
 - FR-009: If a request does not specify a tenant and the authenticated user has multiple memberships but no primary tenant, the resolver MUST fail closed with a 400 response.
 - FR-010: If a request specifies a tenant, the resolver MUST authorize the authenticated user against `tenant_memberships` before attaching tenant context.
 - FR-011: Unauthorized explicit tenant requests MUST fail without exposing protected resource existence. Existing route contracts that return 404 for cross-tenant resource access MUST keep returning 404.
+- FR-027: The 403-vs-404 outcome for an unauthorized requested tenant MUST be deterministic and fail-closed, not dependent on an unset option. When a route does not set non-disclosure explicitly, resource routes default to 404 and management routes default to 403. See the "Non-Disclosure Default" contract in `data-model.md`. An explicitly AUTHORIZED requested tenant MUST always succeed, including for a multi-membership user with no primary tenant.
 
 ### Auth Surface Behavior
 
@@ -70,6 +71,7 @@ The current notes live in `kitty-specs/009-automated-pipelines-framework/tenant-
 - FR-014: Explicit tenant path routes MUST treat the path tenant as a requested tenant and authorize it through the shared resolver.
 - FR-015: Event adapter admin UI routes MUST stop using `x-tenant-id` as an authorization source. Any tenant selector or requested tenant must flow through the shared resolver.
 - FR-016: Header-based tenant selection MUST be rejected unless the caller path is explicitly documented as an internal, authenticated operator-only path.
+- FR-026: Platform-admin / no-tenant-scope privilege MUST derive from a membership role (`operator`, or `admin` where a route documents admin-level scope), NEVER from the absence of an `x-tenant-id` header or any other missing request input. Routes that currently treat a missing `x-tenant-id` header as platform-admin context (for example `joyus-ai-mcp-server/src/event-adapter/routes/schedules.ts` and `joyus-ai-mcp-server/src/event-adapter/routes/admin.ts`) MUST migrate this inverted trust so that a header-less request resolves to the caller's membership-derived role, and a header-less request from a non-operator MUST NOT receive platform-admin privileges.
 
 ### Operator Override
 

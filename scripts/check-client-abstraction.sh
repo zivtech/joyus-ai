@@ -30,11 +30,19 @@ scan_text() {
 
   # Specific failures we have hit before: real reviewer names and internal
   # checkpoint metadata leaking into public specs, docs, or commit messages.
+  #
+  # Absolute home-directory paths (e.g. /Users/<name>/... or /home/<name>/...)
+  # leak a developer's real username and a machine-local layout. Repo artifacts
+  # MUST use repo-relative invocations instead. We match the home root followed
+  # by a username segment and a trailing slash so generic mentions of "/home"
+  # or "/Users" without a user segment do not trip the guard.
   local patterns=(
     'reviewed_by:[[:space:]]*["'"'"']?[A-Z][A-Za-z]+[[:space:]][A-Z][A-Za-z-]+'
     'agent:[[:space:]]*["'"'"']?c[l]aude[-_a-zA-Z0-9]*'
     '–[[:space:]]*c[l]aude[-_a-zA-Z0-9]*[[:space:]]*–'
     'Entire[-]Checkpoint:'
+    '/Users/[A-Za-z0-9._-]+/'
+    '/home/[A-Za-z0-9._-]+/'
   )
 
   for pattern in "${patterns[@]}"; do

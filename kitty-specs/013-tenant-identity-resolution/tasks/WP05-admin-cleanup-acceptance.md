@@ -26,6 +26,7 @@ Finish the migration by replacing header-only admin tenant selection and removin
 - Non-operator override fails.
 - Override emits a tenant access audit event.
 - Legacy env allowlist no longer authorizes runtime access.
+- A header-less, non-operator request does NOT receive platform-admin privileges (verifies FR-026: platform-admin derives from membership role, never from `x-tenant-id` header absence).
 
 ## Done When
 
