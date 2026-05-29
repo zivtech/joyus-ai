@@ -4,7 +4,7 @@ import path from 'path';
 
 import { createId } from '@paralleldrive/cuid2';
 
-import { canAccessTenantFromEnvironment } from '../tenancy/resolver.js';
+import { canAccessTenant } from '../tenancy/resolver.js';
 
 import { buildWorkbookFile } from './excel-builder.js';
 import {
@@ -51,10 +51,10 @@ export function normalizeExportLocations(value: string | undefined): ExcelExport
   return value === 'all_accessible' ? 'all_accessible' : 'current';
 }
 
-export function canAccessTenant(userId: string, tenantId: string): boolean {
-  if (tenantId === userId) return true;
-  return canAccessTenantFromEnvironment(userId, tenantId);
-}
+// Re-exported from the shared tenancy resolver so the self/allowlist access
+// rule has a single source of truth. Kept exported here for the exports module's
+// public surface and existing test imports.
+export { canAccessTenant };
 
 function assertTenantAccess(userId: string, tenantId: string): void {
   if (!canAccessTenant(userId, tenantId)) {
