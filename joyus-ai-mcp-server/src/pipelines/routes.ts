@@ -67,6 +67,10 @@ function getTenantId(req: Request): string {
   return '';
 }
 
+// Normalizes the two error shapes Drizzle's node-postgres driver can surface:
+// pg v8 sets `code` directly on the top-level DatabaseError, while a wrapped
+// error nests it under `.cause`. Only a single level of `.cause` is inspected;
+// deeper nesting (err.cause.cause) is not expected from the current driver.
 function getPgError(err: unknown): { code?: unknown } | null {
   const cause = err && typeof err === 'object' && 'cause' in err
     ? (err as { cause?: unknown }).cause
