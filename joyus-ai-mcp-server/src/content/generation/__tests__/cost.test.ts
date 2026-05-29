@@ -47,6 +47,24 @@ describe('generation cost helpers', () => {
     expect(resolveModelPricing('claude-sonnet-4-6-20260501')).toBe(PRICING['claude-sonnet-4-6']);
   });
 
+  it('prices claude-opus-4-7 at the opus tier', () => {
+    const usage = {
+      inputTokens: 1_000,
+      outputTokens: 500,
+      cacheWriteTokens: 0,
+      cacheReadTokens: 0,
+    };
+
+    expect(resolveModelPricing('claude-opus-4-7')).toBe(PRICING['claude-opus-4-7']);
+    // 1000 * 5.0 + 500 * 25.0 = 17_500 microUSD
+    expect(estimateGenerationCostMicroUsd(usage, PRICING['claude-opus-4-7'])).toBe(17_500);
+    expect(buildGenerationCostMetadata('claude-opus-4-7', usage)).toMatchObject({
+      estimatedCostUsd: 0.0175,
+      pricingAvailable: true,
+      pricingVersion: '2026-04-14',
+    });
+  });
+
   it('preserves token metadata without estimating cost for unpriced models', () => {
     const metadata = buildGenerationCostMetadata('model-without-price', {
       inputTokens: 100,

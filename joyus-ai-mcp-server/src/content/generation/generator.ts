@@ -15,6 +15,8 @@ export interface GenerationProviderResponse {
 }
 
 export interface GenerationProvider {
+  // TODO: tighten to Promise<GenerationProviderResponse> once every provider
+  // returns the structured shape; the bare-string branch is backward-compat only.
   generate(prompt: string, systemPrompt: string): Promise<string | GenerationProviderResponse>;
 }
 
