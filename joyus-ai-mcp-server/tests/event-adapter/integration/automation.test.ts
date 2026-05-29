@@ -553,6 +553,8 @@ describe('POST /trigger', () => {
   });
 
   it('returns 401 when the destination credential has been revoked', async () => {
+    // Exercises the in-handler JS guard: destinations array contains the row but
+    // authSecretRef is null, so the `.find()` short-circuits via `if (!d.authSecretRef)`.
     const { db } = makeTriggerDb({ id: 'pipe-001' }, makeWebhookEvent(), { authSecretRef: null });
     const handler = getTriggerHandler(db);
     const req = mockReq({
@@ -564,6 +566,34 @@ describe('POST /trigger', () => {
     await handler?.(req, res, () => {});
 
     expect(res.status).toHaveBeenCalledWith(401);
+  });
+
+  it('returns 401 when SQL-level isNotNull filter excludes the revoked destination row', async () => {
+    // Exercises the DB-level predicate: the route queries with isNotNull(authSecretRef),
+    // so a destination whose authSecretRef was set to NULL in the DB never reaches the
+    // application layer at all. This test simulates that by having the mock return an
+    // empty array from the destinations select, exactly as the real DB would after
+    // filtering out nulls — the handler must still produce 401, not 500.
+    const db = {
+      select: vi.fn().mockImplementation(() => ({
+        from: vi.fn().mockImplementation(() => ({
+          where: vi.fn().mockResolvedValue([]), // SQL filter excluded the revoked row
+        })),
+      })),
+      insert: vi.fn(),
+    };
+    const handler = getTriggerHandler(db);
+    const req = mockReq({
+      headers: { authorization: 'Bearer valid-token-123' },
+      body: { triggerType: 'corpus-change', pipelineId: 'pipe-001', metadata: {} },
+    });
+    const res = mockRes();
+
+    await handler?.(req, res, () => {});
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    // The insert (event buffering) must NOT have been called — we never got past auth.
+    expect(db.insert).not.toHaveBeenCalled();
   });
 
   it('returns 202 and event_id when token matches destination secret', async () => {

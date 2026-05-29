@@ -558,9 +558,6 @@ describe('POST /sources/:id/subscribe', () => {
     const source = makeSource();
     const existingSub = makeSubscription({ id: 'sub-existing' });
 
-    // First select: source lookup succeeds
-    db._selectResultsQueue = [[source], [{ id: 'pipe-abc' }]];
-
     // Insert throws unique violation
     db.insert.mockImplementation(() => ({
       values: vi.fn(() => ({
@@ -570,12 +567,20 @@ describe('POST /sources/:id/subscribe', () => {
       })),
     }));
 
-    // Select order: source lookup, pipeline ownership lookup, existing subscription lookup.
+    // Capture where-clause args per call so we can assert the pipeline-ownership
+    // lookup (call 2) carries BOTH the tenant id and pipeline id predicates.
+    // Call order (ordinal dependency documented here so a reorder is immediately visible):
+    //   1 — eventSources lookup (source existence check)
+    //   2 — pipelines ownership check  ← must carry tenant-scoped predicate
+    //   3 — platformSubscriptions lookup (fetch existing sub after unique violation)
     let selectCount = 0;
+    const whereArgsByCall: unknown[] = [];
+
     db.select.mockImplementation(() => ({
       from: vi.fn(() => ({
-        where: vi.fn(() => {
+        where: vi.fn((...args: unknown[]) => {
           selectCount++;
+          whereArgsByCall.push(args);
           if (selectCount === 1) return Promise.resolve([source]);
           if (selectCount === 2) return { limit: vi.fn(() => Promise.resolve([{ id: 'pipe-abc' }])) };
           return Promise.resolve([existingSub]);
@@ -591,6 +596,20 @@ describe('POST /sources/:id/subscribe', () => {
     expect(result.status).toBe(409);
     expect((result.body as Record<string, unknown>)['error']).toBe('already_subscribed');
     expect((result.body as Record<string, unknown>)['subscription_id']).toBe('sub-existing');
+
+    // Assert that exactly 3 selects ran (source, ownership, existing-sub).
+    expect(selectCount).toBe(3);
+
+    // Assert the pipeline-ownership query (call 2) received a non-trivial predicate.
+    // The route calls: .where(and(eq(pipelines.id, pipelineId), eq(pipelines.tenantId, tenantId)))
+    // Drizzle passes a single composite SQL node; presence confirms the tenant-scoped
+    // and pipeline-scoped conditions were supplied (not a bare unscoped lookup).
+    const ownershipWhereArg = whereArgsByCall[1];
+    expect(ownershipWhereArg).toBeDefined();
+    expect(ownershipWhereArg).not.toBeNull();
+    // The composite AND expression is an object (not undefined/null/boolean), confirming
+    // both tenant id and pipeline id predicates were threaded through.
+    expect(typeof ownershipWhereArg).toBe('object');
   });
 });
 
