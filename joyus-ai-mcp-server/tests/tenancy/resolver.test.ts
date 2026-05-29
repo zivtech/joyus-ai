@@ -35,6 +35,22 @@ function makeDb(resultSets: TenantMembership[][]) {
   return db;
 }
 
+// A membership DB whose lookups always reject — used to assert fail-closed
+// behavior (503) on transient DB outages.
+function makeFailingDb() {
+  return {
+    select: vi.fn().mockImplementation(() => ({
+      from: vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockImplementation(() => ({
+          limit: vi.fn().mockImplementation(async () => {
+            throw new Error('connection refused');
+          }),
+        })),
+      })),
+    })),
+  };
+}
+
 afterEach(() => {
   vi.unstubAllEnvs();
 });
@@ -81,7 +97,10 @@ describe('tenant resolver', () => {
   });
 
   it('allows an explicitly requested tenant when a membership exists', async () => {
+    // Operator lookup runs first (no operator row), then the direct-membership
+    // lookup for the requested tenant succeeds.
     const db = makeDb([
+      [],
       [membership({ tenantId: 'tenant-member', role: 'member' })],
     ]);
 
@@ -98,6 +117,7 @@ describe('tenant resolver', () => {
   });
 
   it('allows operators to resolve any explicitly requested tenant', async () => {
+    // Operator lookup runs first and short-circuits the direct-membership check.
     const db = makeDb([
       [membership({ tenantId: 'operator-home', role: 'operator' })],
     ]);
@@ -111,6 +131,55 @@ describe('tenant resolver', () => {
       tenantId: 'tenant-any',
       role: 'operator',
       source: 'operator',
+    });
+  });
+
+  it('denies a member requesting a tenant they do not belong to even when operator rows exist for other users', async () => {
+    // The actor has no operator membership of their own and no direct
+    // membership in the requested tenant. Operator rows belonging to OTHER
+    // users must never widen this actor's access — the per-user operator
+    // lookup returns empty, and the direct-membership lookup returns empty.
+    const db = makeDb([
+      [], // findOperatorMembership(actor) → no operator membership for this user
+      [], // findDirectMembership(actor, requested) → not a member of this tenant
+    ]);
+
+    await expect(
+      resolveTenantContextForUser('member-user', {
+        db,
+        requestedTenantId: 'tenant-not-mine',
+      }),
+    ).rejects.toMatchObject({
+      status: 403,
+      code: 'tenant_forbidden',
+    });
+  });
+
+  it('fails closed with 503 when the default-membership lookup errors', async () => {
+    const db = makeFailingDb();
+
+    await expect(
+      resolveTenantContextForUser('user-1', {
+        db,
+        lookupDefaultTenant: true,
+      }),
+    ).rejects.toMatchObject({
+      status: 503,
+      code: 'tenant_lookup_unavailable',
+    });
+  });
+
+  it('fails closed with 503 when an explicit-tenant lookup errors', async () => {
+    const db = makeFailingDb();
+
+    await expect(
+      resolveTenantContextForUser('user-1', {
+        db,
+        requestedTenantId: 'tenant-x',
+      }),
+    ).rejects.toMatchObject({
+      status: 503,
+      code: 'tenant_lookup_unavailable',
     });
   });
 
@@ -158,6 +227,36 @@ describe('tenant resolver', () => {
       source: 'api_key',
     });
     expect(req.tenantContext?.tenantId).toBe('tenant-from-api-key');
+  });
+
+  it('rejects an API-key request that explicitly asks for a different tenant', async () => {
+    const req = {
+      apiKeyRecord: { id: 'key-1' },
+      tenantId: 'tenant-from-api-key',
+      userId: 'external-user-1',
+    } as unknown as Request;
+
+    await expect(
+      resolveTenantContext(req, { requestedTenantId: 'tenant-other' }),
+    ).rejects.toMatchObject({
+      status: 403,
+      code: 'tenant_forbidden',
+    });
+  });
+
+  it('keeps the API-key fast-path when the explicit request matches the key tenant', async () => {
+    const req = {
+      apiKeyRecord: { id: 'key-1' },
+      tenantId: 'tenant-from-api-key',
+      userId: 'external-user-1',
+    } as unknown as Request;
+
+    const context = await resolveTenantContext(req, { requestedTenantId: 'tenant-from-api-key' });
+
+    expect(context).toMatchObject({
+      tenantId: 'tenant-from-api-key',
+      source: 'api_key',
+    });
   });
 
   it('rejects missing authenticated user context', async () => {

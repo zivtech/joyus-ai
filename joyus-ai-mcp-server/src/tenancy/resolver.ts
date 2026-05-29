@@ -1,4 +1,4 @@
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Request, Response } from 'express';
 
 import { tenantMemberships, type TenantMembership, type TenantRole } from '../db/schema.js';
@@ -96,6 +96,16 @@ export function canAccessTenantFromEnvironment(userId: string, tenantId: string)
   return Boolean(allowedTenants && allowedTenants.has(tenantId));
 }
 
+/**
+ * Synchronous tenant self/allowlist access check shared by callers that cannot
+ * perform a membership DB lookup (e.g. the exports service). A user may always
+ * access their own tenant; otherwise the environment allowlist applies.
+ */
+export function canAccessTenant(userId: string, tenantId: string): boolean {
+  if (tenantId === userId) return true;
+  return canAccessTenantFromEnvironment(userId, tenantId);
+}
+
 function asMembershipDb(db: unknown): TenantMembershipLookupDb | null {
   if (!db || typeof db !== 'object' || !('select' in db)) return null;
   return db as TenantMembershipLookupDb;
@@ -113,7 +123,7 @@ async function findDefaultMembership(
   return membership ?? null;
 }
 
-async function findMembershipOrOperator(
+async function findDirectMembership(
   db: TenantMembershipLookupDb,
   userId: string,
   requestedTenantId: string,
@@ -121,15 +131,7 @@ async function findMembershipOrOperator(
   const [membership] = await db
     .select()
     .from(tenantMemberships)
-    .where(
-      and(
-        eq(tenantMemberships.userId, userId),
-        or(
-          eq(tenantMemberships.tenantId, requestedTenantId),
-          eq(tenantMemberships.role, 'operator'),
-        ),
-      ),
-    )
+    .where(and(eq(tenantMemberships.userId, userId), eq(tenantMemberships.tenantId, requestedTenantId)))
     .limit(1);
   return membership ?? null;
 }
@@ -196,7 +198,10 @@ export async function resolveTenantContextForUser(
           };
         }
       } catch {
-        return { actorUserId, tenantId: actorUserId, source: 'self' };
+        // Fail closed: a default-membership lookup error must not silently
+        // downgrade the actor to self-scope (which could be the wrong tenant).
+        // Mirror the explicit-tenant path and surface a 503.
+        throw new TenantResolutionError(503, 'tenant_lookup_unavailable', 'Tenant authorization lookup failed');
       }
     }
 
@@ -213,16 +218,31 @@ export async function resolveTenantContextForUser(
 
   if (membershipDb) {
     try {
-      const membership = await findMembershipOrOperator(membershipDb, actorUserId, requestedTenantId);
+      // Operator superpower is an explicit, named branch: an operator (any
+      // tenant) may resolve any requested tenant. Checked first so the
+      // authorization widening can never be silently dropped by a future edit.
+      const operatorMembership = await findOperatorMembership(membershipDb, actorUserId);
+      if (operatorMembership) {
+        return {
+          actorUserId,
+          tenantId: requestedTenantId,
+          role: operatorMembership.role,
+          source: 'operator',
+        };
+      }
+
+      // Otherwise the actor must hold a direct membership in the requested tenant.
+      const membership = await findDirectMembership(membershipDb, actorUserId, requestedTenantId);
       if (membership) {
         return {
           actorUserId,
           tenantId: requestedTenantId,
           role: membership.role,
-          source: membership.role === 'operator' ? 'operator' : 'membership',
+          source: 'membership',
         };
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof TenantResolutionError) throw error;
       throw new TenantResolutionError(503, 'tenant_lookup_unavailable', 'Tenant authorization lookup failed');
     }
   }
@@ -268,7 +288,27 @@ export async function resolveTenantContext(
   req: Request,
   options: ResolveTenantRequestOptions = {},
 ): Promise<TenantContext> {
+  // Supported actor sources: Layer-2 MCP user auth (req.mcpUser) takes
+  // precedence; otherwise the Layer-1 API-key fast-path applies. Every caller
+  // populates req.mcpUser before reaching the resolver, so there is no
+  // session-only path here.
   if (!req.mcpUser?.id && req.apiKeyRecord && req.tenantId) {
+    const requestedTenantId =
+      normalizeTenantId(options.requestedTenantId) ?? requestedTenantFromRequest(req, options);
+    // Fail closed on a conflicting explicit tenant request: the API key is
+    // bound to a single tenant, so an explicit request for a different tenant
+    // must be rejected rather than silently ignored.
+    if (requestedTenantId && requestedTenantId !== req.tenantId) {
+      throw new TenantResolutionError(
+        403,
+        'tenant_forbidden',
+        `API key is scoped to tenant ${req.tenantId}; requested tenant ${requestedTenantId} is not permitted`,
+      );
+    }
+    // actorUserId is intentionally optional here: an API-key-only context
+    // (Layer-1 auth without a validated user JWT) has no end-user actor, so
+    // req.userId may be undefined. TenantContext.actorUserId is typed optional
+    // and audit writers tolerate a missing actor for these contexts.
     const context: TenantContext = {
       actorUserId: req.userId,
       tenantId: req.tenantId,
@@ -278,7 +318,7 @@ export async function resolveTenantContext(
     return context;
   }
 
-  const actorUserId = req.mcpUser?.id ?? req.session?.userId;
+  const actorUserId = req.mcpUser?.id;
   const context = await resolveTenantContextForUser(actorUserId, {
     ...options,
     requestedTenantId: options.requestedTenantId ?? requestedTenantFromRequest(req, options),

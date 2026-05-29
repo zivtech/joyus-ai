@@ -100,9 +100,14 @@ function requestedTenantIdFromInput(input: Record<string, unknown>): string | nu
 
 async function resolveToolTenantId(userId: string, input: Record<string, unknown>): Promise<string> {
   const requestedTenantId = requestedTenantIdFromInput(input);
+  // Pass db + lookupDefaultTenant unconditionally so a caller with a default
+  // membership but no explicit tenant_id resolves to that membership — matching
+  // the HTTP middleware path (orchestrator/middleware/tenant.ts). Callers with
+  // no membership still fall back to self-scope inside the resolver.
   const tenantContext = await resolveTenantContextForUser(userId, {
     requestedTenantId,
-    db: requestedTenantId ? db : undefined,
+    db,
+    lookupDefaultTenant: true,
   });
 
   if (!tenantContext.tenantId) {

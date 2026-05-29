@@ -1,5 +1,5 @@
 /**
- * Event Adapter — Admin Panel Routes (WP12)
+ * Event Adapter — Admin Panel Routes
  *
  * Minimal, embedded web-based admin panel served at /event-adapter/admin.
  * Server-rendered HTML using template literals — no npm templating dependency.
