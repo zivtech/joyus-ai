@@ -14,7 +14,12 @@ Create first-class tenant and membership tables while preserving existing single
 ## Scope
 
 - Add `tenants`, `tenant_memberships`, and `tenant_access_audit`.
-- Export the schemas through `joyus-ai-mcp-server/src/db/schemas.ts`.
+- Enforce "at most one active primary membership per user" (FR-004) with a
+  PARTIAL unique index `UNIQUE (user_id) WHERE is_primary AND status = 'active'`,
+  not a plain unique index. If the target Postgres/Drizzle setup cannot express
+  the partial index, fall back to documented app-level enforcement plus a test
+  that asserts a second active primary membership is rejected.
+- Export the schemas through `joyus-ai-mcp-server/src/db/schemas.ts` (the aggregator registry; `db/schema.ts` is the core schema module the aggregator consumes).
 - Generate a Drizzle migration.
 - Add idempotent compatibility seeding where each current user gets a primary membership with `tenantId === userId`.
 - Add an optional helper to import `EXPORT_TENANT_ALLOWLIST` into memberships.

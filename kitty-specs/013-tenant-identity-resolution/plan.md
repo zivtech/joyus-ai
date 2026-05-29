@@ -64,8 +64,8 @@ joyus-ai-mcp-server/
 |   +-- auth/
 |   |   +-- tenant-context.ts
 |   |   +-- tenant-context.test.ts
-|   +-- db/schemas.ts
-|   +-- db/schema.ts
+|   +-- db/schemas.ts   # aggregator (registry that combines all domain schemas)
+|   +-- db/schema.ts    # core schema module (consumed by the aggregator)
 |   +-- exports/
 |   +-- content/mediation/
 |   +-- pipelines/
@@ -143,5 +143,5 @@ The compatibility migration makes current behavior equivalent before route ports
 
 1. `npm run typecheck` or equivalent TypeScript check in `joyus-ai-mcp-server/`.
 2. Targeted vitest suites for auth, exports, content mediation, pipelines, orchestrator, and event adapter.
-3. `rg -n "x-tenant-id|EXPORT_TENANT_ALLOWLIST|EXPORT_ALLOW_ANY_TENANT|userId === tenantId|tenantId = userId|req.mcpUser\\.id"` confirms remaining matches are tests, docs, or explicit compatibility comments.
+3. Canonical acceptance grep (identical to `quickstart.md` step 3): `rg -n "x-tenant-id|EXPORT_TENANT_ALLOWLIST|EXPORT_ALLOW_ANY_TENANT|userId === tenantId|tenantId = userId|req.mcpUser\\.id" joyus-ai-mcp-server/src joyus-ai-mcp-server/tests kitty-specs/013-tenant-identity-resolution` confirms remaining matches are tests, docs, or explicit compatibility comments.
 4. `scripts/check-client-abstraction.sh` passes from repository root.
