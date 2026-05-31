@@ -6,12 +6,9 @@
   "scripts": {
     "spike": "tsx run-spike.ts"
   },
-  "dependencies": {
-    "headroom-ai": "TODO-pin-exact-version"
-  },
   "devDependencies": {
     "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   },
-  "comment": "Pin headroom-ai to the exact version used (C-001) and record it in HEADROOM_VERSION (lib/headroom-client.ts) + the spike report. Add ajv if you choose to validate spike-report.json against the contract schema in-process."
+  "comment": "The harness talks to the local Headroom PROXY over HTTP (lib/headroom-client.ts). Finding: the npm `headroom-ai` package is a thin proxy client (no in-process compression, no retrieve), so it is not a dependency here — the proxy ENGINE (Python headroom-ai 0.22.3) does the work and is the pinned version of record (C-001). Accuracy A/B runs via subagents -> runset/scored.json (see lib/accuracy.ts)."
 }

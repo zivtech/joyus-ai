@@ -3,10 +3,40 @@
 **Mission:** `headroom-mcp-compression-layer-01KSZKMF`
 **Mission Type:** `software-dev`
 **Date:** 2026-05-31
-**Status:** Draft
+**Status:** WP01 complete — **NO_GO** (gate not met); conditional re-evaluation defined as WP01b
 **Planning base branch:** `claude/headroom-compression-spec`
 **Merge target branch:** `claude/headroom-compression-spec` (PR to `main`)
 **Routing decision:** `planning/headroom-evaluation-routing-2026-05-31.md`
+
+## 0. Evaluation Outcome (WP01, 2026-05-31)
+
+**Decision: NO_GO.** Evidence: `eval/headroom-spike/spike-report.json` (schema-valid) +
+`eval/headroom-spike/FINDINGS.md`. WP02–WP05 do **not** proceed (FR-004); they are blocked
+pending the WP01b re-evaluation below.
+
+**Why.** NFR-002 requires ≥50% reduction **at** NFR-001's zero-degradation bar — both at once.
+Headroom's reversible CCR compresses large prose fields ~62% *compress-only* (body dropped to a
+marker) and retrieval restores it **byte-identical** with **zero accuracy loss** — but those two
+results occur in **mutually exclusive states**. For must-read tool outputs the agent retrieves the
+dropped body, so **net tokens ≈ full payload + marker + retrieve-tool overhead (≤ 0% net savings,
+measured ≈ −56%)**. ≥50%-at-zero-degradation was never achieved simultaneously.
+
+**The real gate (now WP01b):** `expected_savings ≈ compress_only × (1 − retrieval_rate)`. The
+retrieval rate is **unmeasured**; the WP01 suite was 100% must-read single-shot (worst case). CCR
+nets positive only for **low-retrieval-rate** payloads (large outputs mostly skimmed) or
+**read-once/reference-many** (one retrieval amortized across turns). Measuring that on realistic
+multi-turn traces is the precondition for any GO.
+
+**Findings that revise the original assumptions** (detail in FINDINGS.md):
+- **No in-process library mode in Node** — npm `headroom-ai` is a thin proxy client; the engine is
+  the Python proxy. R1 is forced to **proxy** mode.
+- **CCR reversibility is ephemeral** — in-memory store, 5-min TTL, LRU-evicted. FR-006 "retrievable
+  on demand" is not durably satisfied by Headroom's store → use our own per-tenant Postgres store
+  (R2/WP03) if pursued.
+- **Tenant isolation** is content-addressed/cross-tenant by default; needs per-tenant prefix/backend.
+- A **97% lossy row-drop path** exists (no CCR backing in the standard install) and must be bypassed.
+
+The original spec below is retained as written; Section 0 governs.
 
 ## 1. Overview
 

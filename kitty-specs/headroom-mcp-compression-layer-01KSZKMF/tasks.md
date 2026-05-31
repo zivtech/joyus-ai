@@ -9,6 +9,12 @@
 > unless WP01 records `decision = go`** (FR-004). If WP01 returns `no_go`, the
 > mission ends here — by design. The implementation target is
 > `joyus-ai/joyus-ai-mcp-server`; these packages are the blueprint promoted there.
+>
+> **WP01 outcome (2026-05-31): NO_GO.** Net savings on must-read tool outputs are ≤ 0%
+> (the agent retrieves the dropped body → it re-enters context); ≥50%-at-zero-degradation
+> was not demonstrated. See `spec.md` §0 and `eval/headroom-spike/FINDINGS.md`. **WP02–WP05
+> are BLOCKED.** A re-gate, **WP01b — Retrieval-Rate Spike**, defines the one measurement
+> (retrieval rate on realistic multi-turn traces) that could flip the decision.
 
 ## Subtask Index
 
@@ -61,7 +67,22 @@ state an unambiguous `go`/`no_go` with disclosed sample size and variance.
 - [ ] T006 Accuracy A/B: uncompressed vs compressed; accuracyDelta per kind (WP01)
 - [ ] T007 Emit spike-report.md + SpikeReport JSON; go/no-go decision (WP01)
 
+## WP01b — Retrieval-Rate Spike (RE-GATE) · `tasks/WP01b-retrieval-rate-spike.md`
+
+**Goal:** Measure the variable WP01 left open — retrieval rate / fraction-of-content-read on
+realistic multi-turn agent traces — and compute **realized net** savings (not compress-only).
+**Priority:** P0 (re-gates everything). **Dependencies:** WP01.
+**Independent test:** a SpikeReport reporting net (post-retrieval) savings per family with the
+retrieval-rate distribution disclosed, and an unambiguous go/no_go on net ≥ 50% at accuracyDelta = 0.
+
+- [ ] T101 Capture/assemble realistic multi-turn traces (retrieval observed, not assumed)
+- [ ] T102 Wire CCR in the proxying path (`/v1/messages`) with `headroom_retrieve` auto-injected
+- [ ] T103 Compute realized net savings + accuracy A/B over the same traces (NFR-007)
+- [ ] T104 Re-emit SpikeReport + go/no_go (own Postgres store for durable, isolated reversibility)
+
 ## WP02 — Adapter Boundary + Config · `tasks/WP02-adapter-boundary.md`
+
+> **BLOCKED** by WP01 no_go (FR-004). Unblocks only on a WP01b `go`.
 
 **Goal:** The single, removable boundary to Headroom: pinned version, kill switch,
 fail-open. **Priority:** P1. **Dependencies:** WP01 (= go).
@@ -124,15 +145,17 @@ any cross-tenant leak; a runbook demonstrates clean kill-switch removal.
 ## Dependency graph
 
 ```
-WP01 (gate) ──► WP02 ──► WP03 ──► WP05
-                  └──────► WP04 ──┘
+WP01 (gate) = NO_GO ──► WP01b (re-gate, retrieval rate) ──► [if go] WP02 ──► WP03 ──► WP05
+                                                                      └──────► WP04 ──┘
 ```
 
-WP02 unlocks WP03 and WP04 (both depend on WP02; WP04 also on WP03). WP05 depends on
-WP03 + WP04. Nothing runs before WP01 = go.
+WP01 returned no_go, so WP02–WP05 are **blocked**. WP01b is the re-gate: it measures realized
+net savings under real retrieval. Only a WP01b `go` unblocks WP02 (which unlocks WP03/WP04; WP05
+depends on WP03+WP04).
 
 ## MVP scope
 
-**WP01 alone.** It is the decision. If it returns `go`, WP02→WP05 deliver the
-integration. If `no_go`, the mission stops with a cheap, documented answer — the
-intended outcome of a gate-first plan.
+**WP01 was the decision; it returned `no_go` — the intended cheap outcome of a gate-first plan.**
+The premise (≥50% lossless/reversible savings on content_mcp) does not hold for must-read tool
+outputs. WP01b is the *only* path forward: prove net savings under measured retrieval, or close
+the mission. No integration code (WP02–WP05) is justified until WP01b records `go`.

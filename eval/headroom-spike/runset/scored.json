@@ -1,0 +1,42 @@
+{
+  "per_kind_accuracy": {
+    "content_mcp": {
+      "uncompressedScore": 1.0,
+      "compressedScore": 1.0,
+      "accuracyDelta": 0.0,
+      "sampleSize": 10,
+      "verbatimAgree": 10
+    },
+    "rag_chunk": {
+      "uncompressedScore": 1.0,
+      "compressedScore": 1.0,
+      "accuracyDelta": 0.0,
+      "sampleSize": 6,
+      "verbatimAgree": 6
+    }
+  },
+  "savings": {
+    "content_mcp": {
+      "savingsMean": 0.6214,
+      "savingsStdDev": 0.0256,
+      "sampleSize": 5
+    },
+    "rag_chunk": {
+      "savingsMean": 0.6061,
+      "savingsStdDev": 0.0125,
+      "sampleSize": 3
+    }
+  },
+  "reversibilityRate": 1.0,
+  "latency_p95_ms": 3.3,
+  "latency_median_ms": 3.1,
+  "net_economics": {
+    "model": "single-shot, must-read, 1 retrieval",
+    "tool_overhead_tokens": 68,
+    "net_savings_must_read": {
+      "content_mcp": -0.5634,
+      "rag_chunk": -0.5898
+    },
+    "note": "net = 1 - (compressed + retrieved_body + retrieve_tool_overhead)/full. Negative = CCR costs MORE than sending full payload when the agent must read the dropped content. Real savings = compress_only * (1 - retrieval_rate); retrieval_rate UNMEASURED."
+  }
+}

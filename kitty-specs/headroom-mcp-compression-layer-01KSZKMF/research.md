@@ -1,5 +1,13 @@
 # Phase 0 Research: Headroom MCP Compression Layer
 
+> **WP01 empirical corrections (2026-05-31, see `eval/headroom-spike/FINDINGS.md`):**
+> **R1** — in Node there is no in-process library mode (npm `headroom-ai` is a proxy client);
+> recommended mode is forced to **proxy**. **R4** — CCR reversibility is real and byte-identical
+> but **ephemeral** (in-memory, 5-min TTL); durable retrieval needs our own persistent per-tenant
+> store, reinforcing **R2**'s Postgres fallback. Headline savings are **compress-only**; net
+> savings after the retrieval that accuracy requires are ≤ 0% on must-read outputs — the true
+> gate is retrieval rate (WP01b).
+
 Resolves **planning** unknowns (approach, integration surface, methodology).
 **Empirical** unknowns (actual savings %, actual accuracy delta) are deliberately
 NOT resolved here — proving them is the job of WP01. This document fixes *how* we

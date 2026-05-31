@@ -1,0 +1,6 @@
+{
+  "id": "cm-generate-001",
+  "kind": "content_mcp",
+  "synthetic": true,
+  "content": "{\"id\": \"cm-generate-001\", \"title\": \"Generated summary: seasonal staffing plan\", \"body\": \"Peak season runs from mid-November through early January, during which temporary headcount scales to 140 percent of the baseline workforce. Permanent staff are cross-trained on packing stations and shift starts are staggered in 30 minute increments to smooth the morning ramp. The plan caps mandatory overtime at 10 hours per week and guarantees a minimum of two consecutive days off in every seven-day period. Seasonal hires complete a four-hour safety orientation before their first shift on the floor.\", \"tool\": \"content_generate\"}"
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "cm-getitem-001",
+    "kind": "content_mcp",
+    "tokens_before": 152,
+    "tokens_after": 51,
+    "reduction": 0.6645,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "cm-getitem-002",
+    "kind": "content_mcp",
+    "tokens_before": 148,
+    "tokens_after": 55,
+    "reduction": 0.6284,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "cm-getitem-003",
+    "kind": "content_mcp",
+    "tokens_before": 138,
+    "tokens_after": 52,
+    "reduction": 0.6232,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "cm-generate-001",
+    "kind": "content_mcp",
+    "tokens_before": 137,
+    "tokens_after": 55,
+    "reduction": 0.5985,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "rag-001",
+    "kind": "rag_chunk",
+    "tokens_before": 128,
+    "tokens_after": 52,
+    "reduction": 0.5938,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "rag-002",
+    "kind": "rag_chunk",
+    "tokens_before": 138,
+    "tokens_after": 55,
+    "reduction": 0.6014,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "rag-003",
+    "kind": "rag_chunk",
+    "tokens_before": 138,
+    "tokens_after": 52,
+    "reduction": 0.6232,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  },
+  {
+    "id": "cm-getitem-004",
+    "kind": "content_mcp",
+    "tokens_before": 130,
+    "tokens_after": 53,
+    "reduction": 0.5923,
+    "ccr_marker": true,
+    "reversible_byte_identical": true
+  }
+]

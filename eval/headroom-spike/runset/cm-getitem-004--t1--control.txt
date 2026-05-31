@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: After how many days without an update is an article flagged as stale? Answer with just the number.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "cm-getitem-004", "title": "Knowledge base style rules", "body": "Each article opens with the direct answer, then the steps, then the caveats. Procedures use numbered lists and comparisons use tables. Related articles are linked only at the end, never mid-paragraph. An article is considered stale and flagged for review after 180 days without an update. The maximum recommended article length is 1200 words; longer topics are split into a series. Every article names a single accountable owner in its metadata.", "tool": "content_get_item"}
