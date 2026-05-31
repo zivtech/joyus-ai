@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-05-31T18:09:43.713505+00:00",
+  "friendly_name": "headroom mcp compression layer",
+  "mission_id": "01KSZKMF6BFTC5BW225ZET3WWW",
+  "mission_number": null,
+  "mission_slug": "headroom-mcp-compression-layer-01KSZKMF",
+  "mission_type": "software-dev",
+  "slug": "headroom-mcp-compression-layer-01KSZKMF",
+  "target_branch": "claude/headroom-compression-spec",
+  "vcs": "git",
+  "source_description": "Evaluate-then-integrate Headroom (chopratejas/headroom, Apache-2.0) as a token-cost compression layer for joyus-ai-mcp-server. Promoted from joyus-ai-internal (planning/headroom-evaluation-routing-2026-05-31.md) per governance-hub workflow; implementation target is joyus-ai-mcp-server.",
+  "promoted_from": "joyus-ai-internal"
+}

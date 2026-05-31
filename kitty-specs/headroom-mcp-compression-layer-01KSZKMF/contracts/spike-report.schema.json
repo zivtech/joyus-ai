@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WP01 Spike Report",
+  "description": "Go/no-go evidence artifact for the Headroom compression evaluation gate (FR-003).",
+  "type": "object",
+  "required": ["perType", "reversibilityRate", "tenantIsolationFit", "addedLatencyP95Ms", "recommendedMode", "decision", "rationale"],
+  "properties": {
+    "perType": {
+      "type": "object",
+      "description": "Keyed by payload kind. Sample size + variance required (NFR-007).",
+      "patternProperties": {
+        "^(content_mcp|rag_chunk|executor_output)$": {
+          "type": "object",
+          "required": ["savingsMean", "savingsStdDev", "accuracyDelta", "sampleSize"],
+          "properties": {
+            "savingsMean": { "type": "number", "minimum": 0, "maximum": 1 },
+            "savingsStdDev": { "type": "number", "minimum": 0 },
+            "accuracyDelta": { "type": "number", "description": "compressed minus uncompressed task correctness; 0 required to pass (NFR-001)" },
+            "sampleSize": { "type": "integer", "minimum": 1 }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "reversibilityRate": { "type": "number", "minimum": 0, "maximum": 1, "description": "1.0 required to pass (NFR-004)" },
+    "tenantIsolationFit": { "enum": ["supported", "unsupported"], "description": "drives R2 store-backend fallback" },
+    "addedLatencyP95Ms": { "type": "number", "minimum": 0, "description": "vs <=150ms (NFR-003)" },
+    "recommendedMode": { "enum": ["library", "proxy"] },
+    "decision": { "enum": ["go", "no_go"] },
+    "primaryTarget": { "enum": ["content_mcp", "rag_chunk", "executor_output"], "description": "named target for WP04 when decision=go" },
+    "rationale": { "type": "string", "minLength": 1 }
+  }
+}
