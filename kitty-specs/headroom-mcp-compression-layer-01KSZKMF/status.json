@@ -1,14 +1,14 @@
 {
-  "event_count": 11,
-  "last_event_id": "01KSZYRPB8CTN7Y5N74PSN92SF",
-  "materialized_at": "2026-05-31T21:24:16.360546+00:00",
+  "event_count": 13,
+  "last_event_id": "01KSZZP1NZ11CNGKKT7P14MWXG",
+  "materialized_at": "2026-05-31T21:40:18.239805+00:00",
   "mission_number": "",
   "mission_slug": "headroom-mcp-compression-layer-01KSZKMF",
   "mission_type": "software-dev",
   "summary": {
     "approved": 0,
     "blocked": 4,
-    "canceled": 0,
+    "canceled": 1,
     "claimed": 0,
     "done": 1,
     "for_review": 0,
@@ -26,10 +26,10 @@
     },
     "WP01b": {
       "actor": "claude",
-      "force_count": 1,
-      "lane": "planned",
-      "last_event_id": "01KSZYRPB8CTN7Y5N74PSN92SF",
-      "last_transition_at": "2026-05-31T21:24:16.360546+00:00"
+      "force_count": 2,
+      "lane": "canceled",
+      "last_event_id": "01KSZZP14M93BZ9Q5DFE323CC5",
+      "last_transition_at": "2026-05-31T21:40:17.684078+00:00"
     },
     "WP02": {
       "actor": "claude",
@@ -58,6 +58,13 @@
       "lane": "blocked",
       "last_event_id": "01KSZYRDMSN56M5ETNPHGAKZW8",
       "last_transition_at": "2026-05-31T21:24:07.449526+00:00"
+    },
+    "WP06": {
+      "actor": "claude",
+      "force_count": 1,
+      "lane": "planned",
+      "last_event_id": "01KSZZP1NZ11CNGKKT7P14MWXG",
+      "last_transition_at": "2026-05-31T21:40:18.239805+00:00"
     }
   }
 }

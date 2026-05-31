@@ -6,7 +6,7 @@
 > but **ephemeral** (in-memory, 5-min TTL); durable retrieval needs our own persistent per-tenant
 > store, reinforcing **R2**'s Postgres fallback. Headline savings are **compress-only**; net
 > savings after the retrieval that accuracy requires are ≤ 0% on must-read outputs — the true
-> gate is retrieval rate (WP01b).
+> gate is retrieval rate (WP06).
 
 Resolves **planning** unknowns (approach, integration surface, methodology).
 **Empirical** unknowns (actual savings %, actual accuracy delta) are deliberately

@@ -3,7 +3,7 @@
 **Mission:** `headroom-mcp-compression-layer-01KSZKMF`
 **Mission Type:** `software-dev`
 **Date:** 2026-05-31
-**Status:** WP01 complete — **NO_GO** (gate not met); conditional re-evaluation defined as WP01b
+**Status:** WP01 complete — **NO_GO** (gate not met); conditional re-evaluation defined as WP06
 **Planning base branch:** `claude/headroom-compression-spec`
 **Merge target branch:** `claude/headroom-compression-spec` (PR to `main`)
 **Routing decision:** `planning/headroom-evaluation-routing-2026-05-31.md`
@@ -12,7 +12,7 @@
 
 **Decision: NO_GO.** Evidence: `eval/headroom-spike/spike-report.json` (schema-valid) +
 `eval/headroom-spike/FINDINGS.md`. WP02–WP05 do **not** proceed (FR-004); they are blocked
-pending the WP01b re-evaluation below.
+pending the WP06 re-evaluation below.
 
 **Why.** NFR-002 requires ≥50% reduction **at** NFR-001's zero-degradation bar — both at once.
 Headroom's reversible CCR compresses large prose fields ~62% *compress-only* (body dropped to a
@@ -21,7 +21,7 @@ results occur in **mutually exclusive states**. For must-read tool outputs the a
 dropped body, so **net tokens ≈ full payload + marker + retrieve-tool overhead (≤ 0% net savings,
 measured ≈ −56%)**. ≥50%-at-zero-degradation was never achieved simultaneously.
 
-**The real gate (now WP01b):** `expected_savings ≈ compress_only × (1 − retrieval_rate)`. The
+**The real gate (now WP06):** `expected_savings ≈ compress_only × (1 − retrieval_rate)`. The
 retrieval rate is **unmeasured**; the WP01 suite was 100% must-read single-shot (worst case). CCR
 nets positive only for **low-retrieval-rate** payloads (large outputs mostly skimmed) or
 **read-once/reference-many** (one retrieval amortized across turns). Measuring that on realistic
