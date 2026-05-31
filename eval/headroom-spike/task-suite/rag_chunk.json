@@ -1,0 +1,16 @@
+{
+  "kind": "rag_chunk",
+  "note": "Known-answer tasks over retrieved chunks. Probe facts that lossy compression might erase.",
+  "tasks": [
+    {
+      "id": "rc-t1",
+      "prompt": "Based only on the provided chunk, are retained records shared across tenant boundaries? Answer Yes or No.",
+      "expected": "No"
+    },
+    {
+      "id": "rc-t2",
+      "prompt": "Based only on the provided chunk, which section number covers data retention?",
+      "expected": "4.2"
+    }
+  ]
+}
