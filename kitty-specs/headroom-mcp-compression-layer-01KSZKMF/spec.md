@@ -3,7 +3,7 @@
 **Mission:** `headroom-mcp-compression-layer-01KSZKMF`
 **Mission Type:** `software-dev`
 **Date:** 2026-05-31
-**Status:** WP01 complete — **NO_GO** (gate not met); conditional re-evaluation defined as WP06
+**Status:** WP01 **NO_GO**; WP06 re-gate **NO_GO** (confirmed on the real proxying path). WP02–WP05 remain blocked.
 **Planning base branch:** `claude/headroom-compression-spec`
 **Merge target branch:** `claude/headroom-compression-spec` (PR to `main`)
 **Routing decision:** `planning/headroom-evaluation-routing-2026-05-31.md`
@@ -36,7 +36,27 @@ multi-turn traces is the precondition for any GO.
 - **Tenant isolation** is content-addressed/cross-tenant by default; needs per-tenant prefix/backend.
 - A **97% lossy row-drop path** exists (no CCR backing in the standard install) and must be bypassed.
 
-The original spec below is retained as written; Section 0 governs.
+## 0b. Re-Evaluation Outcome (WP06, 2026-05-31)
+
+**Decision: NO_GO**, sharper than WP01. Evidence: `eval/headroom-spike/wp06-spike-report.json`
+(schema-valid) + `eval/headroom-spike/FINDINGS-WP06.md`, measured **live on the real `/v1/messages`
+proxying path** (the gap WP01 left open — WP01 measured `/v1/compress` + a hand-built curl loop).
+
+**Why.** The reversible compress→retrieve loop the spec/WP01/T102 assume **does not engage on the
+model-facing path** for the priority prose families. Realized **request-level net savings are
+≈11–12%** (« 50% NFR-002). In **16/16** prose tasks the agent could not answer from the compressed
+tool output and attempted to re-fetch the original; **servicing that re-fetch loops indefinitely
+(3/3 payloads, 5 hops, no answer)** — net ≤ 0, reconfirming WP01 on the production path. The
+**documented retrieve endpoint `/v1/retrieve/tool_call` is broken** (`ccr/tool_injection.py:500-503`
+requires 24-hex hashes; Headroom's markers carry 12-hex) — the T102 / `joyus-ai-mcp-server`
+integration fails out of the box. Realistic arrays barely compress (net **+5% / −21%**);
+reference-many amortization is defeated by Headroom's own `PrefixFreezeConfig`; reversibility where
+it exists is ephemeral (5-min TTL) + content-addressed (cross-tenant) → FR-006/FR-007 fail without
+our own store. Conditional-GO threshold (algebra, for a regime Headroom doesn't deliver here):
+net ≥ 50% needs retrieval-fraction f ≤ 0.195 (content_mcp) / 0.175 (rag) AND working partial
+retrieve AND durable per-tenant reversibility. **WP02–WP05 stay blocked (FR-004).**
+
+The original spec below is retained as written; Sections 0 and 0b govern.
 
 ## 1. Overview
 

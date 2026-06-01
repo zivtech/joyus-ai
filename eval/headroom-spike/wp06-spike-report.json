@@ -1,0 +1,24 @@
+{
+  "headroomVersion": "proxy-engine=headroom-ai@0.22.3 (rust _core present); npm-client=headroom-ai@0.1.0",
+  "perType": {
+    "content_mcp": {
+      "savingsMean": 0.122,
+      "savingsStdDev": 0.012,
+      "accuracyDelta": -0.9,
+      "sampleSize": 10
+    },
+    "rag_chunk": {
+      "savingsMean": 0.112,
+      "savingsStdDev": 0.007,
+      "accuracyDelta": -0.667,
+      "sampleSize": 6
+    }
+  },
+  "reversibilityRate": 1.0,
+  "tenantIsolationFit": "unsupported",
+  "addedLatencyP95Ms": 3.3,
+  "recommendedMode": "proxy",
+  "decision": "no_go",
+  "primaryTarget": "content_mcp",
+  "rationale": "WP06 re-gate, measured live on the REAL proxying path (POST /v1/messages with the model in the loop), not WP01's /v1/compress simulation. NO_GO, sharper than WP01. (1) savingsMean here is REALIZED REQUEST-LEVEL net (NFR-002), not compress-only: content_mcp 12.2% / rag_chunk 11.2% mean over the priority prose corpus — far below the 50% bar. The proxy compresses the tool result ~55-61% but that is diluted by fixed prompt overhead AND, decisively, the agent could not answer from the compressed payload in 16/16 prose tasks: it attempted to RE-FETCH the original instead. When the re-fetch is serviced, the proxy re-compresses identically and the agent loops — 3/3 payloads looped all 5 hops without answering (unbounded re-fetch hazard). Either way net <= 0 (re-fetch resends the full payload), reconfirming WP01 on the production path. accuracyDelta (-0.9 / -0.667) records that the compressed-condition answer rate was 0/16; it CONFLATES fact-stripping with answer-refusal and must NOT be read as a calibrated lossy-degradation figure (control itself has exact-match scorer noise, e.g. 'seven' vs '7'). The decision rests on NFR-002 net savings and the broken retrieve path, not on this number. (2) The reversible CCR marker + headroom_retrieve loop the spec/WP01/T102 assume does NOT engage in the model-facing /v1/messages path for prose: <<ccr:...>> markers reliably appear only via the dedicated /v1/compress endpoint. reversibilityRate=1.0 reflects only that GET /v1/retrieve/{hash} round-trips byte-identical where a marker exists (NFR-004, narrow). (3) The documented agent-framework retrieve endpoint /v1/retrieve/tool_call is BROKEN out of the box: parse_tool_call (ccr/tool_injection.py:500-503) requires exactly-24-hex hashes, but the markers Headroom emits carry 12-hex hashes -> the endpoint a T102 / joyus-ai-mcp-server integration is told to call rejects Headroom's own hashes. (4) Realistic arrays barely compress: low_need net +5.2%, must_read net -20.8% (fixed retrieve/tool overhead exceeds the tiny compression); the 76-97% array savings only appear on pathologically-redundant content via the lossy row-drop path (no CCR backing) the spec says to bypass. (5) Reference-many amortization is defeated by Headroom's own PrefixFreezeConfig (force_compress_threshold=0.5), which freezes provider-cached prefixes to protect Anthropic's 90% read discount. (6) tenantIsolationFit=unsupported: the default CCR store is in-memory, content-addressed (cross-tenant dedup), 5-min TTL -> FR-006 durability and FR-007 isolation fail without our own per-tenant Postgres store. addedLatencyP95Ms=3.3 is the per-call compression latency carried from WP01; the operative latency cost in this path is the induced re-fetch round-trips (full extra LLM turns), not the compression call. Conditional-GO threshold (algebra, for the CCR-retrieve regime Headroom does NOT reliably deliver here): net>=50% needs retrieval-fraction f<=0.195 (content_mcp) / f<=0.175 (rag) AND working partial retrieve AND durable per-tenant reversibility -- none of which this path provides. WP02-WP05 remain blocked."
+}
