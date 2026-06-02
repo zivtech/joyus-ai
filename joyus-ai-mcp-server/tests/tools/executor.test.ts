@@ -116,7 +116,11 @@ beforeEach(() => {
 describe('executeTool — ops_ prefix', () => {
   it('routes ops_* tools directly to executeOpsTool', async () => {
     const result = await executeTool('user-1', 'ops_export_excel', { tenant_id: 'user-1' });
-    expect(vi.mocked(executeOpsTool)).toHaveBeenCalledWith('ops_export_excel', { tenant_id: 'user-1' }, { userId: 'user-1', tenantAccessPreResolved: true });
+    expect(vi.mocked(executeOpsTool)).toHaveBeenCalledWith(
+      'ops_export_excel',
+      { tenant_id: 'user-1' },
+      { userId: 'user-1', tenantId: 'user-1', tenantAccessPreResolved: true },
+    );
     expect(result).toEqual({ ops: 'result' });
   });
 });
@@ -136,8 +140,28 @@ describe('executeTool — content_ prefix', () => {
     expect(result).toEqual({ content: 'result' });
   });
 
-  it('uses the shared resolver for explicitly requested tenants', async () => {
-    vi.stubEnv('EXPORT_TENANT_ALLOWLIST', 'user-1:tenant-allowed');
+  it('uses the shared resolver for explicitly requested tenants the actor is a member of', async () => {
+    // First lookup (operator) returns none; second lookup (direct membership)
+    // authorizes the requested tenant. The EXPORT_* env allowlist is no longer
+    // a cross-tenant path for tools, so access must come from membership.
+    let call = 0;
+    vi.mocked(db.select).mockImplementation(() =>
+      chainable(
+        call++ === 0
+          ? []
+          : [
+              {
+                id: 'membership-1',
+                userId: 'user-1',
+                tenantId: 'tenant-allowed',
+                role: 'member',
+                isDefault: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            ],
+      ),
+    );
 
     await executeTool('user-1', 'content_list_sources', {
       tenant_id: 'tenant-allowed',

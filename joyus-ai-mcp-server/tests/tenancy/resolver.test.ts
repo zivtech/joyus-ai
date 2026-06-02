@@ -5,6 +5,7 @@ import type { TenantMembership } from '../../src/db/schema.js';
 import {
   resolveTenantContext,
   resolveTenantContextForUser,
+  tenantIdFromRequest,
   TenantResolutionError,
 } from '../../src/tenancy/resolver.js';
 
@@ -82,17 +83,35 @@ describe('tenant resolver', () => {
     });
   });
 
-  it('allows an explicitly requested tenant from the existing environment allowlist', async () => {
+  it('allows an explicitly requested tenant from the environment allowlist only when opted in', async () => {
     vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'false');
     vi.stubEnv('EXPORT_TENANT_ALLOWLIST', 'user-1:tenant-allowed');
 
     const context = await resolveTenantContextForUser('user-1', {
       requestedTenantId: 'tenant-allowed',
+      allowEnvironmentAllowlist: true,
     });
 
     expect(context).toMatchObject({
       tenantId: 'tenant-allowed',
       source: 'env_allowlist',
+    });
+  });
+
+  it('ignores the environment allowlist when a caller does not opt in', async () => {
+    // The EXPORT_* allowlist is scoped to the exports feature: a non-exports
+    // caller (orchestrator / admin / tools) must not gain cross-tenant access
+    // from it, so without allowEnvironmentAllowlist the request fails closed.
+    vi.stubEnv('EXPORT_ALLOW_ANY_TENANT', 'false');
+    vi.stubEnv('EXPORT_TENANT_ALLOWLIST', 'user-1:tenant-allowed');
+
+    await expect(
+      resolveTenantContextForUser('user-1', {
+        requestedTenantId: 'tenant-allowed',
+      }),
+    ).rejects.toMatchObject({
+      status: 403,
+      code: 'tenant_forbidden',
     });
   });
 
@@ -261,5 +280,32 @@ describe('tenant resolver', () => {
 
   it('rejects missing authenticated user context', async () => {
     await expect(resolveTenantContextForUser(null)).rejects.toBeInstanceOf(TenantResolutionError);
+  });
+});
+
+describe('tenantIdFromRequest', () => {
+  it('preserves an operator platform-wide null instead of collapsing to the user id', () => {
+    // The whole point of the fix: an authorized all-tenants context (tenantId
+    // null) must NOT be coerced back to the actor's user id by a `??` chain.
+    const req = {
+      mcpUser: { id: 'operator-1' },
+      tenantContext: { actorUserId: 'operator-1', tenantId: null, source: 'operator' as const },
+    } as unknown as Request;
+
+    expect(tenantIdFromRequest(req)).toBeNull();
+  });
+
+  it('returns the resolved tenant id when the context carries one', () => {
+    const req = {
+      mcpUser: { id: 'user-1' },
+      tenantContext: { actorUserId: 'user-1', tenantId: 'tenant-7', source: 'membership' as const },
+    } as unknown as Request;
+
+    expect(tenantIdFromRequest(req)).toBe('tenant-7');
+  });
+
+  it('falls back to the authenticated user id only when no context is attached', () => {
+    const req = { mcpUser: { id: 'user-1' } } as unknown as Request;
+    expect(tenantIdFromRequest(req)).toBe('user-1');
   });
 });

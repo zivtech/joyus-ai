@@ -13,6 +13,7 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import type { WebhookEvent } from '../schema.js';
 import { queryEvents, getEventById, replayEvent } from '../services/event-buffer.js';
 import { EventQueryInput } from '../validation.js';
@@ -51,11 +52,11 @@ interface EventSummary {
 // ============================================================
 
 /**
- * Resolve tenant id from the shared tenant context or authenticated MCP user.
- * Returns null when no authenticated user is present.
+ * Resolve tenant id from the shared tenant context. A `null` result means an
+ * operator authorized for platform-wide access (no tenant filter), not "missing".
  */
 function resolveTenantId(req: Request): string | null {
-  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
+  return tenantIdFromRequest(req);
 }
 
 /**

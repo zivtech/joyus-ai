@@ -14,7 +14,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 
 import { inngest } from '../inngest/client.js';
-import { resolveTenantContext, sendTenantResolutionError } from '../tenancy/resolver.js';
+import { resolveTenantContext, sendTenantResolutionError, tenantIdFromRequest } from '../tenancy/resolver.js';
 
 import { validateNoCycle } from './graph/cycle-detector.js';
 import type { DecisionRecorder } from './review/decision.js';
@@ -59,19 +59,7 @@ export interface PipelineRouterDeps {
  * user id for direct route tests that invoke handlers without Express middleware.
  */
 function getTenantId(req: Request): string {
-  if (req.tenantContext?.tenantId) {
-    return req.tenantContext.tenantId;
-  }
-  if (req.tenantId) {
-    return req.tenantId;
-  }
-  if (req.mcpUser?.id) {
-    return req.mcpUser.id;
-  }
-  if (req.session?.userId) {
-    return req.session.userId as string;
-  }
-  return '';
+  return tenantIdFromRequest(req) ?? (req.session?.userId as string | undefined) ?? '';
 }
 
 // Normalizes the two error shapes Drizzle's node-postgres driver can surface:

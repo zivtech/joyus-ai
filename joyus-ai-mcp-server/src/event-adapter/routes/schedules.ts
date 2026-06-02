@@ -16,6 +16,7 @@ import { eq, and, count } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import { eventScheduledTasks } from '../schema.js';
 import {
   validateCronExpression,
@@ -41,7 +42,7 @@ export interface SchedulesRouterDeps {
  * Returns null when no authenticated user is present (platform-admin context).
  */
 function resolveTenantId(req: Request): string | null {
-  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
+  return tenantIdFromRequest(req);
 }
 
 /** Shape returned for each schedule in list/create/update responses. */
