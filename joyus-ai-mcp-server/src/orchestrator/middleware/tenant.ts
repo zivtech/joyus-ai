@@ -13,9 +13,14 @@
  *   tenantId behavior for backward compatibility.
  *
  * Security contract:
- *   tenantId is never read from the request body, query params, or custom
- *   headers for orchestrator routes. It is derived from the verified auth
- *   context and tenant membership state.
+ *   This middleware derives tenantId solely from the verified auth context
+ *   (req.mcpUser) and the user's tenant membership state — it passes no
+ *   header/query tenant selectors to the resolver. Surfaces that DO allow an
+ *   explicit tenant selector (e.g. the pipelines and event-adapter routers pass
+ *   `tenantHeaderNames` / `tenantQueryKeys`) are not a spoofing vector: the
+ *   shared resolver only honors a requested tenant the actor is a member of (or
+ *   an operator for), and otherwise fails closed with 403. A selector can never
+ *   widen access beyond the caller's membership.
  */
 
 import { Request, Response, NextFunction } from 'express';

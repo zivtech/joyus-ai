@@ -137,6 +137,13 @@ export function createEventAdapterRouter(deps?: EventAdapterRouterDeps): Router 
   const router = Router();
 
   if (deps) {
+    // Tenant selection for event-adapter routes: a multi-tenant user may target
+    // a specific tenant via the `x-tenant-id` header or `tenant_id` query param,
+    // and an operator may request the platform-wide view via `?all_tenants=true`.
+    // This is membership-gated — the shared resolver only honors a requested
+    // tenant the actor belongs to (or is an operator for) and otherwise fails
+    // closed with 403, so a selector can never widen access. The EXPORT_*
+    // environment allowlist is intentionally NOT opted into here.
     router.use(async (req: Request, res: Response, next: NextFunction) => {
       try {
         await resolveTenantContext(req, {

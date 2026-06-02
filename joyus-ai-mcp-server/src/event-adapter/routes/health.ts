@@ -12,6 +12,7 @@ import { eq, and, count, sql, gte, lt } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import { webhookEvents, eventScheduledTasks } from '../schema.js';
 import type { SchedulerService } from '../services/scheduler.js';
 
@@ -24,7 +25,7 @@ import type { SchedulerService } from '../services/scheduler.js';
  * Returns null when no authenticated user is present.
  */
 function resolveTenantId(req: Request): string | null {
-  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
+  return tenantIdFromRequest(req);
 }
 
 // ============================================================

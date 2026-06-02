@@ -22,6 +22,7 @@ import { eq, and, or, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import {
   eventSources,
   eventScheduledTasks,
@@ -60,11 +61,10 @@ function escapeHtml(str: string): string {
 
 /**
  * Resolve tenant id from the authenticated tenant context.
- * Returns null only for explicit platform-operator context.
+ * Returns null only for explicit platform-operator context (all-tenants view).
  */
 function resolveTenantId(req: Request): string | null {
-  if (req.tenantContext) return req.tenantContext.tenantId;
-  return req.tenantId ?? null;
+  return tenantIdFromRequest(req);
 }
 
 /**

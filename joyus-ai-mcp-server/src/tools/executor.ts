@@ -123,15 +123,14 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   // --- Direct executors (no OAuth required) ---
 
   if (toolName.startsWith('ops_')) {
-    const requestedTenantId = requestedTenantIdFromInput(input);
-    if (requestedTenantId) {
-      await resolveTenantContextForUser(userId, {
-        requestedTenantId,
-        db,
-      });
-      return executeOpsTool(toolName, input, { userId, tenantAccessPreResolved: true });
-    }
-    return executeOpsTool(toolName, input, { userId });
+    // Resolve tenant through the same shared path as the other tool families.
+    // resolveToolTenantId performs the authoritative, membership-aware
+    // authorization (including default-membership lookup), so the exports
+    // service can safely skip its narrower self/allowlist check
+    // (tenantAccessPreResolved) — that check would otherwise reject a
+    // legitimately membership-authorized cross-tenant export.
+    const tenantId = await resolveToolTenantId(userId, input);
+    return executeOpsTool(toolName, input, { userId, tenantId, tenantAccessPreResolved: true });
   }
 
   if (toolName.startsWith('content_')) {

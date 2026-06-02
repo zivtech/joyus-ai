@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, type SQLWrapper } from 'drizzle-orm';
 import type { Request, Response } from 'express';
 
 import { tenantMemberships, type TenantMembership, type TenantRole } from '../db/schema.js';
@@ -23,6 +23,15 @@ export interface ResolveTenantForUserOptions {
   lookupDefaultTenant?: boolean;
   allowPlatformWide?: boolean;
   platformWideRequested?: boolean;
+  /**
+   * Opt-in to the environment allowlist (EXPORT_ALLOW_ANY_TENANT /
+   * EXPORT_TENANT_ALLOWLIST) as a cross-tenant access path. These flags are
+   * scoped to the exports feature, so the shared resolver only honors them when
+   * a caller explicitly asks (the exports router). Orchestrator, admin, and
+   * tool-execution callers leave this off so an export-scoped escape hatch can
+   * never silently widen their tenant access.
+   */
+  allowEnvironmentAllowlist?: boolean;
 }
 
 export interface ResolveTenantRequestOptions extends ResolveTenantForUserOptions {
@@ -73,7 +82,16 @@ function firstRequestValue(value: unknown): string | null {
   return normalizeTenantId(value);
 }
 
+// Memoize the parsed allowlist keyed on the raw env string. The allowlist is
+// read on every export request / cross-tenant resolution but only changes when
+// the env var changes, so caching avoids rebuilding the Map+Sets each call.
+let allowlistCache: { raw: string; parsed: Map<string, Set<string>> } | null = null;
+
 export function parseTenantAllowlist(raw: string): Map<string, Set<string>> {
+  if (allowlistCache && allowlistCache.raw === raw) {
+    return allowlistCache.parsed;
+  }
+
   const result = new Map<string, Set<string>>();
   raw
     .split(',')
@@ -86,6 +104,8 @@ export function parseTenantAllowlist(raw: string): Map<string, Set<string>> {
       existing.add(tenantId);
       result.set(userId, existing);
     });
+
+  allowlistCache = { raw, parsed: result };
   return result;
 }
 
@@ -111,41 +131,36 @@ function asMembershipDb(db: unknown): TenantMembershipLookupDb | null {
   return db as TenantMembershipLookupDb;
 }
 
-async function findDefaultMembership(
+// Single membership lookup parametrized by the discriminating condition. The
+// three call sites (default / direct / operator) differ only in that extra
+// predicate, so they share one query shape here.
+async function findMembership(
   db: TenantMembershipLookupDb,
   userId: string,
+  extraCondition: SQLWrapper,
 ): Promise<TenantMembership | null> {
   const [membership] = await db
     .select()
     .from(tenantMemberships)
-    .where(and(eq(tenantMemberships.userId, userId), eq(tenantMemberships.isDefault, true)))
+    .where(and(eq(tenantMemberships.userId, userId), extraCondition))
     .limit(1);
   return membership ?? null;
 }
 
-async function findDirectMembership(
+function findDefaultMembership(db: TenantMembershipLookupDb, userId: string): Promise<TenantMembership | null> {
+  return findMembership(db, userId, eq(tenantMemberships.isDefault, true));
+}
+
+function findDirectMembership(
   db: TenantMembershipLookupDb,
   userId: string,
   requestedTenantId: string,
 ): Promise<TenantMembership | null> {
-  const [membership] = await db
-    .select()
-    .from(tenantMemberships)
-    .where(and(eq(tenantMemberships.userId, userId), eq(tenantMemberships.tenantId, requestedTenantId)))
-    .limit(1);
-  return membership ?? null;
+  return findMembership(db, userId, eq(tenantMemberships.tenantId, requestedTenantId));
 }
 
-async function findOperatorMembership(
-  db: TenantMembershipLookupDb,
-  userId: string,
-): Promise<TenantMembership | null> {
-  const [membership] = await db
-    .select()
-    .from(tenantMemberships)
-    .where(and(eq(tenantMemberships.userId, userId), eq(tenantMemberships.role, 'operator')))
-    .limit(1);
-  return membership ?? null;
+function findOperatorMembership(db: TenantMembershipLookupDb, userId: string): Promise<TenantMembership | null> {
+  return findMembership(db, userId, eq(tenantMemberships.role, 'operator'));
 }
 
 export async function resolveTenantContextForUser(
@@ -212,7 +227,7 @@ export async function resolveTenantContextForUser(
     return { actorUserId, tenantId: requestedTenantId, source: 'self' };
   }
 
-  if (canAccessTenantFromEnvironment(actorUserId, requestedTenantId)) {
+  if (options.allowEnvironmentAllowlist && canAccessTenantFromEnvironment(actorUserId, requestedTenantId)) {
     return { actorUserId, tenantId: requestedTenantId, source: 'env_allowlist' };
   }
 
@@ -273,6 +288,26 @@ function platformWideRequested(req: Request, options: ResolveTenantRequestOption
   if (options.platformWideRequested) return true;
   const allTenants = firstRequestValue(req.query?.all_tenants);
   return allTenants === 'true' || allTenants === '1';
+}
+
+/**
+ * Read the resolved tenant id from a request for use by route handlers.
+ *
+ * When the resolver middleware has attached a tenant context, that context is
+ * authoritative — *including* an intentional `null`, which means an operator
+ * was authorized for platform-wide access. Callers must treat `null` as "all
+ * tenants / no tenant filter" and must NOT fall back to the user id, or the
+ * operator's platform-wide read silently collapses to their own scope.
+ *
+ * Only when no context is present (e.g. a direct handler unit test invoked
+ * without the middleware) do we fall back to req.tenantId, then the
+ * authenticated user id.
+ */
+export function tenantIdFromRequest(req: Request): string | null {
+  if (req.tenantContext) {
+    return req.tenantContext.tenantId;
+  }
+  return req.tenantId ?? req.mcpUser?.id ?? null;
 }
 
 export function attachTenantContext(req: Request, context: TenantContext): void {

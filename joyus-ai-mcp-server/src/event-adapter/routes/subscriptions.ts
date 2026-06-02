@@ -12,6 +12,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
 import { pipelines } from '../../pipelines/schema.js';
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import { eventSources, platformSubscriptions } from '../schema.js';
 
 // ============================================================
@@ -31,7 +32,7 @@ export interface SubscriptionsRouterDeps {
  * Returns null when no authenticated user is present (platform-admin context).
  */
 function resolveTenantId(req: Request): string | null {
-  return req.tenantContext?.tenantId ?? req.tenantId ?? req.mcpUser?.id ?? null;
+  return tenantIdFromRequest(req);
 }
 
 // ============================================================

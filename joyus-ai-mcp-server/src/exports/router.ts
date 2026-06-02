@@ -51,6 +51,9 @@ exportRouter.post('/tenants/:tenantId/exports/excel', requireBearerToken, async 
     const tenantContext = await resolveTenantContext(req, {
       db,
       requestedTenantId: tenantId,
+      // Exports honor the EXPORT_* environment allowlist; the shared resolver
+      // only applies it when a caller opts in (see resolver.ts).
+      allowEnvironmentAllowlist: true,
     });
     if (!tenantContext.tenantId) {
       res.status(403).json({ error: 'tenant_required', message: 'Tenant-scoped export requests require a tenant' });
@@ -135,6 +138,9 @@ exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, asy
     const tenantContext = await resolveTenantContext(req, {
       db,
       requestedTenantId: req.params.tenantId,
+      // Exports honor the EXPORT_* environment allowlist; the shared resolver
+      // only applies it when a caller opts in (see resolver.ts).
+      allowEnvironmentAllowlist: true,
     });
     if (!tenantContext.tenantId) {
       res.status(403).json({ error: 'tenant_required', message: 'Tenant-scoped export requests require a tenant' });
@@ -163,6 +169,11 @@ exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, asy
       error: job.error,
     });
   } catch (error) {
+    if (error instanceof TenantResolutionError) {
+      sendTenantResolutionError(res, error);
+      return;
+    }
+
     const message = error instanceof Error ? error.message : 'Unable to fetch export';
     if (message.includes('not authorized')) {
       res.status(403).json({ error: message });
