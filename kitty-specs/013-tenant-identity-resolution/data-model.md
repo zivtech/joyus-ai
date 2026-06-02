@@ -30,15 +30,24 @@ Maps a local user to a tenant.
 | `createdAt` | timestamp | yes | Creation timestamp. |
 | `updatedAt` | timestamp | yes | Last update timestamp. |
 
+Lifecycle: a `(user_id, tenant_id)` pair has exactly one membership row for its
+entire lifetime. `status` mutates in place (`invited` → `active` → `revoked`),
+and reactivation re-uses the same row (`revoked` → `active`) rather than
+inserting a new one. No historical or duplicate rows are retained per pair.
+
 Constraints:
 
-- Unique membership on `(user_id, tenant_id)`.
+- Unique membership on `(user_id, tenant_id)` — a plain unique index. This is
+  safe precisely because reactivation re-uses the existing row, so a pair never
+  has two rows competing for the constraint.
 - Index on `(tenant_id, role)`.
 - Index on `(user_id, status)`.
-- At most one active primary membership per user. A plain unique index cannot
-  express this (it would forbid more than one inactive or non-primary row per
-  user). Enforce it with a PARTIAL unique index:
-  `UNIQUE (user_id) WHERE is_primary AND status = 'active'`.
+- At most one active primary (default) tenant per user. A plain unique index
+  cannot express this, because a user has one row per tenant (many rows) and
+  only one of them may be the active default. Enforce it with a PARTIAL unique
+  index: `UNIQUE (user_id) WHERE is_primary AND status = 'active'`. Scoping to
+  `status = 'active'` also keeps a stale `is_primary` flag on a `revoked` row
+  from blocking the user from setting a new active default.
 
 ### TenantContext
 

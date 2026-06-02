@@ -14,9 +14,15 @@ Create first-class tenant and membership tables while preserving existing single
 ## Scope
 
 - Add `tenants`, `tenant_memberships`, and `tenant_access_audit`.
+- Enforce one membership row per `(user_id, tenant_id)` with a plain unique
+  index. Membership lifecycle mutates `status` in place
+  (`invited` → `active` → `revoked`); reactivation re-uses the existing row
+  (`revoked` → `active`) rather than inserting a new one, so the pair is never
+  duplicated.
 - Enforce "at most one active primary membership per user" (FR-004) with a
   PARTIAL unique index `UNIQUE (user_id) WHERE is_primary AND status = 'active'`,
-  not a plain unique index. If the target Postgres/Drizzle setup cannot express
+  not a plain unique index — a user has one row per tenant and only one may be
+  the active default. If the target Postgres/Drizzle setup cannot express
   the partial index, fall back to documented app-level enforcement plus a test
   that asserts a second active primary membership is rejected.
 - Export the schemas through `joyus-ai-mcp-server/src/db/schemas.ts` (the aggregator registry; `db/schema.ts` is the core schema module the aggregator consumes).
@@ -29,6 +35,8 @@ Create first-class tenant and membership tables while preserving existing single
 - Schema migration applies cleanly.
 - Compatibility seed can run twice without duplicate rows.
 - A seeded user has one active primary membership.
+- Reactivating a `revoked` membership re-uses the existing row (no second row is
+  inserted for the same `(user_id, tenant_id)` pair).
 - Allowlist import creates additional memberships without changing primary membership.
 
 ## Done When
