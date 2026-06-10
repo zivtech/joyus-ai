@@ -3,25 +3,25 @@
  *
  * Routes eligible events to external subscribers (webhook endpoints, etc.).
  * This service acts as the bridge between the internal event stream and the
- * external notification gateway (Spec 014 — not yet implemented).
+ * Gateway Event Bus.
  *
  * Design:
  * - Implements the `NotificationRouter` interface from event.service.ts.
  * - `route()` is synchronous and fire-and-forget: it must NEVER throw or await
  *   in a way that delays the primary event emission path.
- * - Routable event classes are hardcoded defaults for v1; per-tenant config
- *   will be added when Spec 014 (gateway integration) is ready.
- * - The gateway call is stubbed: events are logged, not delivered, until Spec 014.
+ * - Routable event classes are hardcoded defaults for v1; tenant-specific
+ *   delivery configuration lives in the gateway subscription tables.
  *
  * Usage:
  *   const notificationService = new NotificationService();
  *   const eventService = new EventService(db, notificationService);
  *
- * WP06 will expose a webhook registration endpoint; this service will deliver
- * to those registered webhooks once Spec 014 is wired in.
  */
 
 import type { OrchestratorEvent } from '../db/schema/events.js';
+import type { GatewayEventService } from '../gateway-events/event.service.js';
+import type { PlatformEventInput } from '../gateway-events/schemas.js';
+import { redactSecretsDeep } from '../gateway-events/types.js';
 
 import type { NotificationRouter } from './event.service.js';
 
@@ -42,13 +42,12 @@ const ROUTABLE_EVENT_TYPES = new Set<string>([
 ]);
 
 // ============================================================
-// GATEWAY INTERFACE (stubbed — Spec 014 fills in real delivery)
+// GATEWAY INTERFACE
 // ============================================================
 
 /**
- * Gateway event bus interface.
- * Swappable: real implementation injected by Spec 014.
- * Default implementation logs to console (stub).
+ * Gateway event bus interface. Default implementation logs to console for
+ * local tests; production wiring injects GatewayEventServiceBus.
  */
 export interface GatewayEventBus {
   /**
@@ -60,7 +59,6 @@ export interface GatewayEventBus {
 
 /**
  * Stub gateway — logs the event that would be forwarded.
- * Replaced with real delivery when Spec 014 is integrated.
  */
 class StubGatewayEventBus implements GatewayEventBus {
   async forward(event: OrchestratorEvent): Promise<void> {
@@ -74,6 +72,14 @@ class StubGatewayEventBus implements GatewayEventBus {
         sequence: event.sequence,
       }),
     );
+  }
+}
+
+export class GatewayEventServiceBus implements GatewayEventBus {
+  constructor(private readonly gatewayEvents: Pick<GatewayEventService, 'emitPlatformEvent'>) {}
+
+  async forward(event: OrchestratorEvent): Promise<void> {
+    await this.gatewayEvents.emitPlatformEvent(toPlatformEvent(event));
   }
 }
 
@@ -129,4 +135,29 @@ export class NotificationService implements NotificationRouter {
       );
     }
   }
+}
+
+function toPlatformEvent(event: OrchestratorEvent): PlatformEventInput {
+  const failed = event.type.endsWith('.failed');
+  return {
+    tenantId: event.tenantId,
+    type: failed ? 'monitoring.alert' : 'pipeline.completed',
+    severity: failed ? 'warning' : 'info',
+    sourceSpec: 'gateway-event-bus',
+    sourceComponent: 'platform-orchestrator',
+    subjectType: event.sessionId ? 'orchestrator_session' : 'orchestrator_event',
+    subjectId: event.sessionId ?? event.id,
+    correlationId: event.sessionId ?? event.id,
+    idempotencyKey: `orchestrator:${event.id}`,
+    payloadSchemaVersion: 'orchestrator.event.v1',
+    requiresDecision: false,
+    payload: {
+      orchestratorEventId: event.id,
+      orchestratorEventType: event.type,
+      sessionId: event.sessionId,
+      sequence: event.sequence,
+      payload: redactSecretsDeep(event.payload),
+    },
+    occurredAt: event.createdAt,
+  };
 }

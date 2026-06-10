@@ -15,12 +15,17 @@ import {
 import type { PipelineExecution, ExecutionStep } from '../schema.js';
 import type { ArtifactRef } from '../types.js';
 
+import type { PipelineReviewGatewayEmitter } from './gateway-events.js';
+
 // ============================================================
 // REVIEW GATE
 // ============================================================
 
 export class ReviewGate {
-  constructor(private readonly db: NodePgDatabase) {}
+  constructor(
+    private readonly db: NodePgDatabase,
+    private readonly gatewayEvents?: PipelineReviewGatewayEmitter,
+  ) {}
 
   /**
    * Create one pending review_decision per artifact, set execution_step to
@@ -51,6 +56,24 @@ export class ReviewGate {
     }));
 
     await this.db.insert(reviewDecisions).values(decisionRows);
+
+    if (this.gatewayEvents) {
+      for (const row of decisionRows) {
+        void this.gatewayEvents.emitPendingReviewDecision({
+          execution,
+          gateStep,
+          reviewDecisionId: row.id,
+          artifact: row.artifactRef as unknown as ArtifactRef,
+          profileVersionRef,
+        }).catch((error) => {
+          console.error('[ReviewGate] Failed to emit gateway review event:', {
+            reviewDecisionId: row.id,
+            tenantId: execution.tenantId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      }
+    }
 
     // Mark the gate step as running (it is actively awaiting review)
     await this.db

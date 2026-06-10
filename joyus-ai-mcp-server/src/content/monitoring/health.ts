@@ -13,6 +13,8 @@ import { sql } from 'drizzle-orm';
 
 import { db, contentSources } from '../../db/client.js';
 
+import type { MonitoringGatewayEmitter } from './gateway-events.js';
+
 // ============================================================
 // TYPES
 // ============================================================
@@ -49,6 +51,8 @@ function withTimeout<T>(
 }
 
 export class HealthChecker {
+  constructor(private readonly gatewayEvents?: MonitoringGatewayEmitter) {}
+
   async check(): Promise<HealthReport> {
     const [database, connectors, searchProvider, entitlementResolver] =
       await Promise.all([
@@ -72,7 +76,16 @@ export class HealthChecker {
         ? 'degraded'
         : 'healthy';
 
-    return { status: overall, components, timestamp: new Date().toISOString() };
+    const report = { status: overall, components, timestamp: new Date().toISOString() };
+    if (this.gatewayEvents) {
+      void this.gatewayEvents.emitHealthAlert(report).catch((error) => {
+        console.error('[content-monitoring] Failed to emit gateway alert:', {
+          status: report.status,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+    return report;
   }
 
   // ============================================================

@@ -1,0 +1,6 @@
+source_id,title,type,path,accessed_at,notes
+S001,Orchestrator Event Service,local-code,joyus-ai-mcp-server/src/orchestrator/event.service.ts,2026-05-25,Existing tenant-scoped append-only event stream and SSE support.
+S002,Orchestrator Notification Service,local-code,joyus-ai-mcp-server/src/orchestrator/notification.service.ts,2026-05-25,Existing gateway forwarding stub and fire-and-forget notification boundary.
+S003,Orchestrator Events Schema,local-code,joyus-ai-mcp-server/src/db/schema/events.ts,2026-05-25,Local Drizzle table conventions for event persistence and tenant indexes.
+S004,Pipeline Decision Recorder,local-code,joyus-ai-mcp-server/src/pipelines/review/decision.ts,2026-05-25,Domain-owned review decision persistence surface.
+S005,Server Entry Point,local-code,joyus-ai-mcp-server/src/index.ts,2026-05-25,Express route registration and dependency wiring surface for gateway routes.

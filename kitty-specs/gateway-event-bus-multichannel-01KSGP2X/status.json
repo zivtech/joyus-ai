@@ -1,0 +1,63 @@
+{
+  "event_count": 42,
+  "last_event_id": "01KSGT4R3Y4HY0TKM8CBRD8DCC",
+  "materialized_at": "2026-05-26T00:14:52.030724+00:00",
+  "mission_number": "14",
+  "mission_slug": "gateway-event-bus-multichannel-01KSGP2X",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 6,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "user",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01KSGT4KBZTVPWX1KFZT3VSGY3",
+      "last_transition_at": "2026-05-26T00:14:47.167853+00:00"
+    },
+    "WP02": {
+      "actor": "user",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01KSGT4M98BF04YX63MFQ28597",
+      "last_transition_at": "2026-05-26T00:14:48.104899+00:00"
+    },
+    "WP03": {
+      "actor": "user",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01KSGT4N662YC1WWKZTBBW8RB9",
+      "last_transition_at": "2026-05-26T00:14:49.030958+00:00"
+    },
+    "WP04": {
+      "actor": "user",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01KSGT4P36VEK4QEDG58EKVDSS",
+      "last_transition_at": "2026-05-26T00:14:49.958518+00:00"
+    },
+    "WP05": {
+      "actor": "user",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01KSGT4Q0Q51VMK621G3HA0VNP",
+      "last_transition_at": "2026-05-26T00:14:50.903356+00:00"
+    },
+    "WP06": {
+      "actor": "user",
+      "force_count": 2,
+      "lane": "done",
+      "last_event_id": "01KSGT4R3Y4HY0TKM8CBRD8DCC",
+      "last_transition_at": "2026-05-26T00:14:52.030724+00:00"
+    }
+  }
+}

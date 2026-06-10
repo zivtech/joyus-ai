@@ -1,0 +1,582 @@
+openapi: 3.1.0
+info:
+  title: Joyus Gateway Event Bus Contract
+  version: 0.1.0
+  description: >
+    Planning contract for tenant-scoped platform event emission, multi-channel
+    delivery routing, and decision ingestion. This contract is an
+    implementation seed for the platform gateway.
+servers:
+  - url: https://api.joyus.example/api/v1
+    description: Placeholder production API base
+security:
+  - bearerAuth: []
+paths:
+  /gateway/events:
+    post:
+      summary: Emit a tenant-scoped platform event
+      operationId: emitPlatformEvent
+      description: >
+        Internal platform components use this endpoint or equivalent service
+        interface to publish routable platform events. External delivery happens
+        asynchronously.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlatformEventInput'
+      responses:
+        '202':
+          description: Event accepted for routing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformEventAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/DuplicateIdempotencyKey'
+  /gateway/endpoints:
+    get:
+      summary: List delivery endpoints for a tenant
+      operationId: listDeliveryEndpoints
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Endpoint list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [endpoints]
+                properties:
+                  endpoints:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeliveryEndpoint'
+    post:
+      summary: Create a delivery endpoint
+      operationId: createDeliveryEndpoint
+      description: >
+        Creates a tenant-scoped delivery endpoint. Secrets are supplied as
+        references or encrypted configuration, never as plaintext audit fields.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryEndpointInput'
+      responses:
+        '201':
+          description: Endpoint created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryEndpoint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /gateway/subscriptions:
+    get:
+      summary: List event subscriptions for a tenant
+      operationId: listEventSubscriptions
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Subscription list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [subscriptions]
+                properties:
+                  subscriptions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventSubscription'
+    post:
+      summary: Create an event subscription
+      operationId: createEventSubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventSubscriptionInput'
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/TenantMismatch'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /gateway/events/{eventId}/deliveries:
+    get:
+      summary: Inspect delivery attempts for an event
+      operationId: listEventDeliveries
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Delivery attempts
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deliveries]
+                properties:
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventDeliveryAttempt'
+  /gateway/decisions:
+    post:
+      summary: Ingest a human or operator decision
+      operationId: ingestGatewayDecision
+      description: >
+        Accepts approvals, rejections, request-changes decisions,
+        acknowledgments, and dismissals from any authenticated delivery surface.
+        The gateway audits and routes the decision to a registered domain
+        handler; the handler owns domain state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayDecisionInput'
+      responses:
+        '202':
+          description: Decision accepted for handler routing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayDecisionAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/DuplicateIdempotencyKey'
+        '422':
+          description: Decision cannot be routed to the referenced event or handler
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: tenant-scoped-token
+  parameters:
+    TenantId:
+      name: tenantId
+      in: query
+      required: true
+      schema:
+        type: string
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Invalid request
+    Unauthorized:
+      description: Missing or invalid tenant-scoped authorization
+    TenantMismatch:
+      description: Tenant-scoped authorization or referenced resource tenant does not match the request tenant
+    NotFound:
+      description: Referenced tenant-scoped resource was not found
+    DuplicateIdempotencyKey:
+      description: Duplicate idempotency key for the tenant-scoped operation
+  schemas:
+    PlatformEventInput:
+      type: object
+      required:
+        - type
+        - tenantId
+        - severity
+        - sourceSpec
+        - sourceComponent
+        - idempotencyKey
+        - payloadSchemaVersion
+        - payload
+      properties:
+        type:
+          $ref: '#/components/schemas/PlatformEventType'
+        tenantId:
+          type: string
+        severity:
+          $ref: '#/components/schemas/EventSeverity'
+        sourceSpec:
+          type: string
+          examples: ['011', '012', '015']
+        sourceComponent:
+          type: string
+          examples: ['pipeline-review', 'monitoring-alerts']
+        subjectType:
+          type: string
+          nullable: true
+        subjectId:
+          type: string
+          nullable: true
+        correlationId:
+          type: string
+          nullable: true
+        idempotencyKey:
+          type: string
+          description: Unique per tenant and source component.
+        payloadSchemaVersion:
+          type: string
+          examples: ['review.pending.v1']
+        requiresDecision:
+          type: boolean
+          default: false
+        handlerKey:
+          type: string
+          nullable: true
+          description: Required when requiresDecision is true; selects a registered domain handler.
+        payload:
+          type: object
+          additionalProperties: true
+      examples:
+        reviewPending:
+          summary: Dashboard and optional channel review event
+          value:
+            tenantId: tenant_123
+            type: review.pending
+            severity: warning
+            sourceSpec: '011'
+            sourceComponent: pipeline-review
+            subjectType: pipeline_execution
+            subjectId: exec_456
+            correlationId: run_789
+            idempotencyKey: pipeline-review:exec_456:pending
+            payloadSchemaVersion: review.pending.v1
+            requiresDecision: true
+            handlerKey: pipeline-review
+            payload:
+              title: Review required
+              summary: Generated output is ready for operator review.
+    PlatformEventAccepted:
+      type: object
+      required: [eventId, status]
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [accepted]
+    EventSubscriptionInput:
+      type: object
+      required: [tenantId, eventType, endpointId]
+      properties:
+        tenantId:
+          type: string
+        eventType:
+          $ref: '#/components/schemas/PlatformEventType'
+        minimumSeverity:
+          $ref: '#/components/schemas/EventSeverity'
+        endpointId:
+          type: string
+          format: uuid
+        filter:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Optional structured filter for subject type, source component, or approved payload attributes.
+        isEnabled:
+          type: boolean
+          default: true
+    EventSubscription:
+      allOf:
+        - $ref: '#/components/schemas/EventSubscriptionInput'
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+    DeliveryEndpointInput:
+      oneOf:
+        - $ref: '#/components/schemas/SlackEndpoint'
+        - $ref: '#/components/schemas/EmailEndpoint'
+        - $ref: '#/components/schemas/WebhookEndpoint'
+        - $ref: '#/components/schemas/DashboardEndpoint'
+        - $ref: '#/components/schemas/ChannelEndpoint'
+    DeliveryEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/DeliveryEndpointInput'
+        - type: object
+          required: [id, createdAt, updatedAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    SlackEndpoint:
+      type: object
+      required: [tenantId, type, name, webhookSecretRef]
+      properties:
+        tenantId:
+          type: string
+        type:
+          const: slack
+        name:
+          type: string
+        webhookSecretRef:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+    EmailEndpoint:
+      type: object
+      required: [tenantId, type, name, addresses]
+      properties:
+        tenantId:
+          type: string
+        type:
+          const: email
+        name:
+          type: string
+        addresses:
+          type: array
+          items:
+            type: string
+            format: email
+        credentialSecretRef:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+    WebhookEndpoint:
+      type: object
+      required: [tenantId, type, name, url, hmacSecretRef]
+      properties:
+        tenantId:
+          type: string
+        type:
+          const: webhook
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        hmacSecretRef:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+    DashboardEndpoint:
+      type: object
+      required: [tenantId, type, name]
+      properties:
+        tenantId:
+          type: string
+        type:
+          const: dashboard
+        name:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+    ChannelEndpoint:
+      type: object
+      required: [tenantId, type, name]
+      properties:
+        tenantId:
+          type: string
+        type:
+          const: channel
+        name:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+    EventDeliveryAttempt:
+      type: object
+      required: [id, tenantId, eventId, endpointId, status, attemptNumber]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+        eventId:
+          type: string
+          format: uuid
+        subscriptionId:
+          type: string
+          format: uuid
+        endpointId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - pending
+            - sent
+            - failed
+            - retry_scheduled
+            - dead_letter
+            - skipped_no_channel
+        attemptNumber:
+          type: integer
+          minimum: 1
+        maxAttempts:
+          type: integer
+          minimum: 1
+          default: 3
+        nextRetryAt:
+          type: string
+          format: date-time
+          nullable: true
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastError:
+          type: string
+          nullable: true
+          description: Sanitized backend error; never include plaintext secrets.
+        responseSummary:
+          type: object
+          nullable: true
+          additionalProperties: true
+      examples:
+        skippedNoChannel:
+          summary: Channel delivery skipped because no Channel Server is connected
+          value:
+            id: 11111111-1111-4111-8111-111111111111
+            tenantId: tenant_123
+            eventId: 22222222-2222-4222-8222-222222222222
+            subscriptionId: 33333333-3333-4333-8333-333333333333
+            endpointId: 44444444-4444-4444-8444-444444444444
+            status: skipped_no_channel
+            attemptNumber: 1
+            maxAttempts: 3
+        webhookFailure:
+          summary: Webhook failed with sanitized response
+          value:
+            id: 55555555-5555-4555-8555-555555555555
+            tenantId: tenant_123
+            eventId: 22222222-2222-4222-8222-222222222222
+            subscriptionId: 66666666-6666-4666-8666-666666666666
+            endpointId: 77777777-7777-4777-8777-777777777777
+            status: retry_scheduled
+            attemptNumber: 1
+            maxAttempts: 3
+            nextRetryAt: '2026-05-25T21:30:00Z'
+            lastError: HTTP 503 from webhook endpoint
+    GatewayDecisionInput:
+      type: object
+      required:
+        - tenantId
+        - eventId
+        - decision
+        - decisionBy
+        - sourceBackend
+        - idempotencyKey
+      properties:
+        tenantId:
+          type: string
+        eventId:
+          type: string
+          format: uuid
+        decision:
+          type: string
+          enum:
+            - approved
+            - rejected
+            - request_changes
+            - acknowledged
+            - dismissed
+        decisionBy:
+          type: string
+        sourceBackend:
+          type: string
+          enum: [slack, email, webhook, dashboard, channel]
+        idempotencyKey:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+      examples:
+        dashboardApproval:
+          summary: Pipeline review approved from dashboard
+          value:
+            tenantId: tenant_123
+            eventId: 22222222-2222-4222-8222-222222222222
+            decision: approved
+            decisionBy: admin_456
+            sourceBackend: dashboard
+            idempotencyKey: dashboard:22222222-2222-4222-8222-222222222222:admin_456:approved
+            metadata:
+              comment: Looks good to publish.
+        channelAcknowledgement:
+          summary: Monitoring alert acknowledged from optional Channel Server
+          value:
+            tenantId: tenant_123
+            eventId: 88888888-8888-4888-8888-888888888888
+            decision: acknowledged
+            decisionBy: admin_456
+            sourceBackend: channel
+            idempotencyKey: channel:88888888-8888-4888-8888-888888888888:admin_456:ack
+            metadata:
+              channelConnectionId: channel_conn_123
+    GatewayDecisionAccepted:
+      type: object
+      required: [decisionId, routeStatus, handlerKey]
+      properties:
+        decisionId:
+          type: string
+          format: uuid
+        routeStatus:
+          type: string
+          enum: [pending, routed, rejected]
+          description: Gateway receipt/routing status only; domain lifecycle completion is owned by the handler.
+        handlerKey:
+          type: string
+          description: Registered domain handler selected from the referenced event.
+    PlatformEventType:
+      type: string
+      enum:
+        - pipeline.completed
+        - pipeline.failed
+        - review.pending
+        - review.decided
+        - review.escalated
+        - drift.exceeded
+        - drift.retrain.completed
+        - rate_limit.exceeded
+        - circuit_breaker.opened
+        - dead_letter.accumulated
+        - fidelity.threshold_breached
+        - monitoring.alert
+    EventSeverity:
+      type: string
+      enum: [info, warning, critical]
