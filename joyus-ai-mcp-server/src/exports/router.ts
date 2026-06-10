@@ -185,15 +185,15 @@ exportRouter.get('/tenants/:tenantId/exports/:exportId', requireBearerToken, asy
 
 exportRouter.get('/exports/download/:token', async (req: Request, res: Response) => {
   const token = req.params.token;
-  const resolved = resolveDownloadToken(token);
+  const resolved = await resolveDownloadToken(token);
 
   if (!resolved) {
     res.status(404).json({ error: 'Download link is invalid or expired' });
     return;
   }
 
-  const { job, filePath } = resolved;
-  const fileName = job.fileName || `${job.id}.xlsx`;
+  const { filePath } = resolved;
+  const fileName = resolved.fileName || `${resolved.jobId}.xlsx`;
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.download(filePath, fileName);
 });
