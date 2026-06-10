@@ -195,7 +195,12 @@ export async function executeProfileTool(
 
       const snapshotService = new CorpusSnapshotService();
       const engine = new EngineBridge({
-        engineScriptPath: process.env.ENGINE_SCRIPT_PATH ?? '',
+        engineCommand: process.env.PROFILE_ENGINE_COMMAND ?? '',
+        engineArgs: parseProfileEngineArgs(process.env.PROFILE_ENGINE_ARGS, ['generate']),
+        healthCheckArgs: parseProfileEngineArgs(
+          process.env.PROFILE_ENGINE_HEALTH_ARGS,
+          ['health-check'],
+        ),
       });
       const pipeline = new ProfileGenerationPipeline(engine, snapshotService);
       const result = await pipeline.generate(tenantId, {
@@ -452,4 +457,9 @@ export async function executeProfileTool(
     default:
       throw new Error(`Unknown profile tool: ${toolName}`);
   }
+}
+
+function parseProfileEngineArgs(raw: string | undefined, fallback: string[]): string[] {
+  const trimmed = raw?.trim();
+  return trimmed ? trimmed.split(/\s+/) : fallback;
 }
