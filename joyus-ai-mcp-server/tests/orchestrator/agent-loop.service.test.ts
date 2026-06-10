@@ -359,7 +359,7 @@ describe('AgentLoopService.processMessage — tool use loop', () => {
     expect(result.responseText).toBe('The weather is sunny.');
     expect(result.toolIterations).toBe(1);
     expect(generateFn).toHaveBeenCalledTimes(2);
-    expect(toolRouter.executeToolCall).toHaveBeenCalledWith('search', { q: 'weather' }, TENANT_ID);
+    expect(toolRouter.executeToolCall).toHaveBeenCalledWith('search', { q: 'weather' }, TENANT_ID, 'user-1');
   });
 
   it('emits tool_call and tool_result events on the stream', async () => {

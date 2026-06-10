@@ -1,0 +1,56 @@
+{
+  "event_count": 0,
+  "last_event_id": null,
+  "materialized_at": "",
+  "mission_number": "013",
+  "mission_slug": "013-tenant-identity-resolution",
+  "mission_type": "platform",
+  "summary": {
+    "approved": 0,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 0,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 5
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": null,
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": null,
+      "last_transition_at": null
+    },
+    "WP02": {
+      "actor": null,
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": null,
+      "last_transition_at": null
+    },
+    "WP03": {
+      "actor": null,
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": null,
+      "last_transition_at": null
+    },
+    "WP04": {
+      "actor": null,
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": null,
+      "last_transition_at": null
+    },
+    "WP05": {
+      "actor": null,
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": null,
+      "last_transition_at": null
+    }
+  }
+}

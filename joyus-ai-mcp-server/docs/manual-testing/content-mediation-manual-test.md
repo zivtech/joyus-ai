@@ -1,13 +1,13 @@
 # Content Mediation Manual Test
 
-| Field | Value |
-| --- | --- |
-| Feature area | Content mediation |
-| Related PR/issues | Not specified |
-| Environment | Local Docker Compose |
-| Required services | PostgreSQL, MCP server, local JWT/JWKS helper |
-| Required credentials | Mediation API key and user JWT |
-| Last verified | Not yet verified |
+| Field                | Value                                         |
+| -------------------- | --------------------------------------------- |
+| Feature area         | Content mediation                             |
+| Related PR/issues    | Not specified                                 |
+| Environment          | Local Docker Compose                          |
+| Required services    | PostgreSQL, MCP server, local JWT/JWKS helper |
+| Required credentials | Mediation API key and user JWT                |
+| Last verified        | Not yet verified                              |
 
 ## Purpose
 
@@ -24,20 +24,14 @@ count increments, idle-gap tracking, and cache-miss logging.
   - `Authorization: Bearer <JWT>`: identifies the end user inside that integration.
 
 The mediation API key is not recoverable from the database. Only its SHA-256
-hash is stored. If you do not already have the raw key, create a local test key
-and insert its hash.
+hash is stored. The operator command prints the raw key once at creation time.
+If you lose it, revoke that key and create a new one.
 
-## Do I Need To Run Postgres Commands?
+## Do I Need To Write SQL?
 
-For the current code, yes, unless a valid mediation API key and matching JWT
-already exist.
-
-There is an `ApiKeyService` in code, but there is no admin HTTP endpoint or CLI
-wrapper for creating mediation API keys. Manual DB setup is the current shortest
-path for a local smoke test.
-
-The database commands below only create/update local test data. They are not
-needed in production if the integration key has already been provisioned.
+No. Use the `mediation-api-keys` operator command to create, list, and revoke
+mediation API keys. The command wraps `ApiKeyService`, stores only the hashed
+key, and prints the raw key only in the `create` response.
 
 ## Overview
 
@@ -87,7 +81,7 @@ curl -sS "http://localhost:3000/api/mediation/health"
 Expected:
 
 ```json
-{"status":"ok"}
+{ "status": "ok" }
 ```
 
 ## Terminal 2: Start Local JWT/JWKS Helper
@@ -127,7 +121,7 @@ Set the database URL if needed:
 export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/joyus_ai_mcp"
 ```
 
-Verify Postgres is reachable:
+Verify Postgres is reachable if this is a fresh local environment:
 
 ```bash
 psql "$DATABASE_URL" -c "select 1;"
@@ -135,66 +129,36 @@ psql "$DATABASE_URL" -c "select 1;"
 
 Copy the `JWKS_URI` and `USER_JWT` exports from Terminal 2 into this terminal.
 
-## Create A Local Mediation API Key Row
+## Create A Local Mediation API Key
 
-Choose a raw key:
+Create a key for the local test tenant:
 
 ```bash
-export MEDIATION_API_KEY="jyk_local_manual_test_key_001"
+npm run mediation-api-keys -- create \
+  --tenant-id tenant-1 \
+  --integration-name local-manual-test \
+  --jwks-uri "$JWKS_URI"
 ```
 
-Hash it:
+The command prints:
+
+- key ID
+- key prefix
+- tenant and integration metadata
+- raw API key, shown once
+
+Copy the raw key into an environment variable:
 
 ```bash
-export MEDIATION_API_KEY_HASH="$(
-  node -e "console.log(require('crypto').createHash('sha256').update(process.env.MEDIATION_API_KEY).digest('hex'))"
-)"
-```
-
-Insert or update the test key:
-
-```bash
-psql "$DATABASE_URL" -c "
-insert into content.api_keys (
-  id,
-  tenant_id,
-  key_hash,
-  key_prefix,
-  integration_name,
-  jwks_uri,
-  issuer,
-  audience,
-  is_active
-)
-values (
-  'manual-api-key-1',
-  'tenant-1',
-  '$MEDIATION_API_KEY_HASH',
-  'jyk_loca',
-  'manual-local-test',
-  '$JWKS_URI',
-  null,
-  null,
-  true
-)
-on conflict (id) do update set
-  key_hash = excluded.key_hash,
-  key_prefix = excluded.key_prefix,
-  jwks_uri = excluded.jwks_uri,
-  is_active = true;
-"
+export MEDIATION_API_KEY="<raw-key-printed-by-create>"
 ```
 
 The local helper's JWT `sub` claim becomes the mediation user ID.
 
-Check that the API key row exists:
+List safe key metadata without exposing raw keys or hashes:
 
 ```bash
-psql "$DATABASE_URL" -c "
-select id, tenant_id, key_prefix, integration_name, jwks_uri, is_active
-from content.api_keys
-where id = 'manual-api-key-1';
-"
+npm run mediation-api-keys -- list --tenant-id tenant-1
 ```
 
 ## Create A Session
@@ -305,9 +269,14 @@ limit 5;
 Expected: one row with `operation = 'cache_miss'` and metadata containing
 `idleGapSeconds` and `cacheTtlSeconds`.
 
-## Cleaner Future Improvement
+## Revoke The Local Key
 
-Issue #60 tracks adding a local/operator provisioning command that wraps
-`ApiKeyService.createKey`. That would remove the need to hand-write SQL for
-local manual testing. The `dev:mediation-auth` helper only handles the JWKS/JWT
-side of local auth.
+After testing, revoke the key by ID:
+
+```bash
+npm run mediation-api-keys -- revoke --key-id <key-id-printed-by-create>
+```
+
+The `dev:mediation-auth` helper only handles the JWKS/JWT side of local auth.
+The `mediation-api-keys` command manages the integration API key used in the
+`X-API-Key` header.

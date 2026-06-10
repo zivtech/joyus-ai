@@ -34,10 +34,12 @@ import { ProfileVersionService } from './versioning/service.js';
 type DrizzleClient = ReturnType<typeof drizzle>;
 
 export interface ProfilesConfig {
-  /** Path to the Python interpreter. Defaults to 'python3'. */
-  pythonPath?: string;
-  /** Absolute path to the stylometric engine entry script. */
-  engineScriptPath?: string;
+  /** Executable profile engine command, e.g. "joyus-profile". */
+  engineCommand?: string;
+  /** Fixed arguments before per-request generation flags. */
+  engineArgs?: string[];
+  /** Arguments for the health-check command. */
+  healthCheckArgs?: string[];
 }
 
 export interface ProfilesModule {
@@ -101,8 +103,12 @@ export function initializeProfiles(
   const snapshotService = new CorpusSnapshotService();
 
   const engineBridge = new EngineBridge({
-    pythonPath: config?.pythonPath ?? 'python3',
-    engineScriptPath: config?.engineScriptPath ?? process.env.ENGINE_SCRIPT_PATH ?? '',
+    engineCommand: config?.engineCommand ?? process.env.PROFILE_ENGINE_COMMAND ?? '',
+    engineArgs: config?.engineArgs ?? parseProfileEngineArgs(process.env.PROFILE_ENGINE_ARGS, ['generate']),
+    healthCheckArgs: config?.healthCheckArgs ?? parseProfileEngineArgs(
+      process.env.PROFILE_ENGINE_HEALTH_ARGS,
+      ['health-check'],
+    ),
   });
 
   // ── Layer 4: Hierarchy + resolver ─────────────────────────────────────────
@@ -156,4 +162,9 @@ export function initializeProfiles(
     parserRegistry,
     dedupService,
   };
+}
+
+function parseProfileEngineArgs(raw: string | undefined, fallback: string[]): string[] {
+  const trimmed = raw?.trim();
+  return trimmed ? trimmed.split(/\s+/) : fallback;
 }

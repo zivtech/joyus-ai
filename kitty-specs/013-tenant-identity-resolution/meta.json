@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-05-25T00:00:00Z",
+  "feature_number": "013",
+  "friendly_name": "Tenant Identity Resolution",
+  "lifecycle_state": "spec-only",
+  "measurement_owner": "Engineering Operations",
+  "mission": "software-dev",
+  "mission_number": "013",
+  "mission_slug": "013-tenant-identity-resolution",
+  "mission_type": "platform",
+  "review_cadence": "weekly",
+  "risk_class": "platform-security",
+  "slug": "013-tenant-identity-resolution",
+  "source_description": "Unify tenant identity resolution across bearer-token, API-key, explicit tenant, and admin routes",
+  "target_branch": "main",
+  "tracking_issue": "https://github.com/zivtech/joyus-ai/issues/37"
+}

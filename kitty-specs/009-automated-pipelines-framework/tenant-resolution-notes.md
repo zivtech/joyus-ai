@@ -1,3 +1,5 @@
+> **Superseded by Spec 013 (`kitty-specs/013-tenant-identity-resolution/`).** These notes captured the original problem statement; the owning convergence plan now lives in Spec 013.
+
 # Tenant Identity Resolution — Current State
 
 **Date**: 2026-03-19

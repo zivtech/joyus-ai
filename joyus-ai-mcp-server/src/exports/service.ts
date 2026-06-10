@@ -4,6 +4,8 @@ import path from 'path';
 
 import { createId } from '@paralleldrive/cuid2';
 
+import { canAccessTenant } from '../tenancy/resolver.js';
+
 import { buildWorkbookFile } from './excel-builder.js';
 import { DrizzleExportDownloadTokenStore, type ExportDownloadTokenStore } from './token-store.js';
 import {
@@ -59,30 +61,10 @@ export function normalizeExportLocations(value: string | undefined): ExcelExport
   return value === 'all_accessible' ? 'all_accessible' : 'current';
 }
 
-function parseTenantAllowlist(raw: string): Map<string, Set<string>> {
-  const result = new Map<string, Set<string>>();
-  raw
-    .split(',')
-    .map(entry => entry.trim())
-    .filter(Boolean)
-    .forEach(entry => {
-      const [userId, tenantId] = entry.split(':').map(part => part.trim());
-      if (!userId || !tenantId) return;
-      const existing = result.get(userId) || new Set<string>();
-      existing.add(tenantId);
-      result.set(userId, existing);
-    });
-  return result;
-}
-
-export function canAccessTenant(userId: string, tenantId: string): boolean {
-  if (process.env.EXPORT_ALLOW_ANY_TENANT === 'true') return true;
-  if (tenantId === userId) return true;
-
-  const allowlist = parseTenantAllowlist(process.env.EXPORT_TENANT_ALLOWLIST || '');
-  const allowedTenants = allowlist.get(userId);
-  return Boolean(allowedTenants && allowedTenants.has(tenantId));
-}
+// Re-exported from the shared tenancy resolver so the self/allowlist access
+// rule has a single source of truth. Kept exported here for the exports module's
+// public surface and existing test imports.
+export { canAccessTenant };
 
 function assertTenantAccess(userId: string, tenantId: string): void {
   if (!canAccessTenant(userId, tenantId)) {
@@ -161,10 +143,10 @@ function buildDownloadUrl(baseUrl: string, token: string): string {
   return `${sanitizeBaseUrl(baseUrl)}/api/v1/exports/download/${token}`;
 }
 
-export async function createExcelExportJob(
-  params: CreateExportJobParams
-): Promise<{ job: ExcelExportJob; downloadUrl: string }> {
-  assertTenantAccess(params.userId, params.tenantId);
+export async function createExcelExportJob(params: CreateExportJobParams): Promise<{ job: ExcelExportJob; downloadUrl: string }> {
+  if (!params.tenantAccessPreResolved) {
+    assertTenantAccess(params.userId, params.tenantId);
+  }
 
   const scope = normalizeExportScope(params.request.scope);
   const locations = normalizeExportLocations(params.request.locations);
@@ -251,9 +233,12 @@ export async function createExcelExportJob(
 export function getExcelExportJobForUser(
   userId: string,
   tenantId: string,
-  exportId: string
+  exportId: string,
+  options: { tenantAccessPreResolved?: boolean } = {},
 ): ExcelExportJob | null {
-  assertTenantAccess(userId, tenantId);
+  if (!options.tenantAccessPreResolved) {
+    assertTenantAccess(userId, tenantId);
+  }
   const job = exportJobs.get(exportId);
   if (!job) return null;
   if (job.userId !== userId || job.tenantId !== tenantId) return null;

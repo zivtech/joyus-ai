@@ -7,6 +7,9 @@
  */
 
 import { createHash } from 'crypto';
+import { mkdtemp, mkdir, rm, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 import { createId } from '@paralleldrive/cuid2';
 import { eq, desc } from 'drizzle-orm';
@@ -32,6 +35,23 @@ export interface CreateSnapshotOptions {
 export interface SnapshotListOptions {
   limit?: number;
   offset?: number;
+}
+
+export interface MaterializeSnapshotOptions {
+  baseDir?: string;
+}
+
+export interface MaterializedCorpusSnapshot {
+  corpusPath: string;
+  documentCount: number;
+  cleanup: () => Promise<void>;
+}
+
+export class CorpusSnapshotMaterializationError extends Error {
+  constructor() {
+    super('Cannot generate profiles: selected corpus snapshot has no extracted text');
+    this.name = 'CorpusSnapshotMaterializationError';
+  }
 }
 
 // ============================================================
@@ -157,6 +177,44 @@ export class CorpusSnapshotService {
       .where(tenantWhere(corpusDocuments, tenantId));
 
     return docs.filter((d) => hashes.includes(d.contentHash));
+  }
+
+  /**
+   * Write a tenant-scoped snapshot to a temporary directory for engine input.
+   * The temp directory omits tenant and snapshot identifiers from its path.
+   */
+  async materializeSnapshot(
+    tenantId: string,
+    snapshotId: string,
+    options?: MaterializeSnapshotOptions,
+  ): Promise<MaterializedCorpusSnapshot> {
+    requireTenantId(tenantId);
+
+    const docs = await this.getSnapshotDocuments(tenantId, snapshotId);
+    const docsWithText = docs.filter(
+      (doc) => typeof doc.extractedText === 'string' && doc.extractedText.trim().length > 0,
+    );
+    if (docsWithText.length === 0) {
+      throw new CorpusSnapshotMaterializationError();
+    }
+
+    const parentDir = options?.baseDir ?? tmpdir();
+    await mkdir(parentDir, { recursive: true });
+    const corpusPath = await mkdtemp(join(parentDir, 'joyus-profile-corpus-'));
+
+    await Promise.all(
+      docsWithText.map((doc, index) => writeFile(
+        join(corpusPath, `document-${String(index + 1).padStart(4, '0')}.txt`),
+        doc.extractedText ?? '',
+        'utf8',
+      )),
+    );
+
+    return {
+      corpusPath,
+      documentCount: docsWithText.length,
+      cleanup: () => rm(corpusPath, { recursive: true, force: true }),
+    };
   }
 
   // ----------------------------------------------------------

@@ -1,0 +1,21 @@
+{
+  "kind": "content_mcp",
+  "note": "Tasks with known-correct answers for the accuracy A/B (NFR-001). Each task is run twice with an identical model+prompt — once on the uncompressed payload, once on the compressed one. Add enough tasks to exercise the details compression might drop. Answers must be deterministic.",
+  "tasks": [
+    {
+      "id": "cm-t1",
+      "prompt": "Using only the provided connector.sync payload, how many items were synced? Answer with just the number.",
+      "expected": "2"
+    },
+    {
+      "id": "cm-t2",
+      "prompt": "Using only the provided content.search payload, give the exact title of the highest-scoring result.",
+      "expected": "Refund policy overview (synthetic)"
+    },
+    {
+      "id": "cm-t3",
+      "prompt": "Using only the provided connector.sync payload, what is the checksum of item doc-0002?",
+      "expected": "2222cccc3333dddd"
+    }
+  ]
+}

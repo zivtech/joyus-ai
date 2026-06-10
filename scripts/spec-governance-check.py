@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+DEFAULT_BASELINE_PATH = "governance/spec-governance-baseline.json"
+
 REQUIRED_META_KEYS = [
     "feature_number",
     "slug",
@@ -107,9 +109,143 @@ SCOPE_MARKDOWN_FILES = [
 class Finding:
     check_id: str
     severity: str  # P0/P1/P2
-    status: str  # fail/warn
+    status: str  # fail/warn/accepted
     target: str
     message: str
+
+
+def _finding_key(finding: Finding) -> tuple[str, str, str, str]:
+    return (
+        finding.check_id,
+        finding.severity,
+        finding.target,
+        finding.message,
+    )
+
+
+def _normalize_status(finding: Finding) -> Finding:
+    if finding.status == "fail" and finding.severity != "P0":
+        return Finding(
+            finding.check_id,
+            finding.severity,
+            "warn",
+            finding.target,
+            finding.message,
+        )
+    return finding
+
+
+def _baseline_path(root: Path, baseline_arg: str, no_baseline: bool) -> Path | None:
+    if no_baseline:
+        return None
+    baseline_path = Path(baseline_arg)
+    if not baseline_path.is_absolute():
+        baseline_path = root / baseline_path
+    return baseline_path
+
+
+def _load_baseline(root: Path, baseline_path: Path | None) -> tuple[set[tuple[str, str, str, str]], list[Finding]]:
+    if baseline_path is None or not baseline_path.exists():
+        return set(), []
+
+    target = str(baseline_path.relative_to(root)) if baseline_path.is_relative_to(root) else str(baseline_path)
+
+    try:
+        data = json.loads(baseline_path.read_text())
+    except Exception as exc:
+        return set(), [
+            Finding(
+                "BASE-001",
+                "P0",
+                "fail",
+                target,
+                f"Baseline file is invalid JSON: {exc}",
+            )
+        ]
+
+    entries = data.get("findings") if isinstance(data, dict) else data
+    if not isinstance(entries, list):
+        return set(), [
+            Finding(
+                "BASE-001",
+                "P0",
+                "fail",
+                target,
+                "Baseline file must contain a findings list",
+            )
+        ]
+
+    baseline_keys: set[tuple[str, str, str, str]] = set()
+    errors: list[Finding] = []
+    required = ["check_id", "severity", "target", "message"]
+
+    for index, entry in enumerate(entries):
+        entry_target = f"{target}#{index + 1}"
+        if not isinstance(entry, dict):
+            errors.append(
+                Finding("BASE-001", "P0", "fail", entry_target, "Baseline entry must be an object")
+            )
+            continue
+
+        missing = [key for key in required if not entry.get(key)]
+        if missing:
+            errors.append(
+                Finding(
+                    "BASE-001",
+                    "P0",
+                    "fail",
+                    entry_target,
+                    "Baseline entry missing required keys: " + ", ".join(missing),
+                )
+            )
+            continue
+
+        severity = str(entry["severity"])
+        if severity == "P0":
+            errors.append(
+                Finding(
+                    "BASE-002",
+                    "P0",
+                    "fail",
+                    entry_target,
+                    "Baseline entries cannot accept P0 findings",
+                )
+            )
+            continue
+
+        baseline_keys.add(
+            (
+                str(entry["check_id"]),
+                severity,
+                str(entry["target"]),
+                str(entry["message"]),
+            )
+        )
+
+    return baseline_keys, errors
+
+
+def _split_baselined_findings(
+    findings: list[Finding], baseline_keys: set[tuple[str, str, str, str]]
+) -> tuple[list[Finding], list[Finding]]:
+    active: list[Finding] = []
+    accepted: list[Finding] = []
+
+    for finding in findings:
+        if _finding_key(finding) in baseline_keys:
+            accepted.append(
+                Finding(
+                    finding.check_id,
+                    finding.severity,
+                    "accepted",
+                    finding.target,
+                    finding.message,
+                )
+            )
+        else:
+            active.append(finding)
+
+    return active, accepted
 
 
 def _iter_feature_dirs(root: Path) -> Iterable[Path]:
@@ -468,7 +604,7 @@ def check_platform_sections(root: Path) -> list[Finding]:
     return findings
 
 
-def _to_markdown_report(root: Path, findings: list[Finding]) -> str:
+def _to_markdown_report(root: Path, findings: list[Finding], accepted_baseline: list[Finding]) -> str:
     fails = [f for f in findings if f.status == "fail"]
     warns = [f for f in findings if f.status == "warn"]
     p0 = [f for f in findings if f.severity == "P0" and f.status == "fail"]
@@ -479,24 +615,37 @@ def _to_markdown_report(root: Path, findings: list[Finding]) -> str:
     lines.append(f"Generated from `{root}`")
     lines.append("")
     lines.append("## Summary")
-    lines.append(f"- Total findings: {len(findings)}")
-    lines.append(f"- Fails: {len(fails)}")
+    lines.append(f"- Active findings: {len(findings)}")
+    lines.append(f"- Blocking failures: {len(fails)}")
     lines.append(f"- Warnings: {len(warns)}")
-    lines.append(f"- P0 fails: {len(p0)}")
+    lines.append(f"- Accepted baseline findings: {len(accepted_baseline)}")
+    lines.append(f"- P0 blocking failures: {len(p0)}")
     lines.append("")
 
     if not findings:
-        lines.append("No findings. Governance checks passed.")
-        return "\n".join(lines)
+        lines.append("No active findings. Governance checks passed.")
+    else:
+        lines.append("## Active Findings")
+        lines.append("")
+        lines.append("| Check | Severity | Status | Target | Message |")
+        lines.append("|---|---|---|---|---|")
+        for f in findings:
+            lines.append(
+                f"| {f.check_id} | {f.severity} | {f.status} | `{f.target}` | {f.message.replace('|', '/')} |"
+            )
 
-    lines.append("## Findings")
-    lines.append("")
-    lines.append("| Check | Severity | Status | Target | Message |")
-    lines.append("|---|---|---|---|---|")
-    for f in findings:
-        lines.append(
-            f"| {f.check_id} | {f.severity} | {f.status} | `{f.target}` | {f.message.replace('|', '/')} |"
-        )
+    if accepted_baseline:
+        lines.append("")
+        lines.append("## Accepted Baseline Findings")
+        lines.append("")
+        lines.append("These findings are known legacy debt and do not block the P0 merge gate.")
+        lines.append("")
+        lines.append("| Check | Severity | Status | Target | Message |")
+        lines.append("|---|---|---|---|---|")
+        for f in accepted_baseline:
+            lines.append(
+                f"| {f.check_id} | {f.severity} | {f.status} | `{f.target}` | {f.message.replace('|', '/')} |"
+            )
 
     return "\n".join(lines)
 
@@ -507,36 +656,50 @@ def main() -> None:
     parser.add_argument("--strict", action="store_true", help="Fail on any fail/warn finding")
     parser.add_argument("--report", default="", help="Optional markdown report output path")
     parser.add_argument("--json", action="store_true", help="Emit findings as JSON")
+    parser.add_argument(
+        "--baseline",
+        default=DEFAULT_BASELINE_PATH,
+        help=f"Accepted legacy finding baseline path (default: {DEFAULT_BASELINE_PATH})",
+    )
+    parser.add_argument("--no-baseline", action="store_true", help="Disable accepted legacy baseline")
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
 
-    findings: list[Finding] = []
-    findings.extend(check_artifacts_and_metadata(root))
-    findings.extend(check_markdown_links(root))
-    findings.extend(check_constitution_sync(root))
-    findings.extend(check_checklist_consistency(root))
-    findings.extend(check_platform_sections(root))
+    raw_findings: list[Finding] = []
+    raw_findings.extend(check_artifacts_and_metadata(root))
+    raw_findings.extend(check_markdown_links(root))
+    raw_findings.extend(check_constitution_sync(root))
+    raw_findings.extend(check_checklist_consistency(root))
+    raw_findings.extend(check_platform_sections(root))
+
+    normalized_findings = [_normalize_status(finding) for finding in raw_findings]
+    baseline_path = _baseline_path(root, args.baseline, args.no_baseline)
+    baseline_keys, baseline_errors = _load_baseline(root, baseline_path)
+    findings, accepted_baseline = _split_baselined_findings(normalized_findings, baseline_keys)
+    findings = baseline_errors + findings
 
     if args.report:
         report_path = Path(args.report)
         if not report_path.is_absolute():
             report_path = root / report_path
         report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_text(_to_markdown_report(root, findings))
+        report_path.write_text(_to_markdown_report(root, findings, accepted_baseline))
 
     if args.json:
         print(
             json.dumps(
                 {
                     "root": str(root),
+                    "baseline": str(baseline_path) if baseline_path else None,
                     "findings": [f.__dict__ for f in findings],
+                    "accepted_baseline": [f.__dict__ for f in accepted_baseline],
                 },
                 indent=2,
             )
         )
     else:
-        print(_to_markdown_report(root, findings))
+        print(_to_markdown_report(root, findings, accepted_baseline))
 
     p0_fails = [f for f in findings if f.status == "fail" and f.severity == "P0"]
     any_fails = [f for f in findings if f.status == "fail"]

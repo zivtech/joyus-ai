@@ -58,4 +58,5 @@ export interface CreateExportJobParams {
   tenantId: string;
   request: ExcelExportRequest;
   baseUrl: string;
+  tenantAccessPreResolved?: boolean;
 }
