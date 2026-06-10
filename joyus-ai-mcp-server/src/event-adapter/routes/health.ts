@@ -12,6 +12,7 @@ import { eq, and, count, sql, gte, lt } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import { webhookEvents, eventScheduledTasks } from '../schema.js';
 import type { SchedulerService } from '../services/scheduler.js';
 
@@ -20,12 +21,11 @@ import type { SchedulerService } from '../services/scheduler.js';
 // ============================================================
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present.
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return tenantIdFromRequest(req);
 }
 
 // ============================================================

@@ -43,10 +43,20 @@ export interface ExcelExportJob {
   downloadExpiresAt?: string;
 }
 
+export interface ResolvedExportDownload {
+  jobId: string;
+  userId: string;
+  tenantId: string;
+  exportType: string;
+  filePath: string;
+  fileName?: string;
+  expiresAt: string;
+}
+
 export interface CreateExportJobParams {
   userId: string;
   tenantId: string;
   request: ExcelExportRequest;
   baseUrl: string;
+  tenantAccessPreResolved?: boolean;
 }
-

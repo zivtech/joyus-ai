@@ -758,6 +758,7 @@ function boundText(text: string, maxLength: number): string {
   return `${normalized.slice(0, maxLength - 3).trim()}...`;
 }
 
+
 function normalizeGithubError(error: any, toolName: string, input: any): Error {
   if (!error.response) {
     return error;

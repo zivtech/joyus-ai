@@ -11,9 +11,10 @@
 import { createId } from '@paralleldrive/cuid2';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Router, type Request, type Response } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 
 import { inngest } from '../inngest/client.js';
+import { resolveTenantContext, sendTenantResolutionError, tenantIdFromRequest } from '../tenancy/resolver.js';
 
 import { validateNoCycle } from './graph/cycle-detector.js';
 import type { DecisionRecorder } from './review/decision.js';
@@ -54,17 +55,43 @@ export interface PipelineRouterDeps {
 
 /**
  * Extract tenantId from the authenticated request context.
- * userId === tenantId until formal tenant resolution exists (see #37).
- * Never trust request headers for tenant identity.
+ * Prefer the shared tenant resolver context; fall back to the authenticated
+ * user id for direct route tests that invoke handlers without Express middleware.
  */
 function getTenantId(req: Request): string {
-  if (req.mcpUser?.id) {
-    return req.mcpUser.id;
+  return tenantIdFromRequest(req) ?? (req.session?.userId as string | undefined) ?? '';
+}
+
+// Normalizes the two error shapes Drizzle's node-postgres driver can surface:
+// pg v8 sets `code` directly on the top-level DatabaseError, while a wrapped
+// error nests it under `.cause`. Only a single level of `.cause` is inspected;
+// deeper nesting (err.cause.cause) is not expected from the current driver.
+function getPgError(err: unknown): { code?: unknown } | null {
+  const cause = err && typeof err === 'object' && 'cause' in err
+    ? (err as { cause?: unknown }).cause
+    : null;
+  const candidate = cause ?? err;
+
+  if (!candidate || typeof candidate !== 'object') {
+    return null;
   }
-  if (req.session?.userId) {
-    return req.session.userId as string;
+
+  return candidate as { code?: unknown };
+}
+
+function isPgUniqueViolation(err: unknown): boolean {
+  return getPgError(err)?.code === '23505';
+}
+
+function sendPipelineMutationError(res: Response, err: unknown): Response {
+  if (isPgUniqueViolation(err)) {
+    return res.status(409).json({
+      error: 'Pipeline conflicts with an existing record',
+    });
   }
-  return '';
+
+  const message = err instanceof Error ? err.message : 'Internal error';
+  return res.status(500).json({ error: message });
 }
 
 // ============================================================
@@ -74,6 +101,20 @@ function getTenantId(req: Request): string {
 export function createPipelineRouter(deps: PipelineRouterDeps): Router {
   const { db, stepRegistry, decisionRecorder } = deps;
   const router = Router();
+
+  router.use(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await resolveTenantContext(req, {
+        db,
+        lookupDefaultTenant: true,
+        tenantHeaderNames: ['x-tenant-id'],
+        tenantQueryKeys: ['tenant_id', 'tenantId'],
+      });
+      next();
+    } catch (error) {
+      sendTenantResolutionError(res, error);
+    }
+  });
 
   // ----------------------------------------------------------
   // PIPELINE CRUD
@@ -187,8 +228,7 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
         pipeline: { ...pipeline, steps: stepRecords },
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Internal error';
-      return res.status(500).json({ error: message });
+      return sendPipelineMutationError(res, err);
     }
   });
 
@@ -375,8 +415,7 @@ export function createPipelineRouter(deps: PipelineRouterDeps): Router {
 
       return res.json({ pipeline: { ...updated, steps } });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Internal error';
-      return res.status(500).json({ error: message });
+      return sendPipelineMutationError(res, err);
     }
   });
 

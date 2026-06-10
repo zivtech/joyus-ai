@@ -46,6 +46,8 @@ describe('Tool Definitions', () => {
       expect(toolNames).toContain('jira_search_issues');
       expect(toolNames).toContain('jira_get_issue');
       expect(toolNames).toContain('jira_add_comment');
+      expect(toolNames).toContain('jira_resolve_reviewers');
+      expect(toolNames).toContain('jira_post_proposal_comment');
     });
 
     it('should have required fields specified', () => {
@@ -54,6 +56,17 @@ describe('Tool Definitions', () => {
 
       const getIssueTool = jiraTools.find(t => t.name === 'jira_get_issue');
       expect(getIssueTool?.inputSchema.required).toContain('issueKey');
+
+      const resolveReviewersTool = jiraTools.find(t => t.name === 'jira_resolve_reviewers');
+      expect(resolveReviewersTool?.inputSchema.required).toContain('issueKey');
+
+      const proposalTool = jiraTools.find(t => t.name === 'jira_post_proposal_comment');
+      expect(proposalTool?.inputSchema.required).toContain('issueKey');
+      expect(proposalTool?.inputSchema.required).toContain('summary');
+      expect(proposalTool?.inputSchema.required).toContain('affectedComponents');
+      expect(proposalTool?.inputSchema.required).toContain('proposedChanges');
+      expect(proposalTool?.inputSchema.required).toContain('riskLevel');
+      expect(proposalTool?.inputSchema.required).toContain('approvalPrompt');
     });
   });
 

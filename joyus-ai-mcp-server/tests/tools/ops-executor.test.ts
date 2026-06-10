@@ -11,6 +11,7 @@ vi.mock('../../src/exports/service.js', () => ({
   }),
 }));
 
+import { createExcelExportJob } from '../../src/exports/service.js';
 import { executeOpsTool } from '../../src/tools/executors/ops-executor.js';
 
 beforeEach(() => {
@@ -20,23 +21,33 @@ beforeEach(() => {
 describe('executeOpsTool', () => {
   it('throws on unsupported tool name', async () => {
     await expect(
-      executeOpsTool('ops_unknown', {}, { userId: 'user-1' }),
+      executeOpsTool('ops_unknown', {}, { userId: 'user-1', tenantId: 'tenant-1' }),
     ).rejects.toThrow('Unsupported ops tool');
   });
 
-  it('throws when required tenant_id is missing', async () => {
+  it('throws when the resolved tenant context is missing', async () => {
+    // The caller (executor.ts) resolves and authorizes the tenant; a missing
+    // context.tenantId indicates a wiring bug and must fail closed.
     await expect(
-      executeOpsTool('ops_export_excel', {}, { userId: 'user-1' }),
-    ).rejects.toThrow('Missing required parameter: tenant_id');
+      executeOpsTool('ops_export_excel', {}, { userId: 'user-1' } as never),
+    ).rejects.toThrow('Missing required tenant context');
   });
 
-  it('ops_export_excel — creates export job', async () => {
-    const result = await executeOpsTool(
+  it('ops_export_excel — uses the resolved tenant from context, not raw input', async () => {
+    await executeOpsTool(
       'ops_export_excel',
-      { tenant_id: 'tenant-1' },
-      { userId: 'user-1' },
-    ) as any;
+      // A divergent tenant_id in raw input must be ignored in favor of the
+      // resolved-and-authorized context.tenantId.
+      { tenant_id: 'tenant-from-input' },
+      { userId: 'user-1', tenantId: 'tenant-resolved', tenantAccessPreResolved: true },
+    );
 
-    expect(result).toBeDefined();
+    expect(vi.mocked(createExcelExportJob)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        tenantId: 'tenant-resolved',
+        tenantAccessPreResolved: true,
+      }),
+    );
   });
 });

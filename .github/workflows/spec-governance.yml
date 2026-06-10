@@ -21,6 +21,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run governance checks (P0 merge gate)
+      - name: Run governance checks (P0 merge gate with accepted legacy baseline)
         run: |
           python scripts/spec-governance-check.py

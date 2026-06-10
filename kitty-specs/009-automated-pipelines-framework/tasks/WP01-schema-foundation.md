@@ -100,7 +100,7 @@ This WP adds a third schema spread: `...pipelinesSchema`.
 
 **Important implementation details**:
 - All tables use CUID2 for primary keys (matching existing pattern in `src/db/schema.ts` and `src/content/schema.ts`)
-- `pipelines.(tenantId, name)` must have a UNIQUE composite index
+- `pipelines.(tenantId, name)` should have a non-unique composite index; pipeline identity is `id`
 - `pipeline_steps.(pipelineId, position)` must have a UNIQUE composite index
 - `execution_steps.(executionId, position)` must have a UNIQUE composite index
 - `pipeline_templates.name` must be UNIQUE

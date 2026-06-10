@@ -47,9 +47,12 @@ const makeTextResponse = (text: string, stop_reason = 'end_turn') => ({
 describe('AnthropicGenerationProvider', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(Anthropic).mockImplementation(() => ({
-      messages: { create: mockMessagesCreate },
-    }) as unknown as Anthropic);
+    vi.mocked(Anthropic).mockImplementation(
+      () =>
+        ({
+          messages: { create: mockMessagesCreate },
+        }) as unknown as Anthropic
+    );
   });
 
   afterEach(() => {
@@ -59,7 +62,37 @@ describe('AnthropicGenerationProvider', () => {
   it('returns text from the first text block', async () => {
     mockMessagesCreate.mockResolvedValue(makeTextResponse('The answer is 42.'));
     const provider = new AnthropicGenerationProvider();
-    expect(await provider.generate('What is the answer?', 'Be helpful.')).toBe('The answer is 42.');
+    await expect(provider.generate('What is the answer?', 'Be helpful.')).resolves.toMatchObject({
+      text: 'The answer is 42.',
+      model: 'claude-sonnet-4-6',
+      usage: {
+        inputTokens: 10,
+        outputTokens: 5,
+        cacheWriteTokens: 0,
+        cacheReadTokens: 0,
+      },
+    });
+  });
+
+  it('normalizes Anthropic cache usage metadata', async () => {
+    mockMessagesCreate.mockResolvedValue({
+      ...makeTextResponse('Cached answer.'),
+      usage: {
+        input_tokens: 20,
+        output_tokens: 10,
+        cache_creation_input_tokens: 12,
+        cache_read_input_tokens: 8,
+      },
+    });
+    const provider = new AnthropicGenerationProvider();
+    await expect(provider.generate('query', 'system')).resolves.toMatchObject({
+      usage: {
+        inputTokens: 20,
+        outputTokens: 10,
+        cacheWriteTokens: 12,
+        cacheReadTokens: 8,
+      },
+    });
   });
 
   it('throws when response contains no text block', async () => {
@@ -69,13 +102,13 @@ describe('AnthropicGenerationProvider', () => {
     });
     const provider = new AnthropicGenerationProvider();
     await expect(provider.generate('query', 'system')).rejects.toThrow(
-      'Anthropic response contained no text block',
+      'Anthropic response contained no text block'
     );
   });
 
   it('wraps RateLimitError with retryable: true', async () => {
     mockMessagesCreate.mockRejectedValue(
-      new (Anthropic as MockAnthropicStatic).RateLimitError('Rate limited'),
+      new (Anthropic as MockAnthropicStatic).RateLimitError('Rate limited')
     );
     const provider = new AnthropicGenerationProvider();
     await expect(provider.generate('query', 'system')).rejects.toMatchObject({
@@ -86,7 +119,7 @@ describe('AnthropicGenerationProvider', () => {
 
   it('wraps AuthenticationError with retryable: false', async () => {
     mockMessagesCreate.mockRejectedValue(
-      new (Anthropic as MockAnthropicStatic).AuthenticationError('Unauthorized'),
+      new (Anthropic as MockAnthropicStatic).AuthenticationError('Unauthorized')
     );
     const provider = new AnthropicGenerationProvider();
     await expect(provider.generate('query', 'system')).rejects.toMatchObject({
@@ -116,7 +149,7 @@ describe('AnthropicGenerationProvider', () => {
     const provider = new AnthropicGenerationProvider();
     await provider.generate('q', 's');
     expect(mockMessagesCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ model: 'claude-opus-4-7' }),
+      expect.objectContaining({ model: 'claude-opus-4-7' })
     );
   });
 
@@ -126,7 +159,7 @@ describe('AnthropicGenerationProvider', () => {
     const provider = new AnthropicGenerationProvider({ model: 'claude-haiku-4-5-20251001' });
     await provider.generate('q', 's');
     expect(mockMessagesCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ model: 'claude-haiku-4-5-20251001' }),
+      expect.objectContaining({ model: 'claude-haiku-4-5-20251001' })
     );
   });
 
@@ -134,9 +167,7 @@ describe('AnthropicGenerationProvider', () => {
     mockMessagesCreate.mockResolvedValue(makeTextResponse('ok'));
     const provider = new AnthropicGenerationProvider({ maxTokens: 512 });
     await provider.generate('q', 's');
-    expect(mockMessagesCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ max_tokens: 512 }),
-    );
+    expect(mockMessagesCreate).toHaveBeenCalledWith(expect.objectContaining({ max_tokens: 512 }));
   });
 
   it('sends system prompt with ephemeral cache_control', async () => {
@@ -145,10 +176,8 @@ describe('AnthropicGenerationProvider', () => {
     await provider.generate('q', 'You are helpful.');
     expect(mockMessagesCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        system: [
-          { type: 'text', text: 'You are helpful.', cache_control: { type: 'ephemeral' } },
-        ],
-      }),
+        system: [{ type: 'text', text: 'You are helpful.', cache_control: { type: 'ephemeral' } }],
+      })
     );
   });
 });
