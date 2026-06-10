@@ -228,6 +228,7 @@ Run automated reports and alerts on a schedule. Manage tasks at `http://localhos
 | `JIRA_STANDUP_SUMMARY` | Daily summary of team's Jira activity | `0 9 * * 1-5` (9am weekdays) |
 | `JIRA_OVERDUE_ALERT` | Alert on overdue tickets | `0 8 * * *` (8am daily) |
 | `JIRA_SPRINT_REPORT` | Sprint progress report | `0 17 * * 5` (5pm Friday) |
+| `JIRA_A11Y_TRIAGE` | Accessibility issue intake and remediation work-unit enqueue | `*/30 * * * *` |
 | `SLACK_CHANNEL_DIGEST` | Summarize channel activity | `0 18 * * 1-5` (6pm weekdays) |
 | `SLACK_MENTIONS_SUMMARY` | Summary of your mentions | `0 9 * * 1-5` |
 | `GITHUB_PR_REMINDER` | Open PRs needing review | `0 10 * * 1-5` |
@@ -243,6 +244,9 @@ Each task type accepts specific configuration in JSON format:
 ```json
 // Jira tasks
 {"project": "PROJ", "team": ["user1", "user2"], "daysOverdue": 3}
+
+// Jira accessibility triage
+{"jql": "labels in (a11y, accessibility) AND status not in (Done, Closed)", "priorityAllowlist": ["High", "Highest"], "dryRun": true}
 
 // Slack tasks
 {"channel": "general", "lookbackHours": 24}

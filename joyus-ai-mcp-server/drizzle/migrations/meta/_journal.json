@@ -85,6 +85,13 @@
       "when": 1779724808297,
       "tag": "0011_workflow_approval_state",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778505114112,
+      "tag": "0012_jira_a11y_triage_scheduler",
+      "breakpoints": true
     }
   ]
 }

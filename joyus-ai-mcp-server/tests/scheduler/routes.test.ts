@@ -182,6 +182,7 @@ describe('GET / — task list', () => {
     expect(html).toContain('Scheduled Tasks');
     expect(html).toContain('3 active tasks');
     expect(html).toContain('Daily Standup');
+    expect(html).toContain('Accessibility Triage');
   });
 
   it('shows empty state when no tasks exist', async () => {
