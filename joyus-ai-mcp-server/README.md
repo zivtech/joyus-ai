@@ -168,8 +168,12 @@ docker-compose up
 | `jira_get_issue` | Get issue details |
 | `jira_get_my_issues` | Get assigned issues |
 | `jira_add_comment` | Add a comment |
+| `jira_resolve_reviewers` | Resolve proposal reviewers from issue metadata |
+| `jira_post_proposal_comment` | Post a structured remediation proposal comment |
 | `jira_transition_issue` | Change issue status |
 | `jira_list_projects` | List all projects |
+
+Jira OAuth through the Auth Portal provisions Jira Cloud connections. The Jira executor also supports Server/Data Center-style connection metadata with `apiVariant: "server"` and `baseUrl` for deployments that provide those tokens through their own connection setup.
 
 ### Slack
 

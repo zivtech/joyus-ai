@@ -95,6 +95,70 @@ export const jiraTools: ToolDefinition[] = [
     }
   },
   {
+    name: 'jira_resolve_reviewers',
+    description: 'Resolve remediation proposal reviewers from Jira issue metadata such as custom reviewer fields, assignee, and reporter',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        issueKey: {
+          type: 'string',
+          description: 'Issue key like PROJ-123'
+        },
+        reviewerFieldIds: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional Jira field IDs to check first, such as customfield_10010'
+        },
+        fallbackOrder: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Reviewer source order using customFields, assignee, and reporter'
+        }
+      },
+      required: ['issueKey']
+    }
+  },
+  {
+    name: 'jira_post_proposal_comment',
+    description: 'Post a structured remediation proposal comment to a Jira issue for reviewer approval',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        issueKey: {
+          type: 'string',
+          description: 'Issue key like PROJ-123'
+        },
+        summary: {
+          type: 'string',
+          description: 'Short summary of the remediation proposal'
+        },
+        affectedComponents: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Components or areas affected by the proposal'
+        },
+        proposedChanges: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Specific proposed remediation changes'
+        },
+        riskLevel: {
+          type: 'string',
+          description: 'Risk level for the proposed change'
+        },
+        approvalPrompt: {
+          type: 'string',
+          description: 'Question or instruction asking the reviewer for approval'
+        },
+        details: {
+          type: 'string',
+          description: 'Optional supporting details to include after the required sections'
+        }
+      },
+      required: ['issueKey', 'summary', 'affectedComponents', 'proposedChanges', 'riskLevel', 'approvalPrompt']
+    }
+  },
+  {
     name: 'jira_transition_issue',
     description: 'Move a Jira issue to a different status (e.g., "In Progress", "Done")',
     inputSchema: {
