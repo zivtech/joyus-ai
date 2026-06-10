@@ -5,6 +5,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mkdtemp, readFile, readdir, rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 // ── Stub DB ────────────────────────────────────────────────────────────────
 //
@@ -40,7 +43,10 @@ vi.mock('../../../src/db/client.js', () => {
   };
 });
 
-import { CorpusSnapshotService } from '../../../src/profiles/generation/corpus-snapshot.js';
+import {
+  CorpusSnapshotMaterializationError,
+  CorpusSnapshotService,
+} from '../../../src/profiles/generation/corpus-snapshot.js';
 import { db } from '../../../src/db/client.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -72,6 +78,7 @@ function makeDoc(overrides: Record<string, unknown> = {}) {
     isActive: true,
     dataTier: 1,
     metadata: {},
+    extractedText: 'Snapshot document text.',
     createdAt: new Date(),
     ...overrides,
   };
@@ -245,5 +252,75 @@ describe('CorpusSnapshotService.hashContent', () => {
     const a = CorpusSnapshotService.hashContent('content-a');
     const b = CorpusSnapshotService.hashContent('content-b');
     expect(a).not.toBe(b);
+  });
+});
+
+describe('CorpusSnapshotService.materializeSnapshot', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('writes only extracted snapshot text to a temporary corpus directory', async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), 'joyus-snapshot-test-'));
+    try {
+      const snap = makeSnapshot({ documentHashes: ['hash1'] });
+      const doc = makeDoc({ contentHash: 'hash1', extractedText: 'Tenant-scoped text.' });
+
+      let callIndex = 0;
+      vi.mocked(db.select).mockImplementation(() => {
+        callIndex++;
+        if (callIndex === 1) {
+          return {
+            from: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockResolvedValue([snap]),
+          } as never;
+        }
+        return {
+          from: vi.fn().mockReturnThis(),
+          where: vi.fn().mockResolvedValue([doc]),
+        } as never;
+      });
+
+      const svc = new CorpusSnapshotService();
+      const materialized = await svc.materializeSnapshot('tenant-abc', 'snap-001', { baseDir });
+
+      expect(materialized.documentCount).toBe(1);
+      const files = await readdir(materialized.corpusPath);
+      expect(files).toEqual(['document-0001.txt']);
+      await expect(readFile(join(materialized.corpusPath, files[0] ?? ''), 'utf8'))
+        .resolves.toBe('Tenant-scoped text.');
+
+      await materialized.cleanup();
+      await expect(readdir(materialized.corpusPath)).rejects.toThrow();
+    } finally {
+      await rm(baseDir, { recursive: true, force: true });
+    }
+  });
+
+  it('throws a generic materialization error when snapshot documents lack text', async () => {
+    const snap = makeSnapshot({ documentHashes: ['hash1'] });
+    const doc = makeDoc({ contentHash: 'hash1', extractedText: null });
+
+    let callIndex = 0;
+    vi.mocked(db.select).mockImplementation(() => {
+      callIndex++;
+      if (callIndex === 1) {
+        return {
+          from: vi.fn().mockReturnThis(),
+          where: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue([snap]),
+        } as never;
+      }
+      return {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockResolvedValue([doc]),
+      } as never;
+    });
+
+    const svc = new CorpusSnapshotService();
+    await expect(svc.materializeSnapshot('tenant-abc', 'snap-001')).rejects.toThrow(
+      CorpusSnapshotMaterializationError,
+    );
   });
 });

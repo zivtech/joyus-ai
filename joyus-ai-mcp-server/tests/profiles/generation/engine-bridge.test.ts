@@ -82,7 +82,7 @@ function mockTimeout(): void {
 // ── Fixture ────────────────────────────────────────────────────────────────
 
 function makeBridge(): EngineBridge {
-  return new EngineBridge({ engineScriptPath: '/opt/engine/run.py' });
+  return new EngineBridge({ engineCommand: 'joyus-profile' });
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -106,6 +106,20 @@ describe('EngineBridge.generateProfile', () => {
     const bridge = makeBridge();
     const result = await bridge.generateProfile('/corpus', 'author-001');
 
+    expect(mockExecFile).toHaveBeenCalledWith(
+      'joyus-profile',
+      [
+        'generate',
+        '--corpus-path',
+        '/corpus',
+        '--author-id',
+        'author-001',
+        '--output-format',
+        'json',
+      ],
+      expect.any(Object),
+      expect.any(Function),
+    );
     expect(result.authorId).toBe('author-001');
     expect(result.engineVersion).toBe('1.0.0');
     expect(result.fidelityScore).toBe(0.91);
@@ -137,6 +151,14 @@ describe('EngineBridge.generateProfile', () => {
     );
   });
 
+  it('throws EngineOutputError when the engine returns a different author', async () => {
+    mockSuccess(validEngineOutput('author-999'));
+    const bridge = makeBridge();
+    await expect(bridge.generateProfile('/corpus', 'author-001')).rejects.toThrow(
+      EngineOutputError,
+    );
+  });
+
   it('throws EngineExecutionError on non-zero exit', async () => {
     mockFailure(1, 'ImportError: no module named joyus_profile');
     const bridge = makeBridge();
@@ -153,11 +175,12 @@ describe('EngineBridge.generateProfile', () => {
     );
   });
 
-  it('fidelityScore is null when engine omits it', async () => {
+  it('fidelityScore may be null when the engine cannot score fidelity yet', async () => {
     const output = JSON.stringify({
       authorId: 'author-002',
       stylometricFeatures: {},
       markers: [],
+      fidelityScore: null,
       engineVersion: '1.0.0',
     });
     mockSuccess(output);
@@ -228,6 +251,12 @@ describe('EngineBridge.healthCheck', () => {
     mockSuccess('OK');
     const bridge = makeBridge();
     expect(await bridge.healthCheck()).toBe(true);
+    expect(mockExecFile).toHaveBeenCalledWith(
+      'joyus-profile',
+      ['health-check'],
+      expect.any(Object),
+      expect.any(Function),
+    );
   });
 
   it('returns false when engine errors', async () => {

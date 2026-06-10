@@ -1,0 +1,14 @@
+{
+  "note": "Shape reference. run-spike.ts reads payloads directly from corpus/<kind>/*.json and computes tokenCount itself; you do not have to maintain this by hand. Kept as documentation of the per-payload fields and the corpus composition you should disclose in the report (NFR-007).",
+  "sample_size_target": {
+    "content_mcp": 30,
+    "rag_chunk": 20,
+    "executor_output": 20
+  },
+  "payload_shape": {
+    "id": "string — unique within kind",
+    "kind": "content_mcp | rag_chunk | executor_output",
+    "synthetic": "boolean — must be true unless a sanitized real sample is explicitly approved",
+    "content": "string — the payload that would reach the LLM (serialized)"
+  }
+}

@@ -11,6 +11,8 @@ import { eq, and } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Router, type Request, type Response } from 'express';
 
+import { pipelines } from '../../pipelines/schema.js';
+import { tenantIdFromRequest } from '../../tenancy/resolver.js';
 import { eventSources, platformSubscriptions } from '../schema.js';
 
 // ============================================================
@@ -26,12 +28,11 @@ export interface SubscriptionsRouterDeps {
 // ============================================================
 
 /**
- * Resolve tenant id from the authenticated MCP user.
- * userId === tenantId until formal tenant resolution exists (see #37).
+ * Resolve tenant id from the shared tenant context or authenticated MCP user.
  * Returns null when no authenticated user is present (platform-admin context).
  */
 function resolveTenantId(req: Request): string | null {
-  return req.mcpUser?.id ?? null;
+  return tenantIdFromRequest(req);
 }
 
 // ============================================================
@@ -74,6 +75,7 @@ function subscribeHandler(deps: SubscriptionsRouterDeps) {
       res.status(400).json({ error: 'validation_error', details: 'target_pipeline_id is required' });
       return;
     }
+    const trimmedTargetPipelineId = targetPipelineId.trim();
 
     try {
       // Verify source exists and is platform-wide
@@ -92,9 +94,16 @@ function subscribeHandler(deps: SubscriptionsRouterDeps) {
         return;
       }
 
-      // TODO(WP11): Verify target_pipeline_id belongs to tenant — requires pipelines table access
-      // This ownership check is deferred: the pipelines table lives outside this module boundary.
-      // Consistent with WP08/WP10 approach — caller is responsible for passing a valid pipeline id.
+      const [pipeline] = await deps.db
+        .select({ id: pipelines.id })
+        .from(pipelines)
+        .where(and(eq(pipelines.id, trimmedTargetPipelineId), eq(pipelines.tenantId, tenantId)))
+        .limit(1);
+
+      if (!pipeline) {
+        res.status(404).json({ error: 'pipeline_not_found' });
+        return;
+      }
 
       // Insert subscription
       const [created] = await deps.db
@@ -102,7 +111,7 @@ function subscribeHandler(deps: SubscriptionsRouterDeps) {
         .values({
           tenantId,
           eventSourceId: id,
-          targetPipelineId: targetPipelineId.trim(),
+          targetPipelineId: trimmedTargetPipelineId,
           isActive: true,
         })
         .returning();

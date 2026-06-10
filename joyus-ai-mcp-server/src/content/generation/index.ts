@@ -4,13 +4,26 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
+import { and, eq, sql } from 'drizzle-orm';
 
 import type { DrizzleClient } from '../../db/types.js';
-import { contentGenerationLogs, contentOperationLogs } from '../schema.js';
+import {
+  contentGenerationLogs,
+  contentMediationSessions,
+  contentOperationLogs,
+} from '../schema.js';
 import type { SearchService } from '../search/index.js';
 import type { ResolvedEntitlements, GenerationResult } from '../types.js';
 
 import { CitationManager, type CitationResult } from './citations.js';
+import {
+  buildGenerationCostMetadata,
+  formatCostUsd,
+  resolveGenerationCost,
+  type GenerationOperationMetadata,
+  type GenerationTokenUsage,
+  type ResolvedGenerationCost,
+} from './cost.js';
 import {
   ContentGenerator,
   PlaceholderGenerationProvider,
@@ -18,6 +31,9 @@ import {
   type GenerationOutput,
 } from './generator.js';
 import { ContentRetriever, type RetrievalResult, type RetrievedItem } from './retriever.js';
+
+/** Transaction handle passed to the `db.transaction(async tx => …)` callback. */
+type DrizzleTransaction = Parameters<Parameters<DrizzleClient['transaction']>[0]>[0];
 
 export interface GenerateOptions {
   profileId?: string;
@@ -34,7 +50,7 @@ export class GenerationService {
   constructor(
     searchService: SearchService,
     provider: GenerationProvider,
-    private db: DrizzleClient,
+    private db: DrizzleClient
   ) {
     this.retriever = new ContentRetriever(searchService, db);
     this.generator = new ContentGenerator(provider);
@@ -46,7 +62,7 @@ export class GenerationService {
     userId: string,
     tenantId: string,
     entitlements: ResolvedEntitlements,
-    options?: GenerateOptions,
+    options?: GenerateOptions
   ): Promise<GenerationResult> {
     const startMs = Date.now();
 
@@ -60,43 +76,70 @@ export class GenerationService {
     const genOutput = await this.generator.generate(query, retrieval, options?.profileId);
 
     // 3. Extract citations from generated text
-    const citationResult = this.citationManager.extractCitations(
-      genOutput.text,
-      retrieval.items,
-    );
+    const citationResult = this.citationManager.extractCitations(genOutput.text, retrieval.items);
 
     const durationMs = Date.now() - startMs;
     const generationLogId = createId();
     const operationLogId = createId();
 
-    // 4. Log to generation_logs (no durationMs column in this table)
-    await this.db.insert(contentGenerationLogs).values({
-      id: generationLogId,
-      tenantId,
-      userId,
-      sessionId: options?.sessionId ?? null,
-      profileId: options?.profileId ?? null,
-      query,
-      sourcesUsed: retrieval.items.map(i => i.itemId),
+    // Resolve pricing + micro-USD once so the operation-log metadata and the
+    // session accumulator share an identical figure and cannot diverge.
+    const cost = resolveGenerationCost(genOutput.model, genOutput.usage);
+    const costMetadata = buildGenerationCostMetadata(genOutput.model, genOutput.usage, cost);
+    const operationMetadata: GenerationOperationMetadata = {
+      generationLogId,
       citationCount: citationResult.citationCount,
-      responseLength: citationResult.text.length,
-    });
+      sourcesUsed: retrieval.items.length,
+      profileId: options?.profileId ?? null,
+      ...(costMetadata ?? {}),
+    };
 
-    // 5. Audit log via operation_logs (includes durationMs)
-    await this.db.insert(contentOperationLogs).values({
-      id: operationLogId,
-      tenantId,
-      operation: 'generate',
-      userId,
-      sessionId: options?.sessionId ?? null,
-      durationMs,
-      success: true,
-      metadata: {
-        generationLogId,
-        citationCount: citationResult.citationCount,
-        sourcesUsed: retrieval.items.length,
+    // Surface usage that we recorded but could not price, so unpriced spend is
+    // observable rather than silently accumulating as $0.
+    if (genOutput.usage && cost.pricing === null) {
+      console.warn(
+        `[GenerationService] No pricing for model "${genOutput.model ?? 'unknown'}"; ` +
+          'token usage recorded but estimated cost is $0.'
+      );
+    }
+
+    // Cost-accounting writes must commit all-or-nothing: a failure between them
+    // would desync the per-operation logs from the session accumulator.
+    await this.db.transaction(async tx => {
+      // 4. Log to generation_logs (no durationMs column in this table)
+      await tx.insert(contentGenerationLogs).values({
+        id: generationLogId,
+        tenantId,
+        userId,
+        sessionId: options?.sessionId ?? null,
         profileId: options?.profileId ?? null,
-      },
+        query,
+        sourcesUsed: retrieval.items.map(i => i.itemId),
+        citationCount: citationResult.citationCount,
+        responseLength: citationResult.text.length,
+      });
+
+      // 5. Audit log via operation_logs (includes durationMs)
+      await tx.insert(contentOperationLogs).values({
+        id: operationLogId,
+        tenantId,
+        operation: 'generate',
+        userId,
+        sessionId: options?.sessionId ?? null,
+        durationMs,
+        success: true,
+        metadata: operationMetadata,
+      });
+
+      if (options?.sessionId && genOutput.usage) {
+        await this.addGenerationUsageToSession(
+          tx,
+          options.sessionId,
+          tenantId,
+          genOutput.usage,
+          cost
+        );
+      }
     });
 
     return {
@@ -111,14 +154,36 @@ export class GenerationService {
       },
     };
   }
+
+  private async addGenerationUsageToSession(
+    tx: DrizzleTransaction,
+    sessionId: string,
+    tenantId: string,
+    usage: GenerationTokenUsage,
+    cost: ResolvedGenerationCost
+  ): Promise<void> {
+    const estimatedCostIncrement = formatCostUsd(cost.microUsd ?? 0);
+
+    await tx
+      .update(contentMediationSessions)
+      .set({
+        totalInputTokens: sql`${contentMediationSessions.totalInputTokens} + ${usage.inputTokens}`,
+        totalOutputTokens: sql`${contentMediationSessions.totalOutputTokens} + ${usage.outputTokens}`,
+        totalCacheWriteTokens: sql`${contentMediationSessions.totalCacheWriteTokens} + ${usage.cacheWriteTokens}`,
+        totalCacheReadTokens: sql`${contentMediationSessions.totalCacheReadTokens} + ${usage.cacheReadTokens}`,
+        totalEstimatedCostUsd: sql`${contentMediationSessions.totalEstimatedCostUsd} + cast(${estimatedCostIncrement} as numeric(14, 6))`,
+      })
+      .where(
+        and(
+          eq(contentMediationSessions.id, sessionId),
+          eq(contentMediationSessions.tenantId, tenantId)
+        )
+      );
+  }
 }
 
 // Re-exports so callers can import everything from this module
-export {
-  ContentRetriever,
-  type RetrievalResult,
-  type RetrievedItem,
-} from './retriever.js';
+export { ContentRetriever, type RetrievalResult, type RetrievedItem } from './retriever.js';
 export type { SearchService } from '../search/index.js';
 export { AnthropicGenerationProvider } from './anthropic-provider.js';
 export {

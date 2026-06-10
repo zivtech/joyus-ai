@@ -69,13 +69,15 @@ docker compose up server
 
 ## 4. Profile Engine Boundary
 
-Feature 008 expects the private Spec 005 `joyus-profile-engine` companion runtime. That engine is not included in this public repository, and the server-to-engine contract is tracked separately in https://github.com/zivtech/joyus-ai/issues/67. If the private companion is available in the target environment, set `ENGINE_SCRIPT_PATH` to its Python entrypoint.
+Feature 008 expects a separately deployed profile engine runtime. That engine is not included in this public repository. The server-to-engine contract is documented in `../profile-engine-contract.md`. If an engine is available in the target environment, configure its CLI command:
 
 ```bash
-export ENGINE_SCRIPT_PATH="/absolute/path/to/joyus-profile-engine-entrypoint.py"
+export PROFILE_ENGINE_COMMAND="joyus-profile"
+export PROFILE_ENGINE_ARGS="generate"
+export PROFILE_ENGINE_HEALTH_ARGS="health-check"
 ```
 
-If the private companion engine is not available, leave `ENGINE_SCRIPT_PATH` unset and do not expect `profile_generate` to produce real profiles. The server should still boot, migrations should apply, and profile infrastructure should be testable. A `profile_generate` request should create a real generation run, mark it failed with a clear engine-not-configured error, and avoid creating fake profile rows.
+If the profile engine is not available, leave `PROFILE_ENGINE_COMMAND` unset and do not expect `profile_generate` to produce real profiles. The server should still boot, migrations should apply, and profile infrastructure should be testable. A `profile_generate` request should create a real generation run, mark it failed with a clear engine-not-configured error, and avoid creating fake profile rows.
 
 ## 5. Optional Profile Integration Test Run
 
@@ -124,7 +126,7 @@ profiles.operation_logs
 
 ### No-Engine Generation Check
 
-If `ENGINE_SCRIPT_PATH` is unset, call `profile_generate` for a known tenant and corpus snapshot.
+If `PROFILE_ENGINE_COMMAND` is unset, call `profile_generate` for a known tenant and corpus snapshot.
 
 Step by step:
 

@@ -12,8 +12,8 @@
  *
  * tenantId note:
  *   No 'tenants' table exists yet — tenantId is an opaque text reference.
- *   In the current single-tenant world, tenantId == userId (see tools/executor.ts).
- *   Multi-tenant resolution is deferred to a future WP (WP12 per executor.ts comments).
+ *   Request-time authorization is resolved through the shared tenant resolver
+ *   and tenant_memberships table.
  */
 
 import { createId } from '@paralleldrive/cuid2';

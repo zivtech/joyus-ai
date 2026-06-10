@@ -1,0 +1,17 @@
+{
+  "name": "headroom-spike",
+  "private": true,
+  "type": "module",
+  "description": "WP01 throwaway evaluation spike for headroom-mcp-compression-layer. Not shipped.",
+  "scripts": {
+    "spike": "tsx run-spike.ts"
+  },
+  "dependencies": {
+    "headroom-ai": "TODO-pin-exact-version"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  },
+  "comment": "Pin headroom-ai to the exact version used (C-001) and record it in HEADROOM_VERSION (lib/headroom-client.ts) + the spike report. Add ajv if you choose to validate spike-report.json against the contract schema in-process."
+}

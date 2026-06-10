@@ -255,7 +255,7 @@ describe('EC-007: generation pipeline does not create empty profiles from zero d
     const { EngineBridge } = await import('../../src/profiles/generation/engine-bridge.js');
     const { CorpusSnapshotService } = await import('../../src/profiles/generation/corpus-snapshot.js');
 
-    const engine = new EngineBridge({ engineScriptPath: '/dev/null' });
+    const engine = new EngineBridge({ engineCommand: '/dev/null' });
     const snapshotService = new CorpusSnapshotService();
     const pipeline = new ProfileGenerationPipeline(engine, snapshotService);
 

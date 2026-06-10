@@ -163,7 +163,20 @@ describe('ToolRouterService.executeToolCall — T035', () => {
 
     expect(result.isError).toBe(false);
     expect(result.result).toBe('source list: []');
-    expect(mockExecuteTool).toHaveBeenCalledWith(TENANT_ID, 'content_list_sources', {});
+    expect(mockExecuteTool).toHaveBeenCalledWith(TENANT_ID, 'content_list_sources', { tenant_id: TENANT_ID });
+  });
+
+  it('dispatches with actor user id while preserving resolved tenant scope', async () => {
+    mockExecuteTool.mockResolvedValue('source list: []');
+    const router = new ToolRouterService();
+
+    await router.executeToolCall('content_list_sources', { filter: 'active' }, TENANT_ID, 'user-abc');
+
+    expect(mockExecuteTool).toHaveBeenCalledWith(
+      'user-abc',
+      'content_list_sources',
+      { filter: 'active', tenant_id: TENANT_ID },
+    );
   });
 
   it('JSON-stringifies non-string tool results', async () => {
