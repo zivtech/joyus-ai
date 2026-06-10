@@ -1,0 +1,16 @@
+{
+  "kind": "executor_output",
+  "note": "Known-answer tasks over executor responses. Probe fields buried in verbose JSON.",
+  "tasks": [
+    {
+      "id": "eo-t1",
+      "prompt": "Using only the provided issue_tracker.list payload, what is the status of issue SYN-2?",
+      "expected": "In Progress"
+    },
+    {
+      "id": "eo-t2",
+      "prompt": "Using only the provided issue_tracker.list payload, who is the assignee of SYN-1?",
+      "expected": "synthetic-user"
+    }
+  ]
+}

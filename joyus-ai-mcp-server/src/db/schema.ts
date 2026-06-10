@@ -5,7 +5,7 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   pgEnum,
@@ -47,6 +47,12 @@ export const taskRunStatusEnum = pgEnum('task_run_status', [
   'SKIPPED'
 ]);
 
+export const tenantRoleEnum = pgEnum('tenant_role', [
+  'member',
+  'admin',
+  'operator'
+]);
+
 // ============================================================
 // TABLES
 // ============================================================
@@ -60,6 +66,26 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
+
+// User-to-tenant authorization grants. tenantId is intentionally a text
+// identifier because tenant-scoped domain tables already store tenant_id as text.
+export const tenantMemberships = pgTable('tenant_memberships', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id').notNull(),
+  role: tenantRoleEnum('role').notNull().default('member'),
+  isDefault: boolean('is_default').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => ({
+  userTenantUnique: uniqueIndex('tenant_memberships_user_tenant_unique').on(table.userId, table.tenantId),
+  tenantIdIdx: index('tenant_memberships_tenant_id_idx').on(table.tenantId),
+  userDefaultIdx: index('tenant_memberships_user_default_idx').on(table.userId, table.isDefault),
+  userRoleIdx: index('tenant_memberships_user_role_idx').on(table.userId, table.role),
+  userDefaultUnique: uniqueIndex('tenant_memberships_user_default_unique')
+    .on(table.userId)
+    .where(sql`${table.isDefault} = true`)
+}));
 
 // OAuth tokens for connected services
 export const connections = pgTable('connections', {
@@ -167,10 +193,18 @@ export const taskRuns = pgTable('task_runs', {
 // ============================================================
 
 export const usersRelations = relations(users, ({ many }) => ({
+  tenantMemberships: many(tenantMemberships),
   connections: many(connections),
   auditLogs: many(auditLogs),
   scheduledTasks: many(scheduledTasks),
   taskRuns: many(taskRuns)
+}));
+
+export const tenantMembershipsRelations = relations(tenantMemberships, ({ one }) => ({
+  user: one(users, {
+    fields: [tenantMemberships.userId],
+    references: [users.id]
+  })
 }));
 
 export const connectionsRelations = relations(connections, ({ one }) => ({
@@ -212,6 +246,10 @@ export const taskRunsRelations = relations(taskRuns, ({ one }) => ({
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+
+export type TenantMembership = typeof tenantMemberships.$inferSelect;
+export type NewTenantMembership = typeof tenantMemberships.$inferInsert;
+export type TenantRole = 'member' | 'admin' | 'operator';
 
 export type Connection = typeof connections.$inferSelect;
 export type NewConnection = typeof connections.$inferInsert;

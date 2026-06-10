@@ -10,6 +10,7 @@
     "prepare": "../scripts/install-git-hooks.sh",
     "dev": "tsx watch src/index.ts",
     "dev:mediation-auth": "node scripts/mediation-dev-auth.mjs",
+    "mediation-api-keys": "tsx src/content/mediation/api-key-cli.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

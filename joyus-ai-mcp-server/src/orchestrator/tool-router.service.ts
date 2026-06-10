@@ -11,7 +11,7 @@
  *   yet (see orchestrator.ts schema). When that table ships, swap in a DB-backed
  *   registry without changing callers.
  * - T035: Dispatch calls through the existing executeTool() infrastructure with
- *   tenantId as userId (deferred to WP12 — see executor.ts convention).
+ *   the authenticated actor user id and resolved tenant id in tool input.
  * - T037: Transient failures retry with exponential backoff (200/800/3200ms).
  *   Semantic failures pass through to the agent immediately. Circuit breaker
  *   tracks consecutive failures in-memory (resets on process restart is acceptable).
@@ -185,6 +185,7 @@ export class ToolRouterService implements ToolRouter {
     toolName: string,
     toolInput: Record<string, unknown>,
     tenantId: string,
+    actorUserId?: string,
   ): Promise<ToolExecutionResult> {
     // Check circuit breaker before dispatching
     if (this.isCircuitOpen(tenantId, toolName)) {
@@ -205,7 +206,7 @@ export class ToolRouterService implements ToolRouter {
     const startMs = Date.now();
 
     // T037: dispatch with retry/timeout
-    const result = await this.dispatchWithRetry(toolName, toolInput, tenantId);
+    const result = await this.dispatchWithRetry(toolName, toolInput, tenantId, actorUserId ?? tenantId);
 
     const durationMs = Date.now() - startMs;
 
@@ -282,12 +283,13 @@ export class ToolRouterService implements ToolRouter {
     toolName: string,
     toolInput: Record<string, unknown>,
     tenantId: string,
+    actorUserId: string,
   ): Promise<ToolExecutionResult> {
     let lastError: unknown;
 
     for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
       try {
-        const result = await this.dispatchWithTimeout(toolName, toolInput, tenantId);
+        const result = await this.dispatchWithTimeout(toolName, toolInput, tenantId, actorUserId);
 
         // Success: reset circuit breaker
         this.recordSuccess(tenantId, toolName);
@@ -338,10 +340,9 @@ export class ToolRouterService implements ToolRouter {
     toolName: string,
     toolInput: Record<string, unknown>,
     tenantId: string,
+    actorUserId: string,
   ): Promise<string> {
-    // The existing executeTool uses userId — tenantId is userId in single-tenant world.
-    // Multi-tenant resolution is deferred to WP12.
-    const userId = tenantId;
+    const scopedInput = { ...toolInput, tenant_id: tenantId };
 
     const timeoutPromise = new Promise<never>((_, reject) => {
       const timer = setTimeout(() => {
@@ -351,7 +352,7 @@ export class ToolRouterService implements ToolRouter {
       if (typeof timer.unref === 'function') timer.unref();
     });
 
-    const toolPromise = executeTool(userId, toolName, toolInput).then((rawResult) => {
+    const toolPromise = executeTool(actorUserId, toolName, scopedInput).then((rawResult) => {
       if (typeof rawResult === 'string') return rawResult;
       return JSON.stringify(rawResult);
     });

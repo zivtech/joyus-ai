@@ -91,6 +91,11 @@ kitty-specs/**/tasks/*.md
 !kitty-specs/011-inngest-migration/tasks/WP02-update-routes.md
 !kitty-specs/011-inngest-migration/tasks/WP03-delete-custom-plumbing.md
 !kitty-specs/011-inngest-migration/tasks/WP04-integration-tests.md
+!kitty-specs/013-tenant-identity-resolution/tasks/WP01-schema-memberships.md
+!kitty-specs/013-tenant-identity-resolution/tasks/WP02-shared-resolver.md
+!kitty-specs/013-tenant-identity-resolution/tasks/WP03-explicit-and-api-key-routes.md
+!kitty-specs/013-tenant-identity-resolution/tasks/WP04-bearer-routes-and-tools.md
+!kitty-specs/013-tenant-identity-resolution/tasks/WP05-admin-cleanup-acceptance.md
 
 # Generated artifacts
 **/tmp/

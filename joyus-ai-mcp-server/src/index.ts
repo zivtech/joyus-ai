@@ -58,6 +58,7 @@ import { createStepRegistry } from './pipelines/steps/registry.js';
 import { initializeProfiles } from './profiles/index.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
+import { resolveTenantContext, sendTenantResolutionError } from './tenancy/resolver.js';
 import { executeTool, setPipelineContext } from './tools/executor.js';
 import { getAllTools } from './tools/index.js';
 
@@ -367,18 +368,34 @@ app.use(
 // against automationDestinations.authSecretRef inside the route handler.
 app.use('/v1/events', createTriggerRouter({ db: pipelineDb }));
 
-// Admin UI — accepts any authenticated org user (Google OAuth session) or
-// a one-time ?token= exchange for CLI/API access.
-// TODO(#37): tighten to tenant-scoped view once multi-tenant identity is unified.
+// Admin UI — accepts an authenticated Google OAuth session or a one-time
+// ?token= exchange for CLI/API access. Authenticated users default to their
+// resolved tenant; platform-wide view requires an operator membership and
+// ?all_tenants=true.
 app.use('/event-adapter/admin', async (req: Request, res: Response, next: NextFunction) => {
   const session = req.session as { userId?: string; adminUserId?: string };
+  const attachTenantContext = async (): Promise<void> => {
+    await resolveTenantContext(req, {
+      db,
+      allowPlatformWide: true,
+      lookupDefaultTenant: true,
+      tenantHeaderNames: ['x-tenant-id'],
+      tenantQueryKeys: ['tenant_id', 'tenantId'],
+    });
+  };
 
   // Primary: Google OAuth session (set by /auth after login)
   if (session.userId) {
     const [user] = await db.select().from(users).where(eqOp(users.id, session.userId)).limit(1);
     if (user) {
       req.mcpUser = { ...user, connections: [] };
-      return next();
+      try {
+        await attachTenantContext();
+        return next();
+      } catch (error) {
+        sendTenantResolutionError(res, error);
+        return;
+      }
     }
   }
 
@@ -398,7 +415,13 @@ app.use('/event-adapter/admin', async (req: Request, res: Response, next: NextFu
     const [user] = await db.select().from(users).where(eqOp(users.id, session.adminUserId)).limit(1);
     if (!user) { res.status(401).send('Session expired. <a href="/event-adapter/admin">Log in again</a>.'); return; }
     req.mcpUser = { ...user, connections: [] };
-    return next();
+    try {
+      await attachTenantContext();
+      return next();
+    } catch (error) {
+      sendTenantResolutionError(res, error);
+      return;
+    }
   }
 
   res.status(401).send('Please <a href="/auth">sign in</a> first, or append <code>?token=&lt;your MCP token&gt;</code>.');

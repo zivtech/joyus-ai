@@ -2,12 +2,9 @@ import { createExcelExportJob } from '../../exports/service.js';
 
 interface OpsExecutorContext {
   userId: string;
-}
-
-function requireString(input: Record<string, unknown>, key: string): string {
-  const value = input[key];
-  if (typeof value === 'string' && value.trim()) return value.trim();
-  throw new Error(`Missing required parameter: ${key}`);
+  /** Tenant already resolved and authorized by the caller (executor.ts). */
+  tenantId: string;
+  tenantAccessPreResolved?: boolean;
 }
 
 function optionalString(input: Record<string, unknown>, key: string): string | undefined {
@@ -25,7 +22,10 @@ export async function executeOpsTool(
     throw new Error(`Unsupported ops tool: ${toolName}`);
   }
 
-  const tenantId = requireString(input, 'tenant_id');
+  const tenantId = context.tenantId;
+  if (!tenantId) {
+    throw new Error('Missing required tenant context');
+  }
   const scope = optionalString(input, 'scope');
   const locations = optionalString(input, 'locations');
   const dateStart = optionalString(input, 'date_start');
@@ -38,6 +38,7 @@ export async function executeOpsTool(
     userId: context.userId,
     tenantId,
     baseUrl,
+    tenantAccessPreResolved: context.tenantAccessPreResolved,
     request: {
       scope,
       locations,
@@ -60,4 +61,3 @@ export async function executeOpsTool(
     download_url: downloadUrl,
   };
 }
-

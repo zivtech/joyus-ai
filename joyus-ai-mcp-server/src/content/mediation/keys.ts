@@ -15,13 +15,17 @@ import { contentApiKeys } from '../schema.js';
 
 import { hashApiKey } from './auth.js';
 
-
 export interface CreateKeyInput {
   integrationName: string;
   jwksUri?: string;
   issuer?: string;
   audience?: string;
 }
+
+export type RevokeKeyResult =
+  | { status: 'not_found' }
+  | { status: 'already_revoked'; key: typeof contentApiKeys.$inferSelect }
+  | { status: 'revoked'; key: typeof contentApiKeys.$inferSelect };
 
 export class ApiKeyService {
   constructor(private db: DrizzleClient) {}
@@ -32,8 +36,8 @@ export class ApiKeyService {
    */
   async createKey(
     tenantId: string,
-    input: CreateKeyInput,
-  ): Promise<{ key: string; id: string }> {
+    input: CreateKeyInput
+  ): Promise<{ key: string; id: string; keyPrefix: string }> {
     const rawKey = 'jyk_' + crypto.randomBytes(16).toString('hex');
     const keyHash = hashApiKey(rawKey);
     const keyPrefix = rawKey.substring(0, 8);
@@ -51,26 +55,44 @@ export class ApiKeyService {
       isActive: true,
     });
 
-    return { key: rawKey, id };
+    return { key: rawKey, id, keyPrefix };
   }
 
   /**
    * Deactivate an API key. Does not delete — preserves audit history.
    */
-  async revokeKey(keyId: string): Promise<void> {
-    await this.db
+  async revokeKey(keyId: string): Promise<RevokeKeyResult> {
+    const existingRows = await this.db
+      .select()
+      .from(contentApiKeys)
+      .where(eq(contentApiKeys.id, keyId))
+      .limit(1);
+    const existing = existingRows[0];
+
+    if (!existing) {
+      return { status: 'not_found' };
+    }
+
+    if (!existing.isActive) {
+      return { status: 'already_revoked', key: existing };
+    }
+
+    const updatedRows = await this.db
       .update(contentApiKeys)
       .set({ isActive: false })
-      .where(eq(contentApiKeys.id, keyId));
+      .where(eq(contentApiKeys.id, keyId))
+      .returning();
+
+    return {
+      status: 'revoked',
+      key: updatedRows[0] ?? { ...existing, isActive: false },
+    };
   }
 
   /**
    * List all API keys for a tenant (active and inactive).
    */
   async listKeys(tenantId: string): Promise<Array<typeof contentApiKeys.$inferSelect>> {
-    return this.db
-      .select()
-      .from(contentApiKeys)
-      .where(eq(contentApiKeys.tenantId, tenantId));
+    return this.db.select().from(contentApiKeys).where(eq(contentApiKeys.tenantId, tenantId));
   }
 }

@@ -3,9 +3,9 @@
 # DO NOT EDIT MANUALLY
 
 spec_kitty:
-  version: 3.1.1
+  version: 3.1.8
   initialized_at: '2026-02-11T21:18:53.991526'
-  last_upgraded_at: '2026-04-21T09:48:52.850099'
+  last_upgraded_at: '2026-05-25T08:24:11.286818'
 environment:
   python_version: 3.14.0
   platform: darwin
@@ -404,5 +404,13 @@ migrations:
     notes: 'Added .gitattributes entry: kitty-specs/**/status.events.jsonl merge=spec-kitty-event-log'
   - id: 3.1.1_normalize_status_json
     applied_at: '2026-04-21T09:48:52.839902'
+    result: skipped
+    notes: Not applicable
+  - id: 3.1.1_normalize_status_json
+    applied_at: '2026-05-25T08:24:11.271327'
+    result: success
+    notes: '013-tenant-identity-resolution: normalised status.json'
+  - id: 3.1.2_globalize_commands
+    applied_at: '2026-05-25T08:24:11.279850'
     result: skipped
     notes: Not applicable

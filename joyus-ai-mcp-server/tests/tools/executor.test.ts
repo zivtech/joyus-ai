@@ -103,6 +103,10 @@ const validConnection = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
+  // Default membership lookups resolve to "no membership" so tenant resolution
+  // falls back to self-scope unless a test overrides db.select.
+  vi.mocked(db.select).mockReturnValue(chainable([]));
 });
 
 // ============================================================
@@ -111,8 +115,12 @@ beforeEach(() => {
 
 describe('executeTool — ops_ prefix', () => {
   it('routes ops_* tools directly to executeOpsTool', async () => {
-    const result = await executeTool('user-1', 'ops_export_excel', { tenant_id: 't1' });
-    expect(vi.mocked(executeOpsTool)).toHaveBeenCalledWith('ops_export_excel', { tenant_id: 't1' }, { userId: 'user-1' });
+    const result = await executeTool('user-1', 'ops_export_excel', { tenant_id: 'user-1' });
+    expect(vi.mocked(executeOpsTool)).toHaveBeenCalledWith(
+      'ops_export_excel',
+      { tenant_id: 'user-1' },
+      { userId: 'user-1', tenantId: 'user-1', tenantAccessPreResolved: true },
+    );
     expect(result).toEqual({ ops: 'result' });
   });
 });
@@ -130,6 +138,79 @@ describe('executeTool — content_ prefix', () => {
       expect.objectContaining({ userId: 'user-1', tenantId: 'user-1' }),
     );
     expect(result).toEqual({ content: 'result' });
+  });
+
+  it('uses the shared resolver for explicitly requested tenants the actor is a member of', async () => {
+    // First lookup (operator) returns none; second lookup (direct membership)
+    // authorizes the requested tenant. The EXPORT_* env allowlist is no longer
+    // a cross-tenant path for tools, so access must come from membership.
+    let call = 0;
+    vi.mocked(db.select).mockImplementation(() =>
+      chainable(
+        call++ === 0
+          ? []
+          : [
+              {
+                id: 'membership-1',
+                userId: 'user-1',
+                tenantId: 'tenant-allowed',
+                role: 'member',
+                isDefault: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            ],
+      ),
+    );
+
+    await executeTool('user-1', 'content_list_sources', {
+      tenant_id: 'tenant-allowed',
+    });
+
+    expect(vi.mocked(executeContentTool)).toHaveBeenCalledWith(
+      'content_list_sources',
+      { tenant_id: 'tenant-allowed' },
+      expect.objectContaining({ userId: 'user-1', tenantId: 'tenant-allowed' }),
+    );
+  });
+
+  it('honors the default membership when no tenant_id is supplied', async () => {
+    // A direct tool call with no explicit tenant_id should resolve to the
+    // caller's default membership (consistent with the HTTP middleware path),
+    // not silently self-scope.
+    vi.mocked(db.select).mockReturnValue(
+      chainable([
+        {
+          id: 'membership-1',
+          userId: 'user-1',
+          tenantId: 'tenant-default',
+          role: 'member',
+          isDefault: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]),
+    );
+
+    await executeTool('user-1', 'content_create', { title: 'Test' });
+
+    expect(vi.mocked(executeContentTool)).toHaveBeenCalledWith(
+      'content_create',
+      { title: 'Test' },
+      expect.objectContaining({ userId: 'user-1', tenantId: 'tenant-default' }),
+    );
+  });
+
+  it('rejects explicitly requested tenants without membership or allowlist access', async () => {
+    vi.mocked(db.select).mockReturnValue(chainable([]));
+
+    await expect(
+      executeTool('user-1', 'content_list_sources', {
+        tenant_id: 'tenant-denied',
+      }),
+    ).rejects.toThrow('not authorized for tenant tenant-denied');
+
+    expect(vi.mocked(executeContentTool)).not.toHaveBeenCalled();
   });
 });
 
