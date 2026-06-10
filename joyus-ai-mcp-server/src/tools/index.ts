@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 
 import { db, connections } from '../db/client.js';
 
+import { approvalTools } from './approval-tools.js';
 import { contentTools } from './content-tools.js';
 import { githubTools } from './github-tools.js';
 import { googleTools } from './google-tools.js';
@@ -36,7 +37,13 @@ export async function getAllTools(userId: string): Promise<ToolDefinition[]> {
     .where(eq(connections.userId, userId));
 
   const connectedServices = new Set(userConnections.map((c) => c.service));
-  const tools: ToolDefinition[] = [...opsTools, ...contentTools, ...pipelineTools, ...profileTools];
+  const tools: ToolDefinition[] = [
+    ...opsTools,
+    ...contentTools,
+    ...approvalTools,
+    ...pipelineTools,
+    ...profileTools,
+  ];
 
   // Google tools always available if connected
   if (connectedServices.has('GOOGLE')) {
@@ -69,4 +76,14 @@ export async function isToolAvailable(userId: string, toolName: string): Promise
   return tools.some(t => t.name === toolName);
 }
 
-export { contentTools, jiraTools, slackTools, githubTools, googleTools, opsTools, pipelineTools, profileTools };
+export {
+  approvalTools,
+  contentTools,
+  jiraTools,
+  slackTools,
+  githubTools,
+  googleTools,
+  opsTools,
+  pipelineTools,
+  profileTools,
+};
