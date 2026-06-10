@@ -98,12 +98,29 @@ describe('Tool Definitions', () => {
       expect(toolNames).toContain('github_search_code');
       expect(toolNames).toContain('github_list_prs');
       expect(toolNames).toContain('github_get_pr');
+      expect(toolNames).toContain('github_create_pr');
+      expect(toolNames).toContain('github_request_reviewers');
+      expect(toolNames).toContain('github_get_pr_checks');
     });
 
     it('should have required fields specified', () => {
       const prTool = githubTools.find(t => t.name === 'github_get_pr');
       expect(prTool?.inputSchema.required).toContain('repo');
       expect(prTool?.inputSchema.required).toContain('prNumber');
+
+      const createPrTool = githubTools.find(t => t.name === 'github_create_pr');
+      expect(createPrTool?.inputSchema.required).toContain('repo');
+      expect(createPrTool?.inputSchema.required).toContain('head');
+      expect(createPrTool?.inputSchema.required).toContain('base');
+      expect(createPrTool?.inputSchema.required).toContain('title');
+
+      const reviewersTool = githubTools.find(t => t.name === 'github_request_reviewers');
+      expect(reviewersTool?.inputSchema.required).toContain('repo');
+      expect(reviewersTool?.inputSchema.required).toContain('prNumber');
+
+      const checksTool = githubTools.find(t => t.name === 'github_get_pr_checks');
+      expect(checksTool?.inputSchema.required).toContain('repo');
+      expect(checksTool?.inputSchema.required).toContain('prNumber');
     });
   });
 
