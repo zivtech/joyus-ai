@@ -150,9 +150,10 @@ export class WorkflowApprovalService {
   async getApprovalStatus(
     tenantId: string,
     approvalId: string,
+    options: { now?: Date } = {},
   ): Promise<ApprovalState> {
     const approval = await this.getApprovalForTenant(tenantId, approvalId);
-    return this.toApprovalState(approval);
+    return this.toApprovalState(approval, options.now ?? new Date());
   }
 
   async decideApproval(
