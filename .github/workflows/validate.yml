@@ -32,3 +32,27 @@ jobs:
 
       - name: Test
         run: npm test
+
+  validate-state:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: joyus-ai-state
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: joyus-ai-state/package-lock.json
+
+      - name: Install dependencies
+        # --ignore-scripts skips the prepare hook (local git-hook installer).
+        run: npm ci --ignore-scripts
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
