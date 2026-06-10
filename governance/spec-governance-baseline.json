@@ -1,0 +1,104 @@
+{
+  "description": "Accepted legacy Spec Governance findings. These entries document known pre-vNext debt so new findings remain visible while the P0 merge gate stays honest.",
+  "created_at": "2026-05-25",
+  "findings": [
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/002-session-context-management/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: aws, docker, mcp server",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/003-platform-architecture-overview/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: aws, docker, mcp server",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/004-workflow-enforcement/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: aws, mcp server",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/005-content-intelligence/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: aws, jwt, python, spacy",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/006-content-infrastructure/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: mysql, postgresql",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/009-automated-pipelines-framework/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: express",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/010-inngest-evaluation/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: express, mcp server, redis, typescript",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/011-inngest-migration/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: docker, redis, typescript",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "CHK-001",
+      "severity": "P1",
+      "target": "kitty-specs/platform-core-orchestrator-01KREQVK/spec.md",
+      "message": "Checklist claims no implementation details, but spec contains technical terms: express, jwt, mcp server, python, typescript",
+      "reason": "Legacy checklist/spec wording predates current checklist consistency policy."
+    },
+    {
+      "check_id": "PLAT-002",
+      "severity": "P2",
+      "target": "kitty-specs/002-session-context-management/spec.md",
+      "message": "Legacy platform feature missing vNext sections: adoption plan, roi metrics, security + mcp governance",
+      "reason": "Legacy platform spec predates the vNext platform-section contract."
+    },
+    {
+      "check_id": "PLAT-002",
+      "severity": "P2",
+      "target": "kitty-specs/003-platform-architecture-overview/spec.md",
+      "message": "Legacy platform feature missing vNext sections: adoption plan, roi metrics, security + mcp governance",
+      "reason": "Legacy platform spec predates the vNext platform-section contract."
+    },
+    {
+      "check_id": "PLAT-002",
+      "severity": "P2",
+      "target": "kitty-specs/004-workflow-enforcement/spec.md",
+      "message": "Legacy platform feature missing vNext sections: adoption plan, roi metrics, security + mcp governance",
+      "reason": "Legacy platform spec predates the vNext platform-section contract."
+    },
+    {
+      "check_id": "PLAT-002",
+      "severity": "P2",
+      "target": "kitty-specs/005-content-intelligence/spec.md",
+      "message": "Legacy platform feature missing vNext sections: adoption plan, roi metrics, security + mcp governance",
+      "reason": "Legacy platform spec predates the vNext platform-section contract."
+    },
+    {
+      "check_id": "PLAT-002",
+      "severity": "P2",
+      "target": "kitty-specs/006-content-infrastructure/spec.md",
+      "message": "Legacy platform feature missing vNext sections: adoption plan, roi metrics, security + mcp governance",
+      "reason": "Legacy platform spec predates the vNext platform-section contract."
+    }
+  ]
+}

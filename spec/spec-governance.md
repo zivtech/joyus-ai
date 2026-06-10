@@ -152,6 +152,18 @@ Severity model:
 - P1: must-fix governance debt.
 - P2: improvement backlog.
 
+Status model:
+- `fail`: active P0 finding that blocks the default CI merge gate.
+- `warn`: active non-P0 finding that remains visible and must be triaged, but does not block the default P0 merge gate.
+- `accepted`: explicitly baselined legacy P1/P2 finding recorded in `governance/spec-governance-baseline.json`.
+
+Default CI policy:
+- The Spec Governance workflow runs `python scripts/spec-governance-check.py`.
+- Active P0 findings fail CI.
+- Active P1/P2 findings are reported as warnings and do not fail the default P0 merge gate.
+- Accepted baseline findings are reported separately as known legacy debt and do not fail CI.
+- `--strict` is available for local or future CI modes that should fail on any active fail/warn finding. Accepted baseline findings remain nonblocking in strict mode.
+
 ---
 
 ## 9. Source-of-Truth Freshness
