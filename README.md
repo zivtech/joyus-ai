@@ -107,7 +107,7 @@ Status sources:
 
 - canonical task indexes in `kitty-specs/*/tasks.md`
 - lane data from flat `tasks/WP*.md` files where those exist
-- `python3 scripts/pride-status.py` run on April 5, 2026
+- last full reconciliation: June 10, 2026 (v0.1.0 release pass)
 
 | Feature | Scope | Status | Notes |
 | --- | --- | --- | --- |
@@ -118,10 +118,12 @@ Status sources:
 | `006` Content Infrastructure | Public code in `joyus-ai-mcp-server/` | Complete | `12/12` WPs complete |
 | `007` Org-Scale Agentic Governance | Public governance/docs stream | Planned | `0/6` WPs complete |
 | `008` Profile Isolation and Scale | Public planning stream | Planned | Canonical public plan is the `8`-WP inventory in `tasks.md` |
-| `009` Automated Pipelines Framework | Public code in `joyus-ai-mcp-server/` | In progress | `8/10` WPs complete by lane file status |
+| `009` Automated Pipelines Framework | Public code in `joyus-ai-mcp-server/` | Complete | `10/10` WPs complete per `tasks.md` (this row previously lagged at `8/10`) |
 | `010` Inngest Evaluation Spike | Public spike | Complete | `6/6` WPs complete |
 | `011` Inngest Migration | Public migration plan | Planned | `4` WPs defined; implementation not started |
 | `012` CMS Enrichment Delivery | Public placeholder | Stub only | Public placeholder for generic CMS enrichment primitives; Joyus Enrichment itself is a paid service outside this repo |
+| `platform-core-orchestrator-01KREQVK` | Public orchestration planning | Planning only | Task lanes were administratively force-closed; **no merged implementation exists**. Treat as roadmap, not shipped code. Shares feature number `013` with the headroom mission below (known numbering collision). |
+| `headroom-mcp-compression-layer-01KSZKMF` | Public evaluation spike | Closed — NO_GO | Compression evaluation concluded NO_GO (WP01 spike + WP06 re-gate; evidence in `eval/headroom-spike/FINDINGS-WP06.md`). Decision record lives in the private governance hub. |
 
 ## Public Work-Package Inventory
 

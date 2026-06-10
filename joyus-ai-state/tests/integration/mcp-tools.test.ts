@@ -22,7 +22,8 @@ function parse(result: { content: Array<{ type: string; text: string }> }): Reco
 }
 
 function initGitRepo(dir: string): void {
-  execFileSync('git', ['init', dir], { stdio: 'ignore' });
+  // -b main: CI runners default init.defaultBranch to master.
+  execFileSync('git', ['init', '-b', 'main', dir], { stdio: 'ignore' });
   execFileSync('git', ['config', 'user.email', 'test@test.com'], { cwd: dir, stdio: 'ignore' });
   execFileSync('git', ['config', 'user.name', 'Test'], { cwd: dir, stdio: 'ignore' });
   fs.writeFileSync(path.join(dir, 'README.md'), '# Test');
