@@ -1,4 +1,6 @@
 export interface GenerationOperationMetadata {
+  /** Links this operation log to its generation_logs row (judge layer lookup). */
+  generationLogId?: string;
   citationCount: number;
   sourcesUsed: number;
   profileId: string | null;

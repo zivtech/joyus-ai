@@ -79,11 +79,15 @@ export class GenerationService {
     const citationResult = this.citationManager.extractCitations(genOutput.text, retrieval.items);
 
     const durationMs = Date.now() - startMs;
+    const generationLogId = createId();
+    const operationLogId = createId();
+
     // Resolve pricing + micro-USD once so the operation-log metadata and the
     // session accumulator share an identical figure and cannot diverge.
     const cost = resolveGenerationCost(genOutput.model, genOutput.usage);
     const costMetadata = buildGenerationCostMetadata(genOutput.model, genOutput.usage, cost);
     const operationMetadata: GenerationOperationMetadata = {
+      generationLogId,
       citationCount: citationResult.citationCount,
       sourcesUsed: retrieval.items.length,
       profileId: options?.profileId ?? null,
@@ -104,7 +108,7 @@ export class GenerationService {
     await this.db.transaction(async tx => {
       // 4. Log to generation_logs (no durationMs column in this table)
       await tx.insert(contentGenerationLogs).values({
-        id: createId(),
+        id: generationLogId,
         tenantId,
         userId,
         sessionId: options?.sessionId ?? null,
@@ -117,7 +121,7 @@ export class GenerationService {
 
       // 5. Audit log via operation_logs (includes durationMs)
       await tx.insert(contentOperationLogs).values({
-        id: createId(),
+        id: operationLogId,
         tenantId,
         operation: 'generate',
         userId,
@@ -143,6 +147,7 @@ export class GenerationService {
       citations: citationResult.citations,
       profileUsed: genOutput.profileUsed,
       metadata: {
+        generationLogId,
         totalSearchResults: retrieval.totalSearchResults,
         sourcesUsed: retrieval.items.length,
         durationMs,
