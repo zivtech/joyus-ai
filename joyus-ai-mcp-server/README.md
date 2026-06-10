@@ -196,6 +196,8 @@ Jira OAuth through the Auth Portal provisions Jira Cloud connections. The Jira e
 | `github_create_pr` | Create a pull request |
 | `github_request_reviewers` | Request PR reviewers |
 | `github_get_pr_checks` | Get PR check status |
+| `github_watch_pr_checks` | Poll CI checks until complete or timeout |
+| `github_get_check_annotations` | Get check annotations and a11y failures |
 | `github_list_issues` | List issues |
 | `github_get_issue` | Get issue details |
 | `github_list_repos` | List org repos |

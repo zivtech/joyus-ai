@@ -7,7 +7,11 @@ import axios from 'axios';
 
 import { ExecutorContext } from '../executor.js';
 
+import { extractA11yFailures, type A11yFindingInput } from './github-a11y-parser.js';
+
 const GITHUB_API_BASE = 'https://api.github.com';
+const DEFAULT_CHECK_POLL_INTERVAL_MS = 10000;
+const DEFAULT_CHECK_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
  * Execute a GitHub tool
@@ -42,6 +46,12 @@ export async function executeGithubTool(
 
       case 'github_get_pr_checks':
         return await getPRChecks(headers, input);
+
+      case 'github_watch_pr_checks':
+        return await watchPRChecks(headers, input);
+
+      case 'github_get_check_annotations':
+        return await getCheckAnnotations(headers, input);
 
       case 'github_list_issues':
         return await listIssues(headers, input);
@@ -205,26 +215,156 @@ async function requestReviewers(headers: any, input: any): Promise<any> {
 }
 
 async function getPRChecks(headers: any, input: any): Promise<any> {
-  const { repo, prNumber } = input;
+  return fetchCheckSnapshot(headers, input);
+}
 
-  const prResponse = await axios.get(`${GITHUB_API_BASE}/repos/${repo}/pulls/${prNumber}`, { headers });
-  const headSha = prResponse.data.head.sha;
+async function watchPRChecks(headers: any, input: any): Promise<any> {
+  const pollIntervalMs = clampNumber(
+    input.pollIntervalMs ?? DEFAULT_CHECK_POLL_INTERVAL_MS,
+    0,
+    60 * 1000
+  );
+  const timeoutMs = clampNumber(
+    input.timeoutMs ?? DEFAULT_CHECK_TIMEOUT_MS,
+    0,
+    60 * 60 * 1000
+  );
+  const startedAt = Date.now();
+  let attempts = 0;
+  let snapshot: any;
+  let timedOut = false;
+
+  do {
+    attempts += 1;
+    snapshot = await fetchCheckSnapshot(headers, input);
+
+    if (!shouldContinuePolling(snapshot.overallState)) {
+      break;
+    }
+
+    const elapsedMs = Date.now() - startedAt;
+    const remainingMs = timeoutMs - elapsedMs;
+
+    if (remainingMs <= 0) {
+      timedOut = true;
+      break;
+    }
+
+    if (pollIntervalMs <= 0) {
+      break;
+    }
+
+    await delay(Math.min(pollIntervalMs, remainingMs));
+  } while (shouldContinuePolling(snapshot.overallState));
+
+  const elapsedMs = Date.now() - startedAt;
+
+  if (timedOut) {
+    return buildTimeoutSnapshot(snapshot, attempts, elapsedMs);
+  }
+
+  return {
+    ...snapshot,
+    pollAttempts: attempts,
+    elapsedMs,
+    timedOut: false
+  };
+}
+
+async function getCheckAnnotations(headers: any, input: any): Promise<any> {
+  const annotations = await fetchCheckRunAnnotations(headers, input);
+  const a11yFailures = extractA11yFailures(annotations.map(annotationToA11yInput));
+
+  return {
+    checkRunId: input.checkRunId,
+    count: annotations.length,
+    annotations,
+    a11yFailures,
+    remediationRecommended: a11yFailures.length > 0,
+    nextAction: determineAnnotationNextAction(annotations.length, a11yFailures)
+  };
+}
+
+async function fetchCheckSnapshot(headers: any, input: any): Promise<any> {
+  const { repo, includeAnnotations = false, annotationLimit = 50 } = input;
+  const headSha = await resolveHeadSha(headers, input);
 
   const [checkRunsResponse, statusResponse] = await Promise.all([
     axios.get(`${GITHUB_API_BASE}/repos/${repo}/commits/${headSha}/check-runs`, { headers }),
     axios.get(`${GITHUB_API_BASE}/repos/${repo}/commits/${headSha}/status`, { headers })
   ]);
 
-  const checkRuns = (checkRunsResponse.data.check_runs ?? []).map((run: any) => ({
+  const checkRuns = (checkRunsResponse.data.check_runs ?? []).map(normalizeCheckRun);
+  const statuses = (statusResponse.data.statuses ?? []).map(normalizeCommitStatus);
+  const annotations = includeAnnotations
+    ? await fetchBoundedAnnotations(headers, repo, checkRuns, annotationLimit)
+    : [];
+  const a11yFailures = extractA11yFailures([
+    ...checkRuns.flatMap(checkRunToA11yInputs),
+    ...statuses.map(statusToA11yInput),
+    ...annotations.map(annotationToA11yInput)
+  ]);
+  const summary = summarizePRChecks(checkRuns, statuses, a11yFailures.length);
+
+  return {
+    headSha,
+    overallState: summary.overallState,
+    checkRuns,
+    statuses,
+    ...(includeAnnotations ? { annotations } : {}),
+    a11yFailures,
+    remediationRecommended: a11yFailures.length > 0 && summary.overallState === 'failure',
+    nextAction: determineNextAction(summary.overallState, a11yFailures),
+    summary
+  };
+}
+
+async function resolveHeadSha(headers: any, input: any): Promise<string> {
+  const { repo, prNumber, sha } = input;
+
+  if (sha) {
+    return sha;
+  }
+
+  if (prNumber) {
+    const prResponse = await axios.get(`${GITHUB_API_BASE}/repos/${repo}/pulls/${prNumber}`, { headers });
+    return prResponse.data.head.sha;
+  }
+
+  throw new Error('Either prNumber or sha is required to inspect GitHub checks');
+}
+
+function normalizeCheckRun(run: any): any {
+  const output = normalizeCheckRunOutput(run.output);
+
+  return {
+    ...(run.id !== undefined ? { id: run.id } : {}),
     name: run.name,
     status: run.status,
     conclusion: run.conclusion,
     startedAt: run.started_at,
     completedAt: run.completed_at,
     detailsUrl: run.details_url,
-    url: run.html_url
-  }));
-  const statuses = (statusResponse.data.statuses ?? []).map((status: any) => ({
+    url: run.html_url,
+    ...(run.check_run_url ? { annotationsUrl: `${run.check_run_url}/annotations` } : {}),
+    ...(output ? { output } : {})
+  };
+}
+
+function normalizeCheckRunOutput(output: any): any | undefined {
+  if (!output || (!output.title && !output.summary && !output.text)) {
+    return undefined;
+  }
+
+  return {
+    title: output.title,
+    summary: output.summary ? boundText(output.summary, 2000) : undefined,
+    text: output.text ? boundText(output.text, 4000) : undefined
+  };
+}
+
+function normalizeCommitStatus(status: any): any {
+  return {
     context: status.context,
     state: status.state,
     description: status.description,
@@ -232,15 +372,99 @@ async function getPRChecks(headers: any, input: any): Promise<any> {
     createdAt: status.created_at,
     updatedAt: status.updated_at,
     url: status.url
-  }));
-  const summary = summarizePRChecks(checkRuns, statuses);
+  };
+}
 
+async function fetchBoundedAnnotations(headers: any, repo: string, checkRuns: any[], limit: number): Promise<any[]> {
+  const annotations: any[] = [];
+  const cappedLimit = clampNumber(limit, 0, 100);
+
+  for (const run of checkRuns) {
+    if (annotations.length >= cappedLimit || !run.id || run.conclusion === 'success') {
+      continue;
+    }
+
+    const remaining = cappedLimit - annotations.length;
+    const runAnnotations = await fetchCheckRunAnnotations(headers, {
+      repo,
+      checkRunId: run.id,
+      per_page: remaining
+    });
+
+    annotations.push(
+      ...runAnnotations.map((annotation) => ({
+        ...annotation,
+        checkRunId: run.id,
+        checkRunName: run.name
+      }))
+    );
+  }
+
+  return annotations;
+}
+
+async function fetchCheckRunAnnotations(headers: any, input: any): Promise<any[]> {
+  const { repo, checkRunId, page = 1, per_page = 100 } = input;
+
+  const response = await axios.get(
+    `${GITHUB_API_BASE}/repos/${repo}/check-runs/${checkRunId}/annotations`,
+    {
+      headers,
+      params: {
+        page,
+        per_page: Math.min(per_page, 100)
+      }
+    }
+  );
+
+  return (response.data ?? []).map(normalizeCheckAnnotation);
+}
+
+function normalizeCheckAnnotation(annotation: any): any {
   return {
-    headSha,
-    overallState: summary.overallState,
-    checkRuns,
-    statuses,
-    summary
+    path: annotation.path,
+    startLine: annotation.start_line,
+    endLine: annotation.end_line,
+    startColumn: annotation.start_column,
+    endColumn: annotation.end_column,
+    annotationLevel: annotation.annotation_level,
+    title: annotation.title,
+    message: annotation.message,
+    rawDetails: annotation.raw_details ? boundText(annotation.raw_details, 2000) : undefined,
+    blobUrl: annotation.blob_href
+  };
+}
+
+function checkRunToA11yInputs(run: any): A11yFindingInput[] {
+  return [
+    {
+      source: run.name,
+      title: run.output?.title,
+      message: run.output?.summary,
+      rawDetails: run.output?.text,
+      url: run.detailsUrl ?? run.url
+    }
+  ];
+}
+
+function statusToA11yInput(status: any): A11yFindingInput {
+  return {
+    source: status.context,
+    message: status.description,
+    url: status.targetUrl
+  };
+}
+
+function annotationToA11yInput(annotation: any): A11yFindingInput {
+  return {
+    source: annotation.checkRunName ?? annotation.title,
+    path: annotation.path,
+    message: annotation.message,
+    title: annotation.title,
+    rawDetails: annotation.rawDetails,
+    annotationLevel: annotation.annotationLevel,
+    startLine: annotation.startLine,
+    endLine: annotation.endLine
   };
 }
 
@@ -429,7 +653,7 @@ function formatIssue(issue: any): any {
   };
 }
 
-function summarizePRChecks(checkRuns: any[], statuses: any[]): any {
+function summarizePRChecks(checkRuns: any[], statuses: any[], a11yFailureCount = 0): any {
   const pendingCheckRuns = checkRuns.filter((run) => run.status !== 'completed' || !run.conclusion);
   const failedCheckRuns = checkRuns.filter((run) =>
     ['failure', 'cancelled', 'timed_out', 'action_required'].includes(run.conclusion)
@@ -460,9 +684,80 @@ function summarizePRChecks(checkRuns: any[], statuses: any[]): any {
     neutral: neutralCheckRuns.length,
     skipped: skippedCheckRuns.length,
     failed: failedCheckRuns.length + failedStatuses.length,
-    pending: pendingCheckRuns.length + pendingStatuses.length
+    pending: pendingCheckRuns.length + pendingStatuses.length,
+    a11yFailureCount
   };
 }
+
+function shouldContinuePolling(overallState: string): boolean {
+  return overallState === 'pending' || overallState === 'unknown';
+}
+
+function determineNextAction(overallState: string, a11yFailures: unknown[]): string {
+  if (overallState === 'success') {
+    return 'none';
+  }
+
+  if (overallState === 'pending' || overallState === 'unknown') {
+    return 'wait';
+  }
+
+  if (overallState === 'failure' && a11yFailures.length > 0) {
+    return 'rerun_remediation';
+  }
+
+  return 'manual_review';
+}
+
+function determineAnnotationNextAction(annotationCount: number, a11yFailures: unknown[]): string {
+  if (a11yFailures.length > 0) {
+    return 'rerun_remediation';
+  }
+
+  if (annotationCount > 0) {
+    return 'manual_review';
+  }
+
+  return 'none';
+}
+
+function buildTimeoutSnapshot(snapshot: any, pollAttempts: number, elapsedMs: number): any {
+  return {
+    ...snapshot,
+    overallState: 'timeout',
+    remediationRecommended: false,
+    nextAction: 'manual_review',
+    timedOut: true,
+    pollAttempts,
+    elapsedMs,
+    summary: {
+      ...snapshot.summary,
+      overallState: 'timeout'
+    }
+  };
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) {
+    return min;
+  }
+
+  return Math.min(Math.max(value, min), max);
+}
+
+function boundText(text: string, maxLength: number): string {
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength - 3).trim()}...`;
+}
+
 
 function normalizeGithubError(error: any, toolName: string, input: any): Error {
   if (!error.response) {
@@ -490,8 +785,16 @@ function normalizeGithubError(error: any, toolName: string, input: any): Error {
     if (toolName === 'github_create_pr') {
       return new Error(`GitHub branch or repository not found for ${repo}. Confirm repo, head, and base branches.`);
     }
-    if (toolName === 'github_request_reviewers' || toolName === 'github_get_pr_checks' || toolName === 'github_get_pr') {
+    if (
+      toolName === 'github_request_reviewers' ||
+      toolName === 'github_get_pr_checks' ||
+      toolName === 'github_watch_pr_checks' ||
+      toolName === 'github_get_pr'
+    ) {
       return new Error(`GitHub pull request or repository not found for ${repo}. Confirm the PR number and repo.`);
+    }
+    if (toolName === 'github_get_check_annotations') {
+      return new Error(`GitHub check run or repository not found for ${repo}. Confirm the check run ID and repo.`);
     }
     return new Error(`GitHub resource not found for ${repo}.`);
   }

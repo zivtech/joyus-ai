@@ -288,6 +288,9 @@ describe('executeGithubTool', () => {
           url: 'https://api.github.com/repos/example-org/example-app/statuses/abc123',
         },
       ],
+      a11yFailures: [],
+      remediationRecommended: false,
+      nextAction: 'wait',
       summary: {
         overallState: 'pending',
         checkRunCount: 2,
@@ -296,6 +299,284 @@ describe('executeGithubTool', () => {
         neutral: 0,
         skipped: 0,
         failed: 0,
+        pending: 1,
+        a11yFailureCount: 0,
+      },
+    });
+  });
+
+  it('github_get_pr_checks — supports commit SHA checks with all passing state', async () => {
+    vi.mocked(axios.get)
+      .mockResolvedValueOnce({
+        data: {
+          check_runs: [
+            {
+              id: 101,
+              name: 'validate',
+              status: 'completed',
+              conclusion: 'success',
+              started_at: '2026-05-25T12:00:00Z',
+              completed_at: '2026-05-25T12:01:00Z',
+              details_url: 'https://github.com/example-org/example-app/actions/runs/1',
+              html_url: 'https://github.com/example-org/example-app/runs/1',
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { statuses: [] },
+      });
+
+    const result = await executeGithubTool(
+      'github_get_pr_checks',
+      {
+        repo: 'example-org/example-app',
+        sha: 'def456',
+      },
+      context,
+    );
+
+    expect(axios.get).toHaveBeenNthCalledWith(
+      1,
+      'https://api.github.com/repos/example-org/example-app/commits/def456/check-runs',
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+    expect(result).toMatchObject({
+      headSha: 'def456',
+      overallState: 'success',
+      remediationRecommended: false,
+      nextAction: 'none',
+      summary: {
+        overallState: 'success',
+        checkRunCount: 1,
+        statusCount: 0,
+        successful: 1,
+        failed: 0,
+        pending: 0,
+        a11yFailureCount: 0,
+      },
+    });
+  });
+
+  it('github_get_pr_checks — represents legacy commit status failure', async () => {
+    vi.mocked(axios.get)
+      .mockResolvedValueOnce({
+        data: { check_runs: [] },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          statuses: [
+            {
+              context: 'legacy-ci',
+              state: 'failure',
+              description: 'Unit tests failed',
+              target_url: 'https://ci.example.test/build/2',
+              created_at: '2026-05-25T12:00:00Z',
+              updated_at: '2026-05-25T12:01:00Z',
+              url: 'https://api.github.com/repos/example-org/example-app/statuses/def456',
+            },
+          ],
+        },
+      });
+
+    const result = await executeGithubTool(
+      'github_get_pr_checks',
+      {
+        repo: 'example-org/example-app',
+        sha: 'def456',
+      },
+      context,
+    );
+
+    expect(result).toMatchObject({
+      overallState: 'failure',
+      nextAction: 'manual_review',
+      summary: {
+        checkRunCount: 0,
+        statusCount: 1,
+        failed: 1,
+      },
+    });
+  });
+
+  it('github_get_pr_checks — extracts a11y failures from failed check output', async () => {
+    vi.mocked(axios.get)
+      .mockResolvedValueOnce({
+        data: {
+          check_runs: [
+            {
+              id: 101,
+              name: 'Lighthouse accessibility',
+              status: 'completed',
+              conclusion: 'failure',
+              started_at: '2026-05-25T12:00:00Z',
+              completed_at: '2026-05-25T12:01:00Z',
+              details_url: 'https://github.com/example-org/example-app/actions/runs/1',
+              html_url: 'https://github.com/example-org/example-app/runs/1',
+              output: {
+                title: 'Lighthouse accessibility audit failed',
+                summary: '[color-contrast] Background and foreground colors do not have a sufficient contrast ratio. Severity: warning',
+                text: 'URL: https://example.test/page Help: https://web.dev/measure',
+              },
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { statuses: [] },
+      });
+
+    const result = await executeGithubTool(
+      'github_get_pr_checks',
+      {
+        repo: 'example-org/example-app',
+        sha: 'def456',
+      },
+      context,
+    );
+
+    expect(result).toMatchObject({
+      overallState: 'failure',
+      remediationRecommended: true,
+      nextAction: 'rerun_remediation',
+      a11yFailures: [
+        expect.objectContaining({
+          source: 'lighthouse',
+          ruleId: 'color-contrast',
+          severity: 'warning',
+        }),
+      ],
+      summary: {
+        a11yFailureCount: 1,
+      },
+    });
+  });
+
+  it('github_get_check_annotations — extracts axe-style annotation failures', async () => {
+    vi.mocked(axios.get).mockResolvedValueOnce({
+      data: [
+        {
+          path: 'src/components/Form.tsx',
+          start_line: 12,
+          end_line: 12,
+          annotation_level: 'failure',
+          title: 'axe-core violation',
+          message: 'Rule: color-contrast. Impact: serious. Selector: #submit',
+          raw_details: 'Elements must meet minimum color contrast ratio. Help: https://dequeuniversity.com/rules/axe/4.9/color-contrast',
+          blob_href: 'https://github.com/example-org/example-app/blob/def456/src/components/Form.tsx#L12',
+        },
+      ],
+    });
+
+    const result = await executeGithubTool(
+      'github_get_check_annotations',
+      {
+        repo: 'example-org/example-app',
+        checkRunId: 101,
+      },
+      context,
+    );
+
+    expect(axios.get).toHaveBeenCalledWith(
+      'https://api.github.com/repos/example-org/example-app/check-runs/101/annotations',
+      expect.objectContaining({
+        headers: expect.any(Object),
+        params: { page: 1, per_page: 100 },
+      }),
+    );
+    expect(result).toMatchObject({
+      checkRunId: 101,
+      count: 1,
+      remediationRecommended: true,
+      nextAction: 'rerun_remediation',
+      a11yFailures: [
+        expect.objectContaining({
+          source: 'axe-core',
+          ruleId: 'color-contrast',
+          severity: 'serious',
+          path: 'src/components/Form.tsx',
+          selector: '#submit',
+        }),
+      ],
+    });
+  });
+
+  it('github_get_check_annotations — sends non-a11y annotations to manual review', async () => {
+    vi.mocked(axios.get).mockResolvedValueOnce({
+      data: [
+        {
+          path: 'src/math.ts',
+          start_line: 7,
+          end_line: 7,
+          annotation_level: 'failure',
+          title: 'unit test failure',
+          message: 'Expected total to equal 42',
+          raw_details: 'AssertionError: expected 41 to equal 42',
+        },
+      ],
+    });
+
+    const result = await executeGithubTool(
+      'github_get_check_annotations',
+      {
+        repo: 'example-org/example-app',
+        checkRunId: 102,
+      },
+      context,
+    );
+
+    expect(result).toMatchObject({
+      count: 1,
+      remediationRecommended: false,
+      nextAction: 'manual_review',
+      a11yFailures: [],
+    });
+  });
+
+  it('github_watch_pr_checks — returns timeout without looping forever', async () => {
+    vi.mocked(axios.get)
+      .mockResolvedValueOnce({
+        data: {
+          head: { sha: 'abc123' },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          check_runs: [
+            {
+              name: 'validate',
+              status: 'in_progress',
+              conclusion: null,
+              started_at: '2026-05-25T12:00:00Z',
+              completed_at: null,
+              details_url: 'https://github.com/example-org/example-app/actions/runs/1',
+              html_url: 'https://github.com/example-org/example-app/runs/1',
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { statuses: [] },
+      });
+
+    const result = await executeGithubTool(
+      'github_watch_pr_checks',
+      {
+        repo: 'example-org/example-app',
+        prNumber: 12,
+        pollIntervalMs: 0,
+        timeoutMs: 0,
+      },
+      context,
+    );
+
+    expect(result).toMatchObject({
+      overallState: 'timeout',
+      timedOut: true,
+      pollAttempts: 1,
+      nextAction: 'manual_review',
+      summary: {
+        overallState: 'timeout',
         pending: 1,
       },
     });
