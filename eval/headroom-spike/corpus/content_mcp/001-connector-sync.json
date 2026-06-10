@@ -1,7 +1,0 @@
-{
-  "id": "content_mcp-001",
-  "kind": "content_mcp",
-  "synthetic": true,
-  "note": "SYNTHETIC TEMPLATE — replace with a real sanitized connector/sync MCP tool response. No client-private data, secrets, or credentials (C-006).",
-  "content": "{\"tool\":\"connector.sync\",\"status\":\"ok\",\"source\":\"demo-source\",\"synced_at\":\"2026-05-31T00:00:00Z\",\"items\":[{\"id\":\"doc-0001\",\"title\":\"Quarterly operations summary (synthetic)\",\"updated\":\"2026-05-30T12:00:00Z\",\"checksum\":\"0000aaaa1111bbbb\",\"path\":\"/synthetic/ops/q2-summary\",\"size_bytes\":18422,\"tags\":[\"ops\",\"summary\",\"synthetic\"],\"excerpt\":\"This is placeholder body text repeated to emulate a verbose, low-signal connector payload. \"},{\"id\":\"doc-0002\",\"title\":\"Vendor onboarding checklist (synthetic)\",\"updated\":\"2026-05-29T09:30:00Z\",\"checksum\":\"2222cccc3333dddd\",\"path\":\"/synthetic/vendors/onboarding\",\"size_bytes\":9211,\"tags\":[\"vendor\",\"checklist\"],\"excerpt\":\"Placeholder body text. Placeholder body text. Placeholder body text.\"}],\"pagination\":{\"page\":1,\"per_page\":50,\"total\":2,\"has_more\":false},\"_meta\":{\"request_id\":\"synthetic-req-0001\",\"latency_ms\":42,\"cache\":\"miss\"}}"
-}

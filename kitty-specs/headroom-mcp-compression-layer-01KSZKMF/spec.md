@@ -3,10 +3,60 @@
 **Mission:** `headroom-mcp-compression-layer-01KSZKMF`
 **Mission Type:** `software-dev`
 **Date:** 2026-05-31
-**Status:** Draft
+**Status:** WP01 **NO_GO**; WP06 re-gate **NO_GO** (confirmed on the real proxying path). WP02–WP05 remain blocked.
 **Planning base branch:** `claude/headroom-compression-spec`
 **Merge target branch:** `claude/headroom-compression-spec` (PR to `main`)
 **Routing decision:** `planning/headroom-evaluation-routing-2026-05-31.md`
+
+## 0. Evaluation Outcome (WP01, 2026-05-31)
+
+**Decision: NO_GO.** Evidence: `eval/headroom-spike/spike-report.json` (schema-valid) +
+`eval/headroom-spike/FINDINGS.md`. WP02–WP05 do **not** proceed (FR-004); they are blocked
+pending the WP06 re-evaluation below.
+
+**Why.** NFR-002 requires ≥50% reduction **at** NFR-001's zero-degradation bar — both at once.
+Headroom's reversible CCR compresses large prose fields ~62% *compress-only* (body dropped to a
+marker) and retrieval restores it **byte-identical** with **zero accuracy loss** — but those two
+results occur in **mutually exclusive states**. For must-read tool outputs the agent retrieves the
+dropped body, so **net tokens ≈ full payload + marker + retrieve-tool overhead (≤ 0% net savings,
+measured ≈ −56%)**. ≥50%-at-zero-degradation was never achieved simultaneously.
+
+**The real gate (now WP06):** `expected_savings ≈ compress_only × (1 − retrieval_rate)`. The
+retrieval rate is **unmeasured**; the WP01 suite was 100% must-read single-shot (worst case). CCR
+nets positive only for **low-retrieval-rate** payloads (large outputs mostly skimmed) or
+**read-once/reference-many** (one retrieval amortized across turns). Measuring that on realistic
+multi-turn traces is the precondition for any GO.
+
+**Findings that revise the original assumptions** (detail in FINDINGS.md):
+- **No in-process library mode in Node** — npm `headroom-ai` is a thin proxy client; the engine is
+  the Python proxy. R1 is forced to **proxy** mode.
+- **CCR reversibility is ephemeral** — in-memory store, 5-min TTL, LRU-evicted. FR-006 "retrievable
+  on demand" is not durably satisfied by Headroom's store → use our own per-tenant Postgres store
+  (R2/WP03) if pursued.
+- **Tenant isolation** is content-addressed/cross-tenant by default; needs per-tenant prefix/backend.
+- A **97% lossy row-drop path** exists (no CCR backing in the standard install) and must be bypassed.
+
+## 0b. Re-Evaluation Outcome (WP06, 2026-05-31)
+
+**Decision: NO_GO**, sharper than WP01. Evidence: `eval/headroom-spike/wp06-spike-report.json`
+(schema-valid) + `eval/headroom-spike/FINDINGS-WP06.md`, measured **live on the real `/v1/messages`
+proxying path** (the gap WP01 left open — WP01 measured `/v1/compress` + a hand-built curl loop).
+
+**Why.** The reversible compress→retrieve loop the spec/WP01/T102 assume **does not engage on the
+model-facing path** for the priority prose families. Realized **request-level net savings are
+≈11–12%** (« 50% NFR-002). In **16/16** prose tasks the agent could not answer from the compressed
+tool output and attempted to re-fetch the original; **servicing that re-fetch loops indefinitely
+(3/3 payloads, 5 hops, no answer)** — net ≤ 0, reconfirming WP01 on the production path. The
+**documented retrieve endpoint `/v1/retrieve/tool_call` is broken** (`ccr/tool_injection.py:500-503`
+requires 24-hex hashes; Headroom's markers carry 12-hex) — the T102 / `joyus-ai-mcp-server`
+integration fails out of the box. Realistic arrays barely compress (net **+5% / −21%**);
+reference-many amortization is defeated by Headroom's own `PrefixFreezeConfig`; reversibility where
+it exists is ephemeral (5-min TTL) + content-addressed (cross-tenant) → FR-006/FR-007 fail without
+our own store. Conditional-GO threshold (algebra, for a regime Headroom doesn't deliver here):
+net ≥ 50% needs retrieval-fraction f ≤ 0.195 (content_mcp) / 0.175 (rag) AND working partial
+retrieve AND durable per-tenant reversibility. **WP02–WP05 stay blocked (FR-004).**
+
+The original spec below is retained as written; Sections 0 and 0b govern.
 
 ## 1. Overview
 

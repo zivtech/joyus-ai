@@ -1,0 +1,395 @@
+{
+  "model": "claude-sonnet-4-5-20250929",
+  "proxy": "http://127.0.0.1:8787",
+  "M1_array_ccr": {
+    "low_need": {
+      "control_correct": true,
+      "control_input_tokens": 2920,
+      "treat_correct": true,
+      "treat_first_hop_tokens": 2769,
+      "treat_total_tokens": 2769,
+      "n_retrievals": 0,
+      "retrieved_chars": 0,
+      "partial_retrieve_observed": null,
+      "exp": "CERT-ZQ-8842",
+      "treat_answer": "CERT-ZQ-8842",
+      "net_first_hop": 0.052,
+      "net_realized": 0.052
+    },
+    "must_read": {
+      "control_correct": true,
+      "control_input_tokens": 2920,
+      "treat_correct": true,
+      "treat_first_hop_tokens": 3527,
+      "treat_total_tokens": 3527,
+      "n_retrievals": 0,
+      "retrieved_chars": 0,
+      "partial_retrieve_observed": null,
+      "exp": "13",
+      "treat_answer": "Based on the retrieved data, I can count the vendors with st",
+      "net_first_hop": -0.208,
+      "net_realized": -0.208
+    }
+  },
+  "M2_prose_default_lossy": {
+    "rows": [
+      {
+        "id": "cm-getitem-001--t1",
+        "kind": "content_mcp",
+        "exp": "7",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 811,
+        "treat_input_tokens": 699,
+        "net_savings": 0.138,
+        "treat_answer": "I need to see the actual content. Let me try with "
+      },
+      {
+        "id": "cm-getitem-001--t2",
+        "kind": "content_mcp",
+        "exp": "15",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 805,
+        "treat_input_tokens": 693,
+        "net_savings": 0.139,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "cm-getitem-002--t1",
+        "kind": "content_mcp",
+        "exp": "15",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 818,
+        "treat_input_tokens": 711,
+        "net_savings": 0.131,
+        "treat_answer": "I need to search for information about sev-1 outag"
+      },
+      {
+        "id": "cm-getitem-002--t2",
+        "kind": "content_mcp",
+        "exp": "48",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 812,
+        "treat_input_tokens": 705,
+        "net_savings": 0.132,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "cm-getitem-003--t1",
+        "kind": "content_mcp",
+        "exp": "net-45",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 798,
+        "treat_input_tokens": 708,
+        "net_savings": 0.113,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "cm-getitem-003--t2",
+        "kind": "content_mcp",
+        "exp": "two million dollars",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 796,
+        "treat_input_tokens": 706,
+        "net_savings": 0.113,
+        "treat_answer": "I need to search for more specific information abo"
+      },
+      {
+        "id": "cm-generate-001--t1",
+        "kind": "content_mcp",
+        "exp": "140",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 796,
+        "treat_input_tokens": 703,
+        "net_savings": 0.117,
+        "treat_answer": "Let me try to get the actual content:"
+      },
+      {
+        "id": "cm-generate-001--t2",
+        "kind": "content_mcp",
+        "exp": "four",
+        "ctrl_ok": false,
+        "treat_ok": false,
+        "ctrl_input_tokens": 798,
+        "treat_input_tokens": 705,
+        "net_savings": 0.117,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-001--t1",
+        "kind": "rag_chunk",
+        "exp": "seven",
+        "ctrl_ok": false,
+        "treat_ok": false,
+        "ctrl_input_tokens": 773,
+        "treat_input_tokens": 693,
+        "net_savings": 0.103,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-001--t2",
+        "kind": "rag_chunk",
+        "exp": "35",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 774,
+        "treat_input_tokens": 694,
+        "net_savings": 0.103,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-002--t1",
+        "kind": "rag_chunk",
+        "exp": "AA",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 799,
+        "treat_input_tokens": 706,
+        "net_savings": 0.116,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-002--t2",
+        "kind": "rag_chunk",
+        "exp": "3 to 1",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 803,
+        "treat_input_tokens": 710,
+        "net_savings": 0.116,
+        "treat_answer": "I need to search for more specific information abo"
+      },
+      {
+        "id": "rag-003--t1",
+        "kind": "rag_chunk",
+        "exp": "one",
+        "ctrl_ok": false,
+        "treat_ok": false,
+        "ctrl_input_tokens": 794,
+        "treat_input_tokens": 700,
+        "net_savings": 0.118,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "rag-003--t2",
+        "kind": "rag_chunk",
+        "exp": "20",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 799,
+        "treat_input_tokens": 705,
+        "net_savings": 0.118,
+        "treat_answer": "I need to search for information about chargeback "
+      },
+      {
+        "id": "cm-getitem-004--t1",
+        "kind": "content_mcp",
+        "exp": "180",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 784,
+        "treat_input_tokens": 700,
+        "net_savings": 0.107,
+        "treat_answer": "Let me search for information about stale articles"
+      },
+      {
+        "id": "cm-getitem-004--t2",
+        "kind": "content_mcp",
+        "exp": "1200",
+        "ctrl_ok": true,
+        "treat_ok": false,
+        "ctrl_input_tokens": 778,
+        "treat_input_tokens": 694,
+        "net_savings": 0.108,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      }
+    ],
+    "by_kind": {
+      "content_mcp": {
+        "n": 10,
+        "control_acc": 0.9,
+        "compressed_acc": 0.0,
+        "accuracyDelta": -0.9,
+        "mean_net_savings": 0.122,
+        "net_stdev": 0.012
+      },
+      "rag_chunk": {
+        "n": 6,
+        "control_acc": 0.667,
+        "compressed_acc": 0.0,
+        "accuracyDelta": -0.667,
+        "mean_net_savings": 0.112,
+        "net_stdev": 0.007
+      }
+    }
+  },
+  "M3_prose_retrieve_wired": {
+    "rows": [
+      {
+        "id": "cm-getitem-001--t1",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to see the actual content. Let me try with "
+      },
+      {
+        "id": "cm-getitem-001--t2",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "cm-getitem-002--t1",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to search for information about sev-1 outag"
+      },
+      {
+        "id": "cm-getitem-002--t2",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "cm-getitem-003--t1",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "cm-getitem-003--t2",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to search for more specific information abo"
+      },
+      {
+        "id": "cm-generate-001--t1",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "Let me try to get the actual content:"
+      },
+      {
+        "id": "cm-generate-001--t2",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-001--t1",
+        "kind": "rag_chunk",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-001--t2",
+        "kind": "rag_chunk",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-002--t1",
+        "kind": "rag_chunk",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": ""
+      },
+      {
+        "id": "rag-002--t2",
+        "kind": "rag_chunk",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to search for more specific information abo"
+      },
+      {
+        "id": "rag-003--t1",
+        "kind": "rag_chunk",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      },
+      {
+        "id": "rag-003--t2",
+        "kind": "rag_chunk",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to search for information about chargeback "
+      },
+      {
+        "id": "cm-getitem-004--t1",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "Let me search for information about stale articles"
+      },
+      {
+        "id": "cm-getitem-004--t2",
+        "kind": "content_mcp",
+        "treat_ok": false,
+        "n_retrieve_calls": 0,
+        "failed_retrieves": 0,
+        "hallucinated": false,
+        "treat_answer": "I need to see the actual content. Let me try a dif"
+      }
+    ],
+    "by_kind": {
+      "content_mcp": {
+        "n": 10,
+        "compressed_acc": 0.0,
+        "hallucinated_retrieves": 0,
+        "tasks_that_called_retrieve": 0
+      },
+      "rag_chunk": {
+        "n": 6,
+        "compressed_acc": 0.0,
+        "hallucinated_retrieves": 0,
+        "tasks_that_called_retrieve": 0
+      }
+    },
+    "documented_tool_call_endpoint_status": "rejected (24-hex required; markers carry 12-hex)"
+  }
+}

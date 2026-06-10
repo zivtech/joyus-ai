@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: Within how many business days are approved refunds processed to the original payment method? Answer with just the number.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "cm-getitem-001", "title": "Returns and refunds procedure", "body": "The returns process begins when a customer initiates an RMA through the support portal. An agent inspects the item against the condition grade and routes it to restock, refurbish, or dispose. Approved refunds are processed to the original payment method within 7 business days. Restocking fees of 15 percent apply to opened electronics but never to defective goods. Items must be returned within 30 days of delivery; after that window only store credit is offered. Shipping costs are refunded only when the return results from a fulfillment error on our side.", "tool": "content_get_item"}

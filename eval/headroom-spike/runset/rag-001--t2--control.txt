@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: On how many days is the backup rotation cycle? Answer with just the number.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "rag-001", "title": "Data retention standard (chunk)", "body": "Operational application logs are retained for 90 days and then purged automatically. Security and audit logs are retained for one year to support investigations. Financial records are retained for seven years to satisfy regulatory requirements. Personal data is deleted within 30 days of account closure unless a legal hold is in effect. Backups are encrypted at rest and rotated on a 35 day cycle. The data protection officer must approve any retention exception in writing.", "tool": "content_search_chunk"}

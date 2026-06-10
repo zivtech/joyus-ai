@@ -1,0 +1,6 @@
+{
+  "id": "rag-002",
+  "kind": "rag_chunk",
+  "synthetic": true,
+  "content": "{\"id\": \"rag-002\", \"title\": \"Accessibility conformance notes (chunk)\", \"body\": \"All interactive controls must be reachable by keyboard and expose an accessible name. Color is never the sole means of conveying state or meaning. The project targets WCAG 2.1 level AA conformance across all public pages. Focus-visible indicators must meet a contrast ratio of at least 3 to 1 against adjacent colors. Time limits longer than 20 hours are exempt from the adjustable-timing requirement. Automated checks run in CI but never replace a manual keyboard pass before release.\", \"tool\": \"content_search_chunk\"}"
+}

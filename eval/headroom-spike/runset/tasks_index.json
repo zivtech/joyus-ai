@@ -1,0 +1,66 @@
+[
+  {
+    "task_id": "cm-getitem-001--t1",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-getitem-001--t2",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-getitem-002--t1",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-getitem-002--t2",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-getitem-003--t1",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-getitem-003--t2",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-generate-001--t1",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-generate-001--t2",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "rag-001--t1",
+    "kind": "rag_chunk"
+  },
+  {
+    "task_id": "rag-001--t2",
+    "kind": "rag_chunk"
+  },
+  {
+    "task_id": "rag-002--t1",
+    "kind": "rag_chunk"
+  },
+  {
+    "task_id": "rag-002--t2",
+    "kind": "rag_chunk"
+  },
+  {
+    "task_id": "rag-003--t1",
+    "kind": "rag_chunk"
+  },
+  {
+    "task_id": "rag-003--t2",
+    "kind": "rag_chunk"
+  },
+  {
+    "task_id": "cm-getitem-004--t1",
+    "kind": "content_mcp"
+  },
+  {
+    "task_id": "cm-getitem-004--t2",
+    "kind": "content_mcp"
+  }
+]

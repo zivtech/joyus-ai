@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: Variances greater than how many dollars are flagged for manual review? Answer with just the number.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "rag-003", "title": "Payment reconciliation guide (chunk)", "body": "Settlement batches are matched against the order ledger every business day before noon. Any variance greater than one dollar is flagged for manual review by the finance operations team. Chargebacks are logged against the originating order and the dispute clock starts on the notification date. A representment must be filed within 20 days or the chargeback is conceded automatically. Reconciliation reports are archived in the data warehouse under the finance schema. Currency conversion uses the rate captured at the time of authorization, not settlement.", "tool": "content_search_chunk"}

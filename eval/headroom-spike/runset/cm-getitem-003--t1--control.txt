@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: What are the initial payment terms set for a new vendor (e.g., net-30)? Answer with just the net term.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "cm-getitem-003", "title": "Vendor onboarding standard", "body": "Before a vendor is activated, finance confirms tax documentation, banking details for ACH disbursement, a signed master services agreement, and a certificate of insurance. Initial payment terms are set to net-45 pending a first-quarter performance review. A category manager is assigned and records the vendor's primary contact in the procurement system. Vendors handling regulated data must additionally pass a security questionnaire administered by the compliance department. The minimum insurance coverage required for logistics vendors is two million dollars in general liability.", "tool": "content_get_item"}

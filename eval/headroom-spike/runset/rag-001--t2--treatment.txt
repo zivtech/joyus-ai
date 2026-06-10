@@ -1,0 +1,11 @@
+You are given a COMPRESSED tool-output payload.
+The payload below has had large fields replaced with compression markers of the form `<<ccr:HASH,string,SIZE>>`. The original content is available on demand. If answering the question requires content that was replaced by a marker, you MUST recover it by running this exact shell command (it returns JSON with an `original_content` field):
+    curl -s http://127.0.0.1:8787/v1/retrieve/HASH
+Replace HASH with the hash from the marker. Then answer using the recovered content.
+
+Question: On how many days is the backup rotation cycle? Answer with just the number.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- COMPRESSED PAYLOAD ---
+{"id":"rag-001","title":"Data retention standard (chunk)","body":"<<ccr:c550ea0053f3,string,475B>>","tool":"content_search_chunk"}

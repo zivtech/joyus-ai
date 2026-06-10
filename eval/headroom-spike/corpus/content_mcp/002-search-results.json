@@ -1,7 +1,0 @@
-{
-  "id": "content_mcp-002",
-  "kind": "content_mcp",
-  "synthetic": true,
-  "note": "SYNTHETIC TEMPLATE — replace with a real sanitized search-layer MCP response.",
-  "content": "{\"tool\":\"content.search\",\"query\":\"refund policy\",\"results\":[{\"id\":\"kb-100\",\"score\":0.91,\"title\":\"Refund policy overview (synthetic)\",\"snippet\":\"Synthetic snippet describing a refund policy in generic terms with repeated filler to emulate retrieval verbosity. \",\"url\":\"/synthetic/kb/refund-policy\",\"facets\":{\"category\":\"billing\",\"audience\":\"customer\"}},{\"id\":\"kb-101\",\"score\":0.78,\"title\":\"Refund exceptions (synthetic)\",\"snippet\":\"Synthetic snippet. Synthetic snippet. Synthetic snippet.\",\"url\":\"/synthetic/kb/refund-exceptions\",\"facets\":{\"category\":\"billing\",\"audience\":\"agent\"}}],\"total\":2,\"took_ms\":31,\"_debug\":{\"analyzer\":\"standard\",\"rewritten_query\":\"refund policy\",\"boosts_applied\":[\"title^2\",\"recency\"]}}"
-}

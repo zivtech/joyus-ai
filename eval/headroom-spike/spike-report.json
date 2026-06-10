@@ -1,0 +1,23 @@
+{
+  "headroomVersion": "proxy-engine=headroom-ai@0.22.3; npm-client=headroom-ai@0.1.0",
+  "perType": {
+    "content_mcp": {
+      "savingsMean": 0.62137766133582,
+      "savingsStdDev": 0.02861892393551926,
+      "accuracyDelta": 0,
+      "sampleSize": 5
+    },
+    "rag_chunk": {
+      "savingsMean": 0.6061292270531401,
+      "savingsStdDev": 0.015267003466300106,
+      "accuracyDelta": 0,
+      "sampleSize": 3
+    }
+  },
+  "reversibilityRate": 1,
+  "tenantIsolationFit": "unsupported",
+  "addedLatencyP95Ms": 9.333166000000006,
+  "recommendedMode": "proxy",
+  "decision": "no_go",
+  "rationale": "NET savings under the retrieval that zero-degradation requires do NOT clear 0.5 for any kind (content_mcp compress-only=62% / net-must-read=-56%; rag_chunk compress-only=61% / net-must-read=-59%). Compression is real and reversible (reversibility=1, accuracyDelta=0 WITH retrieval), but for must-read tool outputs the agent retrieves the dropped body, so net tokens ≈ full payload + marker + retrieve-tool overhead — i.e. ≤ 0% net, never ≥50%. The savings the spec needs only materialize when content is NOT retrieved (low retrieval-rate) or a single retrieval is amortized across many turns (reference reuse) — and that retrieval rate is UNMEASURED here (the suite was 100% must-read, single-shot). Recommend proxy mode if pursued. Headroom's default store is content-addressed (cross-tenant dedup) and ephemeral (5-min TTL); durable, isolated reversibility needs a per-tenant persistent backend (our Postgres store, WP03/R2). Path to a conditional GO: measure retrieval-rate / fraction-of-content-actually-read on realistic multi-turn agent traces; CCR is viable only for low-retrieval-rate or read-once-reference-many payloads. The lossy array row-drop path (no CCR backing, rust-less install) must be bypassed regardless."
+}

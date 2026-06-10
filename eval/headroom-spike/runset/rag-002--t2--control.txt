@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: What minimum contrast ratio must focus-visible indicators meet against adjacent colors? Answer like '3:1' or '3 to 1'.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "rag-002", "title": "Accessibility conformance notes (chunk)", "body": "All interactive controls must be reachable by keyboard and expose an accessible name. Color is never the sole means of conveying state or meaning. The project targets WCAG 2.1 level AA conformance across all public pages. Focus-visible indicators must meet a contrast ratio of at least 3 to 1 against adjacent colors. Time limits longer than 20 hours are exempt from the adjustable-timing requirement. Automated checks run in CI but never replace a manual keyboard pass before release.", "tool": "content_search_chunk"}

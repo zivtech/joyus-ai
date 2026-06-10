@@ -1,0 +1,6 @@
+You are given a tool-output payload. Question: Within how many minutes of confirmation must a public status update be posted for a sev-1 outage? Answer with just the number.
+
+Answer with ONLY the answer requested, nothing else. Use only the payload content.
+
+--- PAYLOAD ---
+{"id": "cm-getitem-002", "title": "Incident response runbook", "body": "On detecting a sev-1 outage the on-call engineer is paged and a war-room channel is opened. A public status update must be posted within 15 minutes of confirmation. An incident commander is assigned and owns the timeline of events. A blameless postmortem is scheduled within 48 hours of resolution and circulated to all engineering leads. Sev-2 incidents follow the same flow but allow a 60 minute status cadence. The escalation contact for payment-system outages is the platform reliability team, not the application team.", "tool": "content_get_item"}
