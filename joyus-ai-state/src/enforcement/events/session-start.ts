@@ -20,10 +20,10 @@ export interface SessionStartReport {
 
 export async function onSessionStart(
   config: MergedEnforcementConfig,
-  ctx: { sessionId: string; auditDir: string },
+  ctx: { sessionId: string; auditDir: string; cwd?: string },
 ): Promise<SessionStartReport> {
-  const staleBranches = await detectStaleBranches(config.branchRules);
-  const branchCount = await checkBranchCount(config.branchRules);
+  const staleBranches = await detectStaleBranches(config.branchRules, ctx.cwd);
+  const branchCount = await checkBranchCount(config.branchRules, ctx.cwd);
 
   const suggestions: string[] = [];
 
