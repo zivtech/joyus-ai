@@ -10,6 +10,7 @@ export default defineConfig({
     './src/content/schema.ts',
     './src/pipelines/schema.ts',
     './src/event-adapter/schema.ts',
+    './src/exports/schema.ts',
     './src/profiles/schema.ts',
   ],
   out: './drizzle/migrations',

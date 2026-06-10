@@ -8,6 +8,7 @@ import { eq, and } from 'drizzle-orm';
 import type { SearchService } from '../content/search/index.js';
 import { db, connections, type Service } from '../db/client.js';
 import { decryptToken, encryptToken } from '../db/encryption.js';
+import { resolveTenantContextForUser } from '../tenancy/resolver.js';
 
 import { executeApprovalTool, type ApprovalExecutorContext } from './executors/approval-executor.js';
 import { executeContentTool } from './executors/content-executor.js';
@@ -91,6 +92,31 @@ export function setContentContext(deps: ContentContextDeps): void {
   _contentContext = deps;
 }
 
+function requestedTenantIdFromInput(input: Record<string, unknown>): string | null {
+  const raw = input.tenant_id ?? input.tenantId;
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+async function resolveToolTenantId(userId: string, input: Record<string, unknown>): Promise<string> {
+  const requestedTenantId = requestedTenantIdFromInput(input);
+  // Pass db + lookupDefaultTenant unconditionally so a caller with a default
+  // membership but no explicit tenant_id resolves to that membership — matching
+  // the HTTP middleware path (orchestrator/middleware/tenant.ts). Callers with
+  // no membership still fall back to self-scope inside the resolver.
+  const tenantContext = await resolveTenantContextForUser(userId, {
+    requestedTenantId,
+    db,
+    lookupDefaultTenant: true,
+  });
+
+  if (!tenantContext.tenantId) {
+    throw new Error('Tenant-scoped tool execution requires a tenant');
+  }
+  return tenantContext.tenantId;
+}
+
 /**
  * Execute a tool by name with the given input
  */
@@ -98,11 +124,18 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   // --- Direct executors (no OAuth required) ---
 
   if (toolName.startsWith('ops_')) {
-    return executeOpsTool(toolName, input, { userId });
+    // Resolve tenant through the same shared path as the other tool families.
+    // resolveToolTenantId performs the authoritative, membership-aware
+    // authorization (including default-membership lookup), so the exports
+    // service can safely skip its narrower self/allowlist check
+    // (tenantAccessPreResolved) — that check would otherwise reject a
+    // legitimately membership-authorized cross-tenant export.
+    const tenantId = await resolveToolTenantId(userId, input);
+    return executeOpsTool(toolName, input, { userId, tenantId, tenantAccessPreResolved: true });
   }
 
   if (toolName.startsWith('content_')) {
-    const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
+    const tenantId = await resolveToolTenantId(userId, input);
     return executeContentTool(toolName, input, {
       userId,
       tenantId,
@@ -112,7 +145,7 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   }
 
   if (toolName.startsWith('profile_')) {
-    const tenantId = userId; // tenant resolution deferred; use userId as tenantId for now
+    const tenantId = await resolveToolTenantId(userId, input);
     return executeProfileTool(toolName, input, { userId, tenantId, db });
   }
 
@@ -125,7 +158,7 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   }
 
   if (toolName.startsWith('pipeline_')) {
-    const tenantId = userId; // tenant resolution deferred to WP12; use userId as tenantId for now
+    const tenantId = await resolveToolTenantId(userId, input);
     // Pipeline executor context requires additional deps — these are injected via setPipelineContext()
     if (!_pipelineContext) {
       throw new Error('Pipeline module not initialized');

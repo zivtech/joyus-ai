@@ -1,0 +1,7 @@
+{
+  "id": "rag_chunk-001",
+  "kind": "rag_chunk",
+  "synthetic": true,
+  "note": "SYNTHETIC TEMPLATE — replace with a real sanitized retrieved knowledge chunk.",
+  "content": "Section 4.2 — Data retention (synthetic). Retained records are kept for a defined period and then purged according to the retention schedule. This placeholder paragraph emulates a moderately long retrieved chunk fed to the model as context. It repeats generic, low-entropy phrasing so that compression behavior on natural-language RAG context can be observed. Records are classified, scoped to a tenant, and never shared across tenant boundaries. This placeholder paragraph emulates a moderately long retrieved chunk fed to the model as context."
+}

@@ -10,6 +10,7 @@
 
 import * as contentSchema from '../content/schema.js';
 import * as eventAdapterSchema from '../event-adapter/schema.js';
+import * as exportsSchema from '../exports/schema.js';
 import * as pipelinesSchema from '../pipelines/schema.js';
 import * as profilesSchema from '../profiles/schema.js';
 
@@ -28,6 +29,7 @@ export const allSchemas = {
   ...contentSchema,
   ...pipelinesSchema,
   ...eventAdapterSchema,
+  ...exportsSchema,
   ...profilesSchema,
   ...orchestratorSchema,
   ...eventsSchema,
@@ -40,6 +42,7 @@ export * from './schema.js';
 export * from '../content/schema.js';
 export * from '../pipelines/schema.js';
 export * from '../event-adapter/schema.js';
+export * from '../exports/schema.js';
 export * from '../profiles/schema.js';
 export * from './schema/orchestrator.js';
 export * from './schema/events.js';

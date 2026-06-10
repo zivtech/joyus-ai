@@ -4,7 +4,7 @@
  * Verifies:
  * - Each admin page route returns 200 with text/html content-type
  * - HTML contains expected nav links
- * - Tenant scoping: x-tenant-id header is passed through to DB queries
+ * - Tenant scoping: authenticated tenant context is passed through to DB queries
  * - XSS prevention: user-supplied data is escaped
  *
  * Uses Node's built-in http.request via a helper — no external HTTP client dep.
@@ -113,6 +113,31 @@ function makeAppAndServer(deps: AdminRouterDeps): {
   const app = express();
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
+  app.use('/event-adapter/admin', (req, _res, next) => {
+    const header = req.headers['x-tenant-id'];
+    const tenantId = Array.isArray(header) ? header[0] : header;
+    if (tenantId) {
+      req.tenantId = tenantId;
+      req.tenantContext = {
+        actorUserId: 'test-user',
+        tenantId,
+        source: 'membership',
+      };
+    }
+    next();
+  }, createAdminRouter(deps));
+
+  const server = http.createServer(app);
+  return { app, server };
+}
+
+function makeUnscopedAppAndServer(deps: AdminRouterDeps): {
+  app: Application;
+  server: http.Server;
+} {
+  const app = express();
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
   app.use('/event-adapter/admin', createAdminRouter(deps));
 
   const server = http.createServer(app);
@@ -173,16 +198,16 @@ describe('Admin Panel — smoke tests', () => {
     expect(res.body).toMatch(/class="[^"]*active[^"]*"[^>]*>Sources/);
   });
 
-  it('GET /sources shows platform admin banner when no x-tenant-id', async () => {
+  it('GET /sources shows platform operator banner when no tenant context is set', async () => {
     const res = await httpGet(server, '/event-adapter/admin/sources');
-    expect(res.body).toContain('Platform admin view');
+    expect(res.body).toContain('Platform operator view');
   });
 
   it('GET /sources does NOT show platform banner when x-tenant-id is set', async () => {
     const res = await httpGet(server, '/event-adapter/admin/sources', {
       'x-tenant-id': 'tenant-123',
     });
-    expect(res.body).not.toContain('Platform admin view');
+    expect(res.body).not.toContain('Platform operator view');
   });
 
   it('GET /sources shows empty state when no sources', async () => {
@@ -253,10 +278,10 @@ describe('Admin Panel — smoke tests', () => {
     expect(res.body).toMatch(/class="[^"]*active[^"]*"[^>]*>Automation/);
   });
 
-  it('GET /automation shows tenant prompt when no x-tenant-id', async () => {
+  it('GET /automation shows tenant prompt when no tenant context is set', async () => {
     const res = await httpGet(server, '/event-adapter/admin/automation');
-    expect(res.body).toContain('Platform admin view');
-    expect(res.body).toContain('x-tenant-id');
+    expect(res.body).toContain('Platform operator view');
+    expect(res.body).toContain('authenticated tenant context');
   });
 
   it('GET /automation shows register form when tenant set and no destination', async () => {
@@ -301,5 +326,22 @@ describe('Admin Panel — smoke tests', () => {
       'x-tenant-id': 'tenant-xyz',
     });
     expect(res.status).toBe(200);
+  });
+
+  it('does not trust x-tenant-id when no tenant context middleware is mounted', async () => {
+    const built = makeUnscopedAppAndServer(deps);
+    const unscopedServer = built.server;
+    await new Promise<void>((resolve) => unscopedServer.listen(0, '127.0.0.1', resolve));
+
+    try {
+      const res = await httpGet(unscopedServer, '/event-adapter/admin/sources', {
+        'x-tenant-id': 'tenant-xyz',
+      });
+      expect(res.body).toContain('Platform operator view');
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        unscopedServer.close((err) => (err ? reject(err) : resolve())),
+      );
+    }
   });
 });

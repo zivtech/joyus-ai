@@ -275,6 +275,7 @@ function buildMockDb() {
     _deleteResults: [] as unknown[],
     _updateResults: [] as unknown[],
     _insertedValues: null as unknown,
+    _selectResultsQueue: null as unknown[][] | null,
 
     select: vi.fn(),
     insert: vi.fn(),
@@ -284,16 +285,22 @@ function buildMockDb() {
 
   // select().from().where().limit().offset() -> rows
   // select().from().where() -> rows (for plain queries)
+  const nextSelectResults = (): unknown[] => db._selectResultsQueue?.shift() ?? db._selectResults;
   db.select.mockImplementation(() => ({
     from: vi.fn(() => ({
-      where: vi.fn(() => ({
-        limit: vi.fn(() => ({
-          offset: vi.fn(() => Promise.resolve(db._selectResults)),
-        })),
-        // awaitable for plain .where() calls
-        then: (resolve: (v: unknown) => void) => resolve(db._selectResults),
-        ...Promise.resolve(db._selectResults),
-      })),
+      where: vi.fn(() => {
+        const rows = nextSelectResults();
+        return {
+          limit: vi.fn(() => ({
+            offset: vi.fn(() => Promise.resolve(rows)),
+            then: (resolve: (v: unknown) => void) => resolve(rows),
+            ...Promise.resolve(rows),
+          })),
+          // awaitable for plain .where() calls
+          then: (resolve: (v: unknown) => void) => resolve(rows),
+          ...Promise.resolve(rows),
+        };
+      }),
     })),
   }));
 
@@ -443,7 +450,7 @@ describe('POST /sources/:id/subscribe', () => {
     const source = makeSource();
     const sub = makeSubscription();
 
-    db._selectResults = [source];
+    db._selectResultsQueue = [[source], [{ id: 'pipe-abc' }]];
     db._insertResults = [sub];
 
     const result = await invokeSubscriptionsRoute(db, 'post', '/sources/src-platform-001/subscribe', {
@@ -453,6 +460,35 @@ describe('POST /sources/:id/subscribe', () => {
 
     expect(result.status).toBe(201);
     expect((result.body as Record<string, unknown>)['id']).toBe('sub-001');
+  });
+
+  it('trims target_pipeline_id before ownership check and insert', async () => {
+    const db = buildMockDb();
+    db._selectResultsQueue = [[makeSource()], [{ id: 'pipe-abc' }]];
+    db._insertResults = [makeSubscription()];
+
+    const result = await invokeSubscriptionsRoute(db, 'post', '/sources/src-platform-001/subscribe', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: { target_pipeline_id: '  pipe-abc  ' },
+    });
+
+    expect(result.status).toBe(201);
+    const inserted = db._insertedValues as Record<string, unknown>;
+    expect(inserted['targetPipelineId']).toBe('pipe-abc');
+  });
+
+  it('returns 404 when target pipeline is missing or belongs to another tenant', async () => {
+    const db = buildMockDb();
+    db._selectResultsQueue = [[makeSource()], []];
+
+    const result = await invokeSubscriptionsRoute(db, 'post', '/sources/src-platform-001/subscribe', {
+      headers: { 'x-tenant-id': 'tenant-abc' },
+      body: { target_pipeline_id: 'pipe-other-tenant' },
+    });
+
+    expect(result.status).toBe(404);
+    expect((result.body as Record<string, unknown>)['error']).toBe('pipeline_not_found');
+    expect(db.insert).not.toHaveBeenCalled();
   });
 
   it('returns 404 when source does not exist', async () => {
@@ -523,7 +559,7 @@ describe('POST /sources/:id/subscribe', () => {
     const existingSub = makeSubscription({ id: 'sub-existing' });
 
     // First select: source lookup succeeds
-    db._selectResults = [source];
+    db._selectResultsQueue = [[source], [{ id: 'pipe-abc' }]];
 
     // Insert throws unique violation
     db.insert.mockImplementation(() => ({
@@ -534,13 +570,14 @@ describe('POST /sources/:id/subscribe', () => {
       })),
     }));
 
-    // Second select for existing subscription lookup
+    // Select order: source lookup, pipeline ownership lookup, existing subscription lookup.
     let selectCount = 0;
     db.select.mockImplementation(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => {
           selectCount++;
           if (selectCount === 1) return Promise.resolve([source]);
+          if (selectCount === 2) return { limit: vi.fn(() => Promise.resolve([{ id: 'pipe-abc' }])) };
           return Promise.resolve([existingSub]);
         }),
       })),

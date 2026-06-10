@@ -156,7 +156,7 @@ describe('WorkflowApprovalService.getApprovalStatus', () => {
     const db = makeDb({ selectResults: [[approvalRow()]] });
     const service = new WorkflowApprovalService(db as never);
 
-    const result = await service.getApprovalStatus(TENANT, 'approval-1');
+    const result = await service.getApprovalStatus(TENANT, 'approval-1', { now: NOW });
 
     expect(result.status).toBe('pending');
     expect(result.canProceed).toBe(false);

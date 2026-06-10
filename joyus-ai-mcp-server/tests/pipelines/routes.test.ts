@@ -23,6 +23,8 @@ function makeMockDb() {
   const updatedRows: Record<string, unknown>[] = [];
   let selectResults: unknown[][] = [[]];
   let selectCallIndex = 0;
+  let insertError: unknown;
+  let updateError: unknown;
 
   /**
    * Create a chainable query result that is also a real array.
@@ -46,9 +48,22 @@ function makeMockDb() {
       selectResults = results;
       selectCallIndex = 0;
     },
+    _setInsertError(error: unknown) {
+      insertError = error;
+    },
+    _setUpdateError(error: unknown) {
+      updateError = error;
+    },
     insert: vi.fn().mockImplementation(() => ({
       values: vi.fn().mockImplementation((rows) => {
         const arr = Array.isArray(rows) ? rows : [rows];
+        if (insertError) {
+          const error = insertError;
+          insertError = undefined;
+          return {
+            returning: vi.fn().mockRejectedValue(error),
+          };
+        }
         insertedRows.push(...arr);
         return {
           returning: vi.fn().mockResolvedValue(arr),
@@ -58,6 +73,11 @@ function makeMockDb() {
     update: vi.fn().mockImplementation(() => ({
       set: vi.fn().mockImplementation((data: Record<string, unknown>) => ({
         where: vi.fn().mockImplementation(() => {
+          if (updateError) {
+            const error = updateError;
+            updateError = undefined;
+            return Promise.reject(error);
+          }
           updatedRows.push(data);
           return Promise.resolve();
         }),
@@ -130,6 +150,30 @@ function makeRes(): Response & { _status: number; _json: unknown; _sent: boolean
     },
   };
   return res as unknown as Response & { _status: number; _json: unknown; _sent: boolean };
+}
+
+// Drizzle's node-postgres driver may surface the underlying DatabaseError
+// nested under `.cause` (e.g. when wrapped by an outer Error).
+function makePgUniqueViolation(constraint = 'some_unique_constraint'): Error {
+  return new Error('duplicate key value violates unique constraint', {
+    cause: { code: '23505', constraint },
+  });
+}
+
+// pg v8 throws a DatabaseError with `code` set directly on the top-level error
+// object (no `.cause` wrapper). This is the shape real traffic hits, so the 409
+// mapping must handle it too.
+function makePgUniqueViolationTopLevel(constraint = 'some_unique_constraint'): Error {
+  const err = new Error('duplicate key value violates unique constraint');
+  Object.assign(err, { code: '23505', constraint });
+  return err;
+}
+
+// A non-unique-violation database error must fall through to a 500, not 409.
+function makePgGenericError(): Error {
+  const err = new Error('connection terminated unexpectedly');
+  Object.assign(err, { code: '08006' });
+  return err;
 }
 
 // ============================================================
@@ -233,6 +277,142 @@ describe('Pipeline Routes', () => {
       expect(data.pipeline.name).toBe('Test Pipeline');
     });
 
+    it('creates a distinct pipeline when an existing pipeline has the same display name', async () => {
+      const handler = getHandler(router, 'post', '/pipelines');
+      expect(handler).toBeDefined();
+
+      db._setSelectResults([
+        [{ id: 'pipe-existing', tenantId: 'tenant-a', name: 'Reusable Pipeline' }],
+        [],
+        [],
+      ]);
+
+      const req = makeReq({
+        body: {
+          name: 'Reusable Pipeline',
+          triggerType: 'manual_request',
+          triggerConfig: { type: 'manual_request' },
+          steps: [
+            {
+              name: 'Notify',
+              stepType: 'notification',
+              config: {
+                type: 'notification',
+                channel: 'email',
+                message: 'Pipeline complete',
+              },
+            },
+          ],
+        },
+      });
+
+      const res = makeRes();
+      await handler!(req, res);
+
+      expect(res._status).toBe(201);
+      const data = res._json as { pipeline: Record<string, unknown> };
+      expect(data.pipeline.id).not.toBe('pipe-existing');
+      expect(data.pipeline.name).toBe('Reusable Pipeline');
+    });
+
+    it('returns 409 for database unique constraint violations', async () => {
+      const handler = getHandler(router, 'post', '/pipelines');
+      expect(handler).toBeDefined();
+
+      db._setSelectResults([[], [], []]);
+      db._setInsertError(makePgUniqueViolation());
+
+      const req = makeReq({
+        body: {
+          name: 'Test Pipeline',
+          triggerType: 'manual_request',
+          triggerConfig: { type: 'manual_request' },
+          steps: [
+            {
+              name: 'Notify',
+              stepType: 'notification',
+              config: {
+                type: 'notification',
+                channel: 'email',
+                message: 'Pipeline complete',
+              },
+            },
+          ],
+        },
+      });
+
+      const res = makeRes();
+      await handler!(req, res);
+
+      expect(res._status).toBe(409);
+      expect((res._json as { error: string }).error).toContain('conflicts');
+    });
+
+    it('returns 409 when the unique violation code is on the top-level error (pg v8 shape)', async () => {
+      const handler = getHandler(router, 'post', '/pipelines');
+      expect(handler).toBeDefined();
+
+      db._setSelectResults([[], [], []]);
+      db._setInsertError(makePgUniqueViolationTopLevel());
+
+      const req = makeReq({
+        body: {
+          name: 'Test Pipeline',
+          triggerType: 'manual_request',
+          triggerConfig: { type: 'manual_request' },
+          steps: [
+            {
+              name: 'Notify',
+              stepType: 'notification',
+              config: {
+                type: 'notification',
+                channel: 'email',
+                message: 'Pipeline complete',
+              },
+            },
+          ],
+        },
+      });
+
+      const res = makeRes();
+      await handler!(req, res);
+
+      expect(res._status).toBe(409);
+      expect((res._json as { error: string }).error).toContain('conflicts');
+    });
+
+    it('returns 500 for non-unique-violation database errors', async () => {
+      const handler = getHandler(router, 'post', '/pipelines');
+      expect(handler).toBeDefined();
+
+      db._setSelectResults([[], [], []]);
+      db._setInsertError(makePgGenericError());
+
+      const req = makeReq({
+        body: {
+          name: 'Test Pipeline',
+          triggerType: 'manual_request',
+          triggerConfig: { type: 'manual_request' },
+          steps: [
+            {
+              name: 'Notify',
+              stepType: 'notification',
+              config: {
+                type: 'notification',
+                channel: 'email',
+                message: 'Pipeline complete',
+              },
+            },
+          ],
+        },
+      });
+
+      const res = makeRes();
+      await handler!(req, res);
+
+      expect(res._status).toBe(500);
+    });
+
     it('returns 400 for invalid input', async () => {
       const handler = getHandler(router, 'post', '/pipelines');
       expect(handler).toBeDefined();
@@ -293,6 +473,58 @@ describe('Pipeline Routes', () => {
       await handler!(req, res);
 
       expect(res._status).toBe(401);
+    });
+  });
+
+  describe('PUT /pipelines/:id', () => {
+    it('returns 409 for database unique constraint violations', async () => {
+      const handler = getHandler(router, 'put', '/pipelines/:id');
+      expect(handler).toBeDefined();
+
+      db._setSelectResults([
+        [{
+          id: 'pipe-1',
+          tenantId: 'tenant-a',
+          name: 'Original Pipeline',
+          triggerType: 'manual_request',
+        }],
+      ]);
+      db._setUpdateError(makePgUniqueViolation());
+
+      const req = makeReq({
+        params: { id: 'pipe-1' },
+        body: { name: 'Renamed Pipeline' },
+      });
+      const res = makeRes();
+      await handler!(req, res);
+
+      expect(res._status).toBe(409);
+      expect((res._json as { error: string }).error).toContain('conflicts');
+    });
+
+    it('returns 409 when the unique violation code is on the top-level error (pg v8 shape)', async () => {
+      const handler = getHandler(router, 'put', '/pipelines/:id');
+      expect(handler).toBeDefined();
+
+      db._setSelectResults([
+        [{
+          id: 'pipe-1',
+          tenantId: 'tenant-a',
+          name: 'Original Pipeline',
+          triggerType: 'manual_request',
+        }],
+      ]);
+      db._setUpdateError(makePgUniqueViolationTopLevel());
+
+      const req = makeReq({
+        params: { id: 'pipe-1' },
+        body: { name: 'Renamed Pipeline' },
+      });
+      const res = makeRes();
+      await handler!(req, res);
+
+      expect(res._status).toBe(409);
+      expect((res._json as { error: string }).error).toContain('conflicts');
     });
   });
 

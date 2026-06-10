@@ -82,6 +82,11 @@ function makeSnapshotService(): CorpusSnapshotService {
     getSnapshot: vi.fn(),
     listSnapshots: vi.fn(),
     getSnapshotDocuments: vi.fn(),
+    materializeSnapshot: vi.fn().mockResolvedValue({
+      corpusPath: '/tmp/materialized-corpus',
+      documentCount: 1,
+      cleanup: vi.fn().mockResolvedValue(undefined),
+    }),
   } as unknown as CorpusSnapshotService;
 }
 
@@ -306,6 +311,11 @@ describe('ProfileGenerationPipeline.generate', () => {
       getSnapshot: vi.fn(),
       listSnapshots: vi.fn(),
       getSnapshotDocuments: vi.fn().mockResolvedValue([snapshotDoc]),
+      materializeSnapshot: vi.fn().mockResolvedValue({
+        corpusPath: '/tmp/materialized-corpus',
+        documentCount: 1,
+        cleanup: vi.fn().mockResolvedValue(undefined),
+      }),
     } as unknown as CorpusSnapshotService;
     const engine = makeEngineBridge('author-999');
     const pipeline = makePipeline(engine, snapshotService);
@@ -318,8 +328,9 @@ describe('ProfileGenerationPipeline.generate', () => {
 
     expect(result.status).toBe('completed');
     expect(snapshotService.getSnapshotDocuments).toHaveBeenCalledWith('tenant-abc', 'snap-001');
+    expect(snapshotService.materializeSnapshot).toHaveBeenCalledWith('tenant-abc', 'snap-001');
     expect(engine.generateProfile).toHaveBeenCalledWith(
-      '/corpus',
+      '/tmp/materialized-corpus',
       'author-999',
       {},
     );

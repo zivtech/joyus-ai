@@ -4,19 +4,31 @@ import path from 'path';
 
 import { createId } from '@paralleldrive/cuid2';
 
+import { canAccessTenant } from '../tenancy/resolver.js';
+
 import { buildWorkbookFile } from './excel-builder.js';
+import { DrizzleExportDownloadTokenStore, type ExportDownloadTokenStore } from './token-store.js';
 import {
   CreateExportJobParams,
   ExcelExportJob,
   ExcelExportLocations,
   ExcelExportRequest,
   ExcelExportScope,
+  ResolvedExportDownload,
   WorkbookPayload,
   WorkbookSheetDefinition,
 } from './types.js';
 
 const exportJobs = new Map<string, ExcelExportJob>();
-const downloadTokenToJob = new Map<string, { jobId: string; expiresAtMs: number }>();
+let downloadTokenStore: ExportDownloadTokenStore = new DrizzleExportDownloadTokenStore();
+
+export function setExportDownloadTokenStore(store: ExportDownloadTokenStore): () => void {
+  const previous = downloadTokenStore;
+  downloadTokenStore = store;
+  return () => {
+    downloadTokenStore = previous;
+  };
+}
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -49,30 +61,10 @@ export function normalizeExportLocations(value: string | undefined): ExcelExport
   return value === 'all_accessible' ? 'all_accessible' : 'current';
 }
 
-function parseTenantAllowlist(raw: string): Map<string, Set<string>> {
-  const result = new Map<string, Set<string>>();
-  raw
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .forEach((entry) => {
-      const [userId, tenantId] = entry.split(':').map((part) => part.trim());
-      if (!userId || !tenantId) return;
-      const existing = result.get(userId) || new Set<string>();
-      existing.add(tenantId);
-      result.set(userId, existing);
-    });
-  return result;
-}
-
-export function canAccessTenant(userId: string, tenantId: string): boolean {
-  if (process.env.EXPORT_ALLOW_ANY_TENANT === 'true') return true;
-  if (tenantId === userId) return true;
-
-  const allowlist = parseTenantAllowlist(process.env.EXPORT_TENANT_ALLOWLIST || '');
-  const allowedTenants = allowlist.get(userId);
-  return Boolean(allowedTenants && allowedTenants.has(tenantId));
-}
+// Re-exported from the shared tenancy resolver so the self/allowlist access
+// rule has a single source of truth. Kept exported here for the exports module's
+// public surface and existing test imports.
+export { canAccessTenant };
 
 function assertTenantAccess(userId: string, tenantId: string): void {
   if (!canAccessTenant(userId, tenantId)) {
@@ -81,7 +73,8 @@ function assertTenantAccess(userId: string, tenantId: string): void {
 }
 
 function monthlyPeriodLabel(req: ExcelExportRequest, scope: ExcelExportScope): string {
-  if (scope === 'full_period') return req.date_start && req.date_end ? `${req.date_start}..${req.date_end}` : 'full_period';
+  if (scope === 'full_period')
+    return req.date_start && req.date_end ? `${req.date_start}..${req.date_end}` : 'full_period';
   if (req.date_start && req.date_end) return `${req.date_start}..${req.date_end}`;
   return req.date_start || req.date_end || 'current_view';
 }
@@ -117,17 +110,13 @@ function defaultWorkbookPayload(
       name: 'Summary',
       headers: ['category', 'label', 'value', 'notes'],
       col_widths: [20, 28, 18, 60],
-      rows: [
-        ['example', 'placeholder label', 0, 'Replace with real summary rows'],
-      ],
+      rows: [['example', 'placeholder label', 0, 'Replace with real summary rows']],
     },
     {
       name: 'Detail',
       headers: ['id', 'category', 'label', 'period', 'value', 'notes'],
       col_widths: [12, 20, 28, 22, 18, 60],
-      rows: [
-        ['1', 'example', 'placeholder label', period, 0, 'Replace with real detail rows'],
-      ],
+      rows: [['1', 'example', 'placeholder label', period, 0, 'Replace with real detail rows']],
     },
   ];
 
@@ -146,17 +135,8 @@ function defaultWorkbookPayload(
   return { sheets };
 }
 
-function cleanupExpiredDownloadTokens(): void {
-  const now = Date.now();
-  for (const [token, value] of downloadTokenToJob.entries()) {
-    if (value.expiresAtMs <= now) {
-      downloadTokenToJob.delete(token);
-      const job = exportJobs.get(value.jobId);
-      if (job) {
-        job.downloadToken = undefined;
-      }
-    }
-  }
+export async function cleanupExpiredDownloadTokens(now = new Date(Date.now())): Promise<number> {
+  return downloadTokenStore.cleanupExpired(now);
 }
 
 function buildDownloadUrl(baseUrl: string, token: string): string {
@@ -164,7 +144,9 @@ function buildDownloadUrl(baseUrl: string, token: string): string {
 }
 
 export async function createExcelExportJob(params: CreateExportJobParams): Promise<{ job: ExcelExportJob; downloadUrl: string }> {
-  assertTenantAccess(params.userId, params.tenantId);
+  if (!params.tenantAccessPreResolved) {
+    assertTenantAccess(params.userId, params.tenantId);
+  }
 
   const scope = normalizeExportScope(params.request.scope);
   const locations = normalizeExportLocations(params.request.locations);
@@ -204,11 +186,23 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
 
     const fileStats = await stat(outputPath);
     const token = randomBytes(24).toString('hex');
-    const expiresAtMs = Date.now() + signedUrlTtlSeconds() * 1000;
-    const expiresAtIso = new Date(expiresAtMs).toISOString();
+    const tokenCreatedAt = new Date();
+    const expiresAt = new Date(tokenCreatedAt.getTime() + signedUrlTtlSeconds() * 1000);
+    const expiresAtIso = expiresAt.toISOString();
     const downloadUrl = buildDownloadUrl(params.baseUrl, token);
 
-    downloadTokenToJob.set(token, { jobId, expiresAtMs });
+    await downloadTokenStore.create({
+      token,
+      jobId,
+      userId: params.userId,
+      tenantId: params.tenantId,
+      exportType: 'excel',
+      filePath: outputPath,
+      fileName,
+      createdAt: tokenCreatedAt,
+      expiresAt,
+    });
+
     exportJobs.set(jobId, {
       ...initialJob,
       status: 'completed',
@@ -236,22 +230,34 @@ export async function createExcelExportJob(params: CreateExportJobParams): Promi
   }
 }
 
-export function getExcelExportJobForUser(userId: string, tenantId: string, exportId: string): ExcelExportJob | null {
-  assertTenantAccess(userId, tenantId);
+export function getExcelExportJobForUser(
+  userId: string,
+  tenantId: string,
+  exportId: string,
+  options: { tenantAccessPreResolved?: boolean } = {},
+): ExcelExportJob | null {
+  if (!options.tenantAccessPreResolved) {
+    assertTenantAccess(userId, tenantId);
+  }
   const job = exportJobs.get(exportId);
   if (!job) return null;
   if (job.userId !== userId || job.tenantId !== tenantId) return null;
   return job;
 }
 
-export function resolveDownloadToken(token: string): { job: ExcelExportJob; filePath: string } | null {
-  cleanupExpiredDownloadTokens();
+export async function resolveDownloadToken(token: string): Promise<ResolvedExportDownload | null> {
+  if (!token) return null;
 
-  const tokenRecord = downloadTokenToJob.get(token);
+  const tokenRecord = await downloadTokenStore.findActiveByToken(token, new Date(Date.now()));
   if (!tokenRecord) return null;
 
-  const job = exportJobs.get(tokenRecord.jobId);
-  if (!job || !job.filePath || job.status !== 'completed') return null;
-  return { job, filePath: job.filePath };
+  return {
+    jobId: tokenRecord.jobId,
+    userId: tokenRecord.userId,
+    tenantId: tokenRecord.tenantId,
+    exportType: tokenRecord.exportType,
+    filePath: tokenRecord.filePath,
+    fileName: tokenRecord.fileName ?? undefined,
+    expiresAt: tokenRecord.expiresAt.toISOString(),
+  };
 }
-

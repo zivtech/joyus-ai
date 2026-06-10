@@ -6,7 +6,9 @@
  */
 
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Router } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
+
+import { resolveTenantContext, sendTenantResolutionError } from '../tenancy/resolver.js';
 
 import { createAdminRouter } from './routes/admin.js';
 import { createAutomationRouter } from './routes/automation.js';
@@ -135,6 +137,28 @@ export function createEventAdapterRouter(deps?: EventAdapterRouterDeps): Router 
   const router = Router();
 
   if (deps) {
+    // Tenant selection for event-adapter routes: a multi-tenant user may target
+    // a specific tenant via the `x-tenant-id` header or `tenant_id` query param,
+    // and an operator may request the platform-wide view via `?all_tenants=true`.
+    // This is membership-gated — the shared resolver only honors a requested
+    // tenant the actor belongs to (or is an operator for) and otherwise fails
+    // closed with 403, so a selector can never widen access. The EXPORT_*
+    // environment allowlist is intentionally NOT opted into here.
+    router.use(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await resolveTenantContext(req, {
+          db: deps.db,
+          allowPlatformWide: true,
+          lookupDefaultTenant: true,
+          tenantHeaderNames: ['x-tenant-id'],
+          tenantQueryKeys: ['tenant_id', 'tenantId'],
+        });
+        next();
+      } catch (error) {
+        sendTenantResolutionError(res, error);
+      }
+    });
+
     const sourcesRouter = createSourcesRouter({ db: deps.db });
     router.use(sourcesRouter);
 
