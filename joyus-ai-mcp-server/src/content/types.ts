@@ -18,7 +18,13 @@ export type SyncRunStatus = 'pending' | 'running' | 'completed' | 'failed';
 
 export type SyncTrigger = 'scheduled' | 'manual';
 
-export type ContentOperationType = 'sync' | 'search' | 'resolve' | 'generate' | 'mediate';
+export type ContentOperationType =
+  | 'sync'
+  | 'search'
+  | 'resolve'
+  | 'generate'
+  | 'mediate'
+  | 'cache_miss';
 
 // ============================================================
 // CONNECTOR CONFIGURATION TYPES
@@ -88,6 +94,7 @@ export interface GenerationResult {
   citations: Citation[];
   profileUsed: string | null;
   metadata: {
+    generationLogId: string;
     totalSearchResults: number;
     sourcesUsed: number;
     durationMs: number;
@@ -100,6 +107,167 @@ export interface Citation {
   title: string;
   excerpt: string;
   sourceType: string;
+}
+
+// ============================================================
+// ACTION JUDGE TYPES
+// ============================================================
+
+export type ActionProposalType =
+  | 'deliver_mediation_response'
+  | 'close_mediation_session'
+  | 'write_session_audit'
+  | 'resolve_entitlements'
+  | 'retrieve_content'
+  | 'generate_content'
+  | 'manage_mediation_api_key'
+  | 'notify_reviewer';
+
+export type ActionProposalTargetEntityType =
+  | 'content'
+  | 'external_response'
+  | 'integration'
+  | 'operation_log'
+  | 'profile'
+  | 'session'
+  | 'user';
+
+export type ActionEvidenceSourceType =
+  | 'content_item'
+  | 'entitlement'
+  | 'operation_log'
+  | 'policy'
+  | 'request'
+  | 'session';
+
+export type ActionAuthorizationBasis =
+  | 'current_authenticated_request'
+  | 'explicit_user_instruction'
+  | 'operator_policy'
+  | 'inferred_from_context';
+
+export type ActionRollbackMethod = 'automatic' | 'manual' | 'none';
+
+export type ActionRiskFlag =
+  | 'ambiguous_target'
+  | 'authorization_context_mismatch'
+  | 'broad_external_exposure'
+  | 'empty_payload'
+  | 'high_stakes_action'
+  | 'irreversible_external_effect'
+  | 'missing_authorization'
+  | 'missing_evidence'
+  | 'policy_conflict'
+  | 'profile_not_authorized'
+  | 'sensitive_data_exposure'
+  | 'source_not_authorized'
+  | 'stale_evidence';
+
+export interface ActionEvidenceSource {
+  sourceType: ActionEvidenceSourceType;
+  sourceId: string;
+  relevance: string;
+  tenantId?: string;
+  isAuthoritative: boolean;
+  isStale?: boolean;
+}
+
+export interface ActionProposal {
+  id: string;
+  proposedAt: string;
+  policyVersion: string;
+  action: {
+    type: ActionProposalType;
+    target: {
+      entityType: ActionProposalTargetEntityType;
+      entityId: string;
+      tenantId?: string;
+      profileId?: string | null;
+    };
+    payloadSummary: string;
+    payloadRef?: {
+      type: string;
+      id: string;
+    };
+    payloadShape: Record<string, unknown>;
+  };
+  context: {
+    tenantId: string;
+    userId: string;
+    sessionId?: string;
+    profileId?: string | null;
+    integrationId?: string;
+    requestId?: string;
+  };
+  evidence: {
+    sources: ActionEvidenceSource[];
+    authoritative: boolean;
+    missingEvidenceReason?: string;
+  };
+  authorization: {
+    basis: ActionAuthorizationBasis;
+    tenantId: string;
+    userId: string;
+    apiKeyId?: string;
+    profileId?: string | null;
+    authorizedProfileIds: string[];
+    authorizedSourceIds: string[];
+    explicitInstructionRef?: string;
+    inferredFromContext: boolean;
+  };
+  expectedConsequence: {
+    summary: string;
+    reversible: boolean;
+    affectsOtherUsers: boolean;
+    affectsExternalSystems: boolean;
+    exposedDataClasses: string[];
+    visibleTo: string[];
+  };
+  rollbackPath: {
+    method: ActionRollbackMethod;
+    description: string;
+  };
+  riskFlags: ActionRiskFlag[];
+}
+
+export type JudgeOutcome = 'allow' | 'block' | 'revise' | 'escalate';
+
+export type JudgeCriterionCategory = 'authorization' | 'evidence' | 'exposure_risk' | 'policy';
+
+export type JudgeCriterionSeverity = 'info' | 'warning' | 'critical';
+
+export interface JudgeCriterionResult {
+  criterionId: string;
+  category: JudgeCriterionCategory;
+  question: string;
+  passed: boolean;
+  severity: JudgeCriterionSeverity;
+  reasonCode: string;
+  details: string;
+}
+
+export interface JudgeRequiredRevision {
+  instruction: string;
+  mustChange: string[];
+}
+
+export interface JudgeEscalation {
+  reason: string;
+  reviewerHint: string;
+}
+
+export interface JudgeResult {
+  id: string;
+  proposalId: string;
+  judgedAt: string;
+  policyVersion: string;
+  outcome: JudgeOutcome;
+  reasonCode: string;
+  summary: string;
+  criteria: JudgeCriterionResult[];
+  requiredRevision?: JudgeRequiredRevision;
+  escalation?: JudgeEscalation;
+  latencyMs: number;
 }
 
 // ============================================================

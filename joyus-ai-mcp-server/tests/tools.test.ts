@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 
+import { approvalTools } from '../src/tools/approval-tools.js';
 import { jiraTools } from '../src/tools/jira-tools.js';
 import { slackTools } from '../src/tools/slack-tools.js';
 import { githubTools } from '../src/tools/github-tools.js';
@@ -29,6 +30,39 @@ describe('Tool Definitions', () => {
     expect(tool.inputSchema.type).toBe('object');
     expect(tool.inputSchema.properties).toBeDefined();
   };
+
+  describe('Approval Tools', () => {
+    it('should have valid tool definitions', () => {
+      expect(approvalTools).toHaveLength(4);
+
+      for (const tool of approvalTools) {
+        validateToolDefinition(tool);
+        expect(tool.name).toMatch(/^approval_/);
+      }
+    });
+
+    it('should include workflow approval lifecycle tools', () => {
+      const toolNames = approvalTools.map(t => t.name);
+
+      expect(toolNames).toContain('approval_create');
+      expect(toolNames).toContain('approval_status');
+      expect(toolNames).toContain('approval_decide');
+      expect(toolNames).toContain('approval_expire_due');
+    });
+
+    it('should have required fields specified', () => {
+      const createTool = approvalTools.find(t => t.name === 'approval_create');
+      expect(createTool?.inputSchema.required).toEqual([
+        'workflowRunId',
+        'proposalId',
+        'proposalSummary',
+      ]);
+
+      const decideTool = approvalTools.find(t => t.name === 'approval_decide');
+      expect(decideTool?.inputSchema.required).toContain('approvalId');
+      expect(decideTool?.inputSchema.required).toContain('decision');
+    });
+  });
 
   describe('Jira Tools', () => {
     it('should have valid tool definitions', () => {
@@ -194,7 +228,7 @@ describe('Tool Definitions', () => {
   });
 
   describe('All Tools Combined', () => {
-    const allTools = [...jiraTools, ...slackTools, ...githubTools, ...googleTools, ...opsTools];
+    const allTools = [...approvalTools, ...jiraTools, ...slackTools, ...githubTools, ...googleTools, ...opsTools];
 
     it('should have unique tool names', () => {
       const names = allTools.map(t => t.name);

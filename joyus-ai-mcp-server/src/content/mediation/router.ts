@@ -20,8 +20,15 @@ import type { DrizzleClient } from '../../db/types.js';
 import type { EntitlementCache } from '../entitlements/cache.js';
 import type { EntitlementService } from '../entitlements/index.js';
 import type { GenerationService } from '../generation/index.js';
+import { contentOperationLogs } from '../schema.js';
+import type { ActionProposal, JudgeOutcome, JudgeResult } from '../types.js';
 
 import { createAuthMiddleware } from './auth.js';
+import {
+  DeterministicMediationJudgeService,
+  createMediationResponseProposal,
+  type MediationJudgeService,
+} from './judge.js';
 import { MediationSessionService } from './session.js';
 
 export interface MediationDependencies {
@@ -29,6 +36,11 @@ export interface MediationDependencies {
   generationService: GenerationService;
   entitlementService: EntitlementService;
   entitlementCache: EntitlementCache;
+  judgeService?: MediationJudgeService;
+  sessionService?: Pick<
+    MediationSessionService,
+    'createSession' | 'getSession' | 'incrementMessageCount' | 'closeSession'
+  >;
 }
 
 function requestIdFrom(req: Request): string {
@@ -75,11 +87,63 @@ function logMediationEvent(
   console.info(serialized);
 }
 
+function statusForJudgeOutcome(outcome: JudgeOutcome): number {
+  if (outcome === 'block') return 403;
+  if (outcome === 'revise') return 409;
+  if (outcome === 'escalate') return 202;
+  return 200;
+}
+
+function judgeResponseBody(judgment: JudgeResult): Record<string, unknown> {
+  return {
+    error: `judge_${judgment.outcome}`,
+    message: judgment.summary,
+    judgment: {
+      id: judgment.id,
+      outcome: judgment.outcome,
+      reasonCode: judgment.reasonCode,
+      policyVersion: judgment.policyVersion,
+      criteria: judgment.criteria,
+      requiredRevision: judgment.requiredRevision,
+      escalation: judgment.escalation,
+    },
+  };
+}
+
+async function logJudgmentAudit(
+  db: DrizzleClient,
+  proposal: ActionProposal,
+  judgment: JudgeResult,
+  durationMs: number,
+): Promise<void> {
+  await db.insert(contentOperationLogs).values({
+    id: createId(),
+    tenantId: proposal.context.tenantId,
+    operation: 'mediate',
+    userId: proposal.context.userId,
+    sessionId: proposal.context.sessionId ?? null,
+    durationMs,
+    success: judgment.outcome === 'allow',
+    metadata: {
+      event: 'mediation.judge.evaluated',
+      requestId: proposal.context.requestId ?? null,
+      boundary: proposal.action.type,
+      proposal,
+      judgment,
+      enforcement: {
+        executed: judgment.outcome === 'allow',
+        outcome: judgment.outcome,
+      },
+    },
+  });
+}
+
 export function createMediationRouter(deps: MediationDependencies): Router {
   const router = Router();
   const { db, generationService, entitlementService, entitlementCache } = deps;
   const { validateApiKey, validateUserToken } = createAuthMiddleware(db);
-  const sessionService = new MediationSessionService(db);
+  const judgeService = deps.judgeService ?? new DeterministicMediationJudgeService();
+  const sessionService = deps.sessionService ?? new MediationSessionService(db);
 
   // Health check — no auth required
   router.get('/health', (_req, res) => {
@@ -177,6 +241,32 @@ export function createMediationRouter(deps: MediationDependencies): Router {
         },
       );
 
+      const proposal = createMediationResponseProposal({
+        requestId,
+        tenantId: req.tenantId!,
+        userId: req.userId!,
+        apiKeyId: req.apiKeyRecord!.id,
+        sessionId,
+        profileId: session.activeProfileId,
+        entitlements,
+        generationResult: result,
+      });
+      const judgment = await judgeService.judge(proposal);
+      await logJudgmentAudit(db, proposal, judgment, Date.now() - startedAt);
+
+      if (judgment.outcome !== 'allow') {
+        logMediationEvent('info', 'mediation.message.judge_halted', req, {
+          requestId,
+          sessionId,
+          profileId: session.activeProfileId,
+          durationMs: Date.now() - startedAt,
+          outcome: judgment.outcome,
+          reasonCode: judgment.reasonCode,
+        });
+        res.status(statusForJudgeOutcome(judgment.outcome)).json(judgeResponseBody(judgment));
+        return;
+      }
+
       // Increment message counter
       await sessionService.incrementMessageCount(sessionId);
 
@@ -186,6 +276,7 @@ export function createMediationRouter(deps: MediationDependencies): Router {
         profileId: session.activeProfileId,
         durationMs: Date.now() - startedAt,
         citations: result.citations.length,
+        judgmentId: judgment.id,
       });
 
       res.json({
@@ -196,6 +287,11 @@ export function createMediationRouter(deps: MediationDependencies): Router {
           sourcesSearched: result.metadata.totalSearchResults,
           sourcesUsed: result.metadata.sourcesUsed,
           responseTime: result.metadata.durationMs,
+          judgment: {
+            id: judgment.id,
+            outcome: judgment.outcome,
+            policyVersion: judgment.policyVersion,
+          },
         },
       });
     } catch (err: unknown) {

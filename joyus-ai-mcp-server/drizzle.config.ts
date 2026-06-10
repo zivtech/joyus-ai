@@ -4,6 +4,9 @@ export default defineConfig({
   schema: [
     './src/db/schema.ts',
     './src/db/schema/orchestrator.ts',
+    './src/db/schema/events.ts',
+    './src/db/schema/coordination.ts',
+    './src/db/schema/approvals.ts',
     './src/content/schema.ts',
     './src/pipelines/schema.ts',
     './src/event-adapter/schema.ts',
