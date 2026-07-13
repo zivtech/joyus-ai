@@ -1,0 +1,148 @@
+version: 1
+generated_at: '2026-03-27T00:00:00Z'
+skills:
+# Official Google Stitch skills
+- id: google-labs-code/stitch-skills/enhance-prompt
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/enhance-prompt
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - prompt-engineering
+  - stitch-generation
+  audiences_supported:
+  - designer
+  - developer
+  priority: 95
+  status: active
+- id: google-labs-code/stitch-skills/stitch-design
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/stitch-design
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - screen-generation
+  - stitch-generation
+  audiences_supported:
+  - designer
+  - developer
+  priority: 100
+  status: active
+- id: google-labs-code/stitch-skills/stitch-loop
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/stitch-loop
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - multi-page-generation
+  - stitch-generation
+  audiences_supported:
+  - designer
+  - developer
+  priority: 95
+  status: active
+- id: google-labs-code/stitch-skills/design-md
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/design-md
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - design-documentation
+  - tokens
+  audiences_supported:
+  - developer
+  - brand-consistency
+  priority: 90
+  status: active
+- id: google-labs-code/stitch-skills/react-components
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/react-components
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - component-export
+  - react
+  audiences_supported:
+  - developer
+  priority: 85
+  status: active
+- id: google-labs-code/stitch-skills/remotion
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/remotion
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - video-generation
+  audiences_supported:
+  - designer
+  priority: 60
+  status: deferred-v2
+- id: google-labs-code/stitch-skills/shadcn-ui
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/shadcn-ui
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - component-library
+  - shadcn
+  audiences_supported:
+  - developer
+  priority: 60
+  status: deferred-v2
+# Community: stitch-kit (preferred when available — adds MCP ID safety, a11y, batch gen)
+- id: gabelul/stitch-kit/stitch-ideate
+  skills_url: https://skills.sh/gabelul/stitch-kit/stitch-ideate
+  repo_url: https://github.com/gabelul/stitch-kit
+  categories:
+  - design-research
+  - ideation
+  audiences_supported:
+  - designer
+  priority: 90
+  status: active
+- id: gabelul/stitch-kit/stitch-a11y
+  skills_url: https://skills.sh/gabelul/stitch-kit/stitch-a11y
+  repo_url: https://github.com/gabelul/stitch-kit
+  categories:
+  - accessibility
+  - stitch-generation
+  audiences_supported:
+  - accessibility
+  - designer
+  priority: 92
+  status: active
+- id: gabelul/stitch-kit/stitch-ui-prompt-architect
+  skills_url: https://skills.sh/gabelul/stitch-kit/stitch-ui-prompt-architect
+  repo_url: https://github.com/gabelul/stitch-kit
+  categories:
+  - prompt-engineering
+  - stitch-generation
+  audiences_supported:
+  - designer
+  - developer
+  priority: 88
+  status: active
+- id: gabelul/stitch-kit/stitch-design-system
+  skills_url: https://skills.sh/gabelul/stitch-kit/stitch-design-system
+  repo_url: https://github.com/gabelul/stitch-kit
+  categories:
+  - design-system
+  - tokens
+  audiences_supported:
+  - developer
+  - brand-consistency
+  priority: 88
+  status: active
+- id: gabelul/stitch-kit/stitch-nextjs-components
+  skills_url: https://skills.sh/gabelul/stitch-kit/stitch-nextjs-components
+  repo_url: https://github.com/gabelul/stitch-kit
+  categories:
+  - component-export
+  - nextjs
+  audiences_supported:
+  - developer
+  priority: 82
+  status: active
+- id: gabelul/stitch-kit/stitch-svelte-components
+  skills_url: https://skills.sh/gabelul/stitch-kit/stitch-svelte-components
+  repo_url: https://github.com/gabelul/stitch-kit
+  categories:
+  - component-export
+  - svelte
+  audiences_supported:
+  - developer
+  priority: 78
+  status: active

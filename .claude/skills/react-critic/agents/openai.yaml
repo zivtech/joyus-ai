@@ -1,0 +1,3 @@
+display_name: React Critic
+short_description: Harsh, evidence-based React review
+default_prompt: Review this React plan/code and return a strict verdict with evidence-backed findings.

@@ -1,0 +1,141 @@
+version: 1
+generated_at: '2026-03-05T19:10:31Z'
+skills:
+- id: vercel-labs/next-skills/next-best-practices
+  skills_url: https://skills.sh/vercel-labs/next-skills/next-best-practices
+  repo_url: https://github.com/vercel-labs/next-skills
+  pinned_commit: 038954e07bfc313e97fa5f6ff7caf87226e4a782
+  categories:
+  - core-review
+  - next
+  audiences_supported:
+  - security
+  - new-hire
+  - ops
+  - performance-engineer
+  priority: 100
+  status: active
+  jtbd: "Load for any Next.js review — core App Router patterns, RSC best practices, and data fetching guidance from Vercel."
+- id: vercel-labs/next-skills/next-cache-components
+  skills_url: https://skills.sh/vercel-labs/next-skills/next-cache-components
+  repo_url: https://github.com/vercel-labs/next-skills
+  pinned_commit: 038954e07bfc313e97fa5f6ff7caf87226e4a782
+  categories:
+  - next
+  - cache
+  audiences_supported:
+  - ops
+  - performance-engineer
+  priority: 95
+  status: active
+  jtbd: "Load when reviewing caching, ISR, revalidation strategies, or fetch cache behavior in Next.js."
+- id: vercel-labs/next-skills/next-upgrade
+  skills_url: https://skills.sh/vercel-labs/next-skills/next-upgrade
+  repo_url: https://github.com/vercel-labs/next-skills
+  pinned_commit: 038954e07bfc313e97fa5f6ff7caf87226e4a782
+  categories:
+  - next
+  - upgrade
+  audiences_supported:
+  - ops
+  - dx-maintainer
+  priority: 92
+  status: active
+  jtbd: "Load when reviewing Next.js version upgrades, breaking changes, codemods, or migration plans."
+- id: wshobson/agents/nextjs-app-router-patterns
+  skills_url: https://skills.sh/wshobson/agents/nextjs-app-router-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - next
+  - app-router
+  audiences_supported:
+  - new-hire
+  - ops
+  priority: 88
+  status: active
+  jtbd: "Load when reviewing App Router architecture — layout nesting, parallel routes, route groups, and advanced patterns."
+- id: wsimmonds/claude-nextjs-skills/nextjs-app-router-fundamentals
+  skills_url: https://skills.sh/wsimmonds/claude-nextjs-skills/nextjs-app-router-fundamentals
+  repo_url: https://github.com/wsimmonds/claude-nextjs-skills
+  pinned_commit: 9e0aa5f99b6cfcede69e375d1a40951dae283046
+  categories:
+  - next
+  - app-router
+  audiences_supported:
+  - new-hire
+  priority: 82
+  status: active
+  jtbd: "Load when reviewing App Router fundamentals — server/client component split, basic routing, and data flow patterns."
+- id: clerk/skills/clerk-nextjs-patterns
+  skills_url: https://skills.sh/clerk/skills/clerk-nextjs-patterns
+  repo_url: https://github.com/clerk/skills
+  pinned_commit: 4d5eaff11118478c3f669807d32e963698e79f74
+  categories:
+  - next
+  - auth
+  audiences_supported:
+  - security
+  priority: 78
+  status: active
+  jtbd: "Load when code uses Clerk for authentication — middleware setup, protected routes, and session management patterns."
+- id: auth0/agent-skills/auth0-nextjs
+  skills_url: https://skills.sh/auth0/agent-skills/auth0-nextjs
+  repo_url: https://github.com/auth0/agent-skills
+  pinned_commit: d0213ce31c397204db831368aded71f8ed18af4e
+  categories:
+  - next
+  - auth
+  audiences_supported:
+  - security
+  priority: 78
+  status: active
+  jtbd: "Load when code uses Auth0 for authentication — SDK integration, callback handling, and session patterns for Next.js."
+- id: mindrally/skills/nextauth-authentication
+  skills_url: https://skills.sh/mindrally/skills/nextauth-authentication
+  repo_url: https://github.com/mindrally/skills
+  pinned_commit: 47f47c12e62f62b5e171bd5af61d0fc24b329701
+  categories:
+  - next
+  - auth
+  audiences_supported:
+  - security
+  priority: 76
+  status: active
+  jtbd: "Load when code uses NextAuth.js / Auth.js — provider configuration, session strategy, and callback patterns."
+- id: wshobson/agents/javascript-testing-patterns
+  skills_url: https://skills.sh/wshobson/agents/javascript-testing-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - shared
+  - testing
+  audiences_supported:
+  - ops
+  priority: 86
+  status: active
+  jtbd: "Load when reviewing test strategy, async test patterns, or coverage gaps in JavaScript/TypeScript projects."
+- id: wshobson/agents/modern-javascript-patterns
+  skills_url: https://skills.sh/wshobson/agents/modern-javascript-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - shared
+  - javascript
+  audiences_supported:
+  - new-hire
+  priority: 76
+  status: active
+  jtbd: "Load when reviewing modern JS idioms — ESM usage, async patterns, and contemporary language features."
+- id: sickn33/antigravity-awesome-skills/api-security-best-practices
+  skills_url: https://skills.sh/sickn33/antigravity-awesome-skills/api-security-best-practices
+  repo_url: https://github.com/sickn33/antigravity-awesome-skills
+  pinned_commit: 60ed44edef8a3c6c53a0818fa06a9b987cc15fbd
+  categories:
+  - shared
+  - security
+  audiences_supported:
+  - security
+  priority: 72
+  status: active
+  jtbd: "Load when code handles API boundaries, auth tokens, user input, or sensitive data — trust boundary and input validation patterns."

@@ -1,0 +1,3 @@
+display_name: React Native Critic
+short_description: RN and Expo-focused harsh review
+default_prompt: Review this React Native/Expo plan/code and return a strict evidence-based verdict.

@@ -1,0 +1,63 @@
+version: 1
+generated_at: '2026-03-06T00:00:00Z'
+skills:
+- id: github/awesome-copilot/web-design-reviewer
+  skills_url: https://skills.sh/github/awesome-copilot/web-design-reviewer
+  repo_url: https://github.com/github/awesome-copilot
+  pinned_commit: 9ef54533f0e4e3f5f45d790d675af5f91344e821
+  categories:
+  - core-review
+  - design-critique
+  audiences_supported:
+  - end-user
+  - accessibility
+  - brand-consistency
+  priority: 100
+  status: active
+- id: addyosmani/web-quality-skills/accessibility
+  skills_url: https://skills.sh/addyosmani/web-quality-skills/accessibility
+  repo_url: https://github.com/addyosmani/web-quality-skills
+  pinned_commit: 6a231a73b79ff35bcee04dec85996415979aa928
+  categories:
+  - accessibility
+  - audit
+  audiences_supported:
+  - accessibility
+  - end-user
+  priority: 95
+  status: active
+- id: vercel-labs/agent-skills/web-design-guidelines
+  skills_url: https://skills.sh/vercel-labs/agent-skills/web-design-guidelines
+  repo_url: https://github.com/vercel-labs/agent-skills
+  pinned_commit: 64bee5b7ea30702448e2aed774eb361914029944
+  categories:
+  - design-compliance
+  - standards
+  audiences_supported:
+  - end-user
+  - brand-consistency
+  priority: 88
+  status: active
+- id: webflow/webflow-skills/accessibility-audit
+  skills_url: https://skills.sh/webflow/webflow-skills/accessibility-audit
+  repo_url: https://github.com/webflow/webflow-skills
+  pinned_commit: eb2e24a408136cd83bfc93dc456a82bade32d866
+  categories:
+  - accessibility
+  - structural-audit
+  audiences_supported:
+  - accessibility
+  priority: 80
+  status: active
+- id: wshobson/agents/responsive-design
+  skills_url: https://skills.sh/wshobson/agents/responsive-design
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - responsive
+  - review
+  audiences_supported:
+  - mobile-user
+  - end-user
+  priority: 72
+  status: active

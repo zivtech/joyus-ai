@@ -1,0 +1,228 @@
+version: 1
+generated_at: '2026-03-05T19:10:33Z'
+skills:
+- id: vercel-labs/agent-skills/vercel-react-native-skills
+  skills_url: https://skills.sh/vercel-labs/agent-skills/vercel-react-native-skills
+  repo_url: https://github.com/vercel-labs/agent-skills
+  pinned_commit: cc8bd7a5b51e41270f20b43466ffa4149c18cc01
+  categories:
+  - core-review
+  - react-native
+  - expo
+  audiences_supported:
+  - security
+  - new-hire
+  - ops
+  - performance-engineer
+  priority: 100
+  status: active
+  jtbd: "Load for any RN review — core cross-platform patterns, performance fundamentals, and native rendering guidance."
+- id: callstackincubator/agent-skills/react-native-best-practices
+  skills_url: https://skills.sh/callstackincubator/agent-skills/react-native-best-practices
+  repo_url: https://github.com/callstackincubator/agent-skills
+  pinned_commit: c186e3e2cfd18bb950114be7469146a1ca78fa92
+  categories:
+  - react-native
+  - performance
+  audiences_supported:
+  - ops
+  - performance-engineer
+  priority: 95
+  status: active
+  jtbd: "Load when reviewing RN performance — native modules, bridge optimization, and rendering best practices from Callstack."
+- id: callstackincubator/agent-skills/upgrading-react-native
+  skills_url: https://skills.sh/callstackincubator/agent-skills/upgrading-react-native
+  repo_url: https://github.com/callstackincubator/agent-skills
+  pinned_commit: c186e3e2cfd18bb950114be7469146a1ca78fa92
+  categories:
+  - react-native
+  - upgrade
+  audiences_supported:
+  - ops
+  - dx-maintainer
+  priority: 92
+  status: active
+  jtbd: "Load when reviewing RN version upgrades — native dependency alignment, breaking changes, and migration guidance from Callstack."
+- id: react-native-community/skills/upgrade-react-native
+  skills_url: https://skills.sh/react-native-community/skills/upgrade-react-native
+  repo_url: https://github.com/react-native-community/skills
+  pinned_commit: e8b05695146d638bc622d1dfe7dc62b227fb477f
+  categories:
+  - react-native
+  - upgrade
+  audiences_supported:
+  - ops
+  priority: 88
+  status: active
+  jtbd: "Load when reviewing RN upgrades — community migration patterns, compatibility matrices, and upgrade tooling."
+- id: wshobson/agents/react-native-architecture
+  skills_url: https://skills.sh/wshobson/agents/react-native-architecture
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - react-native
+  - architecture
+  audiences_supported:
+  - new-hire
+  - ops
+  priority: 84
+  status: active
+  jtbd: "Load when reviewing RN app architecture — module boundaries, navigation patterns, and state management for mobile."
+- id: wshobson/agents/react-native-design
+  skills_url: https://skills.sh/wshobson/agents/react-native-design
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - react-native
+  - design
+  audiences_supported:
+  - new-hire
+  priority: 80
+  status: active
+  jtbd: "Load when reviewing RN UI/UX patterns — cross-platform styling, responsive layouts, and platform-specific design."
+- id: callstack/react-native-testing-library/react-native-testing
+  skills_url: https://skills.sh/callstack/react-native-testing-library/react-native-testing
+  repo_url: https://github.com/callstack/react-native-testing-library
+  pinned_commit: 3e8bc0773f1a93130d138a8d8dca711e0836996f
+  categories:
+  - react-native
+  - testing
+  audiences_supported:
+  - ops
+  priority: 86
+  status: active
+  jtbd: "Load when reviewing RN tests — React Native Testing Library patterns, native module mocking, and component testing."
+- id: expo/skills/building-native-ui
+  skills_url: https://skills.sh/expo/skills/building-native-ui
+  repo_url: https://github.com/expo/skills
+  pinned_commit: 46fa1f8b93479046445706c528af4c70d270e727
+  categories:
+  - expo
+  - ui
+  audiences_supported:
+  - new-hire
+  priority: 84
+  status: active
+  jtbd: "Load when reviewing Expo native UI — platform APIs, native components, and UI composition patterns."
+- id: expo/skills/native-data-fetching
+  skills_url: https://skills.sh/expo/skills/native-data-fetching
+  repo_url: https://github.com/expo/skills
+  pinned_commit: 46fa1f8b93479046445706c528af4c70d270e727
+  categories:
+  - expo
+  - data
+  audiences_supported:
+  - ops
+  - security
+  priority: 86
+  status: active
+  jtbd: "Load when reviewing Expo data fetching — caching, offline patterns, and server communication."
+- id: expo/skills/upgrading-expo
+  skills_url: https://skills.sh/expo/skills/upgrading-expo
+  repo_url: https://github.com/expo/skills
+  pinned_commit: 46fa1f8b93479046445706c528af4c70d270e727
+  categories:
+  - expo
+  - upgrade
+  audiences_supported:
+  - ops
+  priority: 90
+  status: active
+  jtbd: "Load when reviewing Expo SDK upgrades — version migration, breaking changes, and compatibility."
+- id: expo/skills/expo-api-routes
+  skills_url: https://skills.sh/expo/skills/expo-api-routes
+  repo_url: https://github.com/expo/skills
+  pinned_commit: 46fa1f8b93479046445706c528af4c70d270e727
+  categories:
+  - expo
+  - backend
+  audiences_supported:
+  - security
+  - ops
+  priority: 84
+  status: active
+  jtbd: "Load when reviewing Expo API routes — server functions, backend patterns, and API endpoint design."
+- id: expo/skills/expo-cicd-workflows
+  skills_url: https://skills.sh/expo/skills/expo-cicd-workflows
+  repo_url: https://github.com/expo/skills
+  pinned_commit: 46fa1f8b93479046445706c528af4c70d270e727
+  categories:
+  - expo
+  - operations
+  audiences_supported:
+  - ops
+  priority: 82
+  status: active
+  jtbd: "Load when reviewing Expo CI/CD — EAS Build/Submit pipelines, OTA updates, and release automation."
+- id: expo/skills/use-dom
+  skills_url: https://skills.sh/expo/skills/use-dom
+  repo_url: https://github.com/expo/skills
+  pinned_commit: 46fa1f8b93479046445706c528af4c70d270e727
+  categories:
+  - expo
+  - webview
+  audiences_supported:
+  - new-hire
+  priority: 74
+  status: active
+  jtbd: "Load when reviewing Expo DOM components — web-native bridging, WebView patterns, and cross-runtime rendering."
+- id: getsentry/sentry-agent-skills/sentry-react-native-setup
+  skills_url: https://skills.sh/getsentry/sentry-agent-skills/sentry-react-native-setup
+  repo_url: https://github.com/getsentry/sentry-agent-skills
+  pinned_commit: 9f54eb021916a7cff2c04a9f4e4c1f9439f3202c
+  categories:
+  - react-native
+  - observability
+  audiences_supported:
+  - ops
+  priority: 78
+  status: active
+  jtbd: "Load when code integrates Sentry — error monitoring setup, source maps, and crash reporting for React Native."
+- id: auth0/agent-skills/auth0-react-native
+  skills_url: https://skills.sh/auth0/agent-skills/auth0-react-native
+  repo_url: https://github.com/auth0/agent-skills
+  pinned_commit: d0213ce31c397204db831368aded71f8ed18af4e
+  categories:
+  - react-native
+  - auth
+  audiences_supported:
+  - security
+  priority: 76
+  status: active
+  jtbd: "Load when code uses Auth0 — authentication SDK integration, token management, and session patterns for RN."
+- id: wshobson/agents/javascript-testing-patterns
+  skills_url: https://skills.sh/wshobson/agents/javascript-testing-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - shared
+  - testing
+  audiences_supported:
+  - ops
+  priority: 86
+  status: active
+  jtbd: "Load when reviewing test strategy, async test patterns, or coverage gaps in JavaScript/TypeScript projects."
+- id: wshobson/agents/modern-javascript-patterns
+  skills_url: https://skills.sh/wshobson/agents/modern-javascript-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - shared
+  - javascript
+  audiences_supported:
+  - new-hire
+  priority: 76
+  status: active
+  jtbd: "Load when reviewing modern JS idioms — ESM usage, async patterns, and contemporary language features."
+- id: sickn33/antigravity-awesome-skills/api-security-best-practices
+  skills_url: https://skills.sh/sickn33/antigravity-awesome-skills/api-security-best-practices
+  repo_url: https://github.com/sickn33/antigravity-awesome-skills
+  pinned_commit: 60ed44edef8a3c6c53a0818fa06a9b987cc15fbd
+  categories:
+  - shared
+  - security
+  audiences_supported:
+  - security
+  priority: 72
+  status: active
+  jtbd: "Load when code handles API boundaries, auth tokens, user input, or sensitive data — trust boundary and input validation patterns."

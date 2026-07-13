@@ -1,0 +1,3061 @@
+---
+version: 1.0.0
+generated: "2026-07-01T20:47:34Z"
+source: skill-registry.md
+skills:
+  - name: drupal-planner
+    type: planner
+    command: /drupal-planner
+    triggers:
+      - drupal
+      - module
+      - permissions
+      - cache
+      - migration
+      - hook
+      - service
+      - plugin
+      - drupal site
+      - drupal feature
+    description: Full Drupal implementations (entity, config, permissions, cache, migration, theme)
+    plans_for: Full Drupal implementations (entity, config, permissions, cache, migration, theme)
+    companions:
+      critics:
+        - drupal-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-content-model-planner
+    type: planner
+    command: /drupal-planner.content-model
+    triggers:
+      - content type
+      - entity type
+      - bundle
+      - paragraph
+      - field
+      - composition
+      - layout builder
+      - editorial workflow
+      - content model
+    description: Drupal entity types, bundles, paragraphs, fields, composition patterns
+    plans_for: Drupal entity types, bundles, paragraphs, fields, composition patterns
+    companions:
+      critics:
+        - content-model-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-taxonomy-planner
+    type: planner
+    command: /drupal-planner.taxonomy
+    triggers:
+      - taxonomy
+      - vocabulary
+      - term
+      - category
+      - tag
+      - classification
+      - hierarchy
+      - facet navigation
+    description: Drupal vocabularies, term hierarchies, faceted navigation
+    plans_for: Drupal vocabularies, term hierarchies, faceted navigation
+    companions:
+      critics:
+        - taxonomy-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-theme-planner
+    type: planner
+    command: /drupal-planner.theme
+    triggers:
+      - theme
+      - frontend
+      - CSS
+      - Twig
+      - template
+      - component
+      - SDC
+      - design system
+      - base theme
+      - responsive
+      - preprocess
+    description: Drupal theme architecture, components, CSS, templates
+    plans_for: Drupal theme architecture, components, CSS, templates
+    companions:
+      critics:
+        - drupal-theme-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-search-planner
+    type: planner
+    command: /drupal-planner.search
+    triggers:
+      - search
+      - Search API
+      - Solr
+      - Elasticsearch
+      - indexing
+      - facet
+      - autocomplete
+      - discovery
+    description: Drupal search architecture, Search API, facets, autocomplete
+    plans_for: Drupal search architecture, Search API, facets, autocomplete
+    companions:
+      critics:
+        - search-discovery-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-canvas-planner
+    type: planner
+    command: /drupal-planner.canvas
+    triggers:
+      - Canvas
+      - Canvas Code Component
+      - component definition
+      - component metadata
+      - component props
+      - component composability
+      - component upload
+      - Canvas styling
+      - Canvas data fetching
+      - Experience Builder
+    description: Canvas Code Component architecture — component definition, props, data fetching, composability, styling, upload/deploy
+    plans_for: Canvas Code Component architecture — component definition, props, data fetching, composability, styling, upload/deploy
+    companions:
+      critics:
+        - drupal-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-migration-planner
+    type: planner
+    command: /drupal-migration-planner
+    triggers:
+      - migration
+      - migrate
+      - D7 to D10
+      - upgrade
+      - content migration
+      - data migration
+      - migrate API
+    description: Drupal content model refactors and migrations (D7→D10, config splits)
+    plans_for: Drupal content model refactors and migrations (D7→D10, config splits)
+    companions:
+      critics:
+        - drupal-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: react-planner
+    type: planner
+    command: /react-planner
+    triggers:
+      - react
+      - next.js
+      - React Native
+      - component
+      - hook
+      - state management
+      - JSX
+      - TSX
+      - frontend app
+    description: React/Next.js/React Native implementations with architectural correctness
+    plans_for: React/Next.js/React Native implementations with architectural correctness
+    companions:
+      critics:
+        - react-critic
+        - next-critic
+        - react-native-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: a11y-planner
+    type: planner
+    command: /a11y-planner
+    triggers:
+      - accessibility
+      - a11y
+      - WCAG
+      - ARIA
+      - screen reader
+      - keyboard
+      - focus management
+      - assistive technology
+    description: Accessible implementations — semantic HTML, ARIA, focus, keyboard
+    plans_for: Accessible implementations — semantic HTML, ARIA, focus, keyboard
+    companions:
+      critics:
+        - a11y-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: content-model-planner
+    type: planner
+    command: /content-model-planner
+    triggers:
+      - content model
+      - entity design
+      - content architecture
+      - CMS modeling
+      - content types
+      - fields (non-Drupal)
+    description: CMS-agnostic content model architectures
+    plans_for: CMS-agnostic content model architectures
+    companions:
+      critics:
+        - content-model-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: wordpress-migration-planner
+    type: planner
+    command: /wordpress-migration-planner
+    triggers:
+      - WordPress migration
+      - wordpress contentful migration
+      - Contentful to WordPress
+      - Gutenberg import
+      - block editor migration
+      - WP-CLI import
+      - WordPress manifest
+      - post meta
+      - CPT mapping
+      - attachment import
+      - MCP abilities
+    description: WordPress/Gutenberg Contentful migration runtimes - manifest schema, native content model, CLI/MCP gates, idempotency, rollback, and editor validity
+    plans_for: WordPress/Gutenberg Contentful migration runtimes - manifest schema, native content model, CLI/MCP gates, idempotency, rollback, and editor validity
+    companions:
+      critics:
+        - wordpress-migration-critic
+    source_repo: meta-router
+    source_qualifier: wordpress-skills
+    dependencies:
+      - content-model-planner (optional)
+    tier: verified
+    read_only: false
+  - name: taxonomy-planner
+    type: planner
+    command: /taxonomy-planner
+    triggers:
+      - taxonomy
+      - classification
+      - vocabulary
+      - controlled vocabulary
+      - tagging system (non-Drupal)
+    description: CMS-agnostic taxonomy and classification systems
+    plans_for: CMS-agnostic taxonomy and classification systems
+    companions:
+      critics:
+        - taxonomy-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: search-discovery-planner
+    type: planner
+    command: /search-discovery-planner
+    triggers:
+      - search architecture
+      - search design
+      - discovery
+      - search UX (non-Drupal)
+    description: CMS-agnostic search and discovery architectures
+    plans_for: CMS-agnostic search and discovery architectures
+    companions:
+      critics:
+        - search-discovery-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: copy-planner
+    type: planner
+    command: /copy-planner
+    triggers:
+      - copy brief
+      - content brief
+      - copywriting plan
+      - messaging
+      - content strategy
+    description: Strategic content briefs and copy specifications
+    plans_for: Strategic content briefs and copy specifications
+    companions:
+      critics:
+        - copy-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: ai-optimization-planner
+    type: planner
+    command: /ai-optimization-planner
+    triggers:
+      - AI Overview
+      - AIO
+      - AI search readiness
+      - E-E-A-T
+      - RAG retrievability
+      - query fan-out
+      - semantic HTML for agents
+      - schema markup
+      - agentic search
+      - Merchant Center
+      - Google Business Profile
+      - Universal Commerce Protocol
+    description: AI Overview and agentic-search readiness plans — RAG retrievability, E-E-A-T signals, fan-out coverage, semantic HTML, schema, and agentic channel setup
+    plans_for: AI Overview and agentic-search readiness plans — RAG retrievability, E-E-A-T signals, fan-out coverage, semantic HTML, schema, and agentic channel setup
+    companions:
+      critics:
+        - ai-optimization-critic
+    source_repo: meta-skills
+    source_qualifier: content-skills
+    dependencies:
+      - seo-advisor (recommended first/parallel)
+    tier: verified
+    read_only: false
+  - name: dataviz-planner
+    type: planner
+    command: /dataviz-planner
+    triggers:
+      - data visualization
+      - chart
+      - graph
+      - dashboard design
+      - visual data
+    description: Data visualization design before creation
+    plans_for: Data visualization design before creation
+    companions:
+      critics:
+        - dataviz-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: dashboard-planner
+    type: planner
+    command: /dashboard-planner
+    triggers:
+      - dashboard
+      - KPI
+      - metrics dashboard
+      - analytics dashboard
+      - data dashboard
+    description: Interactive dashboard architecture — KPIs, data pipelines, interaction design
+    plans_for: Interactive dashboard architecture — KPIs, data pipelines, interaction design
+    companions:
+      critics:
+        - dashboard-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: email-campaign-planner
+    type: planner
+    command: /email-campaign-planner
+    triggers:
+      - email campaign
+      - email marketing
+      - newsletter
+      - drip campaign
+      - email sequence
+    description: Email marketing campaigns before creative execution
+    plans_for: Email marketing campaigns before creative execution
+    companions:
+      critics:
+        - email-campaign-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: manuscript-planner
+    type: planner
+    command: /manuscript-planner
+    triggers:
+      - manuscript
+      - academic paper
+      - research paper
+      - journal submission
+      - publication
+    description: Academic manuscript structure before writing
+    plans_for: Academic manuscript structure before writing
+    companions:
+      critics:
+        - manuscript-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: lit-review-planner
+    type: planner
+    command: /lit-review-planner
+    triggers:
+      - literature review
+      - systematic review
+      - evidence synthesis
+      - meta-analysis
+      - research protocol
+    description: Systematic literature review protocols and evidence synthesis
+    plans_for: Systematic literature review protocols and evidence synthesis
+    companions:
+      critics:
+        - research-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: study-design-planner
+    type: planner
+    command: /study-design-planner
+    triggers:
+      - study design
+      - epidemiology
+      - clinical trial
+      - cohort
+      - RCT
+      - case-control
+      - research design
+    description: Epidemiological and clinical research designs
+    plans_for: Epidemiological and clinical research designs
+    companions:
+      critics:
+        - sap-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: stem-cell-research-planner
+    type: planner
+    command: /stem-cell-research-planner
+    triggers:
+      - stem cell
+      - hPSC
+      - iPSC
+      - beta cell
+      - pancreatic differentiation
+      - megakaryocyte
+      - platelet model
+      - reporter line
+      - single-cell differentiation
+      - cell line provenance
+    description: hPSC/iPSC model-system planning - controls, assay/readout evidence, omics metadata, QC, and provenance without bench protocols
+    plans_for: hPSC/iPSC model-system planning - controls, assay/readout evidence, omics metadata, QC, and provenance without bench protocols
+    companions:
+      critics:
+        - stem-cell-research-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: genomics-pipeline-planner
+    type: planner
+    command: /genomics-pipeline-planner
+    triggers:
+      - scRNA-seq
+      - single-cell RNA
+      - bulk RNA-seq
+      - ATAC-seq
+      - multiome
+      - spatial transcriptomics
+      - genomics pipeline
+      - bioinformatics pipeline
+      - Cell Ranger
+      - Seurat
+      - Scanpy
+      - batch correction
+      - clustering
+      - cell type annotation
+      - differential expression
+      - trajectory inference
+      - QC thresholds
+    description: Computational genomics pipeline design — scRNA-seq/bulk/ATAC/multiome/spatial, tool selection with biological rationale, QC checkpoints, iPSC-specific traps, reproducibility contracts
+    plans_for: Computational genomics pipeline design — scRNA-seq/bulk/ATAC/multiome/spatial, tool selection with biological rationale, QC checkpoints, iPSC-specific traps, reproducibility contracts
+    companions:
+      critics:
+        - genomics-pipeline-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: differential-abundance-planner
+    type: planner
+    command: /differential-abundance-planner
+    triggers:
+      - differential abundance
+      - compositional analysis
+      - cell type proportion
+      - cell state proportion
+      - proportion shift
+      - more or fewer of population
+      - scCODA
+      - Milo
+      - propeller
+      - sccomp
+      - abundance shift
+      - composition change
+    description: Differential abundance / compositional analyses — whether cell-type/cell-state proportions shift between conditions; scCODA/Milo/propeller/sccomp selection, replicate-level testing over pooled cells, relative-vs-absolute framing, iPSC differentiation-efficiency confounds
+    plans_for: Differential abundance / compositional analyses — whether cell-type/cell-state proportions shift between conditions; scCODA/Milo/propeller/sccomp selection, replicate-level testing over pooled cells, relative-vs-absolute framing, iPSC differentiation-efficiency confounds
+    companions:
+      critics:
+        - differential-abundance-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: cell-cell-communication-planner
+    type: planner
+    command: /cell-cell-communication-planner
+    triggers:
+      - cell-cell communication
+      - ligand-receptor
+      - ligand receptor interaction
+      - signaling analysis
+      - niche signaling
+      - CellChat
+      - CellPhoneDB
+      - NicheNet
+      - LIANA
+      - Squidpy
+      - CCC
+    description: Cell-cell communication (ligand-receptor) analyses from scRNA-seq/spatial — tool + database selection, statistical testing, iPSC media-signaling and contamination confounds
+    plans_for: Cell-cell communication (ligand-receptor) analyses from scRNA-seq/spatial — tool + database selection, statistical testing, iPSC media-signaling and contamination confounds
+    companions:
+      critics:
+        - cell-cell-communication-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: rna-velocity-planner
+    type: planner
+    command: /rna-velocity-planner
+    triggers:
+      - RNA velocity
+      - spliced unspliced
+      - cell directionality
+      - fate direction
+      - scVelo
+      - veloVI
+      - RegVelo
+      - UniTVelo
+      - LatentVelo
+      - CellRank
+      - velocity
+    description: RNA velocity analyses from spliced/unspliced counts — veloVI/scVelo/RegVelo/UniTVelo model selection, steady-state and splice-ratio checks, CellRank 2 fate mapping, iPSC differentiation considerations
+    plans_for: RNA velocity analyses from spliced/unspliced counts — veloVI/scVelo/RegVelo/UniTVelo model selection, steady-state and splice-ratio checks, CellRank 2 fate mapping, iPSC differentiation considerations
+    companions:
+      critics:
+        - rna-velocity-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: cnv-detection-planner
+    type: planner
+    command: /cnv-detection-planner
+    triggers:
+      - CNV
+      - copy number variation
+      - copy number
+      - InferCNV
+      - CopyKAT
+      - Numbat
+      - SCEVAN
+      - karyotype
+      - aneuploidy
+      - chromosomal aberration
+      - iPSC QC
+    description: Computational CNV detection from scRNA-seq for iPSC/hPSC QC — InferCNV/CopyKAT/Numbat/SCEVAN selection, reference-normal strategy, ploidy-aware validation, passage-drift/karyotype traps
+    plans_for: Computational CNV detection from scRNA-seq for iPSC/hPSC QC — InferCNV/CopyKAT/Numbat/SCEVAN selection, reference-normal strategy, ploidy-aware validation, passage-drift/karyotype traps
+    companions:
+      critics:
+        - cnv-detection-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: gene-regulatory-network-planner
+    type: planner
+    command: /gene-regulatory-network-planner
+    triggers:
+      - gene regulatory network
+      - GRN
+      - regulon
+      - transcription factor network
+      - TF activity
+      - regulatory inference
+      - SCENIC
+      - pySCENIC
+      - SCENIC+
+      - CellOracle
+      - Dictys
+    description: GRN inference from scRNA-seq/scATAC — SCENIC+/pySCENIC/CellOracle selection by modality, correlation-vs-causation boundaries, GATA1 isoform regulon disambiguation, iPSC stage confounds
+    plans_for: GRN inference from scRNA-seq/scATAC — SCENIC+/pySCENIC/CellOracle selection by modality, correlation-vs-causation boundaries, GATA1 isoform regulon disambiguation, iPSC stage confounds
+    companions:
+      critics:
+        - gene-regulatory-network-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: dataset-integration-planner
+    type: planner
+    command: /dataset-integration-planner
+    triggers:
+      - batch correction
+      - dataset integration
+      - integrate datasets
+      - batch effect
+      - atlas construction
+      - reference mapping
+      - label transfer
+      - Harmony
+      - scVI
+      - scANVI
+      - BBKNN
+      - Scanorama
+    description: Cross-dataset integration and batch correction — Harmony/scVI/scANVI/BBKNN/Scanorama selection, biological-vs-technical variance preservation, integration metrics, iPSC clone/passage over-integration traps
+    plans_for: Cross-dataset integration and batch correction — Harmony/scVI/scANVI/BBKNN/Scanorama selection, biological-vs-technical variance preservation, integration metrics, iPSC clone/passage over-integration traps
+    companions:
+      critics:
+        - dataset-integration-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: trajectory-inference-planner
+    type: planner
+    command: /trajectory-inference-planner
+    triggers:
+      - trajectory inference
+      - pseudotime
+      - developmental trajectory
+      - lineage trajectory
+      - optimal transport
+      - fate probability
+      - moscot
+      - scEGOT
+      - CellOT
+      - Monocle3
+      - DPT
+      - PAGA
+      - CellRank
+    description: Developmental trajectory analysis — optimal transport (moscot/scEGOT/CellOT) vs pseudotime (Monocle3/DPT/PAGA) vs fate probability (CellRank 2), time-series-vs-snapshot design fit, iPSC trajectory traps
+    plans_for: Developmental trajectory analysis — optimal transport (moscot/scEGOT/CellOT) vs pseudotime (Monocle3/DPT/PAGA) vs fate probability (CellRank 2), time-series-vs-snapshot design fit, iPSC trajectory traps
+    companions:
+      critics:
+        - trajectory-inference-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: causal-inference-planner
+    type: planner
+    command: /causal-inference-planner
+    triggers:
+      - causal inference
+      - causal claim
+      - causal vs correlational
+      - isogenic comparison
+      - perturbation effect
+      - knockout effect
+      - confounding
+      - pseudo-replication
+      - instrumental variable
+      - CausalGRN
+    description: Causal inference for single-cell experimental designs — causal-vs-correlational claim scoping, method identification (isogenic comparisons, IV-based discovery, CausalGRN), iPSC confounding and pseudo-replication traps
+    plans_for: Causal inference for single-cell experimental designs — causal-vs-correlational claim scoping, method identification (isogenic comparisons, IV-based discovery, CausalGRN), iPSC confounding and pseudo-replication traps
+    companions:
+      critics:
+        - causal-inference-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: foundation-model-advisor
+    type: planner
+    command: /foundation-model-advisor
+    triggers:
+      - foundation model
+      - single-cell foundation model
+      - pretrained model
+      - cell embedding
+      - zero-shot annotation
+      - scGPT
+      - Geneformer
+      - UCE
+      - C2S-Scale
+      - should I use a foundation model
+    description: Single-cell foundation model selection (UCE/scGPT/Geneformer v2/C2S-Scale) vs traditional approaches — honest fit assessment, then routes to the right domain planner
+    plans_for: Single-cell foundation model selection (UCE/scGPT/Geneformer v2/C2S-Scale) vs traditional approaches — honest fit assessment, then routes to the right domain planner
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: impact-report-planner
+    type: planner
+    command: /impact-report-planner
+    triggers:
+      - impact report
+      - annual report
+      - nonprofit report
+      - outcomes
+      - program impact
+    description: Annual impact reports for nonprofits and universities
+    plans_for: Annual impact reports for nonprofits and universities
+    companions:
+      critics:
+        - proposal-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: policy-brief-writer
+    type: planner
+    command: /policy-brief-writer
+    triggers:
+      - policy brief
+      - policy memo
+      - policy recommendation
+      - legislation
+      - regulation
+    description: Evidence-based policy briefs (information, issue, policy option, advocacy)
+    plans_for: Evidence-based policy briefs (information, issue, policy option, advocacy)
+    companions:
+      critics:
+        - policy-brief-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: stakeholder-report-writer
+    type: planner
+    command: /stakeholder-report-writer
+    triggers:
+      - stakeholder report
+      - board report
+      - executive summary
+      - technical to executive
+    description: Translates technical findings into executive/board-ready reports
+    plans_for: Translates technical findings into executive/board-ready reports
+    companions:
+      critics:
+        - proposal-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: chna-planner
+    type: planner
+    command: /chna-planner
+    triggers:
+      - CHNA
+      - community health
+      - needs assessment
+      - nonprofit hospital
+      - health equity
+      - IRS 990
+    description: Community Health Needs Assessments for nonprofit hospitals
+    plans_for: Community Health Needs Assessments for nonprofit hospitals
+    companions:
+      critics:
+        - health-equity-analyzer
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: design-partner
+    type: planner
+    command: /design-partner
+    triggers:
+      - design direction
+      - design system
+      - UI design
+      - interface design
+      - visual design
+      - design guidance
+    description: Proactive design direction, system guidance, implementation-ready UI specs
+    plans_for: Proactive design direction, system guidance, implementation-ready UI specs
+    companions:
+      critics:
+        - ui-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: web-design-planner
+    type: planner
+    command: /web-design-planner
+    triggers:
+      - website design
+      - web app design
+      - responsive design
+      - web interface
+      - landing page design
+    description: Web interface architecture — responsive, interaction, token, and testing strategy
+    plans_for: Web interface architecture — responsive, interaction, token, and testing strategy
+    companions:
+      critics:
+        - web-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: mobile-design-planner
+    type: planner
+    command: /mobile-design-planner
+    triggers:
+      - mobile design
+      - iOS design
+      - Android design
+      - mobile app design
+      - mobile UI
+    description: Mobile UI — platform-aware interaction and implementation sequencing
+    plans_for: Mobile UI — platform-aware interaction and implementation sequencing
+    companions:
+      critics:
+        - mobile-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: graphic-design-planner
+    type: planner
+    command: /graphic-design-planner
+    triggers:
+      - graphic design
+      - print design
+      - campaign asset
+      - brand system
+      - infographic
+      - one-pager
+      - visual summary
+      - data poster
+      - fact sheet
+      - pictogram
+      - poster
+      - brochure
+    description: Graphic assets, campaign systems, infographics, and production-ready handoff specs
+    plans_for: Graphic assets, campaign systems, infographics, and production-ready handoff specs
+    companions:
+      critics:
+        - graphic-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: ai-readiness-assessor
+    type: planner
+    command: /ai-readiness-assessor
+    triggers:
+      - AI readiness
+      - ML adoption
+      - AI assessment
+      - organizational AI
+      - AI strategy
+    description: AI/ML adoption readiness assessments for organizations
+    plans_for: AI/ML adoption readiness assessments for organizations
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: plan-writer
+    type: planner
+    command: /plan-writer
+    triggers:
+      - implementation plan
+      - project plan
+      - technical plan
+      - plan with risk analysis
+    description: Detailed plans with competing alternatives, pre-mortem, backcasting
+    plans_for: Detailed plans with competing alternatives, pre-mortem, backcasting
+    companions:
+      critics:
+        - proposal-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-proposal-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: data-planner
+    type: planner
+    command: /data-planner
+    triggers:
+      - data pipeline
+      - data analysis
+      - numerical implementation
+      - ETL
+      - data processing
+    description: Data pipelines and numerical implementations with correctness guarantees
+    plans_for: Data pipelines and numerical implementations with correctness guarantees
+    companions:
+      critics:
+        - data-critic
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: test-planner
+    type: planner
+    command: /test-planner
+    triggers:
+      - testing strategy
+      - test plan
+      - what to test
+      - test layers
+      - CI gates
+      - refactor safety
+      - testing before implementation
+    description: Risk-based testing strategy — test layers, coverage architecture, CI gates, acceptance criteria
+    plans_for: Risk-based testing strategy — test layers, coverage architecture, CI gates, acceptance criteria
+    companions:
+      critics:
+        - qa-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-testing-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: jtbd-interviewer
+    type: planner
+    command: /jtbd-interviewer
+    triggers:
+      - JTBD interview
+      - user research
+      - switching story
+      - discovery interview
+      - purchase story
+      - why did they switch
+      - why did someone hire
+      - qualitative product discovery
+    description: Live JTBD switching-story interviews — Moesta timeline, Four Forces model, Job Statement synthesis
+    plans_for: Live JTBD switching-story interviews — Moesta timeline, Four Forces model, Job Statement synthesis
+    companions:
+      critics:
+        - interview-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: security-threat-model-planner
+    type: planner
+    command: /security-threat-model-planner
+    triggers:
+      - threat model
+      - security posture
+      - trust boundaries
+      - STRIDE
+      - attack surface
+      - AppSec
+      - security architecture
+    description: Structured threat models grounded in actual code — STRIDE enumeration, trust boundaries, risk-prioritized mitigations
+    plans_for: Structured threat models grounded in actual code — STRIDE enumeration, trust boundaries, risk-prioritized mitigations
+    companions:
+      critics:
+        - proposal-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-security-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: content-measurement-planner
+    type: planner
+    command: /content-measurement-planner
+    triggers:
+      - content measurement
+      - measure content quality
+      - GABRIEL
+      - qualitative coding
+      - content scoring
+      - LLM as instrument
+      - rate content
+      - classify content
+      - measurement protocol
+    description: LLM-as-measurement-instrument protocols — construct operationalization, GABRIEL types, calibration, bias detection
+    plans_for: LLM-as-measurement-instrument protocols — construct operationalization, GABRIEL types, calibration, bias detection
+    companions:
+      critics:
+        - measurement-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-instrument-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: meeting-intelligence-planner
+    type: planner
+    command: /meeting-intelligence-planner
+    triggers:
+      - meeting prep
+      - prepare for meeting
+      - meeting agenda
+      - meeting brief
+      - "1:1 prep"
+      - sprint planning prep
+      - decision meeting
+    description: Pre-meeting preparation — context assembly, stakes-proportional agendas, decision frameworks, 6 meeting types
+    plans_for: Pre-meeting preparation — context assembly, stakes-proportional agendas, decision frameworks, 6 meeting types
+    companions:
+      critics:
+        - copy-critic
+    source_repo: meta-skills
+    source_qualifier: standalone
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: input-guardrail-planner
+    type: planner
+    command: /input-guardrail-planner
+    triggers:
+      - guardrail
+      - input validation
+      - agent safety
+      - tripwire
+      - content filter
+      - prompt injection filter
+      - toxicity filter
+      - PII filter
+    description: AI agent input guardrail design — 5 risk categories (topic drift, toxicity, PII, injection, adversarial), tripwire patterns, YAML config, evaluation benchmarks
+    plans_for: AI agent input guardrail design — 5 risk categories (topic drift, toxicity, PII, injection, adversarial), tripwire patterns, YAML config, evaluation benchmarks
+    companions:
+      critics:
+        - output-guardrail-critic
+    source_repo: meta-skills
+    source_qualifier: guardrail-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: stitch-planner
+    type: planner
+    command: /stitch-planner
+    triggers:
+      - Stitch
+      - Google Stitch
+      - AI screen generation
+      - UI prototype
+      - multi-page prototype
+      - design system extraction
+      - export Stitch components
+    description: Google Stitch prototyping workflows, screen generation plans, design system extraction, and component export strategy
+    plans_for: Google Stitch prototyping workflows, screen generation plans, design system extraction, and component export strategy
+    companions:
+      critics:
+        - name: web-design-critic
+          optional: true
+        - name: design-token-critic
+          optional: true
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: spec-kitty-bridge
+    type: planner
+    command: /spec-kitty-bridge
+    triggers:
+      - spec-kitty
+      - spec driven development
+      - work package
+      - failed review
+      - route spec
+      - specialist routing
+      - remediation path
+    description: Spec-driven planning, review, and remediation routing to the right specialist skills
+    plans_for: Spec-driven planning, review, and remediation routing to the right specialist skills
+    companions:
+      critics:
+        - name: proposal-critic
+          optional: true
+    source_repo: meta-skills
+    source_qualifier: integration
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-critic
+    type: critic
+    command: /drupal-critic
+    triggers:
+      - drupal code
+      - drupal module
+      - drupal implementation
+      - hook
+      - plugin
+      - service
+      - drupal PR
+    description: Full Drupal implementations (permissions, cache, hooks, migrations)
+    reviews: Full Drupal implementations (permissions, cache, hooks, migrations)
+    companions:
+      planners:
+        - drupal-planner
+    source_repo: drupal-critic
+    source_qualifier: external
+    dependencies: []
+    tier: trusted
+    read_only: true
+  - name: drupal-theme-critic
+    type: critic
+    command: /drupal-theme-critic
+    triggers:
+      - drupal theme
+      - preprocess
+      - twig template
+      - drupal CSS
+      - drupal frontend
+      - .theme file
+    description: Drupal theme architecture — preprocess, templates, CSS, render pipeline
+    reviews: Drupal theme architecture — preprocess, templates, CSS, render pipeline
+    companions:
+      planners:
+        - drupal-theme-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: content-model-critic
+    type: critic
+    command: /content-model-critic
+    triggers:
+      - content model
+      - entity type design
+      - field architecture
+      - content type review
+    description: Content model architecture — entity proliferation, field duplication, composition
+    reviews: Content model architecture — entity proliferation, field duplication, composition
+    companions:
+      planners:
+        - content-model-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: taxonomy-critic
+    type: critic
+    command: /taxonomy-critic
+    triggers:
+      - taxonomy review
+      - vocabulary review
+      - classification review
+      - term hierarchy
+    description: Taxonomy — hierarchy depth, mutual exclusivity, term naming, governance
+    reviews: Taxonomy — hierarchy depth, mutual exclusivity, term naming, governance
+    companions:
+      planners:
+        - taxonomy-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: search-discovery-critic
+    type: critic
+    command: /search-discovery-critic
+    triggers:
+      - search review
+      - search architecture review
+      - index design
+      - facet review
+    description: Search architecture — index design, facets, relevance, zero-result handling
+    reviews: Search architecture — index design, facets, relevance, zero-result handling
+    companions:
+      planners:
+        - search-discovery-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: wordpress-migration-critic
+    type: critic
+    command: /wordpress-migration-critic
+    triggers:
+      - WordPress migration review
+      - Gutenberg import review
+      - Contentful migration review
+      - WP-CLI migration review
+      - contentful_migration_wp
+      - Contentful manifest
+      - block serialization
+      - rollback review
+      - MCP abilities review
+    description: WordPress/Gutenberg migration runtimes - manifest accuracy, content model conflicts, block validity, idempotency, rollback, asset/user/locale safety, and MCP permissions
+    reviews: WordPress/Gutenberg migration runtimes - manifest accuracy, content model conflicts, block validity, idempotency, rollback, asset/user/locale safety, and MCP permissions
+    companions:
+      planners:
+        - wordpress-migration-planner
+    source_repo: meta-router
+    source_qualifier: wordpress-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: react-critic
+    type: critic
+    command: /react-critic
+    triggers:
+      - react code
+      - react component
+      - JSX review
+      - react PR
+      - hooks review
+    description: React implementations — component patterns, hooks, state, performance
+    reviews: React implementations — component patterns, hooks, state, performance
+    companions:
+      planners:
+        - react-planner
+    source_repo: meta-skills
+    source_qualifier: external
+    dependencies: []
+    tier: trusted
+    read_only: true
+  - name: next-critic
+    type: critic
+    command: /next-critic
+    triggers:
+      - next.js code
+      - app router
+      - server component
+      - next.js PR
+    description: Next.js App Router implementations
+    reviews: Next.js App Router implementations
+    companions:
+      planners:
+        - react-planner
+    source_repo: meta-skills
+    source_qualifier: external
+    dependencies: []
+    tier: trusted
+    read_only: true
+  - name: react-native-critic
+    type: critic
+    command: /react-native-critic
+    triggers:
+      - react native
+      - expo
+      - mobile app code
+      - react native PR
+    description: React Native and Expo implementations
+    reviews: React Native and Expo implementations
+    companions:
+      planners:
+        - react-planner
+    source_repo: meta-skills
+    source_qualifier: external
+    dependencies: []
+    tier: trusted
+    read_only: true
+  - name: a11y-critic
+    type: critic
+    command: /a11y-critic
+    triggers:
+      - accessibility review
+      - ARIA review
+      - a11y audit
+      - WCAG compliance
+      - keyboard nav review
+    description: Accessibility — reviews plans before implementation and implementations after testing. ARIA patterns, focus management, state communication
+    reviews: Accessibility — reviews plans before implementation and implementations after testing. ARIA patterns, focus management, state communication
+    companions:
+      planners:
+        - a11y-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: proposal-critic
+    type: critic
+    command: /proposal-critic
+    triggers:
+      - proposal review
+      - plan review
+      - strategy review
+      - design review
+      - vendor lock-in
+      - dependency risk
+      - license sustainability
+      - escape hatch
+    description: Plans and proposals — gap analysis, competing hypotheses, cognitive bias; conditional strategic dependency-risk lens (vendor lock-in, license sustainability, escape-hatch; defers bus-factor to security-ownership-mapper, CVE to security-threat-model-planner)
+    reviews: Plans and proposals — gap analysis, competing hypotheses, cognitive bias; conditional strategic dependency-risk lens (vendor lock-in, license sustainability, escape-hatch; defers bus-factor to security-ownership-mapper, CVE to security-threat-model-planner)
+    companions:
+      planners:
+        - plan-writer
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: harsh-critic
+    type: critic
+    command: /harsh-critic
+    triggers:
+      - thorough review
+      - harsh review
+      - critical review
+      - deep review
+    description: General-purpose — structured gap analysis, multi-perspective investigation
+    reviews: General-purpose — structured gap analysis, multi-perspective investigation
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: copy-critic
+    type: critic
+    command: /copy-critic
+    triggers:
+      - copy review
+      - content review
+      - brand voice
+      - tone review
+      - copywriting review
+    description: Copywriting — brand voice, tone, clarity, engagement, SEO
+    reviews: Copywriting — brand voice, tone, clarity, engagement, SEO
+    companions:
+      planners:
+        - copy-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: ai-optimization-critic
+    type: critic
+    command: /ai-optimization-critic
+    triggers:
+      - AI Overview review
+      - AIO readiness review
+      - AI search eligibility
+      - E-E-A-T review
+      - RAG eligibility
+      - query fan-out coverage
+      - semantic HTML for agents
+      - schema review
+      - agentic search review
+    description: AI Overview eligibility — RAG retrievability, E-E-A-T signal completeness, fan-out coverage, semantic HTML, schema markup, and agentic search readiness
+    reviews: AI Overview eligibility — RAG retrievability, E-E-A-T signal completeness, fan-out coverage, semantic HTML, schema markup, and agentic search readiness
+    companions:
+      planners:
+        - ai-optimization-planner
+    source_repo: meta-skills
+    source_qualifier: content-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: dataviz-critic
+    type: critic
+    command: /dataviz-critic
+    triggers:
+      - chart review
+      - visualization review
+      - graph review
+      - data viz review
+    description: Data visualizations — statistical honesty, chart type, accessibility
+    reviews: Data visualizations — statistical honesty, chart type, accessibility
+    companions:
+      planners:
+        - dataviz-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: perf-critic
+    type: critic
+    command: /perf-critic
+    triggers:
+      - performance review
+      - bottleneck
+      - scalability
+      - latency review
+      - performance audit
+    description: Performance — bottlenecks, scalability, cost, observability
+    reviews: Performance — bottlenecks, scalability, cost, observability
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: seo-advisor
+    type: critic
+    command: /seo-advisor
+    triggers:
+      - SEO review
+      - heading hierarchy
+      - meta tags
+      - search intent
+      - internal linking
+    description: Structural SEO — headings, titles, meta, linking, search intent
+    reviews: Structural SEO — headings, titles, meta, linking, search intent
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: policy-brief-critic
+    type: critic
+    command: /policy-brief-critic
+    triggers:
+      - policy brief review
+      - policy analysis review
+      - policy document review
+    description: Policy briefs — structure, evidence quality, recommendations, equity
+    reviews: Policy briefs — structure, evidence quality, recommendations, equity
+    companions:
+      planners:
+        - policy-brief-writer
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: manuscript-critic
+    type: critic
+    command: /manuscript-critic
+    triggers:
+      - manuscript review
+      - paper review
+      - submission review
+      - journal review
+    description: Academic manuscripts — submission readiness, reporting standards
+    reviews: Academic manuscripts — submission readiness, reporting standards
+    companions:
+      planners:
+        - manuscript-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: research-critic
+    type: critic
+    command: /research-critic
+    triggers:
+      - research review
+      - methodology review
+      - study design review
+      - statistical review
+    description: Research methodology — study design, statistics, evidence quality
+    reviews: Research methodology — study design, statistics, evidence quality
+    companions:
+      planners:
+        - lit-review-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: stem-cell-research-critic
+    type: critic
+    command: /stem-cell-research-critic
+    triggers:
+      - stem cell review
+      - hPSC review
+      - iPSC review
+      - beta-cell claim
+      - platelet model review
+      - reporter line review
+      - single-cell lineage review
+      - cell line provenance review
+    description: Stem-cell research artifacts - model-system fit, controls, assays, omics, QC, provenance, and overclaim risk
+    reviews: Stem-cell research artifacts - model-system fit, controls, assays, omics, QC, provenance, and overclaim risk
+    companions:
+      planners:
+        - stem-cell-research-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: genomics-pipeline-critic
+    type: critic
+    command: /genomics-pipeline-critic
+    triggers:
+      - pipeline review
+      - scRNA-seq review
+      - bioinformatics review
+      - QC report review
+      - analysis notebook review
+      - methods section review
+      - pseudo-replication
+      - batch confounding
+      - annotation overclaim
+      - iPSC pipeline review
+    description: Computational genomics pipelines — architecture, QC rigor, statistical validity, annotation boundaries, iPSC-specific traps, reproducibility
+    reviews: Computational genomics pipelines — architecture, QC rigor, statistical validity, annotation boundaries, iPSC-specific traps, reproducibility
+    companions:
+      planners:
+        - genomics-pipeline-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: differential-abundance-critic
+    type: critic
+    command: /differential-abundance-critic
+    triggers:
+      - differential abundance review
+      - compositional analysis review
+      - proportion shift review
+      - scCODA review
+      - Milo review
+      - abundance claim
+      - collapse artifact
+      - pooled-cell pseudo-replication
+    description: Differential abundance / compositional analyses — compositional-constraint handling, replicate-level vs pooled-cell pseudo-replication, relative-vs-absolute collapse artifact, method fit, iPSC confounds, overclaim
+    reviews: Differential abundance / compositional analyses — compositional-constraint handling, replicate-level vs pooled-cell pseudo-replication, relative-vs-absolute collapse artifact, method fit, iPSC confounds, overclaim
+    companions:
+      planners:
+        - differential-abundance-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: cell-cell-communication-critic
+    type: critic
+    command: /cell-cell-communication-critic
+    triggers:
+      - cell-cell communication review
+      - ligand-receptor review
+      - CellChat review
+      - CellPhoneDB review
+      - NicheNet review
+      - LIANA review
+      - CCC analysis review
+      - signaling overclaim
+    description: CCC analysis plans/results/notebooks/methods — tool + database choice, statistical rigor, overclaim boundaries, iPSC media-confound and contamination traps
+    reviews: CCC analysis plans/results/notebooks/methods — tool + database choice, statistical rigor, overclaim boundaries, iPSC media-confound and contamination traps
+    companions:
+      planners:
+        - cell-cell-communication-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: rna-velocity-critic
+    type: critic
+    command: /rna-velocity-critic
+    triggers:
+      - RNA velocity review
+      - scVelo review
+      - velocity plot review
+      - splice ratio
+      - steady-state assumption
+      - velocity direction overclaim
+    description: RNA velocity analyses/plots/methods — model selection, preprocessing, steady-state assumption validity, uncertainty handling, overclaim boundaries, iPSC traps
+    reviews: RNA velocity analyses/plots/methods — model selection, preprocessing, steady-state assumption validity, uncertainty handling, overclaim boundaries, iPSC traps
+    companions:
+      planners:
+        - rna-velocity-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: cnv-detection-critic
+    type: critic
+    command: /cnv-detection-critic
+    triggers:
+      - CNV review
+      - InferCNV review
+      - CopyKAT review
+      - copy number review
+      - karyotype claim
+      - subclone review
+      - CNV artifact
+    description: CNV detection analyses — reference-normal strategy validity, resolution overclaim, clone-vs-artifact discrimination, iPSC karyotype/passage artifact awareness, reproducibility
+    reviews: CNV detection analyses — reference-normal strategy validity, resolution overclaim, clone-vs-artifact discrimination, iPSC karyotype/passage artifact awareness, reproducibility
+    companions:
+      planners:
+        - cnv-detection-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: gene-regulatory-network-critic
+    type: critic
+    command: /gene-regulatory-network-critic
+    triggers:
+      - GRN review
+      - regulon review
+      - SCENIC review
+      - pySCENIC review
+      - CellOracle review
+      - TF network review
+      - regulatory network overclaim
+      - causality overclaim
+    description: GRN inference analyses — motif database fit, regulon statistical validity, correlation-vs-causation overclaim, iPSC stage-confound traps, reproducibility
+    reviews: GRN inference analyses — motif database fit, regulon statistical validity, correlation-vs-causation overclaim, iPSC stage-confound traps, reproducibility
+    companions:
+      planners:
+        - gene-regulatory-network-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: dataset-integration-critic
+    type: critic
+    command: /dataset-integration-critic
+    triggers:
+      - integration review
+      - batch correction review
+      - Harmony review
+      - scVI review
+      - over-integration
+      - overcorrection
+      - integration metric review
+      - biological signal loss
+    description: Cross-dataset integration analyses — batch correction quality, biological signal preservation, integration metric reporting, iPSC over-correction traps
+    reviews: Cross-dataset integration analyses — batch correction quality, biological signal preservation, integration metric reporting, iPSC over-correction traps
+    companions:
+      planners:
+        - dataset-integration-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: trajectory-inference-critic
+    type: critic
+    command: /trajectory-inference-critic
+    triggers:
+      - trajectory review
+      - pseudotime review
+      - Monocle review
+      - CellRank review
+      - optimal transport review
+      - trajectory topology
+      - pseudotime-real-time conflation
+      - fate probability overclaim
+    description: Trajectory inference analyses — design-to-method match (OT vs pseudotime), transition probability validity, pseudotime/real-time conflation, branching topology robustness, iPSC confounds
+    reviews: Trajectory inference analyses — design-to-method match (OT vs pseudotime), transition probability validity, pseudotime/real-time conflation, branching topology robustness, iPSC confounds
+    companions:
+      planners:
+        - trajectory-inference-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: causal-inference-critic
+    type: critic
+    command: /causal-inference-critic
+    triggers:
+      - causal inference review
+      - causal claim review
+      - confounding review
+      - pseudo-replication review
+      - isogenic design review
+      - causal overclaim
+      - correlation vs causation
+    description: Causal inference analyses — design-claim alignment, confounding control, pseudo-replication, iPSC-specific traps, overclaim boundaries
+    reviews: Causal inference analyses — design-claim alignment, confounding control, pseudo-replication, iPSC-specific traps, overclaim boundaries
+    companions:
+      planners:
+        - causal-inference-planner
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: research-comms-critic
+    type: critic
+    command: /research-comms-critic
+    triggers:
+      - research communication
+      - science communication
+      - public summary
+      - lay summary
+    description: Research-to-public communication — simplification accuracy, hedging
+    reviews: Research-to-public communication — simplification accuracy, hedging
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: email-campaign-critic
+    type: critic
+    command: /email-campaign-critic
+    triggers:
+      - email review
+      - campaign review
+      - subject line review
+      - email marketing review
+    description: Email campaigns — subject lines, CTAs, deliverability, flow
+    reviews: Email campaigns — subject lines, CTAs, deliverability, flow
+    companions:
+      planners:
+        - email-campaign-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: health-equity-analyzer
+    type: critic
+    command: /health-equity-analyzer
+    triggers:
+      - health equity
+      - disparity
+      - social determinants
+      - SDOH
+      - health impact
+      - equity review
+    description: Health equity — disparity measurement, SDOH, intersectionality
+    reviews: Health equity — disparity measurement, SDOH, intersectionality
+    companions:
+      planners:
+        - chna-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: sap-critic
+    type: critic
+    command: /sap-critic
+    triggers:
+      - SAP review
+      - statistical analysis plan
+      - clinical trial statistics
+      - pre-specification
+    description: Statistical Analysis Plans — pre-specification rigor, regulatory compliance
+    reviews: Statistical Analysis Plans — pre-specification rigor, regulatory compliance
+    companions:
+      planners:
+        - study-design-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: data-critic
+    type: critic
+    command: /data-critic
+    triggers:
+      - math review
+      - formula review
+      - numerical review
+      - data logic
+      - calculation review
+    description: Math and data logic — formulas, assumptions, numerical correctness
+    reviews: Math and data logic — formulas, assumptions, numerical correctness
+    companions:
+      planners:
+        - data-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: qa-critic
+    type: critic
+    command: /qa-critic
+    triggers:
+      - test suite review
+      - are tests good enough
+      - false confidence
+      - misleading green
+      - missing coverage
+      - flaky tests
+      - over-mocked
+    description: Test suites — false confidence, missing risk coverage, weak assertions, flake patterns
+    reviews: Test suites — false confidence, missing risk coverage, weak assertions, flake patterns
+    companions:
+      planners:
+        - test-planner
+    source_repo: meta-skills
+    source_qualifier: zivtech-testing-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: interview-critic
+    type: critic
+    command: /interview-critic
+    triggers:
+      - interview review
+      - JTBD transcript
+      - job statement valid
+      - Four Forces coverage
+      - interview quality
+      - critique the interview
+      - independent quality score
+    description: JTBD switching-story transcripts — Four Forces coverage, job statement validity, interviewer technique
+    reviews: JTBD switching-story transcripts — Four Forces coverage, job statement validity, interviewer technique
+    companions:
+      planners:
+        - jtbd-interviewer
+    source_repo: meta-skills
+    source_qualifier: zivtech-research-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: test-critic
+    type: critic
+    command: /test-critic
+    triggers:
+      - test review
+      - eval suite review
+      - test design review
+      - test fairness
+    description: Evaluation suites — statistical design, fairness, completeness
+    reviews: Evaluation suites — statistical design, fairness, completeness
+    companions: {}
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: measurement-critic
+    type: critic
+    command: /measurement-critic
+    triggers:
+      - measurement review
+      - measurement quality
+      - validate scores
+      - measurement validity
+      - inter-rater reliability
+      - construct validity
+      - bias detection
+      - composite score
+      - weighted scorer
+      - scoring function
+      - ranking function
+      - is this score a valid proxy
+      - Goodhart
+    description: "Two modes (Phase 0 auto-selects): (1) LLM-as-instrument content scoring — construct validity, inter-rater reliability, bias (position, length, anchoring, style), calibration; (2) hand-tuned composite/weighted scoring functions that rank candidates in a search space — component proxy validity, weighting sensitivity, Goodhart-under-search, falsifiability"
+    reviews: "Two modes (Phase 0 auto-selects): (1) LLM-as-instrument content scoring — construct validity, inter-rater reliability, bias (position, length, anchoring, style), calibration; (2) hand-tuned composite/weighted scoring functions that rank candidates in a search space — component proxy validity, weighting sensitivity, Goodhart-under-search, falsifiability"
+    companions:
+      planners:
+        - content-measurement-planner
+    source_repo: meta-skills
+    source_qualifier: instrument-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: output-guardrail-critic
+    type: critic
+    command: /output-guardrail-critic
+    triggers:
+      - review guardrails
+      - guardrail review
+      - output safety
+      - guardrail coverage
+      - output quality gates
+      - safety gates
+    description: AI agent guardrail configurations and execution results — output quality gates, safety gates, coverage gaps, false positive risks
+    reviews: AI agent guardrail configurations and execution results — output quality gates, safety gates, coverage gaps, false positive risks
+    companions:
+      planners:
+        - input-guardrail-planner
+    source_repo: meta-skills
+    source_qualifier: guardrail-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: ui-critic
+    type: critic
+    command: /ui-critic
+    triggers:
+      - UI review
+      - UX review
+      - interface review
+      - usability review
+      - heuristic evaluation
+    description: UI/UX design — heuristic evaluation, visual consistency, accessibility
+    reviews: UI/UX design — heuristic evaluation, visual consistency, accessibility
+    companions:
+      planners:
+        - design-partner
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: web-design-critic
+    type: critic
+    command: /web-design-critic
+    triggers:
+      - website review
+      - web design review
+      - responsive review
+      - web UI review
+    description: Web design — responsive, interaction, and accessibility quality
+    reviews: Web design — responsive, interaction, and accessibility quality
+    companions:
+      planners:
+        - web-design-planner
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: mobile-design-critic
+    type: critic
+    command: /mobile-design-critic
+    triggers:
+      - mobile design review
+      - mobile UX review
+      - mobile app review
+      - platform conventions
+    description: Mobile UX — platform conventions, accessibility, and flow reliability
+    reviews: Mobile UX — platform conventions, accessibility, and flow reliability
+    companions:
+      planners:
+        - mobile-design-planner
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: graphic-design-critic
+    type: critic
+    command: /graphic-design-critic
+    triggers:
+      - graphic design review
+      - print review
+      - campaign review
+      - infographic review
+      - poster review
+      - layout review
+    description: Graphic assets — hierarchy, brand consistency, production readiness, infographic accuracy
+    reviews: Graphic assets — hierarchy, brand consistency, production readiness, infographic accuracy
+    companions:
+      planners:
+        - graphic-design-planner
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: design-token-critic
+    type: critic
+    command: /design-token-critic
+    triggers:
+      - design token review
+      - token audit
+      - design system tokens
+      - CSS variables
+      - Figma variables
+      - Tailwind tokens
+      - token naming
+    description: Design token systems — naming consistency, value coverage, math relationships, accessibility, cross-platform parity
+    reviews: Design token systems — naming consistency, value coverage, math relationships, accessibility, cross-platform parity
+    companions:
+      planners:
+        - design-system-documenter
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: dashboard-critic
+    type: critic
+    command: /dashboard-critic
+    triggers:
+      - dashboard review
+      - critique dashboard
+      - dashboard architecture review
+      - evaluate dashboard
+      - check dashboard KPIs
+      - dashboard filter review
+    description: Dashboard architecture — KPI hierarchy, information density, filter logic, drill-down coherence, responsive layout, cross-chart consistency
+    reviews: Dashboard architecture — KPI hierarchy, information density, filter logic, drill-down coherence, responsive layout, cross-chart consistency
+    companions:
+      planners:
+        - dashboard-planner
+    source_repo: meta-skills
+    source_qualifier: zivtech-viz-skills
+    dependencies: []
+    tier: verified
+    read_only: true
+  - name: review-skill
+    type: critic
+    command: /review-skill
+    triggers:
+      - skill review
+      - skill health
+      - observation log
+      - eval results
+      - protocol drift
+      - amend skill
+      - improve skill prompt
+    description: Skill health — observation logs, eval correlation, protocol analysis, and targeted amendment proposals
+    reviews: Skill health — observation logs, eval correlation, protocol analysis, and targeted amendment proposals
+    companions:
+      planners:
+        - test-builder
+    source_repo: meta-skills
+    source_qualifier: meta
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: drupal-config-executor
+    type: executor
+    command: /drupal-config-executor
+    triggers:
+      - generate drupal config
+      - scaffold content type
+      - create drupal fields
+      - generate config yaml
+      - drupal config from plan
+    description: Drupal config YAML (node.type, field.storage, field.field, form/view displays)
+    generates: Drupal config YAML (node.type, field.storage, field.field, form/view displays)
+    companions:
+      upstream_planners:
+        - drupal-planner.content-model
+        - drupal-planner.taxonomy
+        - drupal-planner.search
+      downstream_critics:
+        - content-model-critic
+        - drupal-critic
+    source_repo: drupal-planner
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: dataviz-executor
+    type: executor
+    command: /dataviz-executor
+    triggers:
+      - generate chart
+      - create visualization
+      - build chart
+      - plot data
+      - generate dataviz
+      - create plotly chart
+      - visualize this data
+    description: Self-contained HTML with Plotly.js charts
+    generates: Self-contained HTML with Plotly.js charts
+    companions:
+      upstream_planners:
+        - dataviz-planner
+      downstream_critics:
+        - dataviz-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-viz-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: marp-executor
+    type: executor
+    command: /marp-executor
+    triggers:
+      - make slides
+      - create presentation
+      - build deck
+      - markdown slides
+      - marp slides
+      - turn into presentation
+      - slide deck
+    description: Marp markdown + HTML/PDF/PPTX via marp-cli
+    generates: Marp markdown + HTML/PDF/PPTX via marp-cli
+    companions:
+      upstream_planners:
+        - name: copy-planner
+          optional: true
+      downstream_critics:
+        - copy-critic
+    source_repo: meta-skills
+    source_qualifier: standalone
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: dashboard-executor
+    type: executor
+    command: /dashboard-executor
+    triggers:
+      - generate dashboard
+      - create dashboard
+      - build dashboard
+      - generate KPI dashboard
+      - create interactive dashboard
+      - execute dashboard plan
+    description: Self-contained interactive HTML dashboards with KPI cards, filters, cross-filtering
+    generates: Self-contained interactive HTML dashboards with KPI cards, filters, cross-filtering
+    companions:
+      upstream_planners:
+        - dashboard-planner
+      downstream_critics:
+        - dashboard-critic
+        - dataviz-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-viz-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: scientific-viz-executor
+    type: executor
+    command: /scientific-viz-executor
+    triggers:
+      - 3D plot
+      - surface plot
+      - network graph
+      - force graph
+      - function plot
+      - vector field
+      - phase diagram
+      - contour plot
+      - scientific visualization
+      - mathematical plot
+      - LaTeX plot
+    description: Self-contained HTML scientific visualizations (3D, network, math, vector fields)
+    generates: Self-contained HTML scientific visualizations (3D, network, math, vector fields)
+    companions:
+      upstream_planners:
+        - dataviz-planner
+      downstream_critics:
+        - dataviz-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-viz-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: web-design-executor
+    type: executor
+    command: /web-design-executor
+    triggers:
+      - generate page
+      - build layout
+      - implement design
+      - create landing page
+      - generate HTML CSS
+      - execute web design
+      - build responsive page
+    description: Production-ready HTML/CSS with token-driven custom properties
+    generates: Production-ready HTML/CSS with token-driven custom properties
+    companions:
+      upstream_planners:
+        - web-design-planner
+      downstream_critics:
+        - web-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: design-system-documenter
+    type: executor
+    command: /design-system-documenter
+    triggers:
+      - document design system
+      - extract design tokens
+      - generate DESIGN.md
+      - token inventory
+      - design system docs
+      - CSS custom properties
+      - Tailwind config
+    description: DESIGN.md documentation from existing tokens, theme files, CSS custom properties, Tailwind config, and design direction
+    generates: DESIGN.md documentation from existing tokens, theme files, CSS custom properties, Tailwind config, and design direction
+    companions:
+      upstream_planners:
+        - name: design-partner
+          optional: true
+      downstream_critics:
+        - design-token-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: infographic-executor
+    type: executor
+    command: /infographic-executor
+    triggers:
+      - create infographic
+      - generate fact sheet
+      - build visual summary
+      - make one-pager
+      - create process diagram
+      - generate comparison infographic
+      - visual explainer
+      - data summary graphic
+    description: SVG-based infographic HTML pages (fact sheets, visual explainers, data summaries)
+    generates: SVG-based infographic HTML pages (fact sheets, visual explainers, data summaries)
+    companions:
+      upstream_planners:
+        - graphic-design-planner
+      downstream_critics:
+        - graphic-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: mobile-design-executor
+    type: executor
+    command: /mobile-design-executor
+    triggers:
+      - generate mobile UI
+      - create React Native
+      - build Expo app
+      - implement mobile design
+      - mobile code from plan
+    description: React Native/Expo/SwiftUI/Compose code from mobile-design-planner specs
+    generates: React Native/Expo/SwiftUI/Compose code from mobile-design-planner specs
+    companions:
+      upstream_planners:
+        - mobile-design-planner
+      downstream_critics:
+        - mobile-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: graphic-design-executor
+    type: executor
+    command: /graphic-design-executor
+    triggers:
+      - create print design
+      - build brand guidelines
+      - generate SVG graphic
+      - precision graphic
+      - editable graphic
+      - vector asset
+      - brand reference page
+      - icon design
+    description: SVG-in-HTML graphic assets (brand guidelines, precision layouts, editable graphics, icons)
+    generates: SVG-in-HTML graphic assets (brand guidelines, precision layouts, editable graphics, icons)
+    companions:
+      upstream_planners:
+        - graphic-design-planner
+      downstream_critics:
+        - graphic-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: gemini-image-executor
+    type: executor
+    command: /gemini-image-executor
+    triggers:
+      - create social media graphic
+      - generate event poster
+      - hero image
+      - marketing visual
+      - atmospheric graphic
+      - raster graphic
+      - Instagram post
+      - conference poster
+      - product showcase
+    description: Production-quality raster PNG via Gemini native image generation (social cards, event posters, hero images, atmospheric visuals)
+    generates: Production-quality raster PNG via Gemini native image generation (social cards, event posters, hero images, atmospheric visuals)
+    companions:
+      upstream_planners:
+        - graphic-design-planner
+      downstream_critics:
+        - graphic-design-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-design-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: ci-fix-executor
+    type: executor
+    command: /ci-fix-executor
+    triggers:
+      - CI failed
+      - fix CI
+      - build broken
+      - test failing
+      - lint error
+      - deploy failure
+      - dependency conflict
+      - fix pipeline
+    description: Targeted minimal fixes for CI failures (lint, test, build, deploy, dependency)
+    generates: Targeted minimal fixes for CI failures (lint, test, build, deploy, dependency)
+    companions:
+      upstream_planners:
+        - name: test-planner
+          optional: true
+      downstream_critics:
+        - qa-critic
+    source_repo: meta-skills
+    source_qualifier: testing-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: test-builder
+    type: executor
+    command: /test-builder
+    triggers:
+      - build eval suite
+      - generate fixtures
+      - skill evaluation
+      - benchmark skill
+      - rubric
+      - harness config
+      - compare skill to baseline
+    description: Reproducible skill evaluation suites with fixtures, rubrics, baselines, and harness configuration
+    generates: Reproducible skill evaluation suites with fixtures, rubrics, baselines, and harness configuration
+    companions:
+      upstream_planners:
+        - name: review-skill
+          optional: true
+      downstream_critics:
+        - test-critic
+    source_repo: meta-skills
+    source_qualifier: meta
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: content-measurement-executor
+    type: executor
+    command: /content-measurement-executor
+    triggers:
+      - measure content
+      - apply rubric
+      - score items
+      - content scoring
+      - measurement execution
+      - rate content batch
+      - classify content batch
+    description: Scored content batches with per-item audit trails (rate, rank, classify, extract, discover, codify, bucket)
+    generates: Scored content batches with per-item audit trails (rate, rank, classify, extract, discover, codify, bucket)
+    companions:
+      upstream_planners:
+        - content-measurement-planner
+      downstream_critics:
+        - measurement-critic
+    source_repo: meta-skills
+    source_qualifier: instrument-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: wordpress-migration-executor
+    type: executor
+    command: /wordpress-migration-executor
+    triggers:
+      - run WordPress migration
+      - contentful-migration import
+      - wp contentful-migration
+      - wp-env smoke
+      - apply model
+      - import export
+      - verify run
+      - rollback run
+      - MCP ability smoke
+      - Gutenberg migration smoke
+    description: "Operates and verifies WordPress Contentful migration runtimes through WP-CLI/wp-env: analyze, apply-model, import, verify, report, rollback, idempotency, and acceptance smoke gates"
+    generates: "Operates and verifies WordPress Contentful migration runtimes through WP-CLI/wp-env: analyze, apply-model, import, verify, report, rollback, idempotency, and acceptance smoke gates"
+    companions:
+      upstream_planners:
+        - wordpress-migration-planner
+      downstream_critics:
+        - wordpress-migration-critic
+        - qa-critic
+    source_repo: meta-router
+    source_qualifier: wordpress-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: research-synthesis-executor
+    type: executor
+    command: /research-synthesis-executor
+    triggers:
+      - synthesize research
+      - research synthesis
+      - literature synthesis
+      - evidence summary
+      - create research brief
+    description: Structured research synthesis documents (quick brief, summary, comparison matrix, comprehensive report)
+    generates: Structured research synthesis documents (quick brief, summary, comparison matrix, comprehensive report)
+    companions:
+      upstream_planners:
+        - lit-review-planner
+      downstream_critics:
+        - research-critic
+    source_repo: meta-skills
+    source_qualifier: research-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: security-ownership-mapper
+    type: executor
+    command: /security-ownership-mapper
+    triggers:
+      - ownership map
+      - bus factor
+      - code ownership
+      - orphaned code
+      - who owns
+      - git ownership
+      - contributor risk
+    description: Code ownership maps, bus factor analysis, orphaned security-sensitive code detection (Bash-enabled, uses git CLI)
+    generates: Code ownership maps, bus factor analysis, orphaned security-sensitive code detection (Bash-enabled, uses git CLI)
+    companions:
+      upstream_planners:
+        - security-threat-model-planner
+      downstream_critics:
+        - proposal-critic
+    source_repo: meta-skills
+    source_qualifier: security-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: discovery-investigation
+    type: executor
+    command: /discovery-investigation
+    triggers:
+      - discovery audit
+      - Drupal site audit
+      - editorial UX audit
+      - proposal evidence
+      - content type audit
+      - discovery findings
+    description: Evidence-backed Drupal discovery findings with config analysis, browser checks, scored findings, and proposal-ready evidence
+    generates: Evidence-backed Drupal discovery findings with config analysis, browser checks, scored findings, and proposal-ready evidence
+    companions:
+      downstream_critics:
+        - proposal-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-proposal-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: proposal-draft
+    type: executor
+    command: /proposal-draft
+    triggers:
+      - draft proposal
+      - proposal package
+      - client proposal
+      - technical proposal
+      - discovery findings to proposal
+      - proposal review loop
+    description: Client-ready proposal packages from discovery findings with technical and client-facing drafts plus multi-critic review
+    generates: Client-ready proposal packages from discovery findings with technical and client-facing drafts plus multi-critic review
+    companions:
+      upstream_planners:
+        - name: discovery-investigation
+          optional: true
+      downstream_critics:
+        - proposal-critic
+        - copy-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-proposal-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: discovery-proposal
+    type: executor
+    command: /discovery-proposal
+    triggers:
+      - discovery to proposal
+      - full discovery workflow
+      - site audit to proposal
+      - proposal orchestration
+      - resume discovery session
+    description: Full discovery-to-proposal workflow orchestration across investigation, drafting, critique, and delivery
+    generates: Full discovery-to-proposal workflow orchestration across investigation, drafting, critique, and delivery
+    companions:
+      upstream_planners:
+        - discovery-investigation
+        - proposal-draft
+      downstream_critics:
+        - proposal-critic
+        - copy-critic
+    source_repo: meta-skills
+    source_qualifier: zivtech-proposal-skills
+    dependencies: []
+    tier: verified
+    read_only: false
+  - name: brand-voice-guide
+    type: perspective
+    command: null
+    triggers:
+      - brand voice
+      - tone of voice
+      - brand guidelines
+    description: Brand voice reference for copy skills
+    perspective: Brand voice reference for copy skills
+    companions:
+      used_by:
+        - copy-critic
+        - copy-planner
+    source_repo: meta-skills
+    source_qualifier: null
+    dependencies: []
+    tier: verified
+    read_only: false
+routing_patterns:
+  - name: Drupal Feature Request
+    signals:
+      - drupal
+    branches:
+      - condition: Simple feature
+        sequence:
+          - /drupal-planner
+      - condition: Content model focus
+        sequence:
+          - /drupal-planner.content-model
+          - /drupal-planner
+      - condition: Canvas component architecture
+        sequence:
+          - /drupal-planner.canvas
+      - condition: Full site build
+        sequence:
+          - /drupal-planner.content-model
+          - /drupal-planner.taxonomy
+          - /drupal-planner.search
+          - /drupal-planner.canvas
+          - /drupal-planner.theme
+          - /drupal-planner
+  - name: Drupal Code Review
+    signals:
+      - drupal
+    branches:
+      - condition: Module code
+        sequence:
+          - /drupal-critic
+      - condition: Theme code
+        sequence:
+          - /drupal-theme-critic
+      - condition: Content model config
+        sequence:
+          - /content-model-critic
+      - condition: Mixed
+        sequence:
+          - /drupal-critic
+          - /drupal-theme-critic
+  - name: React Feature Request
+    signals:
+      - react
+    branches:
+      - condition: React app
+        sequence:
+          - /react-planner
+      - condition: With accessibility
+        additive: true
+        sequence:
+          - /react-planner
+          - /a11y-planner
+  - name: WordPress Contentful Migration Request
+    signals:
+      - WordPress
+    branches:
+      - condition: Plan a migration runtime
+        sequence:
+          - /wordpress-migration-planner
+      - condition: Implement or operate the runtime
+        sequence:
+          - /wordpress-migration-executor
+      - condition: Review migration plugin/code/plan/evidence
+        sequence:
+          - /wordpress-migration-critic
+      - condition: Full loop
+        sequence:
+          - /wordpress-migration-planner
+          - /wordpress-migration-executor
+          - /wordpress-migration-critic
+      - condition: With broad CMS model ambiguity
+        additive: true
+        sequence:
+          - /content-model-planner
+      - condition: With test adequacy concern
+        additive: true
+        sequence:
+          - /qa-critic
+  - name: Content / Copy Request
+    signals:
+      - content
+    branches:
+      - condition: Plan copy
+        sequence:
+          - /copy-planner
+      - condition: Review copy
+        sequence:
+          - /copy-critic
+      - condition: With SEO
+        additive: true
+        sequence:
+          - /seo-advisor
+      - condition: With AI Overview / AIO / agentic search readiness
+        additive: true
+        sequence:
+          - /seo-advisor
+          - /ai-optimization-planner
+      - condition: Review AI Overview eligibility on existing content
+        sequence:
+          - /ai-optimization-critic
+      - condition: With brand voice
+        additive: true
+        include: brand-voice-guide
+  - name: JTBD / User Research Request
+    signals:
+      - JTBD
+    branches:
+      - condition: Conduct a JTBD interview
+        sequence:
+          - /jtbd-interviewer
+      - condition: Review a completed JTBD transcript
+        sequence:
+          - /interview-critic
+      - condition: Full loop
+        sequence:
+          - /jtbd-interviewer
+          - /interview-critic
+  - name: Research / Academic Request
+    signals:
+      - research
+    branches:
+      - condition: Stem-cell, hPSC/iPSC, beta-cell, platelet, reporter-line, single-cell differentiation, or cell-line provenance plan
+        sequence:
+          - /stem-cell-research-planner
+          - /stem-cell-research-critic
+      - condition: Review a stem-cell artifact, assay/data package, or collaborator/core handoff
+        sequence:
+          - /stem-cell-research-critic
+      - condition: scRNA-seq, bulk RNA-seq, ATAC-seq, multiome, spatial, genomics pipeline, bioinformatics pipeline, Cell Ranger, Seurat, Scanpy, batch correction, clustering, annotation, DE, trajectory
+        sequence:
+          - /genomics-pipeline-planner
+          - /genomics-pipeline-critic
+      - condition: Review a genomics pipeline plan, analysis notebook, methods section, or QC report
+        sequence:
+          - /genomics-pipeline-critic
+      - condition: Stem-cell experiment needing computational analysis
+        sequence:
+          - /stem-cell-research-planner
+          - /genomics-pipeline-planner
+      - condition: Cell-type / cell-state proportion shift, compositional analysis, "does the mutant have more/fewer of population X", abundance change
+        sequence:
+          - /differential-abundance-planner
+          - /differential-abundance-critic
+      - condition: Cell-cell communication, ligand-receptor signaling (CellChat/CellPhoneDB/NicheNet/LIANA/Squidpy)
+        sequence:
+          - /cell-cell-communication-planner
+          - /cell-cell-communication-critic
+      - condition: RNA velocity, spliced/unspliced dynamics, cell-fate direction (scVelo/veloVI/RegVelo/CellRank 2)
+        sequence:
+          - /rna-velocity-planner
+          - /rna-velocity-critic
+      - condition: CNV / copy-number / karyotype QC from scRNA-seq (InferCNV/CopyKAT/Numbat/SCEVAN)
+        sequence:
+          - /cnv-detection-planner
+          - /cnv-detection-critic
+      - condition: Gene regulatory network / regulon / TF activity (SCENIC+/pySCENIC/CellOracle/Dictys)
+        sequence:
+          - /gene-regulatory-network-planner
+          - /gene-regulatory-network-critic
+      - condition: Batch correction / dataset integration / atlas / label transfer (Harmony/scVI/scANVI/BBKNN/Scanorama)
+        sequence:
+          - /dataset-integration-planner
+          - /dataset-integration-critic
+      - condition: Developmental trajectory / pseudotime / optimal transport (moscot/Monocle3/PAGA/CellRank 2)
+        sequence:
+          - /trajectory-inference-planner
+          - /trajectory-inference-critic
+      - condition: Causal claim from an iPSC/isogenic design, confounding, or pseudo-replication
+        sequence:
+          - /causal-inference-planner
+          - /causal-inference-critic
+      - condition: Choosing a single-cell foundation model vs a traditional approach (scGPT/Geneformer/UCE/C2S-Scale)
+        sequence:
+          - /foundation-model-advisor
+      - condition: Review a single-cell analysis (abundance, CCC, velocity, CNV, GRN, integration, trajectory, causal)
+      - condition: Plan a study
+        sequence:
+          - /study-design-planner
+      - condition: Plan a literature review
+        sequence:
+          - /lit-review-planner
+      - condition: Generate a research synthesis
+        sequence:
+          - /research-synthesis-executor
+      - condition: Plan a manuscript
+        sequence:
+          - /manuscript-planner
+      - condition: Review a manuscript
+        sequence:
+          - /manuscript-critic
+      - condition: Review methodology
+        sequence:
+          - /research-critic
+      - condition: Full lit review loop
+        sequence:
+          - /lit-review-planner
+          - /research-synthesis-executor
+          - /research-critic
+  - name: Design / UI Request
+    signals:
+      - design
+    branches:
+      - condition: Design direction or system
+        sequence:
+          - /design-partner
+      - condition: Plan a website design
+        sequence:
+          - /web-design-planner
+      - condition: Plan a mobile UI
+        sequence:
+          - /mobile-design-planner
+      - condition: Plan a graphic asset / infographic / poster
+        sequence:
+          - /graphic-design-planner
+      - condition: Prototype screens in Google Stitch
+        sequence:
+          - /stitch-planner
+      - condition: Document design tokens / generate DESIGN.md
+        sequence:
+          - /design-system-documenter
+      - condition: Generate an infographic from plan
+        sequence:
+          - /infographic-executor
+      - condition: Generate graphic assets (SVG, brand guides, precision) from plan
+        sequence:
+          - /graphic-design-executor
+      - condition: Generate graphic assets (raster, social, posters, atmospheric) from plan
+        sequence:
+          - /gemini-image-executor
+      - condition: Generate mobile UI code from plan
+        sequence:
+          - /mobile-design-executor
+      - condition: Generate HTML/CSS from web design plan
+        sequence:
+          - /web-design-executor
+      - condition: Review UI/UX
+        sequence:
+          - /ui-critic
+      - condition: Review web design
+        sequence:
+          - /web-design-critic
+      - condition: Review mobile design
+        sequence:
+          - /mobile-design-critic
+      - condition: Review graphic design / infographic
+        sequence:
+          - /graphic-design-critic
+      - condition: Review design token architecture
+        sequence:
+          - /design-token-critic
+      - condition: With accessibility
+        additive: true
+        sequence:
+          - /a11y-planner
+          - /a11y-critic
+  - name: Data / Visualization Request
+    signals:
+      - data
+    branches:
+      - condition: Plan a dashboard
+        sequence:
+          - /dashboard-planner
+      - condition: Plan a visualization
+        sequence:
+          - /dataviz-planner
+      - condition: Generate a chart from plan or data
+        sequence:
+          - /dataviz-executor
+      - condition: Generate a scientific visualization (3D, network, math)
+        sequence:
+          - /scientific-viz-executor
+      - condition: Generate a dashboard from plan or data
+        sequence:
+          - /dashboard-executor
+      - condition: Review a visualization
+        sequence:
+          - /dataviz-critic
+      - condition: Review a dashboard
+        sequence:
+          - /dashboard-critic
+      - condition: Review data logic
+        sequence:
+          - /data-critic
+      - condition: Full chart loop
+        sequence:
+          - /dataviz-planner
+          - /dataviz-executor
+          - /dataviz-critic
+      - condition: Full dashboard loop
+        sequence:
+          - /dashboard-planner
+          - /dashboard-executor
+          - /dashboard-critic
+      - condition: Scientific viz loop
+        sequence:
+          - /dataviz-planner
+          - /scientific-viz-executor
+          - /dataviz-critic
+  - name: Security / Threat Modeling Request
+    signals:
+      - threat model
+    branches:
+      - condition: Plan a threat model
+        sequence:
+          - /security-threat-model-planner
+      - condition: Map code ownership and bus factor
+        sequence:
+          - /security-ownership-mapper
+      - condition: Review a threat model plan
+        sequence:
+          - /proposal-critic
+      - condition: Full security assessment
+        sequence:
+          - /security-threat-model-planner
+          - /security-ownership-mapper
+          - /proposal-critic
+      - condition: With performance concerns
+        additive: true
+        sequence:
+          - /perf-critic
+  - name: Content Measurement Request
+    signals:
+      - measure content
+    branches:
+      - condition: Design a measurement instrument
+        sequence:
+          - /content-measurement-planner
+      - condition: Execute measurement on content batch
+        sequence:
+          - /content-measurement-executor
+      - condition: Review measurement validity
+        sequence:
+          - /measurement-critic
+      - condition: Full measurement loop
+        sequence:
+          - /content-measurement-planner
+          - /content-measurement-executor
+          - /measurement-critic
+      - condition: With research methodology
+        additive: true
+        sequence:
+          - /research-critic
+  - name: Meeting Preparation Request
+    signals:
+      - meeting prep
+    branches:
+      - condition: Plan meeting preparation
+        sequence:
+          - /meeting-intelligence-planner
+      - condition: Review agenda/brief quality
+        sequence:
+          - /copy-critic
+  - name: CI Failure Request
+    signals:
+      - CI failed
+    branches:
+      - condition: Diagnose and fix CI failure
+        sequence:
+          - /ci-fix-executor
+  - name: Skill Quality / Meta-Skill Request
+    signals:
+      - skill evaluation
+    branches:
+      - condition: Review skill health and propose amendments
+        sequence:
+          - /review-skill
+      - condition: Build a reproducible eval suite
+        sequence:
+          - /test-builder
+      - condition: Review eval suite rigor
+        sequence:
+          - /test-critic
+  - name: Discovery / Proposal Request
+    signals:
+      - discovery audit
+    branches:
+      - condition: Investigate a Drupal site for proposal evidence
+        sequence:
+          - /discovery-investigation
+      - condition: Draft a proposal from discovery findings
+        sequence:
+          - /proposal-draft
+      - condition: Run the full discovery-to-proposal loop
+        sequence:
+          - /discovery-proposal
+  - name: Spec-Kitty Workflow Request
+    signals:
+      - spec-kitty
+    branches:
+      - condition: Route a spec, work package, or failed review
+        sequence:
+          - /spec-kitty-bridge
+  - name: Guardrail / Agent Safety Request
+    signals:
+      - guardrail
+    branches:
+      - condition: Design input guardrails
+        sequence:
+          - /input-guardrail-planner
+      - condition: Review guardrail configuration
+        sequence:
+          - /output-guardrail-critic
+      - condition: Full guardrail loop
+        sequence:
+          - /input-guardrail-planner
+          - /output-guardrail-critic
+      - condition: With threat modeling
+        additive: true
+        sequence:
+          - /security-threat-model-planner
+      - condition: Review the fix
+        sequence:
+          - /qa-critic
+      - condition: Plan testing strategy after fix
+        sequence:
+          - /test-planner
+  - name: Drupal Config Generation
+    signals:
+      - generate drupal config
+    branches:
+      - condition: Generate config from content model plan
+        sequence:
+          - /drupal-config-executor
+      - condition: Generate config from taxonomy plan
+        sequence:
+          - /drupal-config-executor
+      - condition: Generate config from search plan
+        sequence:
+          - /drupal-config-executor
+      - condition: Full loop
+        sequence:
+          - /drupal-planner.content-model
+          - /drupal-config-executor
+          - /content-model-critic
+  - name: Live-Testing Review (Runnable Artifacts)
+    signals:
+      - executor-generated HTML
+      - self-contained dashboard
+      - Marp slides
+    branches:
+      - condition: "Executor produced `.html` with Plotly/D3/Chart.js"
+        sequence:
+          - /dataviz-critic
+      - condition: Executor produced dashboard HTML with filters/KPIs
+        sequence:
+          - /dashboard-critic
+      - condition: Executor produced Marp slides
+        sequence:
+          - /copy-critic
+      - condition: If Playwright MCP not available
+  - name: Executor Completeness Gate
+    signals: []
+    branches:
+      - condition: Executor enumerates every spec item
+signal_priority_rules:
+  - rule: specificity_wins
+    description: "`/drupal-planner.content-model` beats `/drupal-planner` for content model requests"
+  - rule: framework_specific_beats_generic
+    description: "`/drupal-planner.taxonomy` beats `/taxonomy-planner` for Drupal taxonomy"
+  - rule: planner_vs_critic
+    description: Match the intent — "plan", "design", "build" → planner; "review", "check", "audit" → critic
+  - rule: companion_pairing
+    description: When planning, mention the companion critic for post-implementation review
+  - rule: specific_single_cell_analysis_beats_general_pipeline
+    description: "When a request names a specific single-cell analysis (trajectory, RNA velocity, CNV, GRN, batch correction / integration, differential abundance, cell-cell communication, causal inference), the specific planner/critic beats the general `/genomics-pipeline-planner` / `/genomics-pipeline-critic`, whose trigger list overlaps them."
+tiers:
+  verified:
+    description: Protocol-driven, eval-tested skills built by Zivtech
+    behavior: Auto-invoke, no warnings
+    criteria: Built by Zivtech with numbered protocol phases
+  trusted:
+    description: External skills vetted and depended on by the ecosystem
+    behavior: Preview before invoke; never auto-invoke discovery results
+    criteria: Listed as external dependency in CLAUDE.md or curated discovery sources
+  community:
+    description: Discovered but unvetted skills
+    behavior: Preview before invoke; warn user and never auto-invoke
+    criteria: Found via discovery, not yet reviewed
+discovery_sources:
+  - org: anthropics
+    repo: skills
+    tier: trusted
+    description: Official Anthropic skills
+  - org: obra
+    repo: superpowers
+    tier: trusted
+    description: TDD, debugging, verification, brainstorming
+  - org: K-Dense-AI
+    repo: scientific-agent-skills
+    tier: trusted
+    description: Statistical analysis, EDA, scientific writing
+  - org: flonat
+    repo: claude-research
+    tier: trusted
+    description: Research methods, literature workflows, skill maintenance
+  - org: trailofbits
+    repo: skills
+    tier: trusted
+    description: Security review, static-analysis triage, testing assurance
+  - org: coffeefuelbump
+    repo: csv-data-summarizer-claude-skill
+    tier: trusted
+    description: CSV profiling and quick data summarization
+  - org: github
+    repo: awesome-copilot
+    tier: community
+    description: Catalog-diff workflows, visual evidence, eval realism, data/SQL review references
+  - org: vercel-labs
+    repo: agent-skills
+    tier: community
+    description: Vercel deployment, frontend tools
+  - org: ComposioHQ
+    repo: awesome-claude-skills
+    tier: community
+    description: Community curated skills collection

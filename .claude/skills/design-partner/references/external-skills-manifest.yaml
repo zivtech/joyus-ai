@@ -1,0 +1,77 @@
+version: 1
+generated_at: '2026-03-06T00:00:00Z'
+skills:
+- id: anthropics/skills/frontend-design
+  skills_url: https://skills.sh/anthropics/skills/frontend-design
+  repo_url: https://github.com/anthropics/skills
+  pinned_commit: 7029232b9212482c0476da354b83364bd28fab2f
+  categories:
+  - core-design
+  - aesthetics
+  - anti-generic
+  audiences_supported:
+  - end-user
+  - brand-consistency
+  - developer
+  priority: 100
+  status: active
+- id: wshobson/agents/tailwind-design-system
+  skills_url: https://skills.sh/wshobson/agents/tailwind-design-system
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - design-system
+  - tokens
+  - components
+  audiences_supported:
+  - developer
+  - brand-consistency
+  priority: 95
+  status: active
+- id: google-labs-code/stitch-skills/design-md
+  skills_url: https://skills.sh/google-labs-code/stitch-skills/design-md
+  repo_url: https://github.com/google-labs-code/stitch-skills
+  pinned_commit: a92f689a7f942cc1c061bb46a8bc8904f80c1aee
+  categories:
+  - design-documentation
+  - tokens
+  audiences_supported:
+  - developer
+  - brand-consistency
+  priority: 85
+  status: active
+- id: addyosmani/web-quality-skills/accessibility
+  skills_url: https://skills.sh/addyosmani/web-quality-skills/accessibility
+  repo_url: https://github.com/addyosmani/web-quality-skills
+  pinned_commit: 6a231a73b79ff35bcee04dec85996415979aa928
+  categories:
+  - accessibility
+  - proactive
+  audiences_supported:
+  - accessibility
+  - end-user
+  priority: 90
+  status: active
+- id: vercel-labs/agent-skills/web-design-guidelines
+  skills_url: https://skills.sh/vercel-labs/agent-skills/web-design-guidelines
+  repo_url: https://github.com/vercel-labs/agent-skills
+  pinned_commit: 64bee5b7ea30702448e2aed774eb361914029944
+  categories:
+  - standards
+  - compliance
+  audiences_supported:
+  - end-user
+  - developer
+  priority: 82
+  status: active
+- id: supercent-io/skills-template/web-accessibility
+  skills_url: https://skills.sh/supercent-io/skills-template/web-accessibility
+  repo_url: https://github.com/supercent-io/skills-template
+  pinned_commit: 3173aa2d23eeebe2fad52c1f08ac60a3aac4376e
+  categories:
+  - accessibility
+  - template
+  audiences_supported:
+  - accessibility
+  priority: 60
+  status: active

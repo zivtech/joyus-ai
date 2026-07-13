@@ -1,0 +1,3 @@
+display_name: Next Critic
+short_description: App Router-focused Next.js review
+default_prompt: Review this Next.js plan/code with App Router assumptions and return a strict evidence-based verdict.

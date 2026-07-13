@@ -1,0 +1,40 @@
+{
+  "skill_name": "alex-writing-style",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write an email from me to the client team at NALSA. Their other vendor just proposed scrapping the current Drupal 10 site and rebuilding from scratch on a headless architecture with Next.js. I think this is a terrible idea — the site works, it just needs to be upgraded to Drupal 11 and have the content model cleaned up. The vendor is overselling the rebuild because it's more billable hours for them. I need to be diplomatic but I can't let this slide. We've been their trusted partner for 3 years.",
+      "expected_output": "A direct but warm email that pushes back on the rebuild proposal with specific reasoning. Firm but inviting — 'I'm not convinced' not 'I don't think'. No speculation on other vendor's motives. Inviting next steps ('Would you like to...' not 'Let's...'). 4-8 sentences max.",
+      "files": [],
+      "iteration_notes": "v1: too wordy, defensive posturing. v2: too curt, disparaged other vendor, presumptuous next steps. v3 should hit: warm + brief + no motive speculation."
+    },
+    {
+      "id": 2,
+      "prompt": "Someone on the phillystartupleaders listserv just posted: 'I'm a non-technical founder with a SaaS idea. Should I use AI coding tools like Cursor or Claude Code to build my MVP myself, or should I still hire a developer? Budget is tight.' Write my reply.",
+      "expected_output": "A listserv reply grounded in Alex's personal experience as a non-developer who uses AI tools. Doesn't tell the reader what to think or prescribe priorities. Shares perspective and concrete specifics, lets the reader decide. 1-3 short paragraphs.",
+      "files": [],
+      "iteration_notes": "v1: condescending ('even someone junior'), dismissive signoff. v2: much better but 'prioritize differently than you'd think' tells the reader what to think. v3 should share experience without prescribing."
+    },
+    {
+      "id": 3,
+      "prompt": "I need a session description for a talk I'm proposing at a Drupal conference. The talk is about Joyus AI — our open source platform for managing AI agents and skills across teams. The angle is: individual AI skills are easy, but governance at org scale is the hard problem. Joyus solves that. Target audience is agency owners and technical leads who are starting to roll out AI tools to their teams and realizing they need guardrails. Keep it to about 150-200 words for the description body.",
+      "expected_output": "A conference session description in Alex's voice — accessible, grounded, not salesy. Frames the problem from audience perspective. 150-200 words.",
+      "files": [],
+      "iteration_notes": "Rated 'perfect' in both v1 and v2. This test case is stable — no changes needed."
+    },
+    {
+      "id": 4,
+      "prompt": "Draft a LinkedIn post from me about Zivtech becoming a Claude Consultancy. We were one of the first. I want to talk about what it means practically — not just a badge. It means we've restructured our workflows around AI, we use Skills and MCP across all projects, and it's made us better at what we've always done (Drupal, open source, accessibility). Keep it punchy, no more than 150 words.",
+      "expected_output": "A LinkedIn post that's confident without being salesy. Should feel like Alex sharing real news, not a press release. Short, specific, grounded in what actually changed. No buzzwords.",
+      "files": [],
+      "iteration_notes": "NEW — untested. Tests social media voice, which is a gap in current eval coverage."
+    },
+    {
+      "id": 5,
+      "prompt": "Write a reply from me on the phillyceo listserv. Someone asked: 'Has anyone had experience with board members who micromanage the CEO? My board chair keeps asking for detailed project-level updates and it's eating my time.' Write my response.",
+      "expected_output": "A helpful listserv reply grounded in Alex's experience. Should share a framework or specific tactic rather than just sympathy. Warm, concise, doesn't tell the person what to think. 1-3 paragraphs.",
+      "files": [],
+      "iteration_notes": "NEW — untested. Tests the 'community advice' voice on a non-tech topic to ensure the skill generalizes beyond Drupal/AI."
+    }
+  ]
+}

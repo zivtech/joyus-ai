@@ -1,0 +1,550 @@
+{
+  "visual pull request": {
+    "cached_at": "2026-06-07T15:46:03Z",
+    "results": [
+      {
+        "name": "skill-creator",
+        "repo": "anthropics/skills",
+        "path": "skills/skill-creator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/anthropics/skills/blob/da20c92503b2e8ff1cf28ca81a0df4673debdbf7/skills/skill-creator/SKILL.md",
+        "score": 1.0,
+        "description": "A skill for creating new skills and iteratively improving them. At a high level, the process of creating a skill goes like this: - Decide what you want the skill to do and roughly how it should do it ",
+        "cached_at": "2026-06-07T15:46:03Z"
+      }
+    ]
+  },
+  "literature review bibliography": {
+    "cached_at": "2026-06-07T15:46:03Z",
+    "results": [
+      {
+        "name": "beamer-deck",
+        "repo": "flonat/claude-research",
+        "path": "skills/beamer-deck/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/beamer-deck/SKILL.md",
+        "score": 1.0,
+        "description": "> Generate academic Beamer presentations with original themes, rhetoric-driven structure, and multi-agent review. Internalises Scott Cunningham's rhetoric framework and implements an adversarial revie",
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "bib-coverage",
+        "repo": "flonat/claude-research",
+        "path": "skills/bib-coverage/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/bib-coverage/SKILL.md",
+        "score": 1.0,
+        "description": "**LIBRARY-FIRST RULE: ALWAYS check Paperpile (`paperpile search-library`) when assessing coverage.** Compare a project's `.bib` file against a Paperpile label to identify gaps between the project bibl",
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "bib-parse",
+        "repo": "flonat/claude-research",
+        "path": "skills/bib-parse/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/bib-parse/SKILL.md",
+        "score": 1.0,
+        "description": "**LIBRARY-FIRST RULE: ALWAYS check Paperpile membership by DOI (`paperpile lookup-by-doi`) for each parsed reference BEFORE generating new BibTeX entries.** Topic/title `search-library` is a lossy dis",
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "bib-validate",
+        "repo": "flonat/claude-research",
+        "path": "skills/bib-validate/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/bib-validate/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "citation-management",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/citation-management/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/citation-management/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "clinical-decision-support",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/clinical-decision-support/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/clinical-decision-support/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "hypothesis-generation",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/hypothesis-generation/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/hypothesis-generation/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "init-paper-book",
+        "repo": "flonat/claude-research",
+        "path": "skills/init-paper-book/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/init-paper-book/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "latex-posters",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/latex-posters/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/latex-posters/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "latex-scaffold",
+        "repo": "flonat/claude-research",
+        "path": "skills/latex-scaffold/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/latex-scaffold/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "literature",
+        "repo": "flonat/claude-research",
+        "path": "skills/literature/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/literature/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "scientific-writing",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/scientific-writing/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/scientific-writing/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "treatment-plans",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/treatment-plans/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/treatment-plans/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "update-project-doc",
+        "repo": "flonat/claude-research",
+        "path": "skills/update-project-doc/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/flonat/claude-research/blob/a8067caee3ddded891df9f5b1883492fc522957e/skills/update-project-doc/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "venue-templates",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/venue-templates/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/venue-templates/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      }
+    ]
+  },
+  "semgrep static analysis": {
+    "cached_at": "2026-06-07T15:46:03Z",
+    "results": [
+      {
+        "name": "audit-prep-assistant",
+        "repo": "trailofbits/skills",
+        "path": "plugins/building-secure-contracts/skills/audit-prep-assistant/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/building-secure-contracts/skills/audit-prep-assistant/SKILL.md",
+        "score": 1.0,
+        "description": "Helps prepare for a security review using Trail of Bits' checklist. A well-prepared codebase makes the review process smoother and more effective. **Use this**: 1-2 weeks before your security audit Ru",
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "semgrep-rule-creator",
+        "repo": "trailofbits/skills",
+        "path": "plugins/semgrep-rule-creator/skills/semgrep-rule-creator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/semgrep-rule-creator/skills/semgrep-rule-creator/SKILL.md",
+        "score": 1.0,
+        "description": "Create production-quality Semgrep rules with proper testing and validation. **Ideal scenarios:** - Writing Semgrep rules for specific bug patterns ",
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "semgrep-rule-variant-creator",
+        "repo": "trailofbits/skills",
+        "path": "plugins/semgrep-rule-variant-creator/skills/semgrep-rule-variant-creator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/semgrep-rule-variant-creator/skills/semgrep-rule-variant-creator/SKILL.md",
+        "score": 1.0,
+        "description": "Port existing Semgrep rules to new target languages with proper applicability analysis and test-driven validation. **Ideal scenarios:** - Porting an existing Semgrep rule to one or more target languag",
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "codeql",
+        "repo": "trailofbits/skills",
+        "path": "plugins/static-analysis/skills/codeql/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/static-analysis/skills/codeql/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "sarif-parsing",
+        "repo": "trailofbits/skills",
+        "path": "plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "semgrep",
+        "repo": "trailofbits/skills",
+        "path": "plugins/static-analysis/skills/semgrep/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/static-analysis/skills/semgrep/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "testing-handbook-generator",
+        "repo": "trailofbits/skills",
+        "path": "plugins/testing-handbook-skills/skills/testing-handbook-generator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/testing-handbook-skills/skills/testing-handbook-generator/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "templates",
+        "repo": "trailofbits/skills",
+        "path": "plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/domain-skill.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/domain-skill.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "templates",
+        "repo": "trailofbits/skills",
+        "path": "plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/tool-skill.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/tool-skill.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      },
+      {
+        "name": "audit-augmentation",
+        "repo": "trailofbits/skills",
+        "path": "plugins/trailmark/skills/audit-augmentation/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/trailmark/skills/audit-augmentation/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:03Z"
+      }
+    ]
+  },
+  "csv data summary": {
+    "cached_at": "2026-06-07T15:46:04Z",
+    "results": [
+      {
+        "name": "SKILL.md",
+        "repo": "coffeefuelbump/csv-data-summarizer-claude-skill",
+        "path": "SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/coffeefuelbump/csv-data-summarizer-claude-skill/blob/9b3affd270f85aaf1c8a7a457f510034d5736cde/SKILL.md",
+        "score": 1.0,
+        "description": "This Skill analyzes CSV files and provides comprehensive summaries with statistical insights and visualizations. Claude should use this Skill whenever the user: - Uploads or references a CSV file ",
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "dask",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/dask/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/dask/SKILL.md",
+        "score": 1.0,
+        "description": "Dask is a Python library for parallel and distributed computing that enables three critical capabilities: - **Larger-than-memory execution** on single machines for data exceeding available RAM - **Par",
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "diffdock",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/diffdock/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/diffdock/SKILL.md",
+        "score": 1.0,
+        "description": "DiffDock is a diffusion-based deep learning tool for molecular docking that predicts 3D binding poses of small molecule ligands to protein targets. It represents the state-of-the-art in computational ",
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "exploratory-data-analysis",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/exploratory-data-analysis/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/exploratory-data-analysis/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "imaging-data-commons",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/imaging-data-commons/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/imaging-data-commons/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "matlab",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/matlab/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/matlab/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "primekg",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/primekg/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/primekg/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "pydeseq2",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/pydeseq2/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/pydeseq2/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "pymc",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/pymc/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/pymc/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "vaex",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/vaex/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/vaex/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      },
+      {
+        "name": "xlsx",
+        "repo": "K-Dense-AI/scientific-agent-skills",
+        "path": "skills/xlsx/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills/blob/b2a969eb56d92c454e682138cd93587d77b64b11/skills/xlsx/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:46:04Z"
+      }
+    ]
+  },
+  "semgrep static analysis --thorough": {
+    "cached_at": "2026-06-07T15:47:51Z",
+    "results": [
+      {
+        "name": "audit-prep-assistant",
+        "repo": "trailofbits/skills",
+        "path": "plugins/building-secure-contracts/skills/audit-prep-assistant/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/building-secure-contracts/skills/audit-prep-assistant/SKILL.md",
+        "score": 1.0,
+        "description": "Helps prepare for a security review using Trail of Bits' checklist. A well-prepared codebase makes the review process smoother and more effective. **Use this**: 1-2 weeks before your security audit Ru",
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "semgrep-rule-creator",
+        "repo": "trailofbits/skills",
+        "path": "plugins/semgrep-rule-creator/skills/semgrep-rule-creator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/semgrep-rule-creator/skills/semgrep-rule-creator/SKILL.md",
+        "score": 1.0,
+        "description": "Create production-quality Semgrep rules with proper testing and validation. **Ideal scenarios:** - Writing Semgrep rules for specific bug patterns ",
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "semgrep-rule-variant-creator",
+        "repo": "trailofbits/skills",
+        "path": "plugins/semgrep-rule-variant-creator/skills/semgrep-rule-variant-creator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/semgrep-rule-variant-creator/skills/semgrep-rule-variant-creator/SKILL.md",
+        "score": 1.0,
+        "description": "Port existing Semgrep rules to new target languages with proper applicability analysis and test-driven validation. **Ideal scenarios:** - Porting an existing Semgrep rule to one or more target languag",
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "codeql",
+        "repo": "trailofbits/skills",
+        "path": "plugins/static-analysis/skills/codeql/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/static-analysis/skills/codeql/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "sarif-parsing",
+        "repo": "trailofbits/skills",
+        "path": "plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "semgrep",
+        "repo": "trailofbits/skills",
+        "path": "plugins/static-analysis/skills/semgrep/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/static-analysis/skills/semgrep/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "testing-handbook-generator",
+        "repo": "trailofbits/skills",
+        "path": "plugins/testing-handbook-skills/skills/testing-handbook-generator/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/testing-handbook-skills/skills/testing-handbook-generator/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "templates",
+        "repo": "trailofbits/skills",
+        "path": "plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/domain-skill.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/domain-skill.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "templates",
+        "repo": "trailofbits/skills",
+        "path": "plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/tool-skill.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/testing-handbook-skills/skills/testing-handbook-generator/templates/tool-skill.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      },
+      {
+        "name": "audit-augmentation",
+        "repo": "trailofbits/skills",
+        "path": "plugins/trailmark/skills/audit-augmentation/SKILL.md",
+        "tier": "trusted",
+        "url": "https://github.com/trailofbits/skills/blob/d5fe2e6a7896236c3102fd5477e833623ad70298/plugins/trailmark/skills/audit-augmentation/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:47:51Z"
+      }
+    ]
+  },
+  "awesome github copilot skills": {
+    "cached_at": "2026-06-07T15:52:11Z",
+    "results": [
+      {
+        "name": "suggest-awesome-github-copilot-skills",
+        "repo": "github/awesome-copilot",
+        "path": "plugins/awesome-copilot/skills/suggest-awesome-github-copilot-skills/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/github/awesome-copilot/blob/07b34ec9cf66c55c1deae1f1ac7248dca6d3fa9e/plugins/awesome-copilot/skills/suggest-awesome-github-copilot-skills/SKILL.md",
+        "score": 1.0,
+        "description": "Analyze current repository context and suggest relevant Agent Skills from the [GitHub awesome-copilot repository](https://github.com/github/awesome-copilot/blob/main/docs/README.skills.md) that are no",
+        "cached_at": "2026-06-07T15:52:11Z"
+      },
+      {
+        "name": "agent-owasp-compliance",
+        "repo": "github/awesome-copilot",
+        "path": "skills/agent-owasp-compliance/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/github/awesome-copilot/blob/07b34ec9cf66c55c1deae1f1ac7248dca6d3fa9e/skills/agent-owasp-compliance/SKILL.md",
+        "score": 1.0,
+        "description": "Evaluate AI agent systems against the OWASP Agentic Security Initiative (ASI) Top 10 — the industry standard for agent security posture. The OWASP ASI Top 10 defines the critical security risks spec",
+        "cached_at": "2026-06-07T15:52:11Z"
+      },
+      {
+        "name": "github-copilot-starter",
+        "repo": "github/awesome-copilot",
+        "path": "skills/github-copilot-starter/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/github/awesome-copilot/blob/07b34ec9cf66c55c1deae1f1ac7248dca6d3fa9e/skills/github-copilot-starter/SKILL.md",
+        "score": 1.0,
+        "description": "You are a GitHub Copilot setup specialist. Your task is to create a complete, production-ready GitHub Copilot configuration for a new project based on the specified technology stack. Ask the user for ",
+        "cached_at": "2026-06-07T15:52:11Z"
+      },
+      {
+        "name": "suggest-awesome-github-copilot-skills",
+        "repo": "github/awesome-copilot",
+        "path": "skills/suggest-awesome-github-copilot-skills/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/github/awesome-copilot/blob/07b34ec9cf66c55c1deae1f1ac7248dca6d3fa9e/skills/suggest-awesome-github-copilot-skills/SKILL.md",
+        "score": 1.0,
+        "cached_at": "2026-06-07T15:52:11Z"
+      }
+    ]
+  },
+  "meta router validation qwerty": {
+    "cached_at": "2026-06-07T18:56:03Z",
+    "results": []
+  },
+  "vercel deploy": {
+    "cached_at": "2026-06-12T13:17:21Z",
+    "results": [
+      {
+        "name": "deploy-to-vercel",
+        "repo": "vercel-labs/agent-skills",
+        "path": "skills/deploy-to-vercel/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/vercel-labs/agent-skills/blob/f8a72b9603728bb92a217a879b7e62e43ad76c81/skills/deploy-to-vercel/SKILL.md",
+        "score": 1.0,
+        "description": "Deploy any project to Vercel. **Always deploy as preview** (not production) unless the user explicitly asks for production. The goal is to get the user into the best long-term setup: their project lin",
+        "cached_at": "2026-06-12T13:17:21Z"
+      },
+      {
+        "name": "vercel-cli-with-tokens",
+        "repo": "vercel-labs/agent-skills",
+        "path": "skills/vercel-cli-with-tokens/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/vercel-labs/agent-skills/blob/f8a72b9603728bb92a217a879b7e62e43ad76c81/skills/vercel-cli-with-tokens/SKILL.md",
+        "score": 1.0,
+        "description": "Deploy and manage projects on Vercel using the CLI with token-based authentication, without relying on `vercel login`. Before running any Vercel CLI commands, identify where the token is coming from. ",
+        "cached_at": "2026-06-12T13:17:21Z"
+      },
+      {
+        "name": "vercel-optimize",
+        "repo": "vercel-labs/agent-skills",
+        "path": "skills/vercel-optimize/SKILL.md",
+        "tier": "community",
+        "url": "https://github.com/vercel-labs/agent-skills/blob/f8a72b9603728bb92a217a879b7e62e43ad76c81/skills/vercel-optimize/SKILL.md",
+        "score": 1.0,
+        "description": "Run an observability-first Vercel optimization audit. Do not inspect source files until `signals.json` exists and a deterministic gate points to a route, file, or project setting. Core doctrine: read ",
+        "cached_at": "2026-06-12T13:17:21Z"
+      }
+    ]
+  },
+  "zzzz-no-such-skill-20260612": {
+    "cached_at": "2026-06-12T13:17:23Z",
+    "results": []
+  }
+}

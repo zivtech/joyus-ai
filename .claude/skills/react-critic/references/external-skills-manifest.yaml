@@ -1,0 +1,117 @@
+version: 1
+generated_at: '2026-03-05T19:10:30Z'
+skills:
+- id: vercel-labs/agent-skills/vercel-react-best-practices
+  skills_url: https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices
+  repo_url: https://github.com/vercel-labs/agent-skills
+  pinned_commit: cc8bd7a5b51e41270f20b43466ffa4149c18cc01
+  categories:
+  - core-review
+  - react
+  audiences_supported:
+  - security
+  - new-hire
+  - ops
+  - performance-engineer
+  priority: 100
+  status: active
+  jtbd: "Load for any React review — core performance patterns, component design, and rendering optimization from Vercel engineering."
+- id: wshobson/agents/react-state-management
+  skills_url: https://skills.sh/wshobson/agents/react-state-management
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - react
+  - state
+  audiences_supported:
+  - new-hire
+  - ops
+  priority: 90
+  status: active
+  jtbd: "Load when code touches state management (Redux, Zustand, Context, atoms) — covers state ownership, boundaries, and mutation safety."
+- id: wshobson/agents/react-modernization
+  skills_url: https://skills.sh/wshobson/agents/react-modernization
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - react
+  - upgrade
+  audiences_supported:
+  - ops
+  - dx-maintainer
+  priority: 88
+  status: active
+  jtbd: "Load when reviewing React version upgrades, migration paths, deprecated API usage, or codemod application."
+- id: millionco/react-doctor/react-doctor
+  skills_url: https://skills.sh/millionco/react-doctor/react-doctor
+  repo_url: https://github.com/millionco/react-doctor
+  pinned_commit: 97b21f18ee4c5b530d683ae6626548081a4aad76
+  categories:
+  - react
+  - analysis
+  audiences_supported:
+  - new-hire
+  - ops
+  priority: 82
+  status: active
+  jtbd: "Load when investigating React performance issues — application analysis, anti-pattern detection, and rendering diagnosis."
+- id: dotneet/claude-code-marketplace/typescript-react-reviewer
+  skills_url: https://skills.sh/dotneet/claude-code-marketplace/typescript-react-reviewer
+  repo_url: https://github.com/dotneet/claude-code-marketplace
+  pinned_commit: 07fa7eac95c2323f73e5a8a961b70bb9e207f1d0
+  categories:
+  - react
+  - review
+  audiences_supported:
+  - new-hire
+  priority: 70
+  status: active
+  jtbd: "Load when reviewing TypeScript + React patterns — type safety, generic components, and API design correctness."
+- id: wshobson/agents/javascript-testing-patterns
+  skills_url: https://skills.sh/wshobson/agents/javascript-testing-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - shared
+  - testing
+  audiences_supported:
+  - ops
+  priority: 86
+  status: active
+  jtbd: "Load when reviewing test strategy, async test patterns, or coverage gaps in JavaScript/TypeScript projects."
+- id: github/awesome-copilot/javascript-typescript-jest
+  skills_url: https://skills.sh/github/awesome-copilot/javascript-typescript-jest
+  repo_url: https://github.com/github/awesome-copilot
+  pinned_commit: 1fbde58407f6c7ccdb59d0381ad7d36a93d910c4
+  categories:
+  - shared
+  - testing
+  audiences_supported:
+  - new-hire
+  priority: 70
+  status: active
+  jtbd: "Load when reviewing Jest test implementations — assertion patterns, mocking, and test organization."
+- id: wshobson/agents/modern-javascript-patterns
+  skills_url: https://skills.sh/wshobson/agents/modern-javascript-patterns
+  repo_url: https://github.com/wshobson/agents
+  pinned_commit: ade0c7a211d04fa1354d10359737cace5c6fc5b0
+  categories:
+  - shared
+  - javascript
+  audiences_supported:
+  - new-hire
+  priority: 76
+  status: active
+  jtbd: "Load when reviewing modern JS idioms — ESM usage, async patterns, and contemporary language features."
+- id: sickn33/antigravity-awesome-skills/api-security-best-practices
+  skills_url: https://skills.sh/sickn33/antigravity-awesome-skills/api-security-best-practices
+  repo_url: https://github.com/sickn33/antigravity-awesome-skills
+  pinned_commit: 60ed44edef8a3c6c53a0818fa06a9b987cc15fbd
+  categories:
+  - shared
+  - security
+  audiences_supported:
+  - security
+  priority: 72
+  status: active
+  jtbd: "Load when code handles API boundaries, auth tokens, user input, or sensitive data — trust boundary and input validation patterns."
