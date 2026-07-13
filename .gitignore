@@ -113,3 +113,17 @@ kitty-specs/**/.kittify/dossiers/
 # Vitest timestamp/cache artifacts
 vitest.config.ts.timestamp-*
 .vitest-cache/
+
+# Vendored Claude skill ecosystem (Cowork portability) — track skills/agents only
+!.claude/
+.claude/*
+!.claude/skills
+!.claude/skills/**
+!.claude/agents
+!.claude/agents/**
+
+# Native spec-kitty/ad-hoc skills are local symlinks (not portable) — keep untracked
+.claude/skills/spec-kitty-*
+.claude/skills/ad-hoc-profile-load
+.claude/skills/spec-kitty-*/**
+.claude/skills/ad-hoc-profile-load/**
