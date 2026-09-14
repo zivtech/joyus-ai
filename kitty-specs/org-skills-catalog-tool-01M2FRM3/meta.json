@@ -10,5 +10,7 @@
   "purpose_tldr": "org skills catalog tool",
   "slug": "org-skills-catalog-tool-01M2FRM3",
   "target_branch": "codex/org-skills-catalog-core",
-  "topology": "single_branch"
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-14T10:55:57.640713+00:00"
 }
