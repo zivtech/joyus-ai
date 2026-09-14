@@ -5,14 +5,15 @@
   "lifecycle_state": "done",
   "measurement_owner": "Content Intelligence",
   "mission": "software-dev",
-  "mission_number": "005",
+  "mission_id": "01KPR4SQGT6STWYXVRVZWRHZF7",
+  "mission_number": 5,
   "mission_slug": "005-content-intelligence",
   "mission_type": "software-dev",
   "review_cadence": "weekly",
   "risk_class": "platform",
   "slug": "content-intelligence",
   "source_description": "Profile engine library: authorship attribution, writing profile generation, fidelity monitoring, and content verification for the Joyus AI platform.",
+  "status_phase": "1",
   "target_branch": "main",
-  "vcs": "git",
-  "mission_id": "01KPR4SQGT6STWYXVRVZWRHZF7"
+  "vcs": "git"
 }

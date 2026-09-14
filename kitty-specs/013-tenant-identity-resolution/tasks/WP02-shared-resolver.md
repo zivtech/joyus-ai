@@ -1,8 +1,11 @@
 ---
 work_package_id: WP02
 title: Shared Resolver
-status: planned
+dependencies: []
 depends_on: [WP01]
+mission_id: 01M2EV7NCX60M6WQ0KMHFT5NQD
+status: planned
+wp_code: WP02
 ---
 
 # WP02: Shared Resolver

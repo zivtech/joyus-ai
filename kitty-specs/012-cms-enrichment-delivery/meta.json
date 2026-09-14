@@ -5,13 +5,14 @@
   "lifecycle_state": "spec-only",
   "measurement_owner": "platform team",
   "mission": "software-dev",
-  "mission_number": "012",
+  "mission_id": "01KPR4SQGVMM0QRK337XAW84XA",
+  "mission_number": 12,
   "mission_slug": "012-cms-enrichment-delivery",
   "mission_type": "software-dev",
   "review_cadence": "monthly",
   "risk_class": "platform",
   "slug": "012-cms-enrichment-delivery",
   "source_description": "Public placeholder for CMS enrichment and delivery workflows layered on the Joyus AI content and pipeline core",
-  "target_branch": "main",
-  "mission_id": "01KPR4SQGVMM0QRK337XAW84XA"
+  "status_phase": "1",
+  "target_branch": "main"
 }

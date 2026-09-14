@@ -5,13 +5,14 @@
   "lifecycle_state": "spec-only",
   "measurement_owner": "Architecture",
   "mission": "software-dev",
-  "mission_number": "003",
+  "mission_id": "01KPR4SQGT6STWYXVRVZWRHZF5",
+  "mission_number": 3,
   "mission_slug": "003-platform-architecture-overview",
   "mission_type": "software-dev",
   "review_cadence": "monthly",
   "risk_class": "platform",
   "slug": "003-platform-architecture-overview",
   "source_description": "Umbrella specification for the Joyus AI Platform. High-level architecture and domain inventory covering all 11 capability domains, with each domain to be broken out into its own deep spec later.",
-  "target_branch": "main",
-  "mission_id": "01KPR4SQGT6STWYXVRVZWRHZF5"
+  "status_phase": "1",
+  "target_branch": "main"
 }

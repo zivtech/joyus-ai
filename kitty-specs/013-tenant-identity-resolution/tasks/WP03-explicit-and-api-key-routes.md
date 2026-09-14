@@ -1,8 +1,11 @@
 ---
 work_package_id: WP03
 title: Explicit Tenant and API-Key Routes
-status: planned
+dependencies: []
 depends_on: [WP02]
+mission_id: 01M2EV7NCX60M6WQ0KMHFT5NQD
+status: planned
+wp_code: WP03
 ---
 
 # WP03: Explicit Tenant and API-Key Routes

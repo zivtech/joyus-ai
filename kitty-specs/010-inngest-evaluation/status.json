@@ -2,7 +2,7 @@
   "event_count": 24,
   "last_event_id": "01KPR4SQYT55Z4K6Y7XK3MP918",
   "materialized_at": "2026-04-21T13:48:41.297185+00:00",
-  "mission_number": "010",
+  "mission_number": "10",
   "mission_slug": "010-inngest-evaluation",
   "mission_type": "software-dev",
   "summary": {

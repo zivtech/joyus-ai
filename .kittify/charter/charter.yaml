@@ -1,0 +1,72 @@
+schema_version: 2.0.0
+governance:
+  testing:
+    min_coverage: 0
+    tdd_required: false
+    framework: ''
+    type_checking: ''
+  quality:
+    linting: ''
+    pr_approvals: 1
+    pre_commit_hooks: false
+  commits: {}
+  performance:
+    cli_timeout_seconds: 2.0
+    dashboard_max_wps: 100
+  branch_strategy:
+    main_branch: main
+    rules: []
+  charter:
+    selected_paradigms: []
+    selected_directives: []
+    selected_tactics: []
+    selected_styleguides: []
+    selected_toolguides: []
+    selected_procedures: []
+    selected_agent_profiles: []
+    selected_mission_step_contracts: []
+    selected_glossary_packs: []
+    selected_assets: []
+    available_tools:
+    - '`get_context`'
+    - '`run_gates`'
+    - '`verify_branch`'
+    - etc.
+    authority_paths: []
+    governance_references: []
+  activations: []
+  enforcement: {}
+directives:
+  directives: []
+catalog:
+  mission: ''
+  template_set: ''
+  languages: []
+  references: []
+overrides: {}
+metadata:
+  generated_at: '2026-09-14T02:16:46Z'
+  bundle_schema_version: 2
+activated_kinds:
+- directives
+- tactics
+- styleguides
+- toolguides
+- paradigms
+- procedures
+- agent_profiles
+- mission_step_contracts
+activated_directives: []
+activated_tactics: []
+activated_styleguides: []
+activated_toolguides: []
+activated_paradigms: []
+activated_procedures: []
+activated_agent_profiles: []
+activated_mission_step_contracts: []
+activated_glossary_packs: []
+mission_type_activations:
+- documentation
+- plan
+- research
+- software-dev

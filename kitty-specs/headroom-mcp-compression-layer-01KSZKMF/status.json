@@ -26,10 +26,12 @@
     },
     "WP01b": {
       "actor": "claude",
+      "cancellation_reason": "renamed to WP06 (id normalized to WP\\d+)",
       "force_count": 2,
       "lane": "canceled",
       "last_event_id": "01KSZZP14M93BZ9Q5DFE323CC5",
-      "last_transition_at": "2026-05-31T21:40:17.684078+00:00"
+      "last_transition_at": "2026-05-31T21:40:17.684078+00:00",
+      "reason_source": "operator"
     },
     "WP02": {
       "actor": "claude",

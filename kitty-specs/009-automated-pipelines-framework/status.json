@@ -2,7 +2,7 @@
   "event_count": 36,
   "last_event_id": "01KPR4SQYGKYQGPDBZVK8XDSA9",
   "materialized_at": "2026-04-21T13:48:41.271611+00:00",
-  "mission_number": "009",
+  "mission_number": "9",
   "mission_slug": "009-automated-pipelines-framework",
   "mission_type": "software-dev",
   "summary": {

@@ -5,15 +5,16 @@
   "lifecycle_state": "done",
   "measurement_owner": "Platform Operations",
   "mission": "software-dev",
-  "mission_number": "006",
+  "mission_id": "01KPR4SQGVMM0QRK337XAW84X4",
+  "mission_number": 6,
   "mission_slug": "006-content-infrastructure",
   "mission_type": "software-dev",
   "review_cadence": "weekly",
   "risk_class": "platform",
   "slug": "006-content-infrastructure",
   "source_description": "006-content-infrastructure",
+  "status_phase": "1",
   "target_branch": "main",
   "vcs": "git",
-  "vcs_locked_at": "2026-02-21T12:32:19.149813+00:00",
-  "mission_id": "01KPR4SQGVMM0QRK337XAW84X4"
+  "vcs_locked_at": "2026-02-21T12:32:19.149813+00:00"
 }

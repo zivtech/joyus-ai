@@ -1,8 +1,11 @@
 ---
 work_package_id: WP04
 title: Bearer Routes and Tool Execution
-status: planned
+dependencies: []
 depends_on: [WP02, WP03]
+mission_id: 01M2EV7NCX60M6WQ0KMHFT5NQD
+status: planned
+wp_code: WP04
 ---
 
 # WP04: Bearer Routes and Tool Execution

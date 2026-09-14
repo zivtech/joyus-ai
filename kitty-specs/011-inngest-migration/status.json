@@ -2,7 +2,7 @@
   "event_count": 4,
   "last_event_id": "01KMTCTX537WJ12J7QWQ143BE7",
   "materialized_at": "2026-03-19T00:00:00Z",
-  "mission_number": "011",
+  "mission_number": "11",
   "mission_slug": "011-inngest-migration",
   "mission_type": "research",
   "summary": {

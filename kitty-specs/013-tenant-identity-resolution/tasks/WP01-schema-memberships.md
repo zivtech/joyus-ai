@@ -1,8 +1,11 @@
 ---
 work_package_id: WP01
 title: Schema and Compatibility Migration
-status: planned
+dependencies: []
 depends_on: []
+mission_id: 01M2EV7NCX60M6WQ0KMHFT5NQD
+status: planned
+wp_code: WP01
 ---
 
 # WP01: Schema and Compatibility Migration

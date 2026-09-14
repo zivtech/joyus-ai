@@ -5,13 +5,14 @@
   "lifecycle_state": "spec-only",
   "measurement_owner": "Engineering Operations",
   "mission": "software-dev",
-  "mission_number": "011",
+  "mission_id": "01KPR4SQGVMM0QRK337XAW84X9",
+  "mission_number": 11,
   "mission_slug": "011-inngest-migration",
   "mission_type": "research",
   "review_cadence": "weekly",
   "risk_class": "platform",
   "slug": "011-inngest-migration",
   "source_description": "Replace Feature 009 custom pipeline execution engine with Inngest via clean cutover",
-  "target_branch": "main",
-  "mission_id": "01KPR4SQGVMM0QRK337XAW84X9"
+  "status_phase": "1",
+  "target_branch": "main"
 }

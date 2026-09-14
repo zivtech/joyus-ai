@@ -5,13 +5,14 @@
   "lifecycle_state": "execution",
   "measurement_owner": "Engineering Operations",
   "mission": "software-dev",
-  "mission_number": "008",
+  "mission_id": "01KPR4SQGVMM0QRK337XAW84X6",
+  "mission_number": 8,
   "mission_slug": "008-profile-isolation-and-scale",
   "mission_type": "software-dev",
   "review_cadence": "monthly",
   "risk_class": "critical",
   "slug": "008-profile-isolation-and-scale",
   "source_description": "Multi-tenant profile isolation, versioning, inheritance, self-service corpus intake, and caching for the stylometric profile engine",
-  "target_branch": "main",
-  "mission_id": "01KPR4SQGVMM0QRK337XAW84X6"
+  "status_phase": "1",
+  "target_branch": "main"
 }

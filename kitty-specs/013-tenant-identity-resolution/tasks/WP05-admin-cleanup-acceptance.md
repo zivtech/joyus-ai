@@ -1,8 +1,11 @@
 ---
 work_package_id: WP05
 title: Admin Cleanup and Acceptance
-status: planned
+dependencies: []
 depends_on: [WP04]
+mission_id: 01M2EV7NCX60M6WQ0KMHFT5NQD
+status: planned
+wp_code: WP05
 ---
 
 # WP05: Admin Cleanup and Acceptance

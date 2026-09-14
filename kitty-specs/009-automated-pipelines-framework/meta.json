@@ -5,15 +5,16 @@
   "lifecycle_state": "execution",
   "measurement_owner": "Engineering Operations",
   "mission": "software-dev",
-  "mission_number": "009",
+  "mission_id": "01KPR4SQGVMM0QRK337XAW84X7",
+  "mission_number": 9,
   "mission_slug": "009-automated-pipelines-framework",
   "mission_type": "software-dev",
   "review_cadence": "weekly",
   "risk_class": "platform",
   "slug": "009-automated-pipelines-framework",
   "source_description": "Event-driven pipeline execution framework with triggers, retry policies, review gates, templates, and analytics for content-and-profile workflows",
+  "status_phase": "1",
   "target_branch": "main",
   "vcs": "git",
-  "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00",
-  "mission_id": "01KPR4SQGVMM0QRK337XAW84X7"
+  "vcs_locked_at": "2026-03-16T18:03:27.597370+00:00"
 }

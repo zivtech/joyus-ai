@@ -5,14 +5,15 @@
   "lifecycle_state": "planning",
   "measurement_owner": "Engineering Operations",
   "mission": "software-dev",
-  "mission_number": "007",
+  "mission_id": "01KPR4SQGVMM0QRK337XAW84X5",
+  "mission_number": 7,
   "mission_slug": "007-org-scale-agentic-governance",
   "mission_type": "software-dev",
   "review_cadence": "weekly",
   "risk_class": "critical",
   "slug": "007-org-scale-agentic-governance",
   "source_description": "Org-scale rollout, ROI measurement, and security plus MCP governance operating model for Joyus AI.",
+  "status_phase": "1",
   "target_branch": "main",
-  "vcs": "git",
-  "mission_id": "01KPR4SQGVMM0QRK337XAW84X5"
+  "vcs": "git"
 }
