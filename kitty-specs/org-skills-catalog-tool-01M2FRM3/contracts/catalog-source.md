@@ -15,6 +15,8 @@ Use the approved GitHub API origin with HTTPS, fixed adapter paths and encoded i
 
 ## Index schema 1
 
+The adapter reads the literal repository-root file `index.json` at the pinned commit. Callers cannot select another index path.
+
 The root is a JSON object with exactly `schemaVersion: 1`, a parseable RFC3339 `generatedAt` string, and a `skills` array. Each entry has exactly:
 
 | Field | Validation |
