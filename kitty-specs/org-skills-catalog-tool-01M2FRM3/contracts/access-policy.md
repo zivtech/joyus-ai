@@ -31,6 +31,10 @@ This is a generic design and behavior contract for the `CatalogAccessPolicyReade
 
 Each tenant entry has exactly `epoch` (a new UUID on every policy change), `enabled` (boolean), `approved` (boolean), and `source` with `provider: github`, `owner`, `repository`, `ref`, and `credentialAlias`. Epochs are equality tokens, not sortable counters. Validate the complete object, reject duplicates/unknown fields, and bound it to 1 MiB and 1,000 tenant entries. Reject missing/malformed policy as unavailable — never as "no policy = allow." Names and identifiers in this contract and in any committed test fixture are synthetic; real repository/tenant identities never appear in generic fixtures.
 
+## Authenticated execution context
+
+Catalog execution requires server-established authenticated user context. A generic internal call carrying only a user/tenant identifier, or an API-key-only context, does not establish that identity. The verified MCP user handler supplies the catalog execution context; unrelated executor callers retain their existing behavior. This does not add an allowlist or role grant: current exact default membership still authorizes the catalog read. The tool-list function signature remains unchanged; background/orchestrator catalog integration is outside this core.
+
 ## Read order (per tool call)
 
 1. Validate argument shape without echoing untrusted values.
