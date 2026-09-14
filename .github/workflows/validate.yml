@@ -60,3 +60,37 @@ jobs:
 
       - name: Test
         run: npm test
+
+  migration-replay:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: joyus-ai-mcp-server
+    services:
+      postgres:
+        image: postgres:16-alpine # keep in sync with deploy/docker-compose.yml
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: joyus-ai-mcp-server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Replay migration chain against scratch Postgres
+        run: npm run db:replay-check
+        env:
+          PG_ADMIN_URL: postgres://postgres:postgres@localhost:5432/postgres
