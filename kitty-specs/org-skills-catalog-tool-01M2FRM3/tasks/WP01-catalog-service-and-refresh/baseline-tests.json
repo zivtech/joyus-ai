@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-09-14T10:56:01Z",
+  "base_branch": "codex/org-skills-catalog-core",
+  "base_commit": "837ad4de007a98274459ad4c602f636b8ded5f14",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}
