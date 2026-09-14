@@ -1,7 +1,7 @@
 {
-  "event_count": 2,
-  "last_event_id": "01M2FRRT1897AAN1A55K4049H9",
-  "materialized_at": "2026-09-14T10:52:54.184899+00:00",
+  "event_count": 4,
+  "last_event_id": "01M2FRYDG2Y1V4CREHQN623QFQ",
+  "materialized_at": "2026-09-14T10:55:57.953971+00:00",
   "mission_number": "",
   "mission_slug": "org-skills-catalog-tool-01M2FRM3",
   "mission_type": "software-dev",
@@ -12,17 +12,20 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 2
+    "planned": 1
   },
   "work_packages": {
     "WP01": {
-      "actor": "finalize-tasks",
+      "actor": "claude",
+      "agent": "claude",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M2FRRSHRZC14EVZY9S1PZXCS",
-      "last_transition_at": "2026-09-14T10:52:53.688732+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M2FRYDG2Y1V4CREHQN623QFQ",
+      "last_transition_at": "2026-09-14T10:55:57.953971+00:00",
+      "shell_pid": 9680,
+      "shell_pid_created_at": "1789383355.242637"
     },
     "WP02": {
       "actor": "finalize-tasks",
