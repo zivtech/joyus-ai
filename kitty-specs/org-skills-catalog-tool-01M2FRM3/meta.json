@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-09-14T10:50:19.914640+00:00",
+  "flattened": false,
+  "friendly_name": "org skills catalog tool",
+  "mission_id": "01M2FRM3C954C9J1Q5AKZ4RW54",
+  "mission_number": null,
+  "mission_slug": "org-skills-catalog-tool-01M2FRM3",
+  "mission_type": "software-dev",
+  "purpose_context": "This mission advances org skills catalog tool on codex/org-skills-catalog-core so stakeholders can track the work from mission creation onward.",
+  "purpose_tldr": "org skills catalog tool",
+  "slug": "org-skills-catalog-tool-01M2FRM3",
+  "target_branch": "codex/org-skills-catalog-core",
+  "topology": "single_branch"
+}

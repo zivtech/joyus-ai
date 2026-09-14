@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "mission_slug": "org-skills-catalog-tool-01M2FRM3",
+  "mission_id": "01M2FRM3C954C9J1Q5AKZ4RW54",
+  "mission_branch": "kitty/mission-org-skills-catalog-tool-01M2FRM3",
+  "target_branch": "codex/org-skills-catalog-core",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01",
+        "WP02"
+      ],
+      "write_scope": [
+        "joyus-ai-mcp-server/src/index.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/access.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/config.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/cursor.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/policy-s3.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/refresh-routes.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/service.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/source-github.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/types.ts",
+        "joyus-ai-mcp-server/src/skills/catalog/validation.ts",
+        "joyus-ai-mcp-server/src/tools/executor.ts",
+        "joyus-ai-mcp-server/src/tools/index.ts",
+        "joyus-ai-mcp-server/src/tools/org-skills-executor.ts",
+        "joyus-ai-mcp-server/src/tools/org-skills-tools.ts",
+        "joyus-ai-mcp-server/tests/catalog-access.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-audit-sanitizer.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-config.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-cursor.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-error-transport.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-executor-list-info.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-executor-validation.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-policy-s3.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-refresh-lifecycle.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-refresh-routes.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-service.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-source-github.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-startup-integration.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-tool-descriptor.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-tool-registration.test.ts",
+        "joyus-ai-mcp-server/tests/catalog-validation.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup",
+        "tests"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-09-14T10:52:54.570947+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "7650625a280c2a69e05b01f3287bcef0c93553fa",
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP02",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'joyus-ai-mcp-server/src/index.ts' vs 'joyus-ai-mcp-server/src/index.ts'; WP02 depends on WP01"
+      }
+    ],
+    "total_merges": 1,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "write_scope_overlap": 1
+    }
+  }
+}

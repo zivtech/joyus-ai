@@ -1,0 +1,89 @@
+work_packages:
+- id: WP01
+  title: Catalog service and refresh
+  dependencies: []
+  owned_files:
+  - joyus-ai-mcp-server/src/skills/catalog/types.ts
+  - joyus-ai-mcp-server/src/skills/catalog/config.ts
+  - joyus-ai-mcp-server/src/skills/catalog/source-github.ts
+  - joyus-ai-mcp-server/src/skills/catalog/validation.ts
+  - joyus-ai-mcp-server/src/skills/catalog/policy-s3.ts
+  - joyus-ai-mcp-server/src/skills/catalog/service.ts
+  - joyus-ai-mcp-server/src/skills/catalog/refresh-routes.ts
+  - joyus-ai-mcp-server/src/index.ts
+  - joyus-ai-mcp-server/tests/catalog-config.test.ts
+  - joyus-ai-mcp-server/tests/catalog-source-github.test.ts
+  - joyus-ai-mcp-server/tests/catalog-validation.test.ts
+  - joyus-ai-mcp-server/tests/catalog-policy-s3.test.ts
+  - joyus-ai-mcp-server/tests/catalog-service.test.ts
+  - joyus-ai-mcp-server/tests/catalog-refresh-lifecycle.test.ts
+  - joyus-ai-mcp-server/tests/catalog-refresh-routes.test.ts
+  - joyus-ai-mcp-server/tests/catalog-startup-integration.test.ts
+  requirement_refs:
+  - FR-02
+  - FR-04
+  - FR-05
+  - FR-06
+  - FR-07
+  - FR-08
+  - FR-09
+  - FR-10
+  - FR-16
+  - FR-17
+  - FR-18
+  - FR-19
+  - FR-20
+  subtasks:
+  - T001
+  - T002
+  - T003
+  - T004
+  - T005
+  - T006
+  - T007
+  - T008
+  - T009
+  prompt_file: tasks/WP01-catalog-service-and-refresh.md
+- id: WP02
+  title: Tool and access boundary
+  dependencies:
+  - WP01
+  owned_files:
+  - joyus-ai-mcp-server/src/skills/catalog/access.ts
+  - joyus-ai-mcp-server/src/skills/catalog/cursor.ts
+  - joyus-ai-mcp-server/src/tools/org-skills-tools.ts
+  - joyus-ai-mcp-server/src/tools/org-skills-executor.ts
+  - joyus-ai-mcp-server/src/tools/index.ts
+  - joyus-ai-mcp-server/src/tools/executor.ts
+  - joyus-ai-mcp-server/src/index.ts
+  - joyus-ai-mcp-server/tests/catalog-tool-descriptor.test.ts
+  - joyus-ai-mcp-server/tests/catalog-executor-validation.test.ts
+  - joyus-ai-mcp-server/tests/catalog-access.test.ts
+  - joyus-ai-mcp-server/tests/catalog-cursor.test.ts
+  - joyus-ai-mcp-server/tests/catalog-executor-list-info.test.ts
+  - joyus-ai-mcp-server/tests/catalog-error-transport.test.ts
+  - joyus-ai-mcp-server/tests/catalog-audit-sanitizer.test.ts
+  - joyus-ai-mcp-server/tests/catalog-tool-registration.test.ts
+  requirement_refs:
+  - FR-01
+  - FR-02
+  - FR-03
+  - FR-05
+  - FR-08
+  - FR-09
+  - FR-11
+  - FR-12
+  - FR-13
+  - FR-14
+  - FR-15
+  - FR-20
+  subtasks:
+  - T010
+  - T011
+  - T012
+  - T013
+  - T014
+  - T015
+  - T016
+  - T017
+  prompt_file: tasks/WP02-tool-and-access-boundary.md
