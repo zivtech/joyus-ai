@@ -11,6 +11,12 @@
  *                       pipelines schema (the production divergence behind
  *                       #96, including the empty schema left by triage), then
  *                       run the full chain and assert the converged state
+ *   5. 0009 strand   — seed a database that recorded 0008/0010/0011 but never
+ *                       applied 0009 (its old `when` sorted below 0008, so an
+ *                       environment tracking main incrementally skipped it).
+ *                       The repaired 0009 `when` still sorts below the
+ *                       0010/0011 watermark, so it stays skipped; assert 0014
+ *                       supplies tenant_memberships / tenant_role regardless.
  *
  * Requires a reachable Postgres superuser URL in PG_ADMIN_URL
  * (default: postgres://postgres:postgres@localhost:5432/postgres).
@@ -31,6 +37,7 @@ const ADMIN_URL =
   process.env.PG_ADMIN_URL ?? 'postgres://postgres:postgres@localhost:5432/postgres';
 const FRESH_DB = 'migration_replay_fresh';
 const CATCHUP_DB = 'migration_replay_catchup';
+const STRANDED_DB = 'migration_replay_stranded';
 // Last journal entry production had recorded before the divergence (#96).
 const SEED_MAX_IDX = 7;
 
@@ -144,14 +151,24 @@ async function assertConverged(url, label) {
     "SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid WHERE t.typname = 'task_type' AND e.enumlabel = 'JIRA_A11Y_TRIAGE'",
   );
   check(enumRow.rowCount === 1, `${label}: task_type contains JIRA_A11Y_TRIAGE (0012 applied)`);
+  const tenantTable = await query(url, "SELECT to_regclass('public.tenant_memberships') AS reg");
+  check(
+    tenantTable.rows[0].reg !== null,
+    `${label}: public.tenant_memberships exists (0009 objects present)`,
+  );
+  const tenantEnum = await query(
+    url,
+    "SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'public' AND t.typname = 'tenant_role'",
+  );
+  check(tenantEnum.rowCount === 1, `${label}: public.tenant_role enum exists`);
 }
 
-function makeSeedConfig(tmpDir) {
+function makeSeedConfig(tmpDir, keep = (e) => e.idx <= SEED_MAX_IDX) {
   const seedMigrations = path.join(tmpDir, 'migrations');
   fs.cpSync(MIGRATIONS_DIR, seedMigrations, { recursive: true });
   const journalPath = path.join(seedMigrations, 'meta', '_journal.json');
   const journal = JSON.parse(fs.readFileSync(journalPath, 'utf8'));
-  journal.entries = journal.entries.filter((e) => e.idx <= SEED_MAX_IDX);
+  journal.entries = journal.entries.filter(keep);
   fs.writeFileSync(journalPath, JSON.stringify(journal, null, 2));
   const configPath = path.join(tmpDir, 'seed.config.mjs');
   fs.writeFileSync(
@@ -220,6 +237,42 @@ async function phaseCatchup(entryCount) {
   }
 }
 
+async function phaseStranded0009(entryCount) {
+  await recreate(STRANDED_DB);
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'migration-replay-'));
+  try {
+    // Model an environment that tracked main incrementally: it recorded
+    // 0008/0010/0011 but never applied 0009 (old `when` sorted below 0008), so
+    // its watermark is 0011's `when` — above the repaired 0009 `when`.
+    const seed = runMigrate(
+      dbUrl(STRANDED_DB),
+      makeSeedConfig(tmpDir, (e) => e.idx <= 11 && e.idx !== 9),
+    );
+    check(seed.ok, 'strand: seeded 0000-0008,0010,0011 without 0009');
+    if (!seed.ok) {
+      console.log(seed.output);
+      return;
+    }
+    const catchup = runMigrate(dbUrl(STRANDED_DB));
+    check(catchup.ok, 'strand: full chain applies over the 0009-stranded watermark');
+    if (!catchup.ok) {
+      console.log(catchup.output);
+      return;
+    }
+    // 0009 stays legitimately skipped (its `when` is below the 0010/0011
+    // watermark); every other entry applies, so exactly one is absent.
+    check(
+      (await migrationCount(dbUrl(STRANDED_DB))) === entryCount - 1,
+      'strand: exactly one migration (0009) remains skipped',
+    );
+    // The point of the fix: tenant_memberships / tenant_role exist anyway,
+    // supplied by 0014. Fails here without 0014.
+    await assertConverged(dbUrl(STRANDED_DB), 'strand');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
 async function main() {
   console.log('--- Phase 1: journal lint');
   const entryCount = lintJournal();
@@ -236,6 +289,9 @@ async function main() {
 
   console.log('--- Phase 4: stale-environment catch-up (#96 shape)');
   await phaseCatchup(entryCount);
+
+  console.log('--- Phase 5: 0009 strand (0010/0011 watermark, 0009 never applied)');
+  await phaseStranded0009(entryCount);
 
   console.log(
     failures === 0

@@ -18,6 +18,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   were out of order and could be silently skipped by environments that migrated
   past them), and `0009`/`0012` are idempotent so the reposition cannot
   double-apply destructively.
+- **Tenant-memberships baseline repair** (#96) — the `0009` reposition alone
+  cannot rescue an environment already past the `0010`/`0011` watermark that
+  never applied `0009` (keeping journal idx order monotonic forces the repaired
+  `0009` `when` below `0010`/`0011`, so it stays skipped there). A new
+  `0014_tenant_memberships_baseline_repair` re-runs `0009`'s idempotent DDL from
+  a `when` above every real watermark, so `tenant_memberships` / `tenant_role`
+  are created wherever they are missing and no-op elsewhere. Only `0012` was
+  fully rescued by the reposition (it was moved above `0011`); `0009` could not
+  be, hence the companion migration.
 
 ### Added
 
@@ -25,7 +34,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`scripts/migration-replay-check.mjs`) lints the journal, replays the full
   chain against a scratch Postgres 16, verifies a second run applies nothing,
   and replays the stale-environment catch-up shape that broke the v0.1.0
-  deploy. Runs in CI as the `migration-replay` job.
+  deploy. Also replays the `0009`-strand shape (an environment past the
+  `0010`/`0011` watermark that never applied `0009`) and asserts `0009`'s
+  objects converge via `0014`. Runs in CI as the `migration-replay` job.
 
 ## [0.1.0] - 2026-06-10
 

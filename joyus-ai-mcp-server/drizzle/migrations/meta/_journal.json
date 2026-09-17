@@ -99,6 +99,13 @@
       "when": 1781049600000,
       "tag": "0013_pipelines_baseline_repair",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1781049600001,
+      "tag": "0014_tenant_memberships_baseline_repair",
+      "breakpoints": true
     }
   ]
 }
