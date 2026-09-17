@@ -1,9 +1,21 @@
--- Tenant memberships
--- Shared user-to-tenant grants for tenant resolution.
--- Generated: 2026-05-25
--- Idempotency guards added in #96: the journal `when` repair (1779710400000 ->
--- 1779713480600) can re-apply this file on environments that recorded it under
--- the old timestamp, so every statement must tolerate existing objects.
+-- Tenant memberships baseline repair
+-- Companion to 0013 (#96), addressing the second silent-skip class the journal
+-- `when` reposition alone cannot fix.
+--
+-- 0009's repaired `when` (1779713480600) still sorts BELOW the 0010/0011
+-- watermark (1779718567623 / 1779724808297). An environment that tracked main
+-- incrementally under the OLD journal skipped 0009 (its old `when`,
+-- 1779710400000, sorted below 0008's 1779713480527) while still applying
+-- 0010/0011. drizzle-kit gates each migration on `when > max(applied
+-- created_at)`, so on such an environment 0009 is skipped again, permanently —
+-- `tenant_memberships` / `public.tenant_role` are never created and every query
+-- against them fails with 42P01. Repositioning 0009 cannot rescue this class,
+-- because keeping journal idx order monotonic forces 0009 below 0010/0011.
+--
+-- This migration re-runs 0009's (already idempotent) DDL from a `when`
+-- (1781049600001) above every real environment's recorded watermark, so it
+-- applies wherever the objects are missing and no-ops wherever 0009 already
+-- ran. DDL is verbatim from 0009_tenant_memberships.sql; keep the two in sync.
 
 DO $$
 BEGIN
