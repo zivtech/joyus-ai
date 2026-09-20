@@ -21,7 +21,7 @@ This package documents requirements and design only. It does **not** contain, an
 - Runtime implementation, or any evidence that implementation has occurred.
 - Real-corpus approval (AT-14) — an approved real content revision and retrieval receipt.
 - Deployed live-policy authority proof (AT-16) — an actual two-instance policy deployment demonstration.
-- Any work toward WP0 (interactive-client cross-turn persistence) or WP3 (authenticated session-identity lifecycle); both remain out of scope and gated.
+- Any work toward WP0 (interactive-client cross-turn persistence) or WP3 (authenticated session-identity lifecycle); both remain out of scope and gated. (The WP0 persistence *readiness question* is now resolved — see `research/wp0-persistence-6.3-disposition.md`: persists in-window on all models, but requires re-inject-on-compaction on weaker summarizers. This informs future WP3; it does not add WP0/WP3 to this mission's build scope.)
 - Any D1 (or other) storage rebuild, migration, or session/skill-enablement schema work.
 - Private operator/deployment procedure, actual infrastructure coordinates, credentials, or role provisioning — these stay in the private repository.
 
