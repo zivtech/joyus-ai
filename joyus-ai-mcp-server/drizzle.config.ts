@@ -13,6 +13,8 @@ export default defineConfig({
     './src/exports/schema.ts',
     './src/profiles/schema.ts',
   ],
+  // push/introspect only inspect `public` by default; include every pgSchema we define
+  schemaFilter: ['public', 'content', 'pipelines', 'event_adapter', 'profiles'],
   out: './drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
