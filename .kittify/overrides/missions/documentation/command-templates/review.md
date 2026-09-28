@@ -84,7 +84,7 @@ For each documentation file, verify it follows principles for its declared type:
 **Images**:
 - [ ] All images have alt text
 - [ ] Alt text describes what image shows (not "image" or "screenshot")
-- [ ] Decorative images have empty alt text (`![]()`)
+- [ ] Decorative images have empty alt text (`![](decorative.png)`)
 - [ ] Complex diagrams have longer descriptions
 
 **Language**:
