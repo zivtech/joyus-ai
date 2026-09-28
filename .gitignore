@@ -118,3 +118,9 @@ kitty-specs/**/.kittify/dossiers/
 # Vitest timestamp/cache artifacts
 vitest.config.ts.timestamp-*
 .vitest-cache/
+!kitty-specs/015-add-on-plugin-architecture/tasks/WP01-core-extraction-schema.md
+!kitty-specs/015-add-on-plugin-architecture/tasks/WP02-featuregate-decision-core.md
+!kitty-specs/015-add-on-plugin-architecture/tasks/WP03-unforgeable-enforcement.md
+!kitty-specs/015-add-on-plugin-architecture/tasks/WP04-operator-grant-admin.md
+!kitty-specs/015-add-on-plugin-architecture/tasks/WP05-tool-seam-gating.md
+!kitty-specs/015-add-on-plugin-architecture/tasks/WP06-integration-validation.md
