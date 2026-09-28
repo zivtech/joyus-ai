@@ -27,6 +27,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import * as mcp from '@mastra/mcp';
 import { MCPClient } from '@mastra/mcp';
 
 // ---------------------------------------------------------------------------
@@ -105,9 +106,9 @@ describe('Q2 — Mastra MCP client v1.7.0: construction and API surface', () => 
     // Document the API rename: v0.x → v1.x renamed MastraMCPClient to MCPClient
     // Importing the old name would now throw — this test documents the churn
     // (We rely on TypeScript types; this test proves the rename happened)
-    const mcp = require('/Users/AlexUA_1/claude/joyus-ai/.worktrees/platform-core-orchestrator-01KREQVK-lane-a/joyus-ai-mcp-server/spike/orchestrator/node_modules/@mastra/mcp/dist/index.cjs');
-    expect(typeof mcp['MCPClient']).toBe('function');          // new name: present
-    expect(typeof mcp['MastraMCPClient']).toBe('undefined'); // old name: gone
+    const mcpExports: Record<string, unknown> = mcp;
+    expect(typeof mcpExports['MCPClient']).toBe('function');          // new name: present
+    expect(typeof mcpExports['MastraMCPClient']).toBe('undefined'); // old name: gone
   });
 });
 
