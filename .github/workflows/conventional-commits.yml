@@ -15,6 +15,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test client abstraction guard
+        run: python3 scripts/test_check_client_abstraction.py -v
+
       - name: Check head commit message
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
