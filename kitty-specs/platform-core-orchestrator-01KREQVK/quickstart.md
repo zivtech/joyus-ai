@@ -16,7 +16,7 @@
 
 ```bash
 # 1. Clone and install
-cd ~/claude/joyus-ai/joyus-ai-mcp-server
+cd joyus-ai/joyus-ai-mcp-server
 pnpm install
 
 # 2. Start Inngest dev server (separate terminal)
