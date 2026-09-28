@@ -1,0 +1,30 @@
+name: Client Abstraction
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  client-abstraction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Test the client abstraction guard
+        run: python scripts/test_check_client_abstraction.py -v
+
+      # The pre-commit hook only scans staged diffs, and only when a
+      # contributor has installed it. Scan every tracked file here.
+      - name: Scan all tracked files
+        run: scripts/check-client-abstraction.sh --all
