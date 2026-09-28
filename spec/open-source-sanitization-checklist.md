@@ -10,7 +10,7 @@
 
 ### 1. Personal User Paths ✅
 
-Remove all `/Users/AlexUA_1/` references that expose developer machine layout.
+Remove all absolute home-directory paths (`/Users/<name>/`, `/home/<name>/`) that expose a developer's username and machine layout.
 
 | File | Status |
 |------|--------|

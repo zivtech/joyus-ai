@@ -11,8 +11,11 @@
  * Transport: Streamable HTTP (recommended for remote MCP servers)
  */
 
+// Must stay the first import: modules imported below read process.env while
+// they load (e.g. db/client.ts builds its pg pool from DATABASE_URL).
+import 'dotenv/config';
+
 import cors from 'cors';
-import { config } from 'dotenv';
 import { eq as eqOp, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import express, { Request, Response, NextFunction } from 'express';
@@ -61,8 +64,6 @@ import { taskRouter } from './scheduler/routes.js';
 import { resolveTenantContext, sendTenantResolutionError } from './tenancy/resolver.js';
 import { executeTool, setPipelineContext } from './tools/executor.js';
 import { getAllTools } from './tools/index.js';
-
-config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

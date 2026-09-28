@@ -41,6 +41,9 @@
           },
           {
             "context": "conventional-commits"
+          },
+          {
+            "context": "client-abstraction"
           }
         ]
       }
