@@ -235,7 +235,7 @@ Gated step handlers validate `context.gate instanceof GateToken` at the top of `
 | 11 | `content-audit-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/content-audit-pipeline.ts` | 76, 101, 181 | Three step invocations: `fidelity_check`, `content_generation`, `notification` |
 | 12 | `regulatory-change-monitor-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/regulatory-change-monitor-pipeline.ts` | 77, 102, 182 | Three step invocations: `source_query`, `content_generation`, `notification` |
 | 13 | `manual-trigger-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/manual-trigger-pipeline.ts` | 284 | Generic step execution loop over pipeline steps |
-| 14 | `ConnectorRegistry.getOrThrow()` → connector use | `src/content/connectors/registry.ts` | 21–27 | Connector fetch; a premium connector type (e.g. a proprietary data source) requires a gate before the `getOrThrow` call |
+| 14 | `ConnectorRegistry.getOrThrow()` → connector use | `src/content/connectors/registry.ts` | 21–30 | Connector fetch; a premium connector type (e.g. a proprietary data source) requires a gate before the `getOrThrow` call |
 | 15 | `StepRegistry.getHandler()` → step execution | `src/pipelines/steps/registry.ts` | 24 | Step lookup; gate check goes in the caller (Inngest function) before calling `adapter.run()` |
 
 **Phase-1 gating scope** (which of the above are actually gated vs. free in Phase 1):

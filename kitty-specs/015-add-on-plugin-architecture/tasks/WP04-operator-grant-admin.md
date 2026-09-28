@@ -37,7 +37,7 @@ Tenant identity (Spec 013) is **partially implemented**: `tenant_memberships` (`
 
 ### Existing patterns to follow
 
-- **ToolDefinition shape** (`src/tools/index.ts:19-27`): `{ name, description, inputSchema: { type: 'object', properties, required? } }`. Admin MCP tools follow this exactly.
+- **ToolDefinition shape** (`src/tools/index.ts:20-28`): `{ name, description, inputSchema: { type: 'object', properties, required? } }`. Admin MCP tools follow this exactly.
 - **Bearer token auth** (`src/auth/middleware.ts`): `requireBearerToken` sets `req.mcpUser`. Admin routes add `requireOperator` after this.
 - **Route mounting** (`src/index.ts:309-335`): routes are mounted with `app.use('/path', middleware, router)`. Admin entitlement routes mount as `/api/v1/admin/entitlements` and `/api/v1/admin/catalog`.
 - **Drizzle ORM** (`src/content/schema.ts`): CUID2 PKs, `$inferSelect`/`$inferInsert` types, `pgSchema` namespace. The `entitlements` schema was introduced by WP01.
@@ -488,7 +488,7 @@ export function createAdminEntitlementsRouter(services: {
 
 **Steps**:
 1. Create `src/tools/admin-entitlement-tools.ts` exporting `adminEntitlementTools: ToolDefinition[]`.
-2. Add `entitlement_admin_grant`, `entitlement_admin_revoke`, `entitlement_admin_list_grants`, `entitlement_admin_register_feature`, `entitlement_admin_list_catalog` tools matching the `ToolDefinition` shape exactly (`src/tools/index.ts:19-27`).
+2. Add `entitlement_admin_grant`, `entitlement_admin_revoke`, `entitlement_admin_list_grants`, `entitlement_admin_register_feature`, `entitlement_admin_list_catalog` tools matching the `ToolDefinition` shape exactly (`src/tools/index.ts:20-28`).
 3. Create `src/tools/executors/admin-entitlement-executor.ts` with `executeAdminEntitlementTool`.
 4. Wire into `executeTool` (`src/tools/executor.ts`): add an `entitlement_admin_` prefix branch — **after** the operator check confirms `req.mcpUser` is an operator (see T024).
 5. Wire into `getAllTools` (`src/tools/index.ts`): admin tools are included **only** for operator users; non-operator users must not see them in `tools/list`.

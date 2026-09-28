@@ -104,14 +104,15 @@ function makeFailingResolver(): FeatureEntitlementResolver {
 ### Key types to import (paths will be stable post-WP01/WP02)
 
 ```typescript
-import { FeatureGate, FeatureNotEntitledError } from '../../../src/entitlements/gate.js';
-import { FeatureEntitlementResolver }           from '../../../src/entitlements/resolver.js';
+import { FeatureGate }                          from '../../../src/entitlements/feature/gate.js';
+import { FeatureNotEntitledError }              from '../../../src/entitlements/feature/errors.js';
+import { FeatureEntitlementResolver }           from '../../../src/entitlements/feature/resolver.js';
 import { EntitlementCache }                     from '../../../src/entitlements/core/cache.js';
-import { NullMembershipResolver }               from '../../../src/entitlements/membership.js';
+import { NullMembershipResolver }               from '../../../src/entitlements/feature/membership.js';
 import type { Subject, FeatureKey }             from '../../../src/entitlements/types.js';
-import type { GateToken }                       from '../../../src/entitlements/gate.js';
+import type { GateToken }                       from '../../../src/entitlements/types.js';
 // WP04 grant administration
-import { GrantsService }                        from '../../../src/entitlements/grants-service.js';
+import { GrantsService }                        from '../../../src/entitlements/grants.service.js';
 // WP05 tool seam
 import { getAllTools, executeTool }             from '../../../src/tools/index.js';
 ```

@@ -148,7 +148,7 @@ if (this.config.responseMapping.featuresField) {
 }
 ```
 
-3. Surface `featureKeys` on the returned `ResolvedEntitlements`. `ResolvedEntitlements` currently has `productIds`, `sourceIds`, `profileIds`, `resolvedFrom`, `resolvedAt`, `ttlSeconds` (`src/content/types.ts:76-84`). Add an optional `featureKeys?: string[]` field to `ResolvedEntitlements` in `src/content/types.ts`:
+3. Surface `featureKeys` on the returned `ResolvedEntitlements`. `ResolvedEntitlements` currently has `productIds`, `sourceIds`, `profileIds`, `resolvedFrom`, `resolvedAt`, `ttlSeconds` (`src/content/types.ts:82-90`). Add an optional `featureKeys?: string[]` field to `ResolvedEntitlements` in `src/content/types.ts`:
 
 ```typescript
 export interface ResolvedEntitlements {

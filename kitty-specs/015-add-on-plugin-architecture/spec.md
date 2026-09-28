@@ -62,7 +62,7 @@ A durable grant table (`entitlements.feature_entitlements`) recording that a **s
 Resolve the set of feature keys a subject is entitled to, using the **existing** `EntitlementResolver` contract (`interface.ts:47-53`) — which is already generic over opaque IDs. Provide a `FeatureEntitlementResolver` whose default implementation reads `feature_entitlements` (DB-leads). Optionally, an `HttpEntitlementResolver` (the existing one, `http-resolver.ts`) may front an external grant source, extended only by adding a `featuresField` to its `responseMapping`. Resolution is **fail-closed**: resolver failure never grants. To make reuse literal, extract the generic `EntitlementResolver` interface, `HttpEntitlementResolver`, and `EntitlementCache` into a shared `src/entitlements/core/` consumed by both the content module and this one (mechanical refactor; re-exports preserved).
 
 #### FR-004: Subject-Scoped Entitlement Cache
-Cache resolved feature sets keyed by **subject** (`subject_type:subject_id`), not by session — because licensing does not change per session. Reuse the `EntitlementCache` class (`cache.ts`) parameterized by key. TTL is expiry-aware per FR-017 (default 1h, capped by next grant expiry). Provide **explicit invalidation** on entitlement change (grant/revoke/suspend/expire) — unlike the content cache, which only invalidates on session close (`mediation/router.ts:259`). A grant or revocation must take effect within one TTL window even absent explicit invalidation. **Multi-instance caveat:** the cache is in-process, so explicit invalidation is single-node; cross-node propagation is governed by FR-018.
+Cache resolved feature sets keyed by **subject** (`subject_type:subject_id`), not by session — because licensing does not change per session. Reuse the `EntitlementCache` class (`cache.ts`) parameterized by key. TTL is expiry-aware per FR-017 (default 1h, capped by next grant expiry). Provide **explicit invalidation** on entitlement change (grant/revoke/suspend/expire) — unlike the content cache, which only invalidates on session close (`mediation/router.ts:355`, route at 341-371). A grant or revocation must take effect within one TTL window even absent explicit invalidation. **Multi-instance caveat:** the cache is in-process, so explicit invalidation is single-node; cross-node propagation is governed by FR-018.
 
 #### FR-005: FeatureGate Service (explicit deny)
 A single enforcement service exposing:
@@ -76,7 +76,7 @@ Every gate decision (allow and deny) is appended to `entitlements.entitlement_de
 
 #### FR-007: Entitlement-Gated MCP Tools
 Tool *visibility* and *execution* become entitlement-aware:
-- `getAllTools(userId)` (`tools/index.ts:32-62`), which already filters by connected service, additionally **omits add-on-owned tools** the subject is not entitled to, so `tools/list` shows only licensed capabilities.
+- `getAllTools(userId)` (`tools/index.ts:33-69`), which already filters by connected service, additionally **omits add-on-owned tools** the subject is not entitled to, so `tools/list` shows only licensed capabilities.
 - `executeTool(...)` (`tools/executor.ts`) calls `FeatureGate.assertEntitled` **before dispatching** any add-on-owned tool, returning an explicit upgrade error on deny. Core (free) tools are unaffected. Tools declare their owning `feature_key` via the registry (FR-011) or, in Phase 1, a static ownership map for in-tree add-on tools.
 
 #### FR-008: Entitlement-Gated Providers, Steps, and Connectors
@@ -92,7 +92,7 @@ Each add-on declares a manifest: stable `id` (reverse-DNS, marketplace-ready), `
 
 #### FR-011: Plugin Host and Registration Contract
 A `PluginHost` exposes scoped registration methods — `registerTool`, `registerToolExecutor`, `registerProvider`, `registerConnector`, `registerPipelineStep`, `registerSkillResolver`, `registerPreHook`/`registerPostHook`, `registerEventType` — and calls each plugin's `register(host)` at boot. This requires converting the static surfaces into registries:
-- **MCP tools:** add a mutable tool registry feeding `getAllTools()` and a `registerToolExecutor(prefix|ownerId, handler)` path in `executor.ts` (today both are hard-coded — `tools/index.ts:32-62`, `executor.ts:47-54`).
+- **MCP tools:** add a mutable tool registry feeding `getAllTools()` and a `registerToolExecutor(prefix|ownerId, handler)` path in `executor.ts` (today both are hard-coded — `tools/index.ts:33-69`, `executor.ts:47-54`).
 - **Pipeline steps:** widen `StepType` from a closed union (`pipelines/types.ts:25-27`) to `string` (preserving built-in autocomplete) so `StepRegistry.register()` accepts new types.
 - **Safety hooks:** expose the `SafetyService` instance (private to `index.ts:353`) to the host.
 - Connectors, providers, skill resolvers, and event types already support registration/DI and need only host wiring.
@@ -121,7 +121,7 @@ For Phase 2 plugins, the host wraps contributions (FR-013) so enforcement is str
 - The existing `content_search` synthetic-entitlement path is a **known exception**: fix it to go through `EntitlementService`, or explicitly quarantine and document it, so the plan does not inherit it as a template.
 
 #### FR-017: Expiry-Aware Resolution and DB Fallback *(Phase 1 — fail closed on lapsed grants, not just on access)*
-The reused `ResolvedEntitlements` contract is a flat key set + one `ttlSeconds` (`content/types.ts:76-84`) — it carries **no per-grant validity**. So `valid_until` enforcement must live at resolve time, and the fallback path must be expiry-aware (the existing content DB-fallback selects the most-recent row **without** filtering `expiresAt`, `content/entitlements/index.ts`):
+The reused `ResolvedEntitlements` contract is a flat key set + one `ttlSeconds` (`content/types.ts:82-90`) — it carries **no per-grant validity**. So `valid_until` enforcement must live at resolve time, and the fallback path must be expiry-aware (the existing content DB-fallback selects the most-recent row **without** filtering `expiresAt`, `content/entitlements/index.ts`):
 - The `FeatureEntitlementResolver` filters `status='active' AND (valid_until IS NULL OR valid_until > now)` at resolve time; the cached set is the **post-filter** set, and the cache TTL is `min(resolverTtl, time-to-next-grant-expiry)` so a grant never outlives `valid_until` by more than one TTL.
 - The **DB fallback** (FR-005) MUST apply the same active+non-expired filter. Naively reusing the content fallback would **grant a lapsed licensed feature during a resolver outage** — failing *open on a lapsed grant*. Fail closed on both access and lapsed grants.
 
