@@ -45,16 +45,30 @@ scan_text() {
     '/home/[A-Za-z0-9._-]+/'
   )
 
+  # Capture matches in a variable rather than a temp file: a redirect failure
+  # inside an `if` condition is not caught by `set -e`, so an unwritable temp
+  # dir used to make every pattern silently pass. grep exits 0 on a match,
+  # 1 on no match, and >=2 on error; anything but 0/1 fails the check closed.
+  local pattern matches status
   for pattern in "${patterns[@]}"; do
-    if printf '%s' "$content" | grep -En "$pattern" >/tmp/client-abstraction-match.$$; then
-      echo "Client abstraction guard failed in ${label}:" >&2
-      cat /tmp/client-abstraction-match.$$ >&2
-      echo "" >&2
-      failed=1
-    fi
+    status=0
+    matches=$(printf '%s' "$content" | grep -En -e "$pattern") || status=$?
+    case "$status" in
+      0)
+        echo "Client abstraction guard failed in ${label}:" >&2
+        printf '%s\n' "$matches" >&2
+        echo "" >&2
+        failed=1
+        ;;
+      1)
+        ;;
+      *)
+        echo "Client abstraction guard error in ${label}: grep exited ${status} for pattern '${pattern}'; failing closed." >&2
+        failed=1
+        ;;
+    esac
   done
 
-  rm -f /tmp/client-abstraction-match.$$
   return "$failed"
 }
 
