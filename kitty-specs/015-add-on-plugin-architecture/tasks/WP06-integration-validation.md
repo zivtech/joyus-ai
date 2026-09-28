@@ -124,11 +124,11 @@ Adjust import paths to match the actual module layout produced by WP01–WP05. D
 
 | Test | Subtask | Success Criteria proved |
 |------|---------|------------------------|
-| T033 | individual licensing end-to-end | SC-1 (durable licensing), SC-2a (individual path, pre-WP12) |
+| T033 | individual licensing end-to-end | SC-1 (durable licensing), SC-2a (individual path, Phase 1) |
 | T034 | explicit deny + audit log | SC-3 (explicit deny, decision logged) |
 | T035 | fail-closed on lapsed grants | SC-6 (expired grant denied on outage; valid grant still served) |
 | T036 | structural enforcement | SC-5 (second-path denied; hand-constructed object rejected) |
-| T037 | union resolution seam | SC-2 (union: {user} pre-WP12; membership stub adds tenant grant) |
+| T037 | union resolution seam | SC-2 (union: {user} in Phase 1; membership stub adds tenant grant once Phase 1.5 is enabled) |
 | T038 | content-path regression | SC-4 (reuse is real; existing content tests green) |
 | T039 | auditability query | SC-11 (every allow/deny queryable per subject + per feature) |
 
@@ -334,9 +334,9 @@ describe('Structural enforcement — second path and un-forgeable token (SC-5 / 
 
 ---
 
-### T037 — Union resolution: individual pre-WP12, then membership-stub tenant grant (SC-2 seam, FR-019)
+### T037 — Union resolution: individual in Phase 1, then membership-stub tenant grant (SC-2 seam, FR-019)
 
-**Purpose**: Proves both halves of the FR-019 union. Pre-WP12: a user with only a `user:U` grant is entitled (the individual path works today with no tenant system). Post-WP12 seam: a `NullMembershipResolver` swapped for a stub that returns one tenant grants the user membership-based access — proving the seam Phase 1.5 depends on is correctly wired without requiring WP12 to exist.
+**Purpose**: Proves both halves of the FR-019 union. Phase 1 (union = `{user:U}`): a user with only a `user:U` grant is entitled (the individual path works today with no org-level tenant identity engaged). Phase 1.5 seam: a `NullMembershipResolver` swapped for a stub that returns one tenant grants the user membership-based access — proving the seam Phase 1.5 depends on is correctly wired without requiring further tenant-identity work.
 
 **Representative skeleton** (inline — this test is load-bearing):
 
@@ -344,7 +344,7 @@ describe('Structural enforcement — second path and un-forgeable token (SC-5 / 
 describe('Union resolution — individual-first + membership seam (SC-2 / FR-019)', () => {
   const FEATURE = 'com.joyus.addon.advanced-pipelines';
 
-  it('pre-WP12: individual user grant is sufficient with no org membership', async () => {
+  it('Phase 1: individual user grant is sufficient with no org membership', async () => {
     const subject: Subject = { subject_type: 'user', subject_id: 'user-alice' };
 
     // Only a user grant; NullMembershipResolver returns []
@@ -352,7 +352,7 @@ describe('Union resolution — individual-first + membership seam (SC-2 / FR-019
     const gate = new FeatureGate(
       resolver,
       new EntitlementCache(),
-      new NullMembershipResolver(),  // <-- the pre-WP12 state
+      new NullMembershipResolver(),  // <-- the Phase 1 state
       {} as never,
     );
 
@@ -360,7 +360,7 @@ describe('Union resolution — individual-first + membership seam (SC-2 / FR-019
     expect(token).toBeDefined();
   });
 
-  it('pre-WP12: user with no grant and no org membership is denied', async () => {
+  it('Phase 1: user with no grant and no org membership is denied', async () => {
     const subject: Subject = { subject_type: 'user', subject_id: 'user-bob' };
 
     const resolver = makeResolver([]); // no grants
@@ -369,7 +369,7 @@ describe('Union resolution — individual-first + membership seam (SC-2 / FR-019
     await expect(gate.assertEntitled(subject, FEATURE)).rejects.toThrow(FeatureNotEntitledError);
   });
 
-  it('post-WP12 seam: tenant grant inherited by member via membership stub', async () => {
+  it('Phase 1.5 seam: tenant grant inherited by member via membership stub', async () => {
     // Swap NullMembershipResolver for a stub that says user-carol belongs to tenant-acme
     const membershipStub = {
       getMemberships: vi.fn().mockResolvedValue(['tenant-acme']),
@@ -526,7 +526,7 @@ and asserts all tests remain green. If any test in that file fails after WP01–
 - [ ] T034: `FeatureNotEntitledError` thrown with `featureKey` + `reason`; upgrade payload non-empty; decision logged
 - [ ] T035: expired grant denied on outage; valid grant still served; reasons recorded correctly
 - [ ] T036: gated pipeline step denied via second path; hand-constructed token rejected at type boundary
-- [ ] T037: user grant alone is sufficient pre-WP12; membership stub adds tenant grant; membership removal revokes
+- [ ] T037: user grant alone is sufficient in Phase 1; membership stub adds tenant grant once Phase 1.5 is enabled; membership removal revokes
 - [ ] T038: `tests/content/integration/entitlements.test.ts` — all tests green, zero modifications to the file
 - [ ] T039: allow/deny decisions queryable by subject, by feature, and by subject+feature
 - [ ] T040: `npm run validate` exits 0 with no typecheck, lint, or test failures

@@ -29,14 +29,15 @@ Wire feature-entitlement gating into the MCP tool seam (both visibility via `get
 
 ### The existing `executeTool` dispatch
 
-`src/tools/executor.ts` (lines 96–182) dispatches by tool-name prefix:
-- `ops_` → `executeOpsTool` (core/free, never gated)
-- `content_` → `executeContentTool` (with `tenantId = userId` interim collapse at line 104)
-- `profile_` → `executeProfileTool` (with same `tenantId = userId` collapse at line 114)
-- `pipeline_` → `executePipelineTool` (with same collapse at line 119)
-- OAuth-prefixed (`jira_`, `slack_`, `github_`, `gmail_`, `drive_`, `docs_`) → OAUTH_PREFIX_REGISTRY lookup, then connection fetch + token refresh + `executeFunction`
+`src/tools/executor.ts` dispatches by tool-name prefix. Current line references:
+- `ops_` (line 126) → `executeOpsTool` (core/free, platform-internal; never gated — no subject to gate against)
+- `content_` (137–145) → `executeContentTool`, tenant resolved via `resolveToolTenantId` → `resolveTenantContextForUser` (`src/tenancy/resolver.ts`)
+- `profile_` (147–150) → `executeProfileTool`, same tenant resolution path
+- `approval_` (152–158) → the **one** branch that literally collapses tenant identity: `const tenantId = userId; // tenant resolution deferred`. This is a real, narrow gap — not a platform-wide collapse
+- `pipeline_` (160–171) → `executePipelineTool`, same tenant resolution path as `content_`/`profile_`
+- OAuth-backed executors via the prefix registry (173–223) → connection fetch + token refresh + `executeFunction`
 
-Only add-on-owned tools within these prefix groups are gated. Core tools (`ops_`, and any non-add-on `content_`/`profile_`/`pipeline_` tools) pass through without a gate call.
+Only add-on-owned tools within these prefix groups are gated. Core tools (`ops_`, `approval_`, and any non-add-on `content_`/`profile_`/`pipeline_` tools) pass through without a gate call in Phase 1. `ops_` and `approval_` are listed here — not because they are gated, but so a reviewer can confirm coverage is complete; if an add-on ever contributes to either, it must go through the same `GateToken` path as everything else.
 
 ### The ownership map as Phase 1 bridge
 
@@ -48,7 +49,7 @@ Phase 2 will have a mutable plugin registry where each registered tool declares 
 
 ### Subject resolution
 
-In Phase 1, the subject is the individual user. The gate is called with `{ subject_type: 'user', subject_id: userId }` — explicitly constructed, never inferred from ambient state. The `tenantId === userId` collapse in `executor.ts` (lines 104, 114, 119) is an unrelated interim measure for downstream content/profile/pipeline logic; WP05 must not conflate the two. The gate always receives an explicit `Subject`.
+In Phase 1, the subject is the individual user. The gate is called with `{ subject_type: 'user', subject_id: userId }` — explicitly constructed, never inferred from ambient state. This is unrelated to the tenant resolution that already runs for `content_`/`profile_`/`pipeline_` dispatch (via `resolveTenantContextForUser`), and to the narrow `tenantId = userId` collapse in the `approval_` branch (`executor.ts:152-158`); WP05 must not conflate the two. The gate always receives an explicit `Subject`.
 
 ### Provider/step/connector gating (FR-008)
 
@@ -280,7 +281,7 @@ export async function executeTool(
 - `FeatureNotEntitledError` must be imported from the WP02 error types, not caught as a generic `Error`. If a different error class is used in WP02, match it exactly.
 - The `_gateToken` is intentionally unused in Phase 1 — the structural guarantee is that `assertEntitled` was called before any dispatch. A lint rule (e.g. `@typescript-eslint/no-unused-vars` suppressed with `void _gateToken`) should be used rather than removing the token call.
 - Do not move the gate below the `ops_` check. The gate must be the first thing that runs for add-on tools; putting it after any dispatch-shortcut risks a race or bypass.
-- The subject is always `{ subject_type: 'user', subject_id: userId }` in Phase 1. Never infer from `tenantId`. The `tenantId === userId` collapse for downstream executors (lines 104, 114, 119 of the current file) is unrelated and must not change.
+- The subject is always `{ subject_type: 'user', subject_id: userId }` in Phase 1. Never infer from `tenantId`. The tenant resolution that already runs for `content_`/`profile_`/`pipeline_` dispatch, and the narrow `tenantId = userId` collapse in the `approval_` branch (`executor.ts:152-158`), are unrelated and must not change.
 
 ---
 
@@ -338,7 +339,7 @@ Create a comment block in `src/entitlements/gated-sites.ts` (a compile-time docu
 **Step A — `src/entitlements/index.ts` barrel**:
 1. Create (or extend) the entitlements module barrel.
 2. Export: `FeatureGate` class, `featureGate` singleton, `FeatureEntitlementResolver`, `MembershipResolver`, `NullMembershipResolver`, `EntitlementCache` (from WP01 core extraction), `FeatureNotEntitledError`, `GateToken` type, `Subject`, `FeatureKey`, `getFeatureKeyForTool`.
-3. Instantiate the `featureGate` singleton with the `FeatureEntitlementResolver` (DB-leads), the `NullMembershipResolver` (pre-WP12), the subject-scoped `EntitlementCache`, and the audit writer. Export it as the canonical enforcement instance.
+3. Instantiate the `featureGate` singleton with the `FeatureEntitlementResolver` (DB-leads), the `NullMembershipResolver` (Phase 1), the subject-scoped `EntitlementCache`, and the audit writer. Export it as the canonical enforcement instance.
 
 **Step B — `src/index.ts` mount**:
 1. Import the admin routes from `src/entitlements/admin/routes.ts` (created by WP04) and mount them behind the operator-role middleware: `app.use('/api/v1/admin/entitlements', requireOperatorRole, entitlementsAdminRouter)`.
@@ -361,7 +362,7 @@ Both files import `featureGate` from `../entitlements/index.js`. Confirm the imp
 
 **Edge Cases**:
 - The `featureGate` singleton must be created once and shared — do not instantiate it inside `getAllTools` or `executeTool` (would create a new cache per call, defeating the cache purpose).
-- `NullMembershipResolver` (pre-WP12) returns `[]` for any user, so the effective subject set is `{user:U}` only. Swapping in a real `MembershipResolver` post-WP12 must require no changes to the gate or the seam wiring.
+- `NullMembershipResolver` (Phase 1) returns `[]` for any user, so the effective subject set is `{user:U}` only. Swapping in a real `MembershipResolver` when Phase 1.5 (membership expansion) is enabled must require no changes to the gate or the seam wiring.
 - Admin tools registered for the MCP surface must be operator-role-gated inside the tool handler, not via `getFeatureKeyForTool` — they are core administrative capabilities, not purchasable add-ons.
 
 ---
@@ -433,7 +434,7 @@ Phase 1 ships with `ADD_ON_TOOL_OWNERSHIP` empty until real add-on tools are bui
 The ownership map cannot be updated at runtime. If an add-on tool is added or removed from the codebase, the map must be manually updated. This is acceptable for Phase 1 (in-tree add-ons; Joyus engineers control both) but is a maintenance risk. Phase 2's plugin registry eliminates it. The risk is low for Phase 1 and the bridge pattern is intentional — call it out in code comments.
 
 **Subject derivation (LOW, enforced by type)**
-`executeTool` and `getAllTools` both derive the subject as `{ subject_type: 'user', subject_id: userId }`. The `tenantId === userId` collapse for downstream executors is unrelated. Mixing them would be a latent bug that only manifests post-WP12. The explicit `Subject` construction (not referencing `tenantId`) and the WP02 gate's explicit-subject requirement prevent this.
+`executeTool` and `getAllTools` both derive the subject as `{ subject_type: 'user', subject_id: userId }`. The tenant resolution used by `content_`/`profile_`/`pipeline_` dispatch, and the narrow `tenantId = userId` collapse in the `approval_` branch, are unrelated. Mixing them would be a latent bug that only manifests once org-level entitlement (Phase 1.5) is enabled. The explicit `Subject` construction (not referencing `tenantId`) and the WP02 gate's explicit-subject requirement prevent this.
 
 **GateToken threading (DEFERRED to Phase 2)**
 Phase 1 holds the `GateToken` in `_gateToken` but does not pass it into executor signatures (those signatures are not yet updated to require it). The structural guarantee in Phase 1 is that `assertEntitled` must be called before dispatch — if it throws, dispatch never runs. Phase 2 makes this type-level by requiring `GateToken` as a parameter. This is intentional and documented.

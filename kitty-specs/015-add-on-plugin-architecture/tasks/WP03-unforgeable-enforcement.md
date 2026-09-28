@@ -222,23 +222,25 @@ Gated step handlers validate `context.gate instanceof GateToken` at the top of `
 
 | # | Call site | File | Lines | Notes |
 |---|-----------|------|-------|-------|
-| 1 | `content_` tool dispatch → `executeContentTool()` | `src/tools/executor.ts` | 103–110 | Dispatches all `content_*` tools; `content_search` is the live bypass case |
-| 2 | `executeContentTool` → `context.searchService.search()` | `src/tools/executors/content-executor.ts` | 231 | The gated SearchService invocation; currently bypassed (see T018) |
-| 3 | `profile_` tool dispatch → `executeProfileTool()` | `src/tools/executor.ts` | 113–116 | Dispatches all `profile_*` tools; profile capabilities may be gated add-ons |
-| 4 | `pipeline_` tool dispatch → `executePipelineTool()` | `src/tools/executor.ts` | 118–129 | Dispatches all `pipeline_*` tools; advanced pipeline features may be gated |
-| 5 | OAuth-prefix dispatch (jira_, slack_, github_, gmail_, drive_, docs_) | `src/tools/executor.ts` | 133–181 | OAuth tools are currently all free/core; no gate needed in Phase 1, but enumerated so a future add-on OAuth tool has a named insertion point |
-| 6 | `GenerationService.generate()` — provider invocation | `src/content/generation/index.ts` | 44–60 | Calls `this.generator.generate()` → `this.provider.generate()`; gated if the provider is a premium add-on |
-| 7 | `ContentGenerator.generate()` → `provider.generate()` | `src/content/generation/generator.ts` | 27–31 | The actual `GenerationProvider` call; `PlaceholderGenerationProvider` is free, an add-on provider is gated |
-| 8 | Inngest adapter → `handler.execute()` | `src/inngest/adapter.ts` | 64 | Wraps `PipelineStepHandler.execute()` inside `step.run()`; gated step types need `GateToken` in `ExecutionContext` |
-| 9 | `content-audit-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/content-audit-pipeline.ts` | 76, 101, 181 | Three step invocations: `fidelity_check`, `content_generation`, `notification` |
-| 10 | `regulatory-change-monitor-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/regulatory-change-monitor-pipeline.ts` | 77, 102, 182 | Three step invocations: `source_query`, `content_generation`, `notification` |
-| 11 | `manual-trigger-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/manual-trigger-pipeline.ts` | 284 | Generic step execution loop over pipeline steps |
-| 12 | `ConnectorRegistry.getOrThrow()` → connector use | `src/content/connectors/registry.ts` | 21–27 | Connector fetch; a premium connector type (e.g. a proprietary data source) requires a gate before the `getOrThrow` call |
-| 13 | `StepRegistry.getHandler()` → step execution | `src/pipelines/steps/registry.ts` | 24 | Step lookup; gate check goes in the caller (Inngest function) before calling `adapter.run()` |
+| 1 | `ops_` tool dispatch → `executeOpsTool()` | `src/tools/executor.ts` | 126 | Core/free, platform-internal (health checks, diagnostics); no subject to gate against. Listed for coverage completeness, not because it is gated |
+| 2 | `content_` tool dispatch → `executeContentTool()` | `src/tools/executor.ts` | 137–145 | Dispatches all `content_*` tools; tenant resolved via `resolveToolTenantId` → `resolveTenantContextForUser`; `content_search` is the live bypass case |
+| 3 | `executeContentTool` → `context.searchService.search()` | `src/tools/executors/content-executor.ts` | 231 | The gated SearchService invocation; currently bypassed (see T018) |
+| 4 | `profile_` tool dispatch → `executeProfileTool()` | `src/tools/executor.ts` | 147–150 | Dispatches all `profile_*` tools; tenant resolved via `resolveToolTenantId` → `resolveTenantContextForUser`; profile capabilities may be gated add-ons |
+| 5 | `approval_` tool dispatch → `executeApprovalTool()` | `src/tools/executor.ts` | 152–158 | The **one** branch with a literal `tenantId = userId` collapse (`// tenant resolution deferred`). Core/free in Phase 1; listed for coverage completeness — if an add-on ever contributes here, it must go through the `GateToken` path |
+| 6 | `pipeline_` tool dispatch → `executePipelineTool()` | `src/tools/executor.ts` | 160–171 | Dispatches all `pipeline_*` tools; tenant resolved via `resolveToolTenantId` → `resolveTenantContextForUser`; advanced pipeline features may be gated |
+| 7 | OAuth-backed executors via prefix registry (jira_, slack_, github_, gmail_, drive_, docs_) | `src/tools/executor.ts` | 173–223 | OAuth tools are currently all free/core; no gate needed in Phase 1, but enumerated so a future add-on OAuth tool has a named insertion point |
+| 8 | `GenerationService.generate()` — provider invocation | `src/content/generation/index.ts` | 44–60 | Calls `this.generator.generate()` → `this.provider.generate()`; gated if the provider is a premium add-on |
+| 9 | `ContentGenerator.generate()` → `provider.generate()` | `src/content/generation/generator.ts` | 27–31 | The actual `GenerationProvider` call; `PlaceholderGenerationProvider` is free, an add-on provider is gated |
+| 10 | Inngest adapter → `handler.execute()` | `src/inngest/adapter.ts` | 64 | Wraps `PipelineStepHandler.execute()` inside `step.run()`; gated step types need `GateToken` in `ExecutionContext` |
+| 11 | `content-audit-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/content-audit-pipeline.ts` | 76, 101, 181 | Three step invocations: `fidelity_check`, `content_generation`, `notification` |
+| 12 | `regulatory-change-monitor-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/regulatory-change-monitor-pipeline.ts` | 77, 102, 182 | Three step invocations: `source_query`, `content_generation`, `notification` |
+| 13 | `manual-trigger-pipeline` → `registry.getHandler()` + `.execute()` | `src/inngest/functions/manual-trigger-pipeline.ts` | 284 | Generic step execution loop over pipeline steps |
+| 14 | `ConnectorRegistry.getOrThrow()` → connector use | `src/content/connectors/registry.ts` | 21–27 | Connector fetch; a premium connector type (e.g. a proprietary data source) requires a gate before the `getOrThrow` call |
+| 15 | `StepRegistry.getHandler()` → step execution | `src/pipelines/steps/registry.ts` | 24 | Step lookup; gate check goes in the caller (Inngest function) before calling `adapter.run()` |
 
 **Phase-1 gating scope** (which of the above are actually gated vs. free in Phase 1):
 
-For Phase 1 with in-tree add-ons only, the **ownership map** (WP05/T027) determines which tool prefixes and step types belong to licensed features. Call sites 1–4 and 6–11 gate only when the dispatched tool/step/provider declares a `feature_key`. Call sites 5 (OAuth tools) and 12–13 are currently all free-tier; gate logic is a no-op until a premium connector or step type is registered with a `feature_key`.
+For Phase 1 with in-tree add-ons only, the **ownership map** (WP05/T027) determines which tool prefixes and step types belong to licensed features. Call sites 2–4, 6, and 8–13 gate only when the dispatched tool/step/provider declares a `feature_key`. Call sites 1 (`ops_`) and 5 (`approval_`) are core, ungated capabilities in Phase 1 — listed only so coverage review is complete; if an add-on ever contributes to either, it must go through the same `GateToken` path. Call sites 7 (OAuth tools) and 14–15 (connector/step registry) are currently all free-tier; gate logic is a no-op until a premium connector or step type is registered with a `feature_key`.
 
 **What this enumeration is for**: A reviewer completing WP03 checks this list against the implementation to verify that every non-free invocation point either (a) requires a `GateToken` parameter, or (b) is documented as explicitly free/core for Phase 1 with the reason stated.
 
@@ -252,7 +254,7 @@ For Phase 1 with in-tree add-ons only, the **ownership map** (WP05/T027) determi
 - [ ] A reviewer can trace from any tool name dispatched in `executor.ts` to its ultimate service invocation and find a `GateToken` checkpoint without gaps
 
 **Edge Cases**:
-- The `ops_` prefix (dispatch at `executor.ts:99`) routes to `executeOpsTool`. Ops tools are platform-internal (health checks, diagnostics); they do not carry a subject and are never gated. Document this explicitly in `gated-call-sites.ts`.
+- The `ops_` prefix (dispatch at `executor.ts:126`, call site 1 above) routes to `executeOpsTool`. Ops tools are platform-internal (health checks, diagnostics); they do not carry a subject and are never gated. Document this explicitly in `gated-call-sites.ts`. The `approval_` prefix (`executor.ts:152-158`, call site 5) is likewise core/free in Phase 1, despite containing the codebase's one literal `tenantId = userId` collapse — both are listed only so coverage review is complete.
 - `content_resolve_entitlements` (content-executor.ts line 357) is a diagnostic tool for viewing the user's content entitlements — not an add-on feature. Free, not gated.
 - `content_generate` (content-executor.ts line 428) currently returns a placeholder and notes "GenerationService available in WP12." When `GenerationService` is fully wired, call site 6 activates. The GateToken signature on `GenerationService.generate()` (added in T016) ensures the gate is already in place when that happens.
 
@@ -500,7 +502,7 @@ async generate(
 - [ ] `src/entitlements/gate-token.ts` — `GateToken` class with private constructor, `_mint()`, `subject`, `featureKey`, `mintedAt` fields
 - [ ] `GateToken._mint()` is called only from `FeatureGate.assertEntitled()` (WP02) — enforced by lint rule or module structure
 - [ ] Every Phase-1 gated entrypoint listed in T017 requires a `GateToken` at the type level (TS error without one) AND validates `instanceof GateToken` at runtime
-- [ ] `src/entitlements/gated-call-sites.ts` — comment registry of the 13 enumerated call sites with free/gated classification
+- [ ] `src/entitlements/gated-call-sites.ts` — comment registry of the 15 enumerated call sites with free/gated classification
 - [ ] `content-executor.ts:223-231` — either fixed (routes through `EntitlementService`) or explicitly quarantined with a lint rule preventing copy-paste
 - [ ] `test/type-tests/gate-token-forgery.ts` — tsc rejects forgery attempts
 - [ ] `test/unit/entitlements/gate-token.test.ts` — runtime token behavior confirmed
@@ -514,7 +516,7 @@ async generate(
 - **`_mint` accessibility**: The static `_mint` method is accessible to any importer of `gate-token.ts`. If the ESLint rule or module-structure restriction is not implemented, nothing mechanically prevents misuse. Decide and document the enforcement approach in the PR.
 - **`any`-cast bypasses**: TypeScript's structural guarantee only holds for correctly-typed code. A `as any` cast can bypass the type check at the callsite. The runtime `instanceof` guard (T019) is the defense against this; do not omit it.
 - **content_search regression**: Fixing the bypass (T018) changes how `content_search` resolves its entitlements. If `EntitlementService` is not injected correctly, `content_search` will break for all users. WP06 T038 is the regression gate — do not close WP03 until T038 passes.
-- **Inngest step gate coverage**: Steps invoked via the Inngest adapter (call sites 8–11) run asynchronously, possibly after the original `executeTool()` call has returned. The `GateToken` passed through `ExecutionContext` was minted at dispatch time, not at execution time. If a grant is revoked between dispatch and execution, the token is stale. For Phase 1 this is acceptable (document the staleness window = Inngest retry delay + execution time); the per-call gate check in WP05 is the primary enforcement for synchronous paths.
+- **Inngest step gate coverage**: Steps invoked via the Inngest adapter (call sites 10–13) run asynchronously, possibly after the original `executeTool()` call has returned. The `GateToken` passed through `ExecutionContext` was minted at dispatch time, not at execution time. If a grant is revoked between dispatch and execution, the token is stale. For Phase 1 this is acceptable (document the staleness window = Inngest retry delay + execution time); the per-call gate check in WP05 is the primary enforcement for synchronous paths.
 - **Phase 2 migration**: When the plugin host (Phase 2) takes over enforcement, `GateToken._mint` should be removed or made truly inaccessible (no longer needed since the host wraps contributions). Annotate the token with a `// TODO(Phase-2): remove _mint when plugin host gates contributions` comment.
 
 ---
@@ -523,7 +525,7 @@ async generate(
 
 The single question to answer when reviewing this WP: **Can a gated capability be reached without a `GateToken` minted by `FeatureGate.assertEntitled()`?**
 
-Trace each of the 13 call sites in T017 and answer yes or no:
+Trace each of the 15 call sites in T017 and answer yes or no:
 - If yes — it is a gap; request a fix before merging.
 - If no — verify the `instanceof GateToken` runtime guard is present, not just the TypeScript type.
 
@@ -531,5 +533,5 @@ Specific checks:
 1. `GateToken` constructor is `private` — verify by attempting `new GateToken(...)` in a test file and confirming the TS error.
 2. `_mint` is only called from `src/entitlements/feature-gate.ts` — grep the codebase for `_mint(` and verify no other caller exists.
 3. `content-executor.ts:223` — verify the fabricated literal is gone or quarantined with a lint suppression and a tracking comment. A bare `resolvedFrom: 'tool-executor'` in a `ResolvedEntitlements` literal is the tell.
-4. The Inngest execution path (call sites 8–11) — confirm that `ExecutionContext.gate` is set before `adapter.run()` is called in each Inngest function, and that gated step handlers check `context.gate instanceof GateToken`.
+4. The Inngest execution path (call sites 10–13) — confirm that `ExecutionContext.gate` is set before `adapter.run()` is called in each Inngest function, and that gated step handlers check `context.gate instanceof GateToken`.
 5. `structural-enforcement.test.ts` — the "second path" test is the structural proof that FR-016 requires. Verify it calls `GenerationService.generate()` directly (not via `executeTool`), not just the MCP dispatch path.

@@ -144,12 +144,12 @@ export class FeatureEntitlementResolver {
 
 ### T009: `MembershipResolver` interface + `NullMembershipResolver`
 
-**Purpose**: Define the seam through which Phase 1.5 (org seat-licensing, WP12) will inject real tenant membership. Pre-WP12, the membership set is empty (`[]`), so the effective union in the gate reduces to `{user:U}` — the individual path works day one with zero tenant system.
+**Purpose**: Define the seam through which Phase 1.5 (org seat-licensing) will inject real tenant membership. In Phase 1, the membership set is empty (`[]`), so the effective union in the gate reduces to `{user:U}` — the individual path works day one with no org-level tenant identity engaged. (Note: tenant membership itself already exists in the codebase — `tenant_memberships`, `src/db/schema.ts:72-88` — but Phase 1.5's *activation* here is a Phase 1 scope decision, not blocked on that data existing.)
 
 **Steps**:
 
 1. Create `src/entitlements/feature/membership.ts`.
-2. Define the `MembershipResolver` interface. It takes a `userId` and returns the list of `Subject`s whose grants should be unioned into that user's effective entitlement. Pre-WP12, this is always `[]`.
+2. Define the `MembershipResolver` interface. It takes a `userId` and returns the list of `Subject`s whose grants should be unioned into that user's effective entitlement. In Phase 1, this is always `[]`.
 3. Implement `NullMembershipResolver` returning `[]`.
 
 **Interfaces**:
@@ -161,11 +161,11 @@ import type { Subject } from '../types.js';
 
 /**
  * Resolves the set of non-user subjects (e.g. tenant orgs) whose grants
- * are inherited by the given user. Pre-WP12 this always returns [].
+ * are inherited by the given user. In Phase 1 this always returns [].
  *
  * Phase 1.5: replace NullMembershipResolver with a DB-backed implementation
- * that reads tenant↔user membership (WP12-owned table) and returns the
- * relevant { subjectType: 'tenant', subjectId: tenantId } entries.
+ * that reads the existing tenant_memberships table (src/db/schema.ts:72-88)
+ * and returns the relevant { subjectType: 'tenant', subjectId: tenantId } entries.
  */
 export interface MembershipResolver {
   getMemberSubjects(userId: string): Promise<Subject[]>;
@@ -174,7 +174,7 @@ export interface MembershipResolver {
 /**
  * Phase 1 stub. Returns no inherited subjects.
  * The gate's effective union degrades to {user:U} only.
- * Replace with a real implementation when WP12 lands (Phase 1.5).
+ * Replace with a real implementation when Phase 1.5 is enabled.
  */
 export class NullMembershipResolver implements MembershipResolver {
   async getMemberSubjects(_userId: string): Promise<Subject[]> {
@@ -192,7 +192,7 @@ export class NullMembershipResolver implements MembershipResolver {
 - [ ] `tsc --noEmit` passes
 
 **Edge Cases**:
-- Leave a clear `// Phase 1.5: replace with WP12 implementation` comment so the activation path is self-documenting.
+- Leave a clear `// Phase 1.5: replace with a real tenant_memberships-backed implementation` comment so the activation path is self-documenting.
 - The interface takes `userId` (string), not a full `Subject` — callers always pass the actor's user ID.
 
 ---
@@ -527,9 +527,9 @@ export class FeatureGate {
    *   effectiveKeys = union of all per-subject featureKeys
    *   entitled = featureKey ∈ effectiveKeys
    *
-   * Pre-WP12: membershipResolver returns [] so subjectSet = { user:userId }.
-   * Post-WP12: membershipResolver returns tenant subjects; one tenant grant
-   *   entitles every member with no per-user rows required.
+   * Phase 1: membershipResolver returns [] so subjectSet = { user:userId }.
+   * Phase 1.5 (once enabled): membershipResolver returns tenant subjects; one
+   *   tenant grant entitles every member with no per-user rows required.
    *
    * Resolution order per subject (FR-005, FR-017):
    *   1. Cache (subject-keyed; post-filter set)
@@ -616,7 +616,7 @@ export class FeatureGate {
 - [ ] `assertEntitled` throws `FeatureNotEntitledError` when not entitled
 - [ ] `isEntitled` returns `boolean` and does NOT throw
 - [ ] Resolution order is cache → resolver → fallback → deny (not resolver → cache)
-- [ ] Pre-WP12: union is just `{user:U}` (NullMembershipResolver returns `[]`)
+- [ ] Phase 1: union is just `{user:U}` (NullMembershipResolver returns `[]`)
 - [ ] `assertEntitled` takes `userId` explicitly — never reads `tenantId` from ambient context
 - [ ] `logAllow` receives the satisfying subject (which subject's grant allowed it)
 - [ ] `logDeny` is called with `reason='not_entitled'` on default deny
@@ -624,8 +624,8 @@ export class FeatureGate {
 - [ ] `tsc --noEmit` passes
 
 **Edge Cases**:
-- **Do not infer userId from tenantId**: The spec explicitly calls out `executor.ts:104`'s `tenantId == userId` collapse as a known shortcut that must not enter the gate API. `assertEntitled` takes `userId` as its first argument — the caller supplies it from the authenticated request context.
-- **Union short-circuits on first match**: The loop over `subjectSet` returns on the first subject that satisfies the feature key. This means the audit log captures which subject (user vs which tenant) allowed the access — important for post-WP12 debugging of inherited vs. personal entitlements.
+- **Do not infer userId from tenantId**: The spec explicitly calls out the `approval_` dispatch branch's literal `tenantId = userId` collapse (`tools/executor.ts:152-158`, tenant resolution deferred) — and the tenant resolver's self-scope fallback for users with no membership — as known shortcuts that must not enter the gate API. `assertEntitled` takes `userId` as its first argument — the caller supplies it from the authenticated request context.
+- **Union short-circuits on first match**: The loop over `subjectSet` returns on the first subject that satisfies the feature key. This means the audit log captures which subject (user vs which tenant) allowed the access — important for debugging inherited vs. personal entitlements once Phase 1.5 (membership expansion) is enabled.
 - **Audit on fallback deny**: When the fallback produces an empty set and the feature is not entitled, `logDeny` should use `reason='resolver_unavailable_fallback_deny'` if the resolver threw (distinguish from clean `not_entitled`). The `resolveSubject` private method needs to propagate whether a resolver error occurred to inform the deny reason. Adjust the implementation to track this.
 - **`isEntitled` does not audit**: Checking for tool list visibility should not produce deny audit rows (that would flood the log with benign list-filter calls). Only `assertEntitled` writes audit rows. If a future caller needs deny audit from `isEntitled`, that is a separate design decision.
 
@@ -740,7 +740,7 @@ export function toMcpToolError(err: FeatureNotEntitledError): {
 
 ### T014: Unit tests
 
-**Purpose**: Verify the resolver's expiry/fail-closed behavior, the union degrades to `{user}` pre-WP12, the cache caps TTL to next expiry and responds to explicit invalidation, the audit writer is append-only and swallows write failures, and the gate's full resolution order including deny reasons.
+**Purpose**: Verify the resolver's expiry/fail-closed behavior, the union degrades to `{user}` in Phase 1, the cache caps TTL to next expiry and responds to explicit invalidation, the audit writer is append-only and swallows write failures, and the gate's full resolution order including deny reasons.
 
 **Steps**:
 
@@ -862,7 +862,7 @@ describe('FeatureGate', () => {
   });
 
   describe('union (FR-019)', () => {
-    it('pre-WP12: effective set is just {user:U} when NullMembershipResolver returns []', async () => {
+    it('Phase 1: effective set is just {user:U} when NullMembershipResolver returns []', async () => {
       // User has feature key X. NullMembershipResolver returns [].
       // isEntitled(userId, 'X') → true.
     });
@@ -917,7 +917,7 @@ describe('FeatureGate', () => {
 - [ ] Resolver expiry filter is tested with explicit past/future/null dates
 - [ ] Cache TTL capping is tested with numeric comparisons (not just "truthy")
 - [ ] Audit swallow-on-failure is tested (mock insert that rejects → logAllow resolves)
-- [ ] Union with empty membership is tested (pre-WP12 path)
+- [ ] Union with empty membership is tested (Phase 1 path)
 - [ ] Gate deny via `assertEntitled` throws `FeatureNotEntitledError`, not a generic error
 
 ---
@@ -947,7 +947,7 @@ describe('FeatureGate', () => {
 
 - **Expiry filter verification (T008, T012)**: Open `resolver.ts` and confirm the Drizzle `.where()` clause contains both `eq(featureEntitlements.status, 'active')` and the `or(isNull(...), gt(...))` on `validUntil`. If either is absent, the resolver is incorrect. The content fallback is the reference for what NOT to do.
 - **GateToken mint point (T012)**: Confirm `mintGateToken` is called in exactly one place (`assertEntitled`) and is not exported from `gate.ts` or `errors.ts`. If it appears in any other call site, that is a FR-016 violation.
-- **Union pre-WP12 (T009, T012, T014)**: Confirm `NullMembershipResolver.getMemberSubjects` returns `[]` and the gate test for pre-WP12 behavior uses it. The union `{user:U} ∪ []` must not accidentally include phantom subjects.
+- **Union in Phase 1 (T009, T012, T014)**: Confirm `NullMembershipResolver.getMemberSubjects` returns `[]` and the gate test for Phase 1 behavior uses it. The union `{user:U} ∪ []` must not accidentally include phantom subjects.
 - **Audit swallow (T011)**: The audit write is wrapped in `try/catch` with no rethrow. Confirm the test for DB-down behavior verifies that `logAllow` resolves (not rejects) when the DB insert fails.
 - **No ambient context inference (T012)**: `assertEntitled` signature is `(userId: string, featureKey: string, ...)` — the first argument is always the explicit authenticated user id. There must be no `this.context?.tenantId` or equivalent read inside the gate. A reviewer who sees any implicit context read should flag it as a security concern.
 - **Content path regression**: Run `npm test -- tests/content/` after WP02 to verify the existing entitlement tests still pass. WP02 adds new files but should not touch `src/content/` — any modification there is unexpected and must be justified.

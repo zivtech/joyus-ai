@@ -27,11 +27,11 @@ This is also the boundary where billing automation later attaches (`source=resol
 
 ### Auth model in the codebase today
 
-The codebase has **no operator/admin role**. The `users` table (`src/db/schema.ts:54-60`) has only `id`, `email`, `name`, `mcpToken`, `createdAt`, `updatedAt` — no `isOperator`, no `role` column. Authentication is bearer-token-via-`mcpToken` (`src/auth/verify.ts:26-33`), which resolves to `req.mcpUser` (a `UserWithConnections`) via `requireBearerToken` middleware (`src/auth/middleware.ts:26-48`). Every authenticated user is a peer — there is no privileged tier.
+Tenant identity (Spec 013) is **partially implemented**: `tenant_memberships` (`src/db/schema.ts:72-88`) carries a `role` column typed `tenant_role` (`src/db/schema.ts:50-54`) with values `member` | `admin` | `operator`, plus `isDefault`. `findOperatorMembership` (`src/tenancy/resolver.ts:162`) resolves whether a user holds an `operator` membership on any tenant, and grants that user **platform-wide** context (`:186-200`). This is the same model `/event-adapter/admin` (`src/index.ts:376` onward) already uses to gate platform-wide admin access — it is not a new invention for this WP.
 
-**This WP must define the operator/admin boundary.** The minimum viable approach is an **env-var allowlist**: `OPERATOR_USER_IDS=id1,id2,...` loaded at startup. A middleware reads this set and rejects any `req.mcpUser.id` not in it with 403. This requires zero schema migration, ships fast, and can be replaced later with `users.isOperator` column + a migration once the need for self-serve operator promotion is clear. The implementer must **confirm this decision** before wiring middleware — the alternative (adding `isOperator: boolean` to the `users` table, `src/db/schema.ts`) is equally valid and preferable if the operator set needs to be managed without a redeploy.
+**This WP reuses that existing operator role.** There is no need for an env-var allowlist or a new `users.isOperator` column: the resolver's operator-membership lookup (`findOperatorMembership`, exposed through a new exported `isPlatformOperator` wrapper, T024) is the authorization primitive. A user with an `operator` membership on any tenant may grant/revoke feature entitlements platform-wide; `admin` and `member` memberships are denied, as is a user with no membership at all.
 
-**Precedent for a distinct admin tier:** `index.ts:373-405` already implements a separate `/event-adapter/admin` route protected by `session.adminUserId` (a session-cookie-based admin gate, distinct from bearer auth). This WP's operator gate follows the same principle — a distinct check, not reuse of the tenant-user bearer path — but uses the bearer token plus the operator check rather than session cookies, since the MCP and REST surfaces both expect bearer auth.
+**Precedent for a distinct admin tier:** `/event-adapter/admin` (`src/index.ts:376` onward) already grants platform-wide access only to operator memberships, via `resolveTenantContext`, which calls `findOperatorMembership`. Its session-based auth differs from bearer auth, but the operator definition is the same. This WP's gate uses the same lookup through `isPlatformOperator`.
 
 **The crux of the security model:** A tenant user's bearer token must never satisfy the operator check. The operator check must be applied as a **separate, explicit middleware** layered on top of `requireBearerToken` — not as a conditional inside route handlers where it could be skipped.
 
@@ -589,7 +589,7 @@ export async function getAllTools(userId: string, isOperator: boolean = false): 
 }
 ```
 
-The MCP request handler in `index.ts` must pass `isOperatorUser(req.mcpUser.id)` as the second arg.
+The MCP request handler in `index.ts` must `await isOperatorUser(req.mcpUser.id)` and pass the result as the second arg.
 
 **Files**:
 - `src/tools/admin-entitlement-tools.ts` (new, ~70 lines)
@@ -605,54 +605,59 @@ The MCP request handler in `index.ts` must pass `isOperatorUser(req.mcpUser.id)`
 
 ---
 
-### T024: Authorization — operator/admin role distinct from tenant users
+### T024: Authorization — operator role via existing tenant membership, distinct from tenant users
 
-**Purpose**: Define and enforce the operator boundary so no tenant user can invoke the grant surface, regardless of how they authenticate.
+**Purpose**: Define and enforce the operator boundary so no tenant user can invoke the grant surface, regardless of how they authenticate — reusing the **existing** membership-backed operator role rather than inventing a new mechanism.
 
-**Decision required (implementer must confirm before coding):**
+**Model**: Reuse the existing operator-membership lookup. `findOperatorMembership(db, userId)` (`src/tenancy/resolver.ts:162`) is module-private today; `resolveTenantContextForUser` calls it to give operators platform-wide context (`:186-200`), which is how `/event-adapter/admin` (`src/index.ts:376` onward) grants platform-wide access. A user is an operator if they hold an `operator`-role membership on any tenant. `admin` and `member` memberships are denied, as is a user with no membership at all. There is no separate allowlist to configure or redeploy.
 
-**Option A — env-var allowlist (recommended for Phase 1):**
+Export a thin wrapper from the resolver instead of duplicating the query, so the operator definition stays in one place:
+
+```typescript
+// src/tenancy/resolver.ts — add next to findOperatorMembership (keep that function private)
+export async function isPlatformOperator(db: TenantMembershipLookupDb, userId: string): Promise<boolean> {
+  return (await findOperatorMembership(db, userId)) !== null;
+}
 ```
-OPERATOR_USER_IDS=cuid_abc123,cuid_def456
-```
-`requireOperator` middleware reads this at startup into a `Set<string>` and checks `req.mcpUser.id` against it. Zero schema changes. Safe to ship fast. Operationally requires a redeploy to add/remove operators, which is acceptable for the small operator set in Phase 1.
 
-**Option B — `users.isOperator` column:**
-Add `isOperator: boolean('is_operator').notNull().default(false)` to `src/db/schema.ts` (the `users` table at line 54). Generate a Drizzle migration. `requireOperator` fetches the user record and checks the field. Enables self-serve operator promotion without redeploy. Adds a migration and a DB read per admin request.
-
-**Recommendation:** Start with Option A. Add a `TODO: migrate to Option B when operator set exceeds 5` comment so the threshold for switching is explicit rather than open-ended.
-
-**Implementation (Option A):**
+**Implementation:**
 
 ```typescript
 // src/entitlements/operator-auth.ts
 
 import { Request, Response, NextFunction } from 'express';
-
-// Loaded once at module initialization; changes require a process restart.
-const OPERATOR_USER_IDS: ReadonlySet<string> = new Set(
-  (process.env.OPERATOR_USER_IDS ?? '').split(',').map(s => s.trim()).filter(Boolean),
-);
+import { db } from '../db/client.js';
+import { isPlatformOperator } from '../tenancy/resolver.js';
 
 /**
- * Returns true if the given userId is a configured platform operator.
- * Used for both REST middleware and MCP tool filtering.
+ * Returns true if the given userId holds an operator-role tenant membership.
+ * Same membership lookup the tenant resolver uses for platform-wide access.
+ * Used for both REST middleware and MCP tool filtering. Throws on lookup failure.
  */
-export function isOperatorUser(userId: string): boolean {
-  return OPERATOR_USER_IDS.has(userId);
+export async function isOperatorUser(userId: string): Promise<boolean> {
+  return isPlatformOperator(db, userId);
 }
 
 /**
  * Express middleware: rejects non-operators with 403.
  * Must be applied AFTER requireBearerToken (depends on req.mcpUser).
+ * Express 4 does not catch rejected promises from async middleware, so a
+ * lookup failure is handled here and fails closed with 503.
  */
-export function requireOperator(req: Request, res: Response, next: NextFunction): void {
+export async function requireOperator(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (!req.mcpUser) {
     // requireBearerToken was not applied before this — programming error.
     res.status(500).json({ error: 'auth_configuration_error', message: 'Bearer auth must precede operator check' });
     return;
   }
-  if (!isOperatorUser(req.mcpUser.id)) {
+  let isOperator: boolean;
+  try {
+    isOperator = await isOperatorUser(req.mcpUser.id);
+  } catch {
+    res.status(503).json({ error: 'operator_lookup_unavailable', message: 'Operator authorization lookup failed' });
+    return;
+  }
+  if (!isOperator) {
     res.status(403).json({ error: 'forbidden', message: 'Operator role required' });
     return;
   }
@@ -665,29 +670,31 @@ export function requireOperator(req: Request, res: Response, next: NextFunction)
 ```typescript
 // In src/tools/executor.ts — add before the entitlement_admin_ handler:
 if (toolName.startsWith('entitlement_admin_')) {
-  if (!isOperatorUser(userId)) {
+  if (!(await isOperatorUser(userId))) {
     throw new Error('Operator role required for entitlement administration');
   }
   return executeAdminEntitlementTool(toolName, input, { userId, db });
 }
 ```
 
-**Security invariant:** A tenant user's bearer token authenticates them as a regular user. The `isOperatorUser` check is a separate, explicit gate. These two checks must NEVER be collapsed into one (e.g., "if admin OR has right token") — they are orthogonal.
+**Security invariant:** A tenant user's bearer token authenticates them as a regular user. The `isOperatorUser` check is a separate, explicit gate against tenant-membership role, not a token property. These two checks must NEVER be collapsed into one — they are orthogonal.
 
 **Files**:
-- `src/entitlements/operator-auth.ts` (new, ~35 lines)
+- `src/entitlements/operator-auth.ts` (new, ~40 lines)
+- `src/tenancy/resolver.ts` (modified: export the `isPlatformOperator` wrapper; `findOperatorMembership` stays private)
 - `src/tools/executor.ts` (modified: add `entitlement_admin_` branch with operator check)
-- `.env.example` (modified: document `OPERATOR_USER_IDS=`)
 
 **Validation**:
-- [ ] `OPERATOR_USER_IDS` unset → `OPERATOR_USER_IDS` is empty set → all requests return 403
-- [ ] `OPERATOR_USER_IDS=known_id` → requests from `known_id` pass; all others return 403
+- [ ] A user with an `operator` membership on any tenant → requests pass
+- [ ] A user with only `admin` or `member` memberships → 403
+- [ ] A user with no tenant membership at all → 403
 - [ ] A tenant user calling `entitlement_admin_grant` via MCP tool path → throws, not executes
-- [ ] `isOperatorUser` is pure and testable without Express context
+- [ ] `isOperatorUser` is testable by mocking `isPlatformOperator`
+- [ ] A membership-lookup failure → 503 from `requireOperator`, and a thrown error (not an allow) on the MCP path
 
 **Edge Cases**:
-- If `OPERATOR_USER_IDS` is an empty string (misconfiguration), no one is an operator. This is the safe default — fail closed on the grant surface.
-- Do not log the contents of `OPERATOR_USER_IDS` at startup; log only the count: `Operator user set initialized: N users`.
+- If the membership lookup throws, `requireOperator` returns 503 and the MCP path lets the error propagate. A lookup error is never treated as operator access, matching the tenant resolver's own fail-closed 503 (`src/tenancy/resolver.ts:197`).
+- Do not log full membership rows in error paths; log only the user id and denial reason.
 
 ---
 
@@ -734,14 +741,14 @@ this.featureGate.invalidateSubject(input.subject);
 ```typescript
 // REST surface
 it('returns 403 when non-operator bearer token calls POST /grants', async () => {
-  // Arrange: regular user token, not in OPERATOR_USER_IDS
+  // Arrange: regular user token, membership role = 'member' (no operator membership)
   // Act: POST /api/v1/admin/entitlements/grants
   // Assert: 403 { error: 'forbidden' }
 });
 
 // MCP tool surface
 it('throws when non-operator userId calls entitlement_admin_grant via executeTool', async () => {
-  // Arrange: userId not in OPERATOR_USER_IDS
+  // Arrange: userId has no operator-role tenant membership (findOperatorMembership resolves null)
   // Act: executeTool(nonOperatorUserId, 'entitlement_admin_grant', validInput)
   // Assert: throws / rejects with 'Operator role required'
 });
@@ -816,21 +823,41 @@ it('invalidateSubject is called on revoke', async () => {
 });
 ```
 
-**5. `isOperatorUser` correctly reads the env-var set**
+**5. Operator check reflects tenant-membership role**
+
+`isPlatformOperator` owns the role filter, so test it against memberships rather than mocking it away (use the tenant resolver's existing test-DB pattern):
 ```typescript
-it('returns false when OPERATOR_USER_IDS is unset', () => {
-  // Module must be re-required with env cleared, or use dependency injection
-  expect(isOperatorUser('any-id')).toBe(false);
+it('isPlatformOperator is false for a user with no membership', async () => {
+  expect(await isPlatformOperator(testDb, 'no-membership-user')).toBe(false);
 });
-it('returns true only for IDs in OPERATOR_USER_IDS', () => {
-  process.env.OPERATOR_USER_IDS = 'op1,op2';
-  // re-initialize module or use injected set
-  expect(isOperatorUser('op1')).toBe(true);
-  expect(isOperatorUser('op3')).toBe(false);
+it('isPlatformOperator is false for admin/member-only memberships', async () => {
+  // seed: admin-user has role 'admin' on t1 and 'member' on t2
+  expect(await isPlatformOperator(testDb, 'admin-user')).toBe(false);
+});
+it('isPlatformOperator is true for an operator membership on any tenant', async () => {
+  // seed: operator-user has role 'operator' on t1
+  expect(await isPlatformOperator(testDb, 'operator-user')).toBe(true);
 });
 ```
 
-Note: because `OPERATOR_USER_IDS` is read at module initialization, testing requires either module re-initialization, dependency injection of the set, or extracting `buildOperatorSet(envVal)` as a pure function and testing that instead. **Recommend the pure function approach.**
+`isOperatorUser` and `requireOperator` are then tested with `isPlatformOperator` mocked:
+```typescript
+it('isOperatorUser passes the lookup result through', async () => {
+  vi.mocked(isPlatformOperator).mockResolvedValue(true);
+  expect(await isOperatorUser('operator-user')).toBe(true);
+  vi.mocked(isPlatformOperator).mockResolvedValue(false);
+  expect(await isOperatorUser('tenant-user')).toBe(false);
+});
+it('requireOperator fails closed with 503 when the lookup throws', async () => {
+  vi.mocked(isPlatformOperator).mockRejectedValue(new Error('db down'));
+  const res = mockResponse();
+  const next = vi.fn();
+  await requireOperator(mockRequest({ mcpUser: { id: 'u1' } }), res, next);
+  expect(res.status).toHaveBeenCalledWith(503);
+  expect(next).not.toHaveBeenCalled();
+});
+```
+
 
 **Files**:
 - `src/entitlements/__tests__/grants.service.test.ts` (new, ~120 lines)
@@ -846,14 +873,13 @@ Note: because `OPERATOR_USER_IDS` is read at module initialization, testing requ
 
 - [ ] `src/entitlements/grants.service.ts` — `GrantsService` with `grant`, `modify`, `revoke`, `listForSubject`; idempotent; audit on every write; cache invalidation on every mutation
 - [ ] `src/entitlements/catalog.service.ts` — `CatalogService` with `create` (idempotent on PK), `list`
-- [ ] `src/entitlements/operator-auth.ts` — `requireOperator` middleware + `isOperatorUser` function; env-var allowlist (or schema column if Option B chosen — decision documented)
+- [ ] `src/entitlements/operator-auth.ts` — `requireOperator` middleware + `isOperatorUser` function, backed by the existing `findOperatorMembership` tenant-role check (no new allowlist or schema column)
 - [ ] `src/entitlements/admin-routes.ts` — six REST endpoints; Zod validation; 401/403/422 error handling
 - [ ] `src/tools/admin-entitlement-tools.ts` — five `ToolDefinition` entries
 - [ ] `src/tools/executors/admin-entitlement-executor.ts` — dispatches admin tool calls to `GrantsService`/`CatalogService`
 - [ ] `src/tools/index.ts` — `getAllTools` omits admin tools for non-operators
 - [ ] `src/tools/executor.ts` — `entitlement_admin_` prefix branch with operator check
 - [ ] `src/index.ts` — admin router mounted at `/api/v1/admin/entitlements`
-- [ ] `.env.example` — `OPERATOR_USER_IDS` documented
 - [ ] Unit tests covering: authz denied (both surfaces), idempotency, audited writes with actor, invalidation on mutation
 - [ ] `npm run validate` (typecheck + lint + test) exits 0 with no regressions
 
@@ -861,8 +887,8 @@ Note: because `OPERATOR_USER_IDS` is read at module initialization, testing requ
 
 ## Risks
 
-**1. Authorization boundary is the top risk.**
-The `users` table has no role field. This WP must create the boundary from scratch. If `requireOperator` is accidentally omitted from even one route, a tenant user can self-grant. Mitigate: the middleware chain is explicit (`router.use(requireBearerToken, requireOperator)`) and applies to the entire router, not individual handlers. The unit test must confirm a non-operator token returns 403.
+**1. Authorization boundary depends on tenant-membership data being correct.**
+Unlike a fresh allowlist, this WP reuses `tenant_memberships.role` and `findOperatorMembership`. If `requireOperator` is accidentally omitted from even one route, a tenant user can self-grant. Mitigate: the middleware chain is explicit (`router.use(requireBearerToken, requireOperator)`) and applies to the entire router, not individual handlers. The unit test must confirm a non-operator (or membership-less) token returns 403.
 
 **2. `GrantsService` is stateful per actor — not a singleton.**
 If instantiated as a singleton and the `actorId` is stored on the instance, concurrent requests will share and corrupt actor identity in the audit trail. Instantiate per request or pass `actorId` as a method argument.
@@ -888,4 +914,4 @@ Documented in T025. In a multi-instance deployment, a revoked grant can remain l
 - **Audit trail is append-only.** `entitlement_decisions` is an append-only log. Verify no UPDATE or DELETE statements are issued against it anywhere in this WP.
 - **`getAllTools` operator branching.** Confirm admin tools are filtered out for non-operators in the `tools/list` response — not just guarded in `executeTool`. A non-operator discovering admin tools through `tools/list` and hitting 403 on execution is a poor UX and leaks surface area.
 - **Confirm the actor identity decision** (column vs. embedded-in-capability) is resolved before merge and documented in the PR.
-- **`.env.example` must be updated.** `OPERATOR_USER_IDS` must be listed with an explanatory comment. Missing env docs are how production operators misconfigure deployments.
+- **No new allowlist or env var.** Confirm the operator check goes through `findOperatorMembership`, not a reintroduced `OPERATOR_USER_IDS`-style allowlist or a new `users.isOperator` column — this WP reuses the existing tenant-membership role.

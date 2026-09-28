@@ -1,7 +1,7 @@
 # Work Packages: Add-on Feature Entitlements — Phase 1 (Individual Path)
 *Feature 015 — Phase 1 task decomposition*
 
-**Scope**: Phase 1 only (individual subject; ships without WP12). Phase 1.5 (org inheritance) and Phase 2 (plugin host + SDK) are separate plans.
+**Scope**: Phase 1 only (individual subject; ships without org-level tenant identity engaged). Phase 1.5 (org inheritance, gated on isolation hardening + §11.8) and Phase 2 (plugin host + SDK) are separate plans.
 **Total**: 6 work packages, 40 subtasks
 **Parallelization**: 5 layers — up to 2 WPs (WP03, WP04) run concurrently at peak
 **Per-WP prompt files** (`tasks/WP0N-*.md`): not yet generated — say the word and I'll expand each WP into an implement-ready prompt.
@@ -31,22 +31,22 @@ Layer 4: WP06 (integration & validation)             depends all
 | T006 | Register schema in `drizzle.config.ts`; generate migration (`drizzle/00NN_entitlements_schema.sql`) | WP01 | |
 | T007 | Verify typecheck + **existing content entitlement tests pass** (extraction regression gate) | WP01 | |
 | T008 | `FeatureEntitlementResolver` — DB-leads, expiry-aware filter `active AND (valid_until IS NULL OR > now)` (FR-017) | WP02 | |
-| T009 | `MembershipResolver` interface + `NullMembershipResolver` returning `[]` (pre-WP12 seam, FR-019) | WP02 | [P] |
+| T009 | `MembershipResolver` interface + `NullMembershipResolver` returning `[]` (Phase 1 seam, FR-019) | WP02 | [P] |
 | T010 | Subject-scoped cache wiring (key `subject_type:subject_id`; TTL capped to next expiry; explicit invalidate) — reuse `EntitlementCache` (FR-004/017/018) | WP02 | |
 | T011 | `entitlement_decisions` append-only audit writer — `logAllow`/`logDeny` only (FR-006) | WP02 | [P] |
 | T012 | `FeatureGate` — `isEntitled`/`assertEntitled`; effective **union** over `{user:U} ∪ membership`; order cache→resolver→DB-fallback→deny; expiry-aware fallback (FR-005/016/017/019) | WP02 | |
 | T013 | `FeatureNotEntitledError` + structured "upgrade required" payload (402/403 + MCP error mapping) | WP02 | [P] |
-| T014 | Unit tests — resolver expiry/fail-closed, union `{user}` pre-WP12, cache TTL/invalidate, audit, gate order | WP02 | |
+| T014 | Unit tests — resolver expiry/fail-closed, union `{user}` in Phase 1, cache TTL/invalidate, audit, gate order | WP02 | |
 | T015 | Define opaque `GateToken` — non-constructible outside `FeatureGate`, minted only by `assertEntitled` (FR-016) | WP03 | |
 | T016 | Make gated entrypoints **require** a `GateToken`; forbid raw entitlement objects in the gated path (type-level) | WP03 | |
-| T017 | **Enumerate** Phase-1 gated call sites — `content_`/`profile_`/`pipeline_` dispatch (`executor.ts:99-130`) + provider/step/connector invocation points; document the list | WP03 | [P] |
+| T017 | **Enumerate** Phase-1 gated call sites — every `executeTool` dispatch branch (`tools/executor.ts:123-223`: `ops_`, `content_`, `profile_`, `approval_`, `pipeline_`, OAuth registry; `ops_`/`approval_` listed as core, ungated) + provider/step/connector invocation points; document the list | WP03 | [P] |
 | T018 | Fix **or** quarantine the `content_search` synthetic-entitlement bypass (`content-executor.ts:223-231`) so it isn't a template | WP03 | [P] |
 | T019 | Unit tests — hand-constructed entitlement object cannot reach a gated path; second-path gating | WP03 | |
 | T020 | `GrantsService` — create/modify/revoke `feature_entitlements` (idempotent); write grant-history with **actor identity** (FR-015) | WP04 | |
 | T021 | Catalog service — create/list `feature_catalog` entries (FR-001) | WP04 | [P] |
 | T022 | Operator REST routes (admin-only) for grants + catalog | WP04 | |
 | T023 | Admin-only MCP tools for grants + catalog (FR-015 surface) | WP04 | [P] |
-| T024 | Authorization — operator/admin role **distinct from tenant users**; enforce on routes + tools | WP04 | |
+| T024 | Authorization — existing operator-role tenant membership (`findOperatorMembership`), **distinct from tenant users and from admin/member roles**; enforce on routes + tools | WP04 | |
 | T025 | Cache invalidation on grant/revoke (hook into subject-cache) | WP04 | |
 | T026 | Unit tests — authz, idempotency, audited writes, invalidation-on-change | WP04 | |
 | T027 | `ownership.ts` — static add-on-tool → `feature_key` map (Phase 1; registry replaces it in Phase 2) | WP05 | [P] |
@@ -59,7 +59,7 @@ Layer 4: WP06 (integration & validation)             depends all
 | T034 | Integration — explicit deny: unentitled gated call → upgrade-required (not empty), logged (SC-3) | WP06 | [P] |
 | T035 | Integration — fail-closed on lapsed grants: resolver outage + expired grant → deny; valid grant still served (SC-6) | WP06 | [P] |
 | T036 | Integration — structural enforcement: gated capability via a non-`tools/call` path denied; un-forgeable object (SC-5) | WP06 | [P] |
-| T037 | Integration — union: returns `{user}` pre-WP12; membership-stub adds a tenant grant (SC-2 seam) | WP06 | [P] |
+| T037 | Integration — union: returns `{user}` in Phase 1; membership-stub adds a tenant grant once Phase 1.5 is enabled (SC-2 seam) | WP06 | [P] |
 | T038 | Content path regression: existing entitlement + search tests green (SC reuse) | WP06 | [P] |
 | T039 | Auditability — every allow/deny queryable per subject + per feature (SC-11) | WP06 | [P] |
 | T040 | Validation sweep — `npm run validate` (typecheck + lint + test), zero regressions | WP06 | |
@@ -140,7 +140,7 @@ End-to-end proof of the Phase 1 success criteria, the content-path regression ga
 **Subtasks**: T033–T040.
 
 **Parallel opportunities**: T033–T039 are independent test suites.
-**Risks**: Integration tests need clock manipulation (expiry/TTL), a fake resolver (outage simulation), and an operator-role fixture. The union test (T037) must prove both the pre-WP12 `{user}` behavior **and** that a stubbed membership adds a tenant grant — that's the seam Phase 1.5 depends on. T038 is the non-negotiable regression gate.
+**Risks**: Integration tests need clock manipulation (expiry/TTL), a fake resolver (outage simulation), and an operator-role fixture. The union test (T037) must prove both the Phase 1 `{user}` behavior **and** that a stubbed membership adds a tenant grant — that's the seam Phase 1.5 depends on. T038 is the non-negotiable regression gate.
 
 ---
 
@@ -173,4 +173,4 @@ WP01 (Core Extraction & Schema)
 
 **Total**: 6 work packages, 40 subtasks
 **MVP scope (the individual path)**: WP01 + WP02 + WP03 + WP04 + WP05 — schema + gate + un-forgeable enforcement + operator grant + tool gating = an operator can license an add-on to an individual and the gate shows/runs it for them, denies everyone else. WP06 hardens and proves it.
-**Deferred by design**: org inheritance activation (Phase 1.5 / WP12), plugin host + SDK (Phase 2), seat-capping (§11.8), cross-instance invalidation bus (§11.5).
+**Deferred by design**: org inheritance activation (Phase 1.5, gated on isolation hardening + §11.8, not on tenant identity — which largely exists as Spec 013), plugin host + SDK (Phase 2), seat-capping (§11.8), cross-instance invalidation bus (§11.5).

@@ -29,11 +29,11 @@ The codebase uses a consistent Drizzle + PostgreSQL schema convention establishe
 
 - **Schema namespace**: `pgSchema('entitlements')` — analogous to `pgSchema('content')` (`src/content/schema.ts:32`) and `pgSchema('profiles')` (`src/profiles/schema.ts`).
 - **Primary keys**: `text('id').primaryKey().$defaultFn(() => createId())` from `@paralleldrive/cuid2` — NOT uuid. See `contentProducts` (`src/content/schema.ts:134`) and every other table in the repo.
-- **Tenant IDs**: `text('tenant_id').notNull()` — plain text, no FK to a tenants table (none exists yet; WP12 is a future dependency). `subject_id` follows the same pattern for the same reason.
+- **Tenant IDs**: `text('tenant_id').notNull()` — plain text, no FK to a tenants table (none exists yet; the remaining piece of tenant identity, Spec 013, is a future dependency for the `tenants`/`tenant_access_audit` tables specifically — `tenant_memberships` already exists). `subject_id` follows the same pattern for the same reason.
 - **Type exports**: `export type FeatureCatalogEntry = typeof featureCatalog.$inferSelect` and `export type NewFeatureCatalogEntry = typeof featureCatalog.$inferInsert` — NOT `InferSelectModel`. See `src/content/schema.ts:374-408`.
 - **Index names**: prefixed with the table name, e.g. `entitlements_feature_entitlements_subject_idx`. Follow the `content_products_tenant_id_idx` naming pattern.
-- **drizzle.config.ts**: the `schema` array currently has 6 entries (`src/content/schema.ts:4-11`); add `'./src/entitlements/schema.ts'` as a seventh.
-- **Migration naming**: migrations use sequential 4-digit prefixes (`0000_`, `0001_`, ..., `0007_` is the current highest). The next migration is `0008_entitlements_schema.sql`. `CREATE SCHEMA IF NOT EXISTS "entitlements"` must appear at the top — the `content`/`pipelines` migration (`0001_fine_young_avengers.sql:1,3`) uses `IF NOT EXISTS`; use that form (some later migrations omit it — prefer the safe form).
+- **drizzle.config.ts**: the `schema` array currently has 10 entries (`joyus-ai-mcp-server/drizzle.config.ts:4-14`); add `'./src/entitlements/schema.ts'` as an eleventh, appended to the end — never replace or reorder the existing entries.
+- **Migration naming**: migrations use sequential 4-digit prefixes. The highest migration at implementation time determines the next number — confirm the current highest under `drizzle/migrations/` before generating (as of `main` at commit `7a330234`, the highest is `0012_jira_a11y_triage_scheduler.sql`, so the next free sequence number is `0013`). `CREATE SCHEMA IF NOT EXISTS "entitlements"` must appear at the top — the `content`/`pipelines` migration (`0001_fine_young_avengers.sql:1,3`) uses `IF NOT EXISTS`; use that form (some later migrations omit it — prefer the safe form).
 
 ### The extraction target
 
@@ -242,7 +242,7 @@ export const featureCatalog = entitlementsSchema.table('feature_catalog', {
 // --- FeatureEntitlements ---
 // Durable, subject-scoped grants. One live row per (subject_type, subject_id, feature_key).
 // Lifecycle changes update status in place; history goes to entitlement_decisions.
-// subject_id is a naked string (no FK) — no tenants table exists yet (WP12 dependency).
+// subject_id is a naked string (no FK) — no tenants table exists yet (the remaining piece of Spec 013).
 
 export const featureEntitlements = entitlementsSchema.table('feature_entitlements', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
@@ -478,26 +478,30 @@ export type CreateCatalogInput = z.infer<typeof createCatalogEntrySchema>;
 
 ### T006: Register schema in `drizzle.config.ts`; generate migration
 
-**Purpose**: Wire `src/entitlements/schema.ts` into Drizzle Kit so it generates the `CREATE SCHEMA` + three `CREATE TABLE` statements as migration `0008_entitlements_schema.sql`.
+**Purpose**: Wire `src/entitlements/schema.ts` into Drizzle Kit so it generates the `CREATE SCHEMA` + three `CREATE TABLE` statements as a new migration, at the next free sequence number.
 
 **Steps**:
 
-1. Add `'./src/entitlements/schema.ts'` to the `schema` array in `drizzle.config.ts`:
+1. Add `'./src/entitlements/schema.ts'` to the `schema` array in `drizzle.config.ts`, appended after the existing entries (never replace or reorder them):
 
 ```typescript
-// drizzle.config.ts — add one line to the existing schema array
+// drizzle.config.ts — append one line to the existing schema array
 schema: [
   './src/db/schema.ts',
   './src/db/schema/orchestrator.ts',
+  './src/db/schema/events.ts',
+  './src/db/schema/coordination.ts',
+  './src/db/schema/approvals.ts',
   './src/content/schema.ts',
   './src/pipelines/schema.ts',
   './src/event-adapter/schema.ts',
+  './src/exports/schema.ts',
   './src/profiles/schema.ts',
   './src/entitlements/schema.ts',   // NEW
 ],
 ```
 
-2. Run `npx drizzle-kit generate` (or the project's existing script). This produces `drizzle/migrations/0008_<slug>_entitlements_schema.sql` and updates `drizzle/migrations/meta/_journal.json`.
+2. Run `npx drizzle-kit generate` (or the project's existing script). This produces `drizzle/migrations/00NN_<slug>_entitlements_schema.sql` at the next free sequence number (confirm the current highest under `drizzle/migrations/` at implementation time — `0012_jira_a11y_triage_scheduler.sql` as of `main` at commit `7a330234`, making `0013` the next free number) and updates `drizzle/migrations/meta/_journal.json`.
 
 3. Inspect the generated SQL. Verify it begins with `CREATE SCHEMA IF NOT EXISTS "entitlements";`. If Drizzle Kit generates `CREATE SCHEMA "entitlements";` without `IF NOT EXISTS` (as it did for the `profiles` schema in `0004_profile_isolation.sql:1`), edit the file to add `IF NOT EXISTS`. The `content` and `pipelines` schemas use the safe form (`0001_fine_young_avengers.sql:1,3`); match that.
 
@@ -513,12 +517,12 @@ CREATE INDEX "entitlements_fe_active_subject_idx"
 5. Commit both the generated `.sql` file and the updated `drizzle/migrations/meta/_journal.json`.
 
 **Files**:
-- `drizzle.config.ts` (modified — one line added)
-- `drizzle/migrations/0008_<slug>_entitlements_schema.sql` (new, generated then patched)
+- `drizzle.config.ts` (modified — one line appended)
+- `drizzle/migrations/00NN_<slug>_entitlements_schema.sql` (new, generated then patched; `00NN` is the next free sequence number at implementation time, `0013` as of `main` at commit `7a330234`)
 - `drizzle/migrations/meta/_journal.json` (updated by drizzle-kit generate)
 
 **Validation checklist**:
-- [ ] `drizzle.config.ts` now has 7 entries in the `schema` array
+- [ ] `drizzle.config.ts` now has 11 entries in the `schema` array (the 10 existing entries, unchanged, plus the new one appended)
 - [ ] Migration file contains `CREATE SCHEMA IF NOT EXISTS "entitlements";` as first statement
 - [ ] Migration file contains `CREATE TABLE "entitlements"."feature_catalog"` (with `feature_key` as PK — no `id` column)
 - [ ] Migration file contains `CREATE TABLE "entitlements"."feature_entitlements"` with the unique constraint on `(subject_type, subject_id, feature_key)`
@@ -576,8 +580,8 @@ CREATE INDEX "entitlements_fe_active_subject_idx"
 - [ ] `src/entitlements/schema.ts` — three tables, type exports, `pgSchema('entitlements')`
 - [ ] `src/entitlements/types.ts` — `Subject`, `FeatureKey`, `EffectiveEntitlement`, `GateToken`, `GrantSource`, `GrantStatus`, decision/audit types, constants
 - [ ] `src/entitlements/validation.ts` — Zod schemas for grant create/modify/revoke and catalog entry, with inferred TypeScript types
-- [ ] `drizzle.config.ts` — 7 schema entries
-- [ ] `drizzle/migrations/0008_*_entitlements_schema.sql` — `CREATE SCHEMA IF NOT EXISTS "entitlements"`, three tables, partial index patched in manually
+- [ ] `drizzle.config.ts` — 11 schema entries (10 existing, unchanged, plus the new one appended)
+- [ ] `drizzle/migrations/00NN_*_entitlements_schema.sql` (next free sequence number at implementation time, `0013` as of `main` at commit `7a330234`) — `CREATE SCHEMA IF NOT EXISTS "entitlements"`, three tables, partial index patched in manually
 - [ ] `npm run typecheck` exits 0
 - [ ] `npm test` exits 0 with no regressions (T007 hard gate)
 
@@ -588,7 +592,7 @@ CREATE INDEX "entitlements_fe_active_subject_idx"
 - **Extraction breaks content path (T007).** The content module (`EntitlementService`) imports `EntitlementCache` and `EntitlementResolver` from `./cache.js` and `./interface.js` relative to `src/content/entitlements/`. After T001, those files become re-export shims. If any import chain breaks, `EntitlementService` will fail at runtime without a compile-time error (dynamic imports, lazy requires). Mitigate: run the full test suite (T007) before merging.
 - **`ResolvedEntitlements` type spread.** Adding `featureKeys?: string[]` (T002) to `ResolvedEntitlements` in `src/content/types.ts` is the one non-additive change to a widely-imported type. It is backward compatible (optional field), but any code that spreads `ResolvedEntitlements` into a constructed object literal with exact type checking may need an explicit `featureKeys: []`. Scan for `satisfies ResolvedEntitlements` usages.
 - **Partial index not generated by Drizzle Kit.** The `WHERE status = 'active'` partial index is the hot-path index for the gate. If T006 forgets to patch it in, the gate will use the composite index instead — functionally correct but slower at scale. The migration review checklist must include this.
-- **Migration slug collision.** `drizzle-kit generate` derives the migration filename slug from the changed schema names. Verify the generated file is indeed prefixed `0008_` and not a higher number (would indicate a gap in the journal). If there is a gap, investigate before proceeding.
+- **Migration slug collision.** `drizzle-kit generate` derives the migration filename slug from the changed schema names. Verify the generated file is prefixed with the next free sequence number after the current highest migration under `drizzle/migrations/` (confirm at implementation time — do not hard-code a number). If the generated prefix skips a number, that indicates a gap in the journal — investigate before proceeding.
 - **`feature_catalog.featureKey` as text PK.** Every other table uses a cuid PK. Drizzle Kit may behave differently for text PKs without a default. Verify the generated SQL has no spurious default constraint on `feature_key`.
 
 ---

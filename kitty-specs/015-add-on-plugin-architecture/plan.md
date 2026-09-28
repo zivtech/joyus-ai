@@ -2,13 +2,13 @@
 
 **Branch**: `015-add-on-plugin-architecture` | **Date**: 2026-06-14 | **Spec**: [spec.md](spec.md)
 **Input**: `spec/015-add-on-plugin-architecture/spec.md` (FRs), [data-model.md](data-model.md). Code-grounding research is kept in the private planning repo; the file:line evidence this plan relies on is carried inline in spec.md, data-model.md, and the WP prompts.
-**Scope of THIS plan**: **Phase 1 only — the individual path that ships without WP12.** Phase 1.5 (org seat-licensing via membership inheritance) and Phase 2 (plugin host + SDK) are explicitly out of scope here and get their own plans.
+**Scope of THIS plan**: **Phase 1 only — the individual path that ships without org-level tenant identity engaged.** Phase 1.5 (org seat-licensing via membership inheritance, gated on isolation hardening + §11.8) and Phase 2 (plugin host + SDK) are explicitly out of scope here and get their own plans.
 
 ---
 
 ## Summary
 
-Build the feature-entitlement layer and gate that turns the open core into a licensable surface — for **individual subjects**, with no tenant system and no package split. Reuse the existing entitlement *resolution machinery* (`EntitlementResolver`, `HttpEntitlementResolver`, `EntitlementCache`) by extracting it to a shared `src/entitlements/core/`, then build a new persistent, explicit-deny system on top: three tables in a new `entitlements` PostgreSQL schema, a `FeatureGate` with structural (un-forgeable) enforcement, an operator grant-write path, and entitlement gating wired into the tools seam. The effective-entitlement **union (FR-019)** is built now with a `NullMembershipResolver` (returns `[]` pre-WP12), so Phase 1.5 activates org inheritance by swapping one implementation — no redesign.
+Build the feature-entitlement layer and gate that turns the open core into a licensable surface — for **individual subjects**, with no tenant system and no package split. Reuse the existing entitlement *resolution machinery* (`EntitlementResolver`, `HttpEntitlementResolver`, `EntitlementCache`) by extracting it to a shared `src/entitlements/core/`, then build a new persistent, explicit-deny system on top: three tables in a new `entitlements` PostgreSQL schema, a `FeatureGate` with structural (un-forgeable) enforcement, an operator grant-write path, and entitlement gating wired into the tools seam. The effective-entitlement **union (FR-019)** is built now with a `NullMembershipResolver` (returns `[]` in Phase 1), so Phase 1.5 activates org inheritance by swapping one implementation — no redesign.
 
 What this unblocks: an individual ("looking for answers") licenses an add-on for their own account; the gate shows and runs it for them and denies everyone else with an explicit "upgrade required."
 
@@ -30,7 +30,7 @@ What this unblocks: an individual ("looking for answers") licenses an add-on for
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| 2.1 Multi-Tenant from Day One | **CONDITIONAL** | Phase 1 operates on **individual subjects** (`tenantId == userId` interim). The schema (`subject_type`) and union resolver (FR-019) are multi-tenant-ready; org-scoped entitlement activates at WP12 (Phase 1.5). Not a violation — a sequenced, declared boundary. The gate takes an *explicit* subject and never infers from the collapse. |
+| 2.1 Multi-Tenant from Day One | **CONDITIONAL** | Phase 1 operates on **individual subjects** (`tenantId == userId` interim). The schema (`subject_type`) and union resolver (FR-019) are multi-tenant-ready; org-scoped entitlement activates once Phase 1.5 is enabled (gated on isolation hardening + §11.8, not on tenant identity — see spec §1/§8). Not a violation — a sequenced, declared boundary. The gate takes an *explicit* subject and never infers from the collapse. |
 | 2.2 Skills as Guardrails | **PASS** | Entitlement is a guardrail: add-on capability is gated, default-deny, enforced in trusted core (FR-016). Operator grant action exposed as an admin-only MCP tool with explicit authz (FR-015). |
 | 2.3 Sandbox by Default | **PASS (Phase 1)** | Default-deny everywhere; absence/expiry/resolver-failure denies. *(In-process add-on sandboxing is a Phase 2 concern — flagged, not in scope.)* |
 | 2.4 Monitor Everything | **PASS** | Every allow/deny appended to `entitlement_decisions` (append-only, FR-006); grant/revoke audited with actor identity (FR-015). |
@@ -69,7 +69,7 @@ src/
 │   ├── types.ts                      # Subject, FeatureKey, EffectiveEntitlement, GateToken (opaque), GrantSource
 │   ├── validation.ts                 # Zod: grant create/modify/revoke, catalog entry
 │   ├── resolver.ts                   # FeatureEntitlementResolver (DB-leads, expiry-aware filter — FR-017)
-│   ├── membership.ts                 # MembershipResolver interface + NullMembershipResolver (returns [] pre-WP12)
+│   ├── membership.ts                 # MembershipResolver interface + NullMembershipResolver (returns [] in Phase 1)
 │   ├── gate.ts                       # FeatureGate: isEntitled/assertEntitled, GateToken mint, union (FR-016/019)
 │   ├── subject-cache.ts              # subject-keyed cache wiring + explicit invalidation (FR-004/018)
 │   ├── audit.ts                      # entitlement_decisions append-only writer (FR-006)
@@ -97,7 +97,7 @@ tests/
 │   ├── core-extraction.test.ts       # content path regression: existing entitlement tests still green
 │   ├── resolver.test.ts              # DB-leads, expiry filter, fail-closed
 │   ├── gate.test.ts                  # explicit deny, resolution order, GateToken un-forgeability
-│   ├── union.test.ts                 # FR-019: {user} pre-WP12; membership-stub union
+│   ├── union.test.ts                 # FR-019: {user} in Phase 1; membership-stub union
 │   ├── subject-cache.test.ts         # subject key, TTL cap, invalidation
 │   ├── audit.test.ts                 # append-only decision log
 │   ├── admin-grants.test.ts          # FR-015 write path + authz + audit
@@ -132,7 +132,7 @@ tests/
 │   │  assertEntitled(subject, featureKey) → GateToken     │                 │
 │   │   effective set = UNION over actor's subjects:       │                 │
 │   │     { user:U } ∪ MembershipResolver(U)               │  FR-019         │
-│   │            (NullMembershipResolver → [] pre-WP12)     │                 │
+│   │            (NullMembershipResolver → [] in Phase 1)   │                 │
 │   │   resolution order:                                  │                 │
 │   │     subject-cache → resolver → DB fallback → DENY     │  FR-004/005/017 │
 │   │   deny → FeatureNotEntitledError (upgrade payload)    │  explicit       │
@@ -177,17 +177,17 @@ Wire entitlement gating into the tools seam (visibility + execution + upgrade re
 
 2. **Fail closed on access AND lapsed grants (FR-017).** Resolver outage → DB fallback → deny. The fallback filters `status='active' AND (valid_until IS NULL OR valid_until > now())` so a lapsed licensed feature is never served during an outage. The existing content fallback is *not* expiry-aware; do not copy it verbatim.
 
-3. **The gate takes an explicit subject.** It never infers from the `tenantId == userId` collapse. A test pins this so Phase 1.5 / WP12 cannot silently weaken it.
+3. **The gate takes an explicit subject.** It never infers from ambient context — unlike the `approval_` dispatch branch, which still hard-codes `tenantId = userId` (`tools/executor.ts:152-158`; tenant resolution deferred), and unlike the tenant resolver's self-scope fallback for users with no membership. A test pins this so Phase 1.5 cannot silently weaken it.
 
-4. **Grant-write is privileged and audited (FR-015).** Only an operator/admin role writes `feature_entitlements`, through a defined surface (not raw SQL), with actor identity recorded on every grant/revoke.
+4. **Grant-write is privileged and audited (FR-015).** Only a user with an operator-role tenant membership (`findOperatorMembership` — the same model `/event-adapter/admin` uses) writes `feature_entitlements`, through a defined surface (not raw SQL), with actor identity recorded on every grant/revoke. Admin and member roles, and users with no membership, are denied.
 
 5. **Decision audit is append-only (FR-006).** Only `logAllow`/`logDeny`; no UPDATE/DELETE in application code (follows the `orchestrator_events` precedent).
 
-6. **Bounded by tenant identity (declared).** Phase 1 entitlement strength for *individuals* is sound; org-scoped strength depends on WP12 + isolation hardening (Phase 1.5). This boundary is stated, not assumed away.
+6. **Bounded by isolation hardening, not tenant identity (declared).** Phase 1 entitlement strength for *individuals* is sound; tenant identity (Spec 013) already exists in significant part (memberships + resolver), so org-scoped strength instead depends on isolation hardening (RLS) and the §11.8 site-license-vs-seats decision (Phase 1.5). This boundary is stated, not assumed away.
 
 ## Future Considerations (NOT in this plan)
 
-- **Phase 1.5 — org seat-licensing**: swap `NullMembershipResolver` for a real one (reads WP12 tenant↔user membership); activate `subject_type=tenant` inheritance; couples with isolation/RLS hardening. Needs WP12.
+- **Phase 1.5 — org seat-licensing**: swap `NullMembershipResolver` for a real one (reads the existing `tenant_memberships` table); activate `subject_type=tenant` inheritance; couples with isolation/RLS hardening and the §11.8 decision — not blocked on further tenant-identity schema work.
 - **Phase 2 — plugin host + SDK**: extract `@joyus-ai/plugin-sdk`, plugin manifest + host + runtime loader, convert static tool registration and the closed `StepType` union to host-mediated registration with auto-gating; in-process loader threat model.
 - **Seat-capping** (vs site license): a seat-assignment table refining FR-019's union — open decision §11.8.
 - **Cross-instance invalidation bus**: pub/sub for immediate cross-node revocation — pending the revocation-SLA decision (§11.5); Phase 1 baseline is TTL-only across instances.
