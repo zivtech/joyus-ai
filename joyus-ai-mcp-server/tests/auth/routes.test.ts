@@ -849,11 +849,11 @@ describe('GET /github/callback', () => {
       data: { access_token: 'gh-token' },
     });
     vi.mocked(axios.get).mockResolvedValueOnce({
-      data: { login: 'example-user' },
+      data: { login: 'example-user', id: 12345 },
     });
 
     selectReturning([]);  // no existing connection
-    insertResolving();
+    const insertChain = insertResolving();
 
     const req = createMockReq({ query: { code: 'code', state: 'valid-state' }, session: {} });
     const res = createMockRes();
@@ -861,7 +861,9 @@ describe('GET /github/callback', () => {
     await handler!(req, res, vi.fn());
 
     expect(res._redirect).toBe('/auth');
-    expect(db.insert).toHaveBeenCalled();
+    expect(insertChain.values).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: { login: 'example-user', id: 12345 } })
+    );
   });
 
   it('updates existing GitHub connection on re-authorization', async () => {
@@ -910,6 +912,109 @@ describe('GET /github/callback', () => {
 //
 // Registered as POST /:service/disconnect (already migrated from GET to prevent
 // CSRF via link clicks).
+
+describe('POST /github/desktop-exchange', () => {
+  let handler: ReturnType<typeof findHandler>;
+
+  const GH_CONNECTION = {
+    id: 'conn-gh-1',
+    userId: 'user-1',
+    service: 'GITHUB',
+    metadata: { login: 'example-user', id: 12345 },
+  };
+
+  function mockGithub(user: Record<string, unknown>) {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { access_token: 'gh-token' } });
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: user });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    handler = findHandler(authRouter, 'post', '/github/desktop-exchange');
+  });
+
+  it('returns 400 when code is missing', async () => {
+    const res = createMockRes();
+    await handler!(createMockReq({ body: {} }), res, vi.fn());
+    expect(res._status).toBe(400);
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when GitHub returns no access token', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { error: 'bad_verification_code' } });
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+    expect(res._status).toBe(401);
+  });
+
+  it('returns 401 when GitHub returns no numeric user id', async () => {
+    mockGithub({ login: 'example-user' });
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+    expect(res._status).toBe(401);
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  it('returns the linked user credentials when the GitHub id matches', async () => {
+    mockGithub({ login: 'example-user', id: 12345 });
+    selectReturning([GH_CONNECTION]);
+    selectReturning([EXISTING_USER]);
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    expect(res._body).toEqual({
+      token: 'existing-mcp-token',
+      tenantId: 'user-1',
+      workspaceId: 'user-1',
+    });
+  });
+
+  it('does not match on login alone (renamed/re-registered GitHub login)', async () => {
+    // Attacker holds the login a linked user used to have, but a different id.
+    // The query filters on metadata->>'id', so the DB returns no rows.
+    mockGithub({ login: 'example-user', id: 99999 });
+    selectReturning([]);
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    expect(res._status).toBe(404);
+    expect(JSON.stringify(res._body)).not.toContain('existing-mcp-token');
+  });
+
+  it('returns 409 when the GitHub id is linked to more than one account', async () => {
+    mockGithub({ login: 'example-user', id: 12345 });
+    selectReturning([GH_CONNECTION, { ...GH_CONNECTION, id: 'conn-gh-2', userId: 'user-2' }]);
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    expect(res._status).toBe(409);
+    expect(db.select).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns 404 when the linked user no longer exists', async () => {
+    mockGithub({ login: 'example-user', id: 12345 });
+    selectReturning([GH_CONNECTION]);
+    selectReturning([]);
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    expect(res._status).toBe(404);
+  });
+
+  it('returns 500 without leaking error details when GitHub is unreachable', async () => {
+    vi.mocked(axios.post).mockRejectedValueOnce(new Error('ECONNRESET internal detail'));
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    expect(res._status).toBe(500);
+    expect(JSON.stringify(res._body)).not.toContain('ECONNRESET');
+  });
+});
 
 describe('POST /:service/disconnect', () => {
   let handler: ReturnType<typeof findHandler>;
