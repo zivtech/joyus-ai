@@ -31,7 +31,7 @@ git branch --show-current  # Should show "main"
 
 1. **Setup**: Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks`
 
-   **CRITICAL**: The command returns JSON with `FEATURE_DIR` as an ABSOLUTE path (e.g., `/Users/robert/Code/project/kitty-specs/015-research-topic`).
+   **CRITICAL**: The command returns JSON with `FEATURE_DIR` as an ABSOLUTE path (e.g., `/path/to/project/kitty-specs/015-research-topic`).
 
    **YOU MUST USE THIS PATH** for ALL subsequent file operations.
 
