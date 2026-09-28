@@ -112,7 +112,7 @@ Monitoring is not optional — it's how we learn and improve. For operational us
   - Security-sensitive configurations (API keys, auth secrets, deployment-specific hardening)
 - The boundary is **security and organizational data**, not platform capability — we don't withhold platform features to create artificial scarcity
 - **Zivtech's competitive advantage** (as the founding maintainer) is 20 years of consulting expertise, client relationships, and operational know-how — not the source code. Other organizations using the platform build their own competitive advantage through their own encoded knowledge.
-- License selection will balance community freedom with protection against hostile closed-source forks (e.g., AGPL, BSL, or similar copyleft license)
+- **License: Apache 2.0** — permissive, already applied (see `LICENSE`). The core is permissively licensed to maximize adoption and freedom. This is consistent with the reasoning above: since secrecy provides no durable moat, copyleft fork-protection is not needed. Sustainability comes from proprietary add-ons, managed operations, and consulting expertise — not license walls. (Supersedes the earlier intent to favor a copyleft license such as AGPL or BSL.)
 - **Repository separation model:**
 
 | Repository | Visibility | Contains |
@@ -378,9 +378,10 @@ This constitution can be amended by:
 
 ---
 
-*Constitution Version: 1.8*
+*Constitution Version: 1.9*
 *Established: January 29, 2026*
-*Last Updated: March 21, 2026*
+*Last Updated: June 14, 2026*
+*Changes v1.9: §2.8 license clause updated to reflect the applied Apache 2.0 license (permissive), superseding the earlier copyleft (AGPL/BSL) intent. Rationale: secrecy is no durable moat (per §2.8 itself); sustainability comes from proprietary add-ons, managed operations, and consulting — not license walls. Follow-up (tracked separately): widen §2.8/§8 framing to acknowledge additive, non-crippleware proprietary add-ons as a revenue line.*
 *Changes v1.8: Added §10 "Governance" — four principles: G.1 spec artifact required before Level 3+ agentic execution; G.2 governance checks (Spec 007) apply to all features and run in CI on every PR; G.3 autonomy level assignments documented, versioned, and reviewed per governance/autonomy-levels.md; G.4 measured-vs-perceived productivity divergence is a first-class health indicator. Renumbered former §9 (Amendment Process) to §11.*
 *Changes v1.7: Added §5.4 "MCP Architecture" — four-server domain boundary (Platform Core, Integrations, Profile Engine, Dev Enforcement); mandatory domain prefixing table; Tool Search-optimized description guidelines; rule against MCP loading for internal integrations; per-agent MCP isolation pattern for orchestration layers*
 *Changes v1.6: Added §2.10 "Client-Informed, Platform-Generic" — client needs inform abstract platform capabilities; no client names, terminology, or domain-specific examples in the public repo; agents must generalize at point of creation*
