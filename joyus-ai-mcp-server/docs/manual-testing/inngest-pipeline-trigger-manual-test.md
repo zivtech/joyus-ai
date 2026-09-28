@@ -17,8 +17,10 @@ These steps validate the Inngest migration changes for PR #33, especially manual
 
 ## 1. Enter the server directory
 
+From the repository root:
+
 ```bash
-cd /home/jdelaigle/Work/infrastructure/joyus-ai/joyus-ai-mcp-server
+cd joyus-ai-mcp-server
 ```
 
 ## 2. Install dependencies if needed
@@ -154,7 +156,7 @@ The exact status depends on the stored pipeline steps and their configuration.
 From the repository root:
 
 ```bash
-cd /home/jdelaigle/Work/infrastructure/joyus-ai
+cd "$(git rev-parse --show-toplevel)"
 
 grep -R "pipelines/engine\|pipelines/event-bus\|pipelines/triggers\|initializePipelineModule\|eventBus\.publish" \
   -n joyus-ai-mcp-server/src joyus-ai-mcp-server/tests || true

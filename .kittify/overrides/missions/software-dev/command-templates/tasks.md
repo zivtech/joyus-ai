@@ -73,11 +73,11 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
 
 1. **Setup**: Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks` from the repository root and capture `FEATURE_DIR` plus `AVAILABLE_DOCS`. All paths must be absolute.
 
-   **CRITICAL**: The command returns JSON with `FEATURE_DIR` as an ABSOLUTE path (e.g., `/Users/robert/Code/new_specify/kitty-specs/001-feature-name`).
+   **CRITICAL**: The command returns JSON with `FEATURE_DIR` as an ABSOLUTE path (e.g., `/path/to/project/kitty-specs/001-feature-name`).
 
    **YOU MUST USE THIS PATH** for ALL subsequent file operations. Example:
    ```
-   FEATURE_DIR = "/Users/robert/Code/new_specify/kitty-specs/001-a-simple-hello"
+   FEATURE_DIR = "/path/to/project/kitty-specs/001-a-simple-hello"
    tasks.md location: FEATURE_DIR + "/tasks.md"
    prompt location: FEATURE_DIR + "/tasks/WP01-slug.md"
    ```
