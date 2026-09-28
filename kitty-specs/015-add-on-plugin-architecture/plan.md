@@ -1,7 +1,7 @@
 # Implementation Plan: Add-on Feature Entitlements — Phase 1 (Individual Path)
 
 **Branch**: `015-add-on-plugin-architecture` | **Date**: 2026-06-14 | **Spec**: [spec.md](spec.md)
-**Input**: `spec/015-add-on-plugin-architecture/spec.md` (FRs), [data-model.md](data-model.md), [research.md](research.md)
+**Input**: `spec/015-add-on-plugin-architecture/spec.md` (FRs), [data-model.md](data-model.md). The code-grounding research stays in the private planning repo; its file:line evidence is carried inline in spec.md, data-model.md, and the WP prompts.
 **Scope of THIS plan**: **Phase 1 only — the individual path that ships without WP12.** Phase 1.5 (org seat-licensing via membership inheritance) and Phase 2 (plugin host + SDK) are explicitly out of scope here and get their own plans.
 
 ---
@@ -50,7 +50,6 @@ What this unblocks: an individual ("looking for answers") licenses an add-on for
 spec/015-add-on-plugin-architecture/
 ├── spec.md              # Feature specification (19 FRs, 2 layers, 3 phases)
 ├── data-model.md        # entitlements schema + query/write rules
-├── research.md          # Code grounding (file:line evidence)
 ├── plan.md              # This file — Phase 1 (individual path)
 ├── tasks.md             # Phase 1 work-package decomposition
 └── meta.json

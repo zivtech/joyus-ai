@@ -280,3 +280,50 @@ The **actor is always an individual user**; entitlement is evaluated for that us
 6. **Phase 1 in-tree ownership map vs minimal registry** — Phase 1 can gate in-tree add-on tools with a static ownership map; decide whether to ship the mutable tool registry early (smooths Phase 2) or defer it. (Note: the static map is a manual-sync risk — a new add-on tool added without an ownership entry ships ungated; consider a registration-time assertion.)
 7. **Core API versioning policy** — semver discipline and deprecation window for the SDK surface (Phase 2).
 8. **Inheritance granularity — site license vs capped seats (architecture).** Does an org add-on grant mean **every member inherits** (org-wide site license — what FR-019's union ships) or **N assigned seats of M members** (capped)? Capped seats need a seat-assignment table and change FR-019's union to "tenant grant *where the user holds a seat*." A productization choice with a direct schema consequence — resolve before Phase 1.5. Phase 1 (individuals) is unaffected.
+
+---
+
+## Adoption Plan
+
+Rollout follows the phasing in §1. Each phase has its own plan, and each one starts only after the previous phase's gate holds. Enforcement applies only to capabilities listed in the feature catalog (FR-001) and, in Phase 1, the in-tree ownership map (FR-007). Core behavior is therefore unchanged until the first add-on feature is catalogued, and core tools stay ungated for everyone (SC-5).
+
+- **Phase 1 foundation (WP01–WP02).** Extract the shared `core/` and add the additive `entitlements` schema and the decision core. The existing content-entitlement tests must stay green throughout, because the extraction touches a live path (SC-4).
+- **Phase 1 enforcement and write path (WP03–WP04).** No add-on capability is gated in production until second-path denial (SC-6) and fail-closed-on-lapsed-grant behavior (SC-7) pass. Before any gated feature ships, the `content_search` synthetic-entitlement path is fixed or quarantined (FR-016). First grants are created through the operator surface (FR-015), not raw SQL (SC-8).
+- **Phase 1 seam wiring and validation (WP05–WP06).** Tool visibility and execution gating land together with the integration sweep that proves the Phase 1 success criteria. Until the registration-time assertion from §11.6 exists, each new in-tree add-on tool needs an ownership-map entry in the same change. Without that entry the tool ships ungated.
+- **Phase 1.5 (org-level entitlement).** This starts only after Spec 013 WP01 (tenants and membership) and isolation hardening land, and after §11.8 (site license vs capped seats) is decided. Org tenants are not exposed before then. The individual path is unaffected.
+- **Phase 2 (plugin host + SDK).** This starts after the loader and supply-chain threat-modeling pass in §8. The acceptance gate is a sample out-of-tree add-on that works with zero open-core changes (SC-9) and survives a deliberately broken plugin (SC-10).
+- **Reversibility.** The Phase 1 schema is additive. Reverting the application code restores today's behavior, and the new tables can stay in place.
+
+## ROI Metrics
+
+These are engineering and operating measures only. Commercial measures (pricing, conversion targets, revenue) are tracked in the private planning repo and are intentionally not part of this spec. `entitlement_decisions` (FR-006) provides the deny data those analyses consume.
+
+- **Reuse:** one resolver/cache implementation serves both content and feature entitlements, with no duplicated resolver or cache code (SC-4).
+- **Ungated paths:** target zero Phase 1 gated call sites reachable without a `GateToken` (FR-016), and zero add-on tools missing an ownership-map entry (§11.6).
+- **Gate latency:** `FeatureGate` cache hit < 5ms p95; cold resolve < 500ms p95; `tools/list` filtering < 10ms for ≤ 50 catalog entries (§3 Performance).
+- **Fail-closed correctness:** zero `allow` decisions on expired or suspended grants, including during a resolver outage (SC-7). Measured from `entitlement_decisions.reason` and `resolved_from`.
+- **Revocation latency:** time from revoke to first deny is at most one cache TTL (SC-1), against the SLA to be set in §11.5.
+- **Audit coverage:** 100% of gate decisions are recorded and queryable per subject and per feature (SC-12).
+- **Out-of-tree delivery (Phase 2):** a licensed add-on ships as a separate package with zero open-core changes (SC-9).
+- **Owner:** Engineering Operations.
+- **Review cadence:** weekly (per `meta.json`).
+
+## Security + MCP Governance
+
+§3 (Security) and the plan's Security Considerations hold the full requirements. This section summarizes the governance posture.
+
+- **Trusted-core enforcement:** entitlement is an authorization boundary, enforced structurally and never by the add-on. Phase 1 enforces it through the `GateToken`-only gated path (FR-016); Phase 2 through the host wrap (FR-013). Hand-constructed entitlement objects cannot reach a gated path.
+- **Default deny and fail closed:** a missing, expired, or suspended grant, or a resolver failure, denies. The DB fallback never serves a lapsed grant (FR-017).
+- **Explicit subject:** the gate never infers the subject from the `tenantId == userId` collapse. A test pins this so Phase 1.5 cannot weaken it silently.
+- **MCP tool surface:** `tools/list` omits add-on tools the subject is not entitled to. `tools/call` on such a tool returns a structured upgrade error, and the decision is logged (FR-007, SC-3, SC-5). Core tools are unaffected.
+- **Grant administration:** only an operator/admin role can create, modify, or revoke grants, through the FR-015 surface (operator REST endpoint and/or admin-only MCP tool). Every change is audited with actor identity. Tenant users cannot grant.
+- **Audit trail:** gate decisions are append-only and tenant-scoped (FR-006), and reuse the existing audit retention approach.
+- **Secrets:** Phase 1 adds no new long-lived secrets (DB-leads, §11.2). If an external resolver is adopted, it uses the existing `HttpEntitlementResolver` configuration and its encrypted credential.
+- **Open-core boundary:** a CI guard fails when proprietary or non-Apache code enters the open repo, and a fork with zero add-ons still boots with the floor capability set (FR-014, SC-11).
+- **Residual risks (declared, not mitigated here):**
+  - Add-on code runs in-process with core privileges. There is no sandbox; operators vet and allowlist packages.
+  - Org-level entitlement strength depends on Spec 013 and isolation hardening.
+  - Cross-instance revocation is TTL-bounded unless FR-018's invalidation bus is adopted.
+- **Approval gates:**
+  - Org tenants are exposed only after Spec 013 and isolation hardening land (Phase 1.5).
+  - Phase 2 plans land only after the plugin-loader threat-modeling pass (§8).
