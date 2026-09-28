@@ -6,7 +6,7 @@ const VALID_SNAPSHOT = {
   version: '1.0.0',
   timestamp: '2026-02-16T14:30:00Z',
   event: 'commit',
-  project: { rootPath: '/home/user/project', hash: 'abc123def456', name: 'my-project' },
+  project: { rootPath: '/workspace/project', hash: 'abc123def456', name: 'my-project' },
   git: {
     branch: 'feature/a11y-652',
     commitHash: 'abc1234',

@@ -114,9 +114,9 @@ Use language identifiers in code blocks: ````python`, ````bash`
 **Example (correct chronological order)**:
 ```
 - 2026-01-12T10:00:00Z – system – lane=planned – Prompt created
-- 2026-01-12T10:30:00Z – claude – lane=doing – Started literature search
-- 2026-01-12T11:00:00Z – claude – lane=for_review – Research complete, ready for review
-- 2026-01-12T11:30:00Z – codex – lane=done – Review passed, findings validated  <- LATEST (at bottom)
+- 2026-01-12T10:30:00Z – agent-a – lane=doing – Started literature search
+- 2026-01-12T11:00:00Z – agent-a – lane=for_review – Research complete, ready for review
+- 2026-01-12T11:30:00Z – agent-b – lane=done – Review passed, findings validated  <- LATEST (at bottom)
 ```
 
 **Common mistakes (DO NOT DO THIS)**:

@@ -156,14 +156,14 @@ describe('StateStore', () => {
 
 describe('getProjectHash', () => {
   it('is deterministic for the same path', () => {
-    const h1 = getProjectHash('/home/user/project');
-    const h2 = getProjectHash('/home/user/project');
+    const h1 = getProjectHash('/workspace/project');
+    const h2 = getProjectHash('/workspace/project');
     expect(h1).toBe(h2);
   });
 
   it('produces different hashes for different paths', () => {
-    const h1 = getProjectHash('/home/user/project-a');
-    const h2 = getProjectHash('/home/user/project-b');
+    const h1 = getProjectHash('/workspace/project-a');
+    const h2 = getProjectHash('/workspace/project-b');
     expect(h1).not.toBe(h2);
   });
 
