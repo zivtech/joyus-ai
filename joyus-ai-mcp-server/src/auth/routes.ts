@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 
 import { config } from '../config.js';
@@ -748,7 +748,7 @@ authRouter.get('/github/callback', async (req: Request, res: Response) => {
         .update(connections)
         .set({
           accessToken: encryptToken(access_token),
-          metadata: { login: userResponse.data.login },
+          metadata: { login: userResponse.data.login, id: userResponse.data.id },
           updatedAt: new Date()
         })
         .where(eq(connections.id, existingConnection.id));
@@ -757,7 +757,7 @@ authRouter.get('/github/callback', async (req: Request, res: Response) => {
         userId: oauthState.userId,
         service: 'GITHUB',
         accessToken: encryptToken(access_token),
-        metadata: { login: userResponse.data.login }
+        metadata: { login: userResponse.data.login, id: userResponse.data.id }
       });
     }
 
@@ -800,23 +800,38 @@ authRouter.post('/github/desktop-exchange', async (req: Request, res: Response) 
     });
 
     const githubLogin = userResponse.data.login as string;
+    const githubId = userResponse.data.id as number | undefined;
+    if (typeof githubId !== 'number') {
+      return res.status(401).json({ error: 'oauth_failed', message: 'GitHub did not return a user id' });
+    }
 
-    const allGithubConnections = await db
+    // Match on GitHub's immutable numeric id, never the login: logins can be
+    // renamed and re-registered by someone else, which would hand them the
+    // original account's MCP token.
+    const matchingConnections = await db
       .select()
       .from(connections)
-      .where(eq(connections.service, 'GITHUB'));
+      .where(and(
+        eq(connections.service, 'GITHUB'),
+        sql`${connections.metadata}->>'id' = ${String(githubId)}`
+      ))
+      .limit(2);
 
-    const matchingConnection = allGithubConnections.find((c) => {
-      const meta = c.metadata as Record<string, unknown> | null;
-      return meta !== null && meta['login'] === githubLogin;
-    });
-
-    if (!matchingConnection) {
+    if (matchingConnections.length === 0) {
       return res.status(404).json({
         error: 'no_account',
-        message: `No Joyus account linked to GitHub user "${githubLogin}". Connect GitHub in the web portal first.`
+        message: `No Joyus account linked to GitHub user "${githubLogin}". Connect (or reconnect) GitHub in the web portal first.`
       });
     }
+
+    if (matchingConnections.length > 1) {
+      return res.status(409).json({
+        error: 'ambiguous_account',
+        message: 'This GitHub account is linked to more than one Joyus account. Disconnect it from all but one in the web portal.'
+      });
+    }
+
+    const [matchingConnection] = matchingConnections;
 
     const [user] = await db
       .select()
