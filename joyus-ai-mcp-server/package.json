@@ -16,6 +16,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
+    "db:replay-check": "node scripts/migration-replay-check.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --quiet",
     "lint:fix": "eslint src --ext .ts --fix --quiet",
