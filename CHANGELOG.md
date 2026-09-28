@@ -4,6 +4,29 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Migration chain repair for stale-environment catch-up** (#96) — databases
+  that recorded migrations 0000–0007 against the pre-rewrite chain (production)
+  crashed on `0008` because the `pipelines` schema objects, created by the
+  rewritten `0001` they never actually ran, were missing. `0008` is now guarded,
+  and a new `0013_pipelines_baseline_repair` migration recreates the complete
+  final-state `pipelines` schema with existence guards (a no-op on healthy
+  databases). Journal `when` timestamps are monotonic again (`0009` and `0012`
+  were out of order and could be silently skipped by environments that migrated
+  past them), and `0009`/`0012` are idempotent so the reposition cannot
+  double-apply destructively.
+
+### Added
+
+- **Migration replay check** (#96) — `npm run db:replay-check`
+  (`scripts/migration-replay-check.mjs`) lints the journal, replays the full
+  chain against a scratch Postgres 16, verifies a second run applies nothing,
+  and replays the stale-environment catch-up shape that broke the v0.1.0
+  deploy. Runs in CI as the `migration-replay` job.
+
 ## [0.1.0] - 2026-06-10
 
 First tagged release of the open-core Joyus AI platform. Everything below was

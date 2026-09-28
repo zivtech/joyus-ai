@@ -104,6 +104,20 @@ export const connections = pgTable('connections', {
   userIdIdx: index('connections_user_id_idx').on(table.userId)
 }));
 
+// Session-scoped skill preferences. Rows expire so abandoned session IDs do
+// not leave durable preferences behind indefinitely.
+export const skillEnablements = pgTable('skill_enablement', {
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sessionId: text('session_id').notNull(),
+  skillName: text('skill_name').notNull(),
+  enabledAt: timestamp('enabled_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at').notNull()
+}, (table) => ({
+  userSessionSkillUnique: uniqueIndex('skill_enablement_user_session_skill_unique')
+    .on(table.userId, table.sessionId, table.skillName),
+  expiresAtIdx: index('skill_enablement_expires_at_idx').on(table.expiresAt)
+}));
+
 // Audit log for tool executions
 export const auditLogs = pgTable('audit_logs', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
@@ -195,6 +209,7 @@ export const taskRuns = pgTable('task_runs', {
 export const usersRelations = relations(users, ({ many }) => ({
   tenantMemberships: many(tenantMemberships),
   connections: many(connections),
+  skillEnablements: many(skillEnablements),
   auditLogs: many(auditLogs),
   scheduledTasks: many(scheduledTasks),
   taskRuns: many(taskRuns)
@@ -210,6 +225,13 @@ export const tenantMembershipsRelations = relations(tenantMemberships, ({ one })
 export const connectionsRelations = relations(connections, ({ one }) => ({
   user: one(users, {
     fields: [connections.userId],
+    references: [users.id]
+  })
+}));
+
+export const skillEnablementsRelations = relations(skillEnablements, ({ one }) => ({
+  user: one(users, {
+    fields: [skillEnablements.userId],
     references: [users.id]
   })
 }));
@@ -253,6 +275,9 @@ export type TenantRole = 'member' | 'admin' | 'operator';
 
 export type Connection = typeof connections.$inferSelect;
 export type NewConnection = typeof connections.$inferInsert;
+
+export type SkillEnablement = typeof skillEnablements.$inferSelect;
+export type NewSkillEnablement = typeof skillEnablements.$inferInsert;
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type NewAuditLog = typeof auditLogs.$inferInsert;
