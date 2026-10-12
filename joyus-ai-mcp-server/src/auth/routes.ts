@@ -10,6 +10,7 @@ import { Router, Request, Response } from 'express';
 import { config } from '../config.js';
 import { db, users, connections, oauthStates, type Service } from '../db/client.js';
 import { encryptToken, generateMcpToken, generateOAuthState } from '../db/encryption.js';
+import { resolveTenantContextForUser, sendTenantResolutionError, TenantResolutionError } from '../tenancy/resolver.js';
 
 import { isDevAuthBypassEnabled } from './dev-bypass.js';
 import { requireSessionOrRedirect } from './middleware.js';
@@ -846,12 +847,25 @@ authRouter.post('/github/desktop-exchange', async (req: Request, res: Response) 
       });
     }
 
+    // Resolve the tenant the same way the MCP and orchestrator paths do: the
+    // user's default tenant membership, falling back to their self-scoped
+    // tenant (user.id) when they have none. There is no separate workspace
+    // entity yet, so the workspace is the resolved tenant.
+    const tenantContext = await resolveTenantContextForUser(user.id, {
+      db,
+      lookupDefaultTenant: true,
+    });
+    const tenantId = tenantContext.tenantId ?? user.id;
+
     res.json({
       token: user.mcpToken,
-      tenantId: user.id,
-      workspaceId: user.id,
+      tenantId,
+      workspaceId: tenantId,
     });
   } catch (error: unknown) {
+    if (error instanceof TenantResolutionError) {
+      return sendTenantResolutionError(res, error);
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('GitHub desktop exchange error:', message);
     res.status(500).json({ error: 'exchange_failed', message: 'GitHub authentication failed' });

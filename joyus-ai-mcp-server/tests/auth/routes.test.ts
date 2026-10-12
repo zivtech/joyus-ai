@@ -930,6 +930,8 @@ describe('POST /github/desktop-exchange', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Drop queued select results so an unconsumed lookup can't leak into the next test.
+    vi.mocked(db.select).mockReset();
     handler = findHandler(authRouter, 'post', '/github/desktop-exchange');
   });
 
@@ -959,15 +961,58 @@ describe('POST /github/desktop-exchange', () => {
     mockGithub({ login: 'example-user', id: 12345 });
     selectReturning([GH_CONNECTION]);
     selectReturning([EXISTING_USER]);
+    selectReturning([]); // no default tenant membership
 
     const res = createMockRes();
     await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
 
+    // Without a membership the user falls back to their self-scoped tenant.
     expect(res._body).toEqual({
       token: 'existing-mcp-token',
       tenantId: 'user-1',
       workspaceId: 'user-1',
     });
+  });
+
+  it("returns the user's default tenant membership instead of their user id", async () => {
+    mockGithub({ login: 'example-user', id: 12345 });
+    selectReturning([GH_CONNECTION]);
+    selectReturning([EXISTING_USER]);
+    const membershipLookup = selectReturning([
+      { id: 'membership-1', userId: 'user-1', tenantId: 'tenant-acme', role: 'member', isDefault: true },
+    ]);
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    expect(membershipLookup.where).toHaveBeenCalledTimes(1);
+    expect(res._body).toEqual({
+      token: 'existing-mcp-token',
+      tenantId: 'tenant-acme',
+      workspaceId: 'tenant-acme',
+    });
+  });
+
+  it('returns 503 without the token when the tenant membership lookup fails', async () => {
+    mockGithub({ login: 'example-user', id: 12345 });
+    selectReturning([GH_CONNECTION]);
+    selectReturning([EXISTING_USER]);
+    const chain = {
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockRejectedValue(new Error('connection refused (internal detail)')),
+    };
+    vi.mocked(db.select).mockReturnValueOnce(chain as never);
+
+    const res = createMockRes();
+    await handler!(createMockReq({ body: { code: 'code' } }), res, vi.fn());
+
+    // Fail closed: never fall back to the self tenant when the lookup errors,
+    // or a member of another tenant would be handed the wrong tenant id.
+    expect(res._status).toBe(503);
+    expect(res._body).toMatchObject({ error: 'tenant_lookup_unavailable' });
+    expect(JSON.stringify(res._body)).not.toContain('existing-mcp-token');
+    expect(JSON.stringify(res._body)).not.toContain('internal detail');
   });
 
   it('does not match on login alone (renamed/re-registered GitHub login)', async () => {
