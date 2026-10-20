@@ -285,8 +285,9 @@ check a user's MCP token without reading `users.mcp_token`. It is
 service-to-service only and does not change `/mcp` authentication.
 
 Enable it by setting `INTROSPECTION_SERVICE_TOKEN` (generate one with
-`openssl rand -hex 32`). When the variable is unset or empty the route is
-disabled and answers `404`.
+`openssl rand -hex 32`). When the variable is unset, empty or shorter than 32
+characters the route is disabled and answers `404`; a short value also logs a
+warning.
 
 ```http
 POST /auth/introspect

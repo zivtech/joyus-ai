@@ -11,7 +11,7 @@
  *   Response  200 { "active": true, "userId", "email", "defaultTenantId" | null }
  *             200 { "active": false }
  *             400 invalid body, 401 missing/wrong service token,
- *             404 route disabled (INTROSPECTION_SERVICE_TOKEN unset or empty),
+ *             404 route disabled (INTROSPECTION_SERVICE_TOKEN unset, empty or shorter than 32 characters),
  *             429 rate limited, 500 lookup failed.
  *
  * Every response carries Cache-Control: no-store. The user token is never
@@ -29,6 +29,8 @@ import { db, users, tenantMemberships } from '../db/client.js';
 
 const SERVICE_TOKEN_ENV = 'INTROSPECTION_SERVICE_TOKEN';
 const MAX_TOKEN_LENGTH = 4096;
+const MIN_SERVICE_TOKEN_LENGTH = 32;
+let warnedShortServiceToken = false;
 
 /**
  * Requests allowed per minute for the authenticated service caller. One
@@ -51,6 +53,15 @@ function sha256(value: string): Buffer {
 function getConfiguredServiceToken(): string | null {
   const configured = process.env[SERVICE_TOKEN_ENV];
   if (configured === undefined || configured.trim() === '') return null;
+  if (configured.length < MIN_SERVICE_TOKEN_LENGTH) {
+    if (!warnedShortServiceToken) {
+      warnedShortServiceToken = true;
+      console.warn(
+        `[auth] ${SERVICE_TOKEN_ENV} is shorter than ${MIN_SERVICE_TOKEN_LENGTH} characters; token introspection stays disabled`,
+      );
+    }
+    return null;
+  }
   return configured;
 }
 

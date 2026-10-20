@@ -267,6 +267,20 @@ describe('POST /auth/introspect: disabled when no service token is configured', 
     expect(db.select).not.toHaveBeenCalled();
   });
 
+  it('stays disabled and warns when the service token is shorter than 32 characters', async () => {
+    const short = 'a'.repeat(31);
+    process.env.INTROSPECTION_SERVICE_TOKEN = short;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const res = await call({ serviceToken: short });
+
+    expect(res.status).toBe(404);
+    expect(db.select).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).not.toContain(short);
+    warn.mockRestore();
+  });
+
   it('also answers 404 for a malformed body when disabled', async () => {
     delete process.env.INTROSPECTION_SERVICE_TOKEN;
 
