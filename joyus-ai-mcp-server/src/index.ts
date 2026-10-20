@@ -23,6 +23,7 @@ import session from 'express-session';
 import helmet from 'helmet';
 import { serve } from 'inngest/express';
 
+import { introspectBodyErrorHandler, introspectRouter } from './auth/introspect.js';
 import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
@@ -306,6 +307,11 @@ app.get('/health', async (req, res) => {
     services,
   });
 });
+
+// Token introspection for a separate service that verifies bearer tokens.
+// Mounted before authRouter; the error handler turns body-parser failures
+// (raised by express.json above) into a 400 instead of the generic 500.
+app.use('/auth/introspect', introspectRouter, introspectBodyErrorHandler);
 
 // Auth routes (OAuth callbacks, token management)
 app.use('/auth', authRouter);
