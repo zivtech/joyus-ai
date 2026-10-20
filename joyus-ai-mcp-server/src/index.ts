@@ -23,9 +23,11 @@ import session from 'express-session';
 import helmet from 'helmet';
 import { serve } from 'inngest/express';
 
+import { createIntrospectHandler, lookupToken } from './auth/introspect.js';
 import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
+import { config } from './config.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
 import { users } from './db/schema.js';
@@ -58,12 +60,13 @@ import { SessionService } from './orchestrator/session.service.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
 import { createStepRegistry } from './pipelines/steps/registry.js';
+import { postToolRegistry } from './policy/index.js';
 import { initializeProfiles } from './profiles/index.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
 import { resolveTenantContext, sendTenantResolutionError } from './tenancy/resolver.js';
 import { executeTool, setPipelineContext } from './tools/executor.js';
-import { getAllTools } from './tools/index.js';
+import { allToolDefinitionNames, getAllTools } from './tools/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -306,6 +309,13 @@ app.get('/health', async (req, res) => {
     services,
   });
 });
+
+// Token introspection for the private policy service (spec 016 FR-01).
+// Mounted before the auth router so it is never shadowed by session handling.
+app.post(
+  '/auth/introspect',
+  createIntrospectHandler({ serviceToken: config.POLICY_INTROSPECTION_TOKEN, lookup: lookupToken }),
+);
 
 // Auth routes (OAuth callbacks, token management)
 app.use('/auth', authRouter);
@@ -568,6 +578,23 @@ const server = app.listen(PORT, async () => {
   console.log(`   MCP:    http://localhost:${PORT}/mcp`);
   console.log(`   Auth:   http://localhost:${PORT}/auth`);
   console.log(`   Tasks:  http://localhost:${PORT}/tasks`);
+
+  // Policy registry post (spec 016 WP03 T019): tell the policy service every
+  // tool name, so denies can name them. Failure is isolated.
+  if (config.POLICY_SERVICE_URL && config.POLICY_SERVICE_TOKEN) {
+    try {
+      const { created } = await postToolRegistry({
+        baseUrl: config.POLICY_SERVICE_URL,
+        serviceToken: config.POLICY_SERVICE_TOKEN,
+        toolNames: allToolDefinitionNames(),
+      });
+      console.log(`   Policy:  registry posted (${created} new tool rows)`);
+    } catch (error) {
+      console.error('Failed to post the tool registry to the policy service:', error);
+    }
+  } else {
+    console.log('   Policy:  AllowAll (POLICY_SERVICE_URL unset)');
+  }
 
   // Initialize task scheduler
   try {
