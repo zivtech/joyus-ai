@@ -278,6 +278,45 @@ Configure `notifyOnSuccess` and `notifyOnError` per task.
 | `0 17 * * 5` | 5:00 PM, Fridays |
 | `0 0 1 * *` | Midnight, 1st of month |
 
+## Token Introspection
+
+`POST /auth/introspect` lets a separate service that verifies bearer tokens
+check a user's MCP token without reading `users.mcp_token`. It is
+service-to-service only and does not change `/mcp` authentication.
+
+Enable it by setting `INTROSPECTION_SERVICE_TOKEN` (generate one with
+`openssl rand -hex 32`). When the variable is unset, empty or shorter than 32
+characters the route is disabled and answers `404`; a short value also logs a
+warning.
+
+```http
+POST /auth/introspect
+Authorization: Bearer <INTROSPECTION_SERVICE_TOKEN>
+Content-Type: application/json
+
+{ "token": "<user MCP token>" }
+```
+
+| Status | Body | When |
+|--------|------|------|
+| `200` | `{ "active": true, "userId": "...", "email": "...", "defaultTenantId": "..." }` | Valid user token. `defaultTenantId` is the `tenant_id` of the user's membership with `is_default = true`, or `null` if there is none. |
+| `200` | `{ "active": false }` | Any other token. |
+| `400` | `{ "error": "bad_request" }` | Body is not JSON with a non-empty string `token` of at most 4096 characters. |
+| `401` | `{ "error": "unauthenticated" }` | Service token missing or wrong. |
+| `404` | `{ "error": "not_found" }` | Route disabled. |
+| `429` | `{ "error": "rate_limited" }` | More than 3000 requests in a minute (see below). |
+| `500` | `{ "error": "internal_error" }` | The lookup failed. Treat as unknown, not as `active: false`. |
+
+Every response carries `Cache-Control: no-store`. The user token is never
+echoed or logged; the server logs one line per request with the outcome and,
+for active tokens, the user id.
+
+Rate limit: 3000 requests per minute, counted per service token (one shared
+budget regardless of the caller's address), enough for about 1,500 users
+polling every 30 seconds. Requests with a wrong service token are rejected
+before the limiter and do not use the budget. Counters are in memory, so the
+budget applies per server process.
+
 ## Security
 
 - All OAuth tokens encrypted at rest using AES-256
