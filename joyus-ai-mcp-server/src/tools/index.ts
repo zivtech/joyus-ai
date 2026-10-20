@@ -6,6 +6,7 @@
 import { eq } from 'drizzle-orm';
 
 import { db, connections } from '../db/client.js';
+import { filterToolsByPolicy, policyDeps } from '../policy/index.js';
 
 import { approvalTools } from './approval-tools.js';
 import { contentTools } from './content-tools.js';
@@ -65,7 +66,29 @@ export async function getAllTools(userId: string): Promise<ToolDefinition[]> {
     tools.push(...githubTools);
   }
 
-  return tools;
+  // Policy (spec 016 FR-24): decided on the user's default tenant, after the
+  // connected-service gate. No default membership or provider outage → [].
+  return filterToolsByPolicy(policyDeps(), userId, tools);
+}
+
+/**
+ * Every tool name the platform can ever list, regardless of connections.
+ * Posted to the policy service's registry at startup (WP03 T019) so denies can
+ * name them; includes the approval tools that `buildToolRegistry` omits.
+ */
+export function allToolDefinitionNames(): string[] {
+  const all: ToolDefinition[] = [
+    ...opsTools,
+    ...contentTools,
+    ...pipelineTools,
+    ...profileTools,
+    ...approvalTools,
+    ...googleTools,
+    ...jiraTools,
+    ...slackTools,
+    ...githubTools,
+  ];
+  return [...new Set(all.map((tool) => tool.name))].sort();
 }
 
 /**

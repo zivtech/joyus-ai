@@ -286,6 +286,16 @@ Configure `notifyOnSuccess` and `notifyOnError` per task.
 - Session-based auth portal with HTTPS
 - Audit logging for all tool executions
 - No tokens stored in client or logs
+- Tool policy (joyus-ai-internal spec 016): `src/policy/` defines `PolicyProvider`
+  (`{ epoch, deniedTools }`). With `POLICY_SERVICE_URL` and `POLICY_SERVICE_TOKEN` set,
+  `HttpPolicyProvider` revalidates against the private policy service on every call and
+  filters `tools/list`, refuses `tools/call` (on the user's default tenant, and on a
+  resolved tenant when it differs), and applies the tenant ceiling in the orchestrator's
+  `getAuthorizedTools`. A user with no default membership gets no tools; a provider
+  outage serves the last decision for 10 minutes, then fails closed. Unset, the
+  `AllowAllPolicyProvider` enforces nothing. `POST /auth/introspect` (guarded by
+  `POLICY_INTROSPECTION_TOKEN`) lets the policy service verify bearers without reading
+  `users.mcp_token`; at startup the server posts every tool name to the service's registry.
 
 ## Deployment
 

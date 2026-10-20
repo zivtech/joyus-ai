@@ -8,6 +8,7 @@ import { eq, and } from 'drizzle-orm';
 import type { SearchService } from '../content/search/index.js';
 import { db, connections, type Service } from '../db/client.js';
 import { decryptToken, encryptToken } from '../db/encryption.js';
+import { assertAllowedInTenant, assertAllowedOnDefaultTenant, policyDeps } from '../policy/index.js';
 import { resolveTenantContextForUser } from '../tenancy/resolver.js';
 
 import { executeApprovalTool, type ApprovalExecutorContext } from './executors/approval-executor.js';
@@ -99,7 +100,27 @@ function requestedTenantIdFromInput(input: Record<string, unknown>): string | nu
   return trimmed.length > 0 ? trimmed : null;
 }
 
-async function resolveToolTenantId(userId: string, input: Record<string, unknown>): Promise<string> {
+/**
+ * Resolve the call's tenant, then apply the second policy decision (spec 016
+ * FR-24): when the call resolved by membership to a real tenant other than the
+ * user's default, that tenant must allow the tool too. Self-scope, operator
+ * override and the default tenant itself add no second decision; the
+ * default-tenant decision taken at the top of `executeTool` governs them.
+ */
+async function resolveToolTenantId(
+  userId: string,
+  input: Record<string, unknown>,
+  policy?: { toolName: string; defaultTenantId: string | null },
+): Promise<string> {
+  const tenantId = await resolveToolTenantContext(userId, input, policy);
+  return tenantId;
+}
+
+async function resolveToolTenantContext(
+  userId: string,
+  input: Record<string, unknown>,
+  policy?: { toolName: string; defaultTenantId: string | null },
+): Promise<string> {
   const requestedTenantId = requestedTenantIdFromInput(input);
   // Pass db + lookupDefaultTenant unconditionally so a caller with a default
   // membership but no explicit tenant_id resolves to that membership — matching
@@ -114,6 +135,13 @@ async function resolveToolTenantId(userId: string, input: Record<string, unknown
   if (!tenantContext.tenantId) {
     throw new Error('Tenant-scoped tool execution requires a tenant');
   }
+  if (
+    policy &&
+    tenantContext.source === 'membership' &&
+    tenantContext.tenantId !== policy.defaultTenantId
+  ) {
+    await assertAllowedInTenant(policyDeps(), tenantContext.tenantId, userId, policy.toolName);
+  }
   return tenantContext.tenantId;
 }
 
@@ -121,6 +149,12 @@ async function resolveToolTenantId(userId: string, input: Record<string, unknown
  * Execute a tool by name with the given input
  */
 export async function executeTool(userId: string, toolName: string, input: Record<string, unknown>): Promise<unknown> {
+  // Policy, first decision (spec 016 FR-24): always the user's default tenant.
+  // Refuses before any dispatch, including scheduler and orchestrator calls.
+  // Entitlement (spec 015 FeatureGate) runs before this point once it lands (FR-33).
+  const defaultTenantId = await assertAllowedOnDefaultTenant(policyDeps(), userId, toolName);
+  const policy = { toolName, defaultTenantId };
+
   // --- Direct executors (no OAuth required) ---
 
   if (toolName.startsWith('ops_')) {
@@ -130,12 +164,12 @@ export async function executeTool(userId: string, toolName: string, input: Recor
     // service can safely skip its narrower self/allowlist check
     // (tenantAccessPreResolved) — that check would otherwise reject a
     // legitimately membership-authorized cross-tenant export.
-    const tenantId = await resolveToolTenantId(userId, input);
+    const tenantId = await resolveToolTenantId(userId, input, policy);
     return executeOpsTool(toolName, input, { userId, tenantId, tenantAccessPreResolved: true });
   }
 
   if (toolName.startsWith('content_')) {
-    const tenantId = await resolveToolTenantId(userId, input);
+    const tenantId = await resolveToolTenantId(userId, input, policy);
     return executeContentTool(toolName, input, {
       userId,
       tenantId,
@@ -145,7 +179,7 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   }
 
   if (toolName.startsWith('profile_')) {
-    const tenantId = await resolveToolTenantId(userId, input);
+    const tenantId = await resolveToolTenantId(userId, input, policy);
     return executeProfileTool(toolName, input, { userId, tenantId, db });
   }
 
@@ -158,7 +192,7 @@ export async function executeTool(userId: string, toolName: string, input: Recor
   }
 
   if (toolName.startsWith('pipeline_')) {
-    const tenantId = await resolveToolTenantId(userId, input);
+    const tenantId = await resolveToolTenantId(userId, input, policy);
     // Pipeline executor context requires additional deps — these are injected via setPipelineContext()
     if (!_pipelineContext) {
       throw new Error('Pipeline module not initialized');

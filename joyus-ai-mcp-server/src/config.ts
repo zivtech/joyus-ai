@@ -23,6 +23,11 @@ const envSchema = z.object({
   GOOGLE_HOSTED_DOMAIN: z.string().default('example.com'),
   INNGEST_EVENT_KEY: z.string().optional(),
   INNGEST_SIGNING_KEY: z.string().optional(),
+  /** Private policy service (spec 016). Both set: HttpPolicyProvider; else AllowAll. */
+  POLICY_SERVICE_URL: optionalNonEmpty(z.string().url()),
+  POLICY_SERVICE_TOKEN: optionalNonEmpty(z.string().min(16)),
+  /** Bearer the policy service presents on POST /auth/introspect. Unset: route answers 404. */
+  POLICY_INTROSPECTION_TOKEN: optionalNonEmpty(z.string().min(16)),
 });
 
 // Validate at import time
