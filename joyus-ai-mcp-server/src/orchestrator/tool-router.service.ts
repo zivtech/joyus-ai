@@ -22,6 +22,7 @@
 
 import { z } from 'zod';
 
+import { filterToolsByTenantCeiling, getPolicyProvider, type PolicyProvider } from '../policy/index.js';
 import { executeTool } from '../tools/executor.js';
 import {
   contentTools,
@@ -114,6 +115,8 @@ interface ToolCacheEntry {
 
 export interface ToolRouterServiceDeps {
   eventService?: EventService;
+  /** Spec 016 policy provider; defaults to the env-selected one. */
+  policyProvider?: PolicyProvider;
 }
 
 export class ToolRouterService implements ToolRouter {
@@ -124,9 +127,11 @@ export class ToolRouterService implements ToolRouter {
   private readonly circuitBreakers = new Map<string, CircuitBreakerEntry>();
 
   private readonly eventService: EventService | null;
+  private readonly policyProvider: PolicyProvider;
 
   constructor(deps: ToolRouterServiceDeps = {}) {
     this.eventService = deps.eventService ?? null;
+    this.policyProvider = deps.policyProvider ?? getPolicyProvider();
   }
 
   // ---------------------------------------------------------------------------
@@ -168,7 +173,9 @@ export class ToolRouterService implements ToolRouter {
    */
   async getAuthorizedTools(tenantId: string): Promise<ToolRegistration[]> {
     const all = await this.discoverTools(tenantId);
-    return all.filter((tool) => !this.isCircuitOpen(tenantId, tool.name));
+    // Policy (spec 016 FR-24): no user here, so the tenant ceiling only.
+    const allowed = await filterToolsByTenantCeiling(this.policyProvider, tenantId, all);
+    return allowed.filter((tool) => !this.isCircuitOpen(tenantId, tool.name));
   }
 
   // ---------------------------------------------------------------------------
