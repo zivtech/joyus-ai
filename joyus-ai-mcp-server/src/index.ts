@@ -23,9 +23,11 @@ import session from 'express-session';
 import helmet from 'helmet';
 import { serve } from 'inngest/express';
 
+import { introspectRouter, introspectBodyErrorHandler } from './auth/introspect.js';
 import { requireBearerToken } from './auth/middleware.js';
 import { authRouter } from './auth/routes.js';
 import { getUserFromToken } from './auth/verify.js';
+import { config } from './config.js';
 import { initializeContentModule } from './content/index.js';
 import { db, auditLogs } from './db/client.js';
 import { users } from './db/schema.js';
@@ -58,14 +60,19 @@ import { SessionService } from './orchestrator/session.service.js';
 import { DecisionRecorder } from './pipelines/review/decision.js';
 import { createPipelineRouter } from './pipelines/routes.js';
 import { createStepRegistry } from './pipelines/steps/registry.js';
+import { postToolRegistry } from './policy/index.js';
 import { initializeProfiles } from './profiles/index.js';
 import { initializeScheduler } from './scheduler/index.js';
 import { taskRouter } from './scheduler/routes.js';
+import { mountCatalogRefreshRoutes, startCatalogBackgroundLoad, shutdownCatalog } from './skills/catalog/startup.js';
 import { resolveTenantContext, sendTenantResolutionError } from './tenancy/resolver.js';
 import { executeTool, setPipelineContext } from './tools/executor.js';
-import { getAllTools } from './tools/index.js';
+import { allToolDefinitionNames, getAllTools } from './tools/index.js';
+import { mcpJsonBodyErrorHandler } from './tools/mcp-body-errors.js';
+import { handleMcpToolCall } from './tools/mcp-call.js';
 
 const app = express();
+mountCatalogRefreshRoutes(app);
 const PORT = process.env.PORT || 3000;
 const pipelineDb = db as unknown as NodePgDatabase;
 const stepRegistry = createStepRegistry({});
@@ -108,6 +115,7 @@ app.use('/v1/events', createEventAdapterWebhookRouter({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For form submissions
+app.use('/mcp', mcpJsonBodyErrorHandler);
 app.use(session({
   secret: process.env.SESSION_SECRET || 'change-me-in-production',
   resave: false,
@@ -307,6 +315,13 @@ app.get('/health', async (req, res) => {
   });
 });
 
+// Token introspection for the private policy service (spec 016 FR-01).
+// Mounted before the auth router so it is never shadowed by session handling.
+app.use(
+  '/auth/introspect',
+  introspectRouter, introspectBodyErrorHandler,
+);
+
 // Auth routes (OAuth callbacks, token management)
 app.use('/auth', authRouter);
 
@@ -473,41 +488,10 @@ app.post('/mcp', requireBearerToken, async (req: Request, res: Response) => {
 
       case 'tools/call': {
         const { name, arguments: args } = params;
-        const startTime = Date.now();
-
-        try {
-          const toolResult = await executeTool(user.id, name, args || {});
-
-          // Audit log
-          await db.insert(auditLogs).values({
-            userId: user.id,
-            tool: name,
-            input: args || {},
-            success: true,
-            duration: Date.now() - startTime
-          });
-
-          result = {
-            content: [{ type: 'text', text: JSON.stringify(toolResult, null, 2) }]
-          };
-        } catch (toolError: unknown) {
-          const errorMessage = toolError instanceof Error ? toolError.message : 'Unknown error';
-
-          // Audit log failure
-          await db.insert(auditLogs).values({
-            userId: user.id,
-            tool: name,
-            input: args || {},
-            success: false,
-            error: errorMessage,
-            duration: Date.now() - startTime
-          });
-
-          result = {
-            content: [{ type: 'text', text: `Error: ${errorMessage}` }],
-            isError: true
-          };
-        }
+        result = await handleMcpToolCall(user.id, name, args, {
+          execute: executeTool,
+          audit: async (row) => { await db.insert(auditLogs).values(row); },
+        });
         break;
       }
 
@@ -563,11 +547,29 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start server
 const server = app.listen(PORT, async () => {
+  startCatalogBackgroundLoad();
   console.log(`🚀 Joyus AI MCP Server running on port ${PORT}`);
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   MCP:    http://localhost:${PORT}/mcp`);
   console.log(`   Auth:   http://localhost:${PORT}/auth`);
   console.log(`   Tasks:  http://localhost:${PORT}/tasks`);
+
+  // Policy registry post (spec 016 WP03 T019): tell the policy service every
+  // tool name, so denies can name them. Failure is isolated.
+  if (config.POLICY_SERVICE_URL && config.POLICY_SERVICE_TOKEN) {
+    try {
+      const { created } = await postToolRegistry({
+        baseUrl: config.POLICY_SERVICE_URL,
+        serviceToken: config.POLICY_SERVICE_TOKEN,
+        toolNames: allToolDefinitionNames(),
+      });
+      console.log(`   Policy:  registry posted (${created} new tool rows)`);
+    } catch (error) {
+      console.error('Failed to post the tool registry to the policy service:', error);
+    }
+  } else {
+    console.log('   Policy:  AllowAll (POLICY_SERVICE_URL unset)');
+  }
 
   // Initialize task scheduler
   try {
@@ -614,6 +616,7 @@ const server = app.listen(PORT, async () => {
 
   // Graceful shutdown
   const shutdown = async () => {
+    shutdownCatalog();
     try {
       eventAdapterScheduler.stop();
       eventAdapterBufferDrainWorker.stop();
